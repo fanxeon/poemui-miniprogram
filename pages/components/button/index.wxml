@@ -1,0 +1,85 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{canvasGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area
+        wx:if="{{layoutReady}}"
+        class="component-page__scroll-area"
+        height="{{scrollAreaHeight}}"
+        gradient-overlay
+        gradient-overlay-size="md"
+        aria-label="Button 组件用法"
+      >
+        <view class="component-page__content">
+          <view class="component-page__section">
+            <view class="component-page__section-header">
+              <text class="component-page__section-title">基础用法</text>
+              <text class="component-page__section-description">默认、主要与危险操作使用同一 Button 合同。</text>
+            </view>
+            <view class="component-page__row">
+              <pui-button data-action="按钮" bind:click="onButtonAction">按钮</pui-button>
+              <pui-button theme="primary" content="主要按钮" data-action="主要按钮" bind:click="onButtonAction" />
+              <pui-button theme="danger" content="危险按钮" data-action="危险按钮" bind:click="onButtonAction" />
+            </view>
+            <text class="component-page__status" aria-live="polite">{{lastAction}}</text>
+          </view>
+
+          <view class="component-page__section">
+            <view class="component-page__section-header">
+              <text class="component-page__section-title">组件类型</text>
+              <text class="component-page__section-description">图标、透明、组合内容与通栏按钮按任务组合。</text>
+            </view>
+            <view class="component-page__row">
+              <pui-button theme="primary" shape="circle" icon="add" aria-label="新增" data-action="新增" bind:click="onButtonAction" />
+              <pui-button variant="transparent" icon="copy" content="透明按钮" data-action="透明按钮" bind:click="onButtonAction" />
+              <pui-button variant="outline" content="消息" data-action="消息" bind:click="onButtonAction">
+                <pui-badge slot="suffix" count="{{3}}" size="small" aria-label="3 条消息" />
+              </pui-button>
+            </view>
+            <view class="component-page__block">
+              <pui-button block theme="primary" content="通栏按钮" data-action="通栏按钮" bind:click="onButtonAction" />
+            </view>
+          </view>
+
+          <view class="component-page__section">
+            <view class="component-page__section-header">
+              <text class="component-page__section-title">组件状态</text>
+              <text class="component-page__section-description">加载态与禁用态都会阻断点击。</text>
+            </view>
+            <view class="component-page__row">
+              <pui-button theme="primary" loading content="提交中" loading-props="{{loadingProps}}" />
+              <pui-button disabled content="不可操作" />
+            </view>
+          </view>
+
+          <view class="component-page__section">
+            <view class="component-page__section-header">
+              <text class="component-page__section-title">组件样式</text>
+              <text class="component-page__section-description">变体、尺寸和形状继续复用 PUI Token。</text>
+            </view>
+            <view class="component-page__row">
+              <pui-button theme="primary" size="small" content="Base" data-action="Base" bind:click="onButtonAction" />
+              <pui-button theme="primary" variant="outline" size="small" content="Outline" data-action="Outline" bind:click="onButtonAction" />
+              <pui-button theme="primary" variant="text" size="small" content="Text" data-action="Text" bind:click="onButtonAction" />
+              <pui-button theme="primary" variant="ghost" size="small" content="Ghost" data-action="Ghost" bind:click="onButtonAction" />
+            </view>
+            <view class="component-page__row">
+              <pui-button size="extra-small" content="XS" data-action="XS" bind:click="onButtonAction" />
+              <pui-button size="small" content="S" data-action="S" bind:click="onButtonAction" />
+              <pui-button size="medium" content="M" data-action="M" bind:click="onButtonAction" />
+              <pui-button size="large" content="L" data-action="L" bind:click="onButtonAction" />
+            </view>
+            <view class="component-page__row">
+              <pui-button shape="round" content="圆角按钮" data-action="圆角按钮" bind:click="onButtonAction" />
+              <pui-button shape="square" icon="more-horizontal" aria-label="更多操作" data-action="更多操作" bind:click="onButtonAction" />
+              <pui-button shape="circle" icon="check" aria-label="确认" data-action="确认" bind:click="onButtonAction" />
+            </view>
+          </view>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

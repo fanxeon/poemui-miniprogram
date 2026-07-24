@@ -1,0 +1,7 @@
+{
+  "name": "poemui-home-app",
+  "private": true,
+  "dependencies": {
+    "poemui-miniprogram": "file:.."
+  }
+}

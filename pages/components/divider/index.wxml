@@ -1,0 +1,58 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{canvasGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area
+        wx:if="{{layoutReady}}"
+        class="component-page__scroll-area"
+        height="{{scrollAreaHeight}}"
+        gradient-overlay
+        gradient-overlay-size="md"
+        aria-label="Divider 组件用法"
+      >
+        <view class="component-page__content">
+          <view class="component-page__section">
+            <view class="component-page__section-header">
+              <text class="component-page__section-title">基础用法</text>
+              <text class="component-page__section-description">默认分隔线用于建立内容节奏，不创建新的 Surface。</text>
+            </view>
+            <pui-divider />
+          </view>
+
+          <view class="component-page__section">
+            <view class="component-page__section-header">
+              <text class="component-page__section-title">文字与对齐</text>
+              <text class="component-page__section-description">短文字可在左、中、右三个位置建立层级。</text>
+            </view>
+            <view class="component-page__stack">
+              <pui-divider content="左侧文字" align="left" />
+              <pui-divider content="居中文字" align="center" />
+              <pui-divider content="右侧文字" align="right" />
+              <pui-divider show-content align="center">
+                <pui-tag theme="primary" variant="outline" size="small">自定义内容</pui-tag>
+              </pui-divider>
+            </view>
+          </view>
+
+          <view class="component-page__section">
+            <view class="component-page__section-header">
+              <text class="component-page__section-title">布局与线型</text>
+              <text class="component-page__section-description">虚线保持原有盒模型，纵向线只占一个内联位置。</text>
+            </view>
+            <pui-divider dashed />
+            <view class="component-page__inline">
+              <pui-tag variant="outline" size="small">之前</pui-tag>
+              <pui-divider layout="vertical" />
+              <pui-tag variant="outline" size="small">之后</pui-tag>
+              <pui-divider layout="vertical" dashed />
+              <pui-tag theme="primary" variant="outline" size="small">虚线</pui-tag>
+            </view>
+          </view>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

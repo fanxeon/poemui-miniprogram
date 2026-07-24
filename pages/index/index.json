@@ -1,0 +1,18 @@
+{
+  "usingComponents": {
+    "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
+    "pui-navbar": "poemui-miniprogram/navbar/navbar",
+    "pui-button": "poemui-miniprogram/button/button",
+    "pui-icon": "poemui-miniprogram/icon/icon",
+    "pui-image": "poemui-miniprogram/image/image",
+    "pui-scroll-area": "poemui-miniprogram/scroll-area/scroll-area",
+    "pui-collapsible": "poemui-miniprogram/collapsible/collapsible",
+    "pui-cell": "poemui-miniprogram/cell/cell",
+    "pui-cell-group": "poemui-miniprogram/cell/cell-group",
+    "pui-switch": "poemui-miniprogram/switch/switch",
+    "pui-combobox": "poemui-miniprogram/combobox/combobox",
+    "pui-overlay": "poemui-miniprogram/overlay/overlay",
+    "pui-popup": "poemui-miniprogram/popup/popup",
+    "pui-tabbar": "poemui-miniprogram/tabbar/tabbar"
+  }
+}

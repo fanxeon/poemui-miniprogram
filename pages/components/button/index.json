@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
+    "pui-scroll-area": "poemui-miniprogram/scroll-area/scroll-area",
+    "pui-button": "poemui-miniprogram/button/button",
+    "pui-badge": "poemui-miniprogram/badge/badge",
+    "component-page-navbar": "/components/component-page-navbar/component-page-navbar"
+  }
+}

@@ -1,0 +1,10 @@
+# 由微信开发者工具按 package.json 标准 npm 流程生成，禁止手工维护。
+miniprogram_npm/
+
+# 本地依赖与开发者工具私有设置。
+node_modules/
+project.private.config.json
+
+# 本机生成文件。
+.DS_Store
+*.log

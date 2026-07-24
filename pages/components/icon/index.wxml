@@ -1,0 +1,62 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{canvasGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area
+        wx:if="{{layoutReady}}"
+        class="component-page__scroll-area"
+        height="{{scrollAreaHeight}}"
+        gradient-overlay
+        gradient-overlay-size="md"
+        aria-label="Icon 图标目录"
+      >
+        <view class="component-page__content">
+          <view class="component-page__icon-library">
+            <view class="component-page__icon-intro">
+              <text class="component-page__icon-intro-title">图标资源</text>
+              <text class="component-page__icon-intro-description">共 {{iconCatalog.length}} 个图标，按分类浏览；可搜索图标名称或分类。</text>
+            </view>
+
+            <view class="component-page__icon-search-row">
+              <pui-search
+                class="component-page__icon-search-host"
+                custom-class="component-page__icon-search"
+                style="display:flex;flex:1;min-width:0;width:100%;"
+                custom-style="width:100%;max-width:100%;flex:1;min-width:0;"
+                value="{{iconQuery}}"
+                placeholder="搜索图标名称或分类"
+                aria-label="搜索全部 PUI 图标"
+                bind:change="onIconSearchChange"
+                bind:clear="onIconSearchClear"
+                bind:search="onIconSearchChange"
+              />
+            </view>
+
+            <block wx:for="{{visibleIconGroups}}" wx:for-item="group" wx:key="key">
+              <view class="component-page__icon-group">
+                <view class="component-page__icon-group-header">
+                  <text class="component-page__icon-group-title">{{group.label}}</text>
+                  <text class="component-page__icon-group-description">{{group.description}} · {{group.count}} 个</text>
+                </view>
+                <view class="component-page__icon-grid" aria-label="{{group.label}}图标">
+                  <block wx:for="{{group.icons}}" wx:for-item="icon" wx:key="name">
+                    <view class="component-page__icon-grid-item">
+                      <pui-icon name="{{icon.name}}" size="{{56}}" />
+                      <text class="component-page__icon-grid-name">{{icon.name}}</text>
+                    </view>
+                  </block>
+                </view>
+              </view>
+            </block>
+
+            <text wx:if="{{!visibleIconGroups.length}}" class="component-page__empty">没有匹配的图标</text>
+          </view>
+        </view>
+      </pui-scroll-area>
+    </view>
+
+  </view>
+</pui-config-provider>
