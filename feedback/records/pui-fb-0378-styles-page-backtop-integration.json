@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0378",
+  "title": "快速样式页面集成 BackTop 组件",
+  "scope": "component",
+  "components": ["back-top", "scroll-area"],
+  "type": "capability-gap",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式页面内容较多，需要一个快速回到顶部的入口。",
+  "environment": {
+    "surfaces": ["miniprogram styles page"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入快速样式页面，滚动到底部。",
+    "旧版没有回到顶部的快捷方式，需要手动滑动。"
+  ],
+  "expected": "页面右下角显示 BackTop 按钮，滚动超过 200px 后可见，点击后平滑滚动回顶部。",
+  "actual": "页面缺少回到顶部的快捷入口。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 用户要求引入 BackTop 组件", "note": "用户明确要求在快速样式页面集成 PUI BackTop"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "添加 pui-back-top 组件和顶部锚点"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "添加 scrollTop 状态和滚动事件处理"},
+    {"kind": "file", "ref": "scripts/appearance-contract-matrix.js", "note": "新增 back-top 到外观矩阵"}
+  ],
+  "rootCause": "快速样式页面内容较多，缺少快速导航回顶部的能力。",
+  "decision": {
+    "outcome": "使用 scrollIntoView 契约，在 scroll-area 内容顶部添加锚点元素，监听滚动事件获取 scrollTop，点击 BackTop 时设置 scrollIntoView 滚动到锚点。",
+    "rationale": "保持现有 scroll-area 的渐变遮罩能力，使用 PUI 自己的 BackTop 组件，符合项目约束。",
+    "alternativesRejected": [
+      "改用页面级滚动会失去 scroll-area 的渐变遮罩效果。",
+      "手写回到顶部按钮不符合'优先使用 PUI 组件'原则。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/styles/index.json",
+      "miniprogram/pages/styles/index.js",
+      "miniprogram/pages/styles/index.wxml",
+      "scripts/appearance-contract-matrix.js",
+      "scripts/test-appearance-contract-matrix.js"
+    ],
+    "dependencies": ["pui-back-top", "pui-scroll-area", "pui-fab"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js", "scripts/test-appearance-contract-matrix.js"],
+    "commands": ["npm run check", "npm run pack:check"],
+    "browser": ["390px 下验证 BackTop 按钮显示在正确位置，点击后滚动回顶部"],
+    "deviceRisks": ["真机仍需复核 scrollIntoView 的平滑滚动效果"]
+  },
+  "ai": {
+    "summary": "快速样式页面集成 PUI BackTop，使用 scrollIntoView 契约实现回到顶部。",
+    "rules": [
+      "使用 scroll-area 的 scrollIntoView 属性滚动到顶部锚点，不使用 wx.pageScrollTo",
+      "监听 scroll-area 的 bindscroll 事件获取 scrollTop 用于控制 BackTop 显隐",
+      "BackTop 使用 fixed=false 定位，浮在 scroll-area 容器内"
+    ],
+    "tags": ["back-top", "scroll-area", "styles-page", "navigation", "miniprogram"]
+  }
+}
