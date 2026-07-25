@@ -1,0 +1,165 @@
+.pui-tabs {
+  --pui-tabs-indicator-color: var(--pui-color-brand);
+  --pui-tabs-scroll-item-min-width: 160rpx;
+  --pui-tabs-header-height: 96rpx;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  color: var(--pui-text-primary);
+}
+
+.pui-tabs__header {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--pui-tabs-header-height);
+  background: var(--pui-bg-container);
+  border-bottom: 1rpx solid var(--pui-border-color);
+  box-shadow: none;
+  transition: background-color var(--pui-tabs-duration) var(--pui-ease-standard), border-color var(--pui-tabs-duration) var(--pui-ease-standard);
+}
+
+.pui-tabs--sticky .pui-tabs__header { position: sticky; }
+
+.pui-tabs__scroller {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.pui-tabs__row {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  min-width: 100%;
+}
+
+.pui-tabs__item {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  min-width: var(--pui-tabs-scroll-item-min-width);
+  overflow: visible;
+}
+
+.pui-tabs--evenly .pui-tabs__item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.pui-tabs--overflow-peek .pui-tabs__row {
+  width: 100%;
+}
+
+.pui-tabs--overflow-peek .pui-tabs__item {
+  flex: 0 0 22.222222%;
+  min-width: 0;
+}
+
+.pui-tabs__button {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: var(--pui-tabs-header-height);
+  padding: 0 var(--pui-space-normal);
+  overflow: visible;
+  color: var(--pui-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transition: color var(--pui-tabs-duration) var(--pui-ease-standard), opacity var(--pui-tabs-duration) var(--pui-ease-standard), transform var(--pui-tabs-duration) var(--pui-ease-standard);
+}
+
+.pui-tabs__item--active .pui-tabs__button {
+  color: var(--pui-color-brand);
+  font-weight: 600;
+}
+
+.pui-tabs__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pui-space-xs);
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.pui-tabs__label-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pui-tabs__badge {
+  flex: 0 0 auto;
+}
+
+.pui-tabs__indicator {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 0;
+  width: 32rpx;
+  height: 6rpx;
+  background: var(--pui-tabs-indicator-color);
+  border-radius: var(--pui-radius-round);
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity var(--pui-tabs-duration) var(--pui-ease-standard), background-color var(--pui-tabs-duration) var(--pui-ease-standard);
+}
+
+.pui-tabs--tag .pui-tabs__header {
+  padding: var(--pui-space-sm);
+  background: transparent;
+  border-bottom: 0;
+}
+
+.pui-tabs--tag .pui-tabs__row { gap: var(--pui-space-sm); }
+.pui-tabs--tag.pui-tabs--overflow-peek .pui-tabs__row { gap: 0; }
+.pui-tabs--tag .pui-tabs__item { min-width: var(--pui-tabs-scroll-item-min-width); }
+.pui-tabs--tag .pui-tabs__button {
+  height: 64rpx;
+  color: var(--pui-text-secondary);
+  background: var(--pui-bg-active);
+  border-radius: var(--pui-radius-small);
+}
+
+.pui-tabs--tag .pui-tabs__item--active .pui-tabs__button {
+  color: var(--pui-color-brand);
+  background: var(--pui-color-brand-light);
+}
+
+.pui-tabs--split .pui-tabs__item + .pui-tabs__item::before {
+  position: absolute;
+  top: 24%;
+  bottom: 24%;
+  left: 0;
+  width: 1rpx;
+  background: var(--pui-border-color);
+  content: '';
+  transition: background-color var(--pui-tabs-duration) var(--pui-ease-standard), opacity var(--pui-tabs-duration) var(--pui-ease-standard);
+}
+
+.pui-tabs--tag.pui-tabs--split .pui-tabs__item + .pui-tabs__item::before { display: none; }
+.pui-tabs__content {
+  box-sizing: border-box;
+  min-height: 48rpx;
+  padding: var(--pui-space-sm) 0 0;
+  background: transparent;
+  border-radius: 0;
+  transition: background-color var(--pui-tabs-duration) var(--pui-ease-standard), color var(--pui-tabs-duration) var(--pui-ease-standard);
+}
+
+.pui-tabs--reduced-motion .pui-tabs__indicator,
+.pui-tabs--reduced-motion .pui-tabs__button,
+.pui-tabs--reduced-motion .pui-tabs__header,
+.pui-tabs--reduced-motion .pui-tabs__content { transition-duration: 1ms; }
