@@ -10,7 +10,6 @@
 const appearanceContracts = Object.freeze({
   'action-sheet': { surface: 'edge-attached', shadow: 'edge-bottom', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
   alert: { surface: 'inline-surface', shadow: 'none', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },
-  'back-top': { surface: 'detached-surface', shadow: 'floating', frostedGlass: true, largeRadius: true, bordered: false, equalSpacing: false, gradient: false },
   badge: { surface: 'leaf', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: false, equalSpacing: false, gradient: false },
   button: { surface: 'control-surface', shadow: 'card', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },
   cell: { surface: 'list-item', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },

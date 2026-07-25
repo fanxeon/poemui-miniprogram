@@ -29,7 +29,7 @@ const renderedRoots = [...wxml.matchAll(/<pui-([a-z0-9-]+)/g)]
 const matrixRoots = Object.keys(appearanceContracts).sort();
 
 assert.deepStrictEqual(renderedRoots, matrixRoots, 'appearance matrix must match all direct PUI roots rendered by the real miniprogram');
-assert.strictEqual(matrixRoots.length, 32, 'the current miniprogram appearance matrix must contain 32 direct PUI roots');
+assert.strictEqual(matrixRoots.length, 31, 'the current miniprogram appearance matrix must contain 31 direct PUI roots');
 assert(!matrixRoots.includes('drawer'), 'deleted Drawer must not return to the appearance contract');
 assert.deepStrictEqual(directionalShadowTokens.slice(0, 1), ['none']);
 
