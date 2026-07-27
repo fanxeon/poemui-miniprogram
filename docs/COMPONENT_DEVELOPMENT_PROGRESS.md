@@ -7,7 +7,9 @@
   `/poem-ui` 已使用三张真实微信开发者工具截图、正式小程序码留白、MIT Core/未来独立
   Pro 边界和 H5 CTA 发布；H5 独立静态容器发布于
   `https://poemcoder.com/poem-ui/docs/`，落地页发布于
-  `https://poemcoder.com/poem-ui`。
+  `https://poemcoder.com/poem-ui`。H5 r3 还完整展示
+  `https://www.npmjs.com/package/poemui-miniprogram`；390px 生产实点复制得到同一
+  剪贴板文本，横向溢出为 0 且 console 无告警。
 - **AI Skill**：新增 `skills/poemui-miniprogram/`，包含标准 `SKILL.md`、
   `agents/openai.yaml`、六份渐进式 reference、只读工程审计和安装验证脚本。Skill 固定适配
   PoemUI `0.1.0`，要求优先复用 PUI、真实父级回写、平台失败/取消闭环、390px、默认
@@ -16,7 +18,8 @@
 - **发布与许可证**：`poemui-miniprogram@0.1.0` 已发布到公共 npm，Registry tarball shasum
   为 `bd9a2468d771ff3d631d59c6096247fdccc83b7d`；公开仓库为
   `https://github.com/fanxeon/poemui-miniprogram`，默认分支
-  `codex/public-beta-0.1.0`。`docs/PUBLIC_BETA_NOTICE.md` 作为公开事实源，明确当前 71 个组件、
+  `codex/public-beta-0.1.0`，`v0.1.0` Tag 与 Release 已发布；全新临时目录按 Tag clone 后
+  通过发布专项合同与 Skill 路径校验。`docs/PUBLIC_BETA_NOTICE.md` 作为公开事实源，明确当前 71 个组件、
   562 个快速样式和 220 个图标属于 MIT Core；当前开放 Beta 能力无需购买，未来 Pro
   只能独立发行未进入 MIT Core 的新能力。
 - **构建与产物**：`site:build`、完整 `npm run check`、`pack:check`、
@@ -31,8 +34,13 @@
   `miniprogram_dist` 与微信 `miniprogram_npm` 均为 540 个文件、哈希差异为 0。
 - **公网实测与风险**：落地页桌面/390px、light/dark、真实 CTA、四张图片加载和 console
   已通过；H5 在移动视口无横向溢出，light/dark、真实复制、资源与 console 已通过。
-  正式小程序码、云端 `pui-codepage` 写确认、微信正式审核和 iOS/Android 真机仍待
-  外部流程或材料。Ledger：`PUI-FB-0455`（resolved / accepted）。
+  H5 当前镜像为 `poemui-h5:20260728-public-registry-r3`，直接回滚容器为
+  `poemui-h5-rollback-20260728-public-registry-r2`。共享云 Page 与 Skill 均由微信 CLI
+  返回 `matchedCount=1 / modifiedCount=1`，管理端回读内容准确；真实 PoemUI 消费端
+  `/pages/codex/index` 已进入 `ready`，回读三段 Page snippets 与唯一
+  `poemui-miniprogram@0.1.0` Skill。正式
+  小程序码、微信正式审核和 iOS/Android 真机仍待外部流程或材料。Ledger：
+  `PUI-FB-0455`（resolved / accepted）。
 
 ## 2026-07-27 · DynamicMessage 分阶段变形动效修正
 
@@ -1190,3 +1198,9 @@
 - **资料版头**：`pages/me/index` 删除静态昵称和“PoemUI 用户”副标题，改为 Avatar 左侧、唯一 `label="昵称"` 的 PUI Input 右侧；保存仍通过 Input suffix 的 Check IconButton、页面事件和 `user-profile` Store。没有新增组件 API 或页面私有编辑器。
 - **Surface 间距**：服务 `pui-cell-group` 的额外上间距从内容组合 Token 升为 `--pui-section-gap`；它与正文 section gap 共同保留资料 Input/Surface 投影安全区，阴影关闭时几何不收缩，连续 CellGroup 也未拆为单行卡片。
 - **验收**：微信开发者工具 iPhone 12/13 390px 实图确认单行资料编辑和默认 `shadow=true` 下的投影空白；真实输入、suffix 保存、Toast 成功与恢复默认昵称已执行。专项 Me/Tabbar 测试、WXML/WXSS 编译、Feedback 生成与校验通过。Ledger：`PUI-FB-0452`、`PUI-FB-0453`（resolved / pending-user）；深色、毛玻璃、大圆角和 iOS/Android 真机仍待验收。
+
+## 2026-07-28 · 外观菜单隐藏总效果闸门
+
+- **用户界面**：小程序共享 `appearance-settings` 与 H5 外观菜单删除含糊且重复的 `effectsEnabled` Switch，只保留边框、阴影、毛玻璃、大圆角、渐变、间距相等和深色七项；阴影、毛玻璃和大圆角不再因不可见闸门进入 disabled。
+- **兼容边界**：公共 `visualConfig.effectsEnabled / setEffectsEnabled()`、ConfigProvider 有效值、持久化 Schema 和预设继续保留。外观 UI 读取旧的 `effectsEnabled=false` 时恢复为开启，同时保留三个单项，避免隐藏状态锁死用户；开发者不使用该示例菜单时仍可通过 API 暂停效果。
+- **验证**：小程序 AppearanceSettings、H5 外观菜单、ConfigProvider、果味预设、全部组件详情页与 `test-miniprogram-home` 专项通过；后者的依赖断言已从发布前 `file:..` 更新为公共固定版 `0.1.0`。完整 `npm run check`、`site:build`、`pack:check` 与 `git diff --check` 均通过。Ledger：`PUI-FB-0456`（resolved / pending-user）。

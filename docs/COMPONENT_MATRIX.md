@@ -13,7 +13,7 @@
 
 | 组件/能力 | 状态 | 路径 | 当前交付边界 |
 | --- | --- | --- | --- |
-| Getting Started 快速开始 | done | `poemui-miniprogram@0.1.0 · npm 尚未发布` | 发布状态、安装、构建 npm、按需引用、主题配置、AI Skill、许可证 |
+| Getting Started 快速开始 | done | `https://www.npmjs.com/package/poemui-miniprogram` | 发布状态、安装、构建 npm、按需引用、主题配置、AI Skill、许可证 |
 | ConfigProvider | done | `poemui-miniprogram/config-provider/config-provider` | `theme`、`shadow`、`frostedGlass`、`largeRadius`、`bordered`、`equalSpacing`、`useGlobalConfig`、`customClass`、`customStyle` |
 | Theme Tokens | done | `poemui-miniprogram/theme/theme.wxss` | light、dark、frost/shadow/radius |
 | Color 色彩 | done | `poemui-miniprogram/theme/theme.wxss` | light/dark、brand 1–10、success/warning/danger/info、8 组 accent、text/surface/border |

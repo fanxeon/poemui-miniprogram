@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-24",
-  "updatedAt": "2026-07-24",
+  "updatedAt": "2026-07-28",
   "userGoal": "真实微信小程序首页必须由既有 PUI 组件完成可用的导航、滚动、搜索、列表和底部导航闭环。",
   "environment": {
     "surfaces": ["miniprogram/真实首页", "微信开发者工具"],
@@ -28,7 +28,7 @@
     {"kind": "user-report", "ref": "2026-07-24 当前任务要求", "note": "用户明确指定真实 miniprogram 工程、PUI 组件结构和可验证交互边界。"},
     {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "首页现在只引用 npm 路径的 PUI 组件，移除旧 navigation-bar 与原生 scroll-view，并保留三行布局。"},
     {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "页面实现窗口/节点测量、搜索过滤、清空关闭恢复、受控 Collapsible 和 Tabbar 状态。"},
-    {"kind": "file", "ref": "miniprogram/package.json", "note": "真实工程通过 file:.. 标准 npm 依赖消费 poemui-miniprogram，不复制 PUI 源码。"},
+    {"kind": "file", "ref": "miniprogram/package.json", "note": "真实工程固定通过公共 poemui-miniprogram@0.1.0 标准 npm 依赖消费 PUI，不复制源码，也不退回发布前的 file:..。"},
     {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项测试锁定组件链、无旧滚动实现、动态高度、三项基础组件和页面状态行为。"},
     {"kind": "build", "ref": "微信开发者工具 RC 2.02.2607161，项目 miniprogram/ 的工具菜单“构建 npm”", "note": "构建完成耗时 438 毫秒，并生成 miniprogram/miniprogram_npm；修复包根入口后模拟器注册 pages/index/index。"},
     {"kind": "browser", "ref": "微信开发者工具模拟器 pages/index/index", "note": "搜索 Divider 仅保留 Divider，清空与关闭恢复三项；Collapsible 收起/展开成功；点击 disabled 任务后首页仍为已选中。该证据不是微信真机验收。"},

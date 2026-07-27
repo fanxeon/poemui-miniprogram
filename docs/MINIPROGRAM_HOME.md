@@ -1,6 +1,6 @@
 # PoemUI 真实微信小程序首页
 
-当前实际工程是 `/Users/fanx/Documents/poemUI 小程序组件库/miniprogram`，AppID 为 `wx23aa017375535746`。页面只通过 `miniprogram/package.json` 的标准 npm 依赖消费 `poemui-miniprogram`，不复制 PUI 源码。
+当前实际工程是 `/Users/fanx/Documents/poemUI 小程序组件库/miniprogram`，AppID 为 `wx23aa017375535746`。页面只通过 `miniprogram/package.json` 固定消费公共 `poemui-miniprogram@0.1.0`，不复制 PUI 源码；公共包地址为 <https://www.npmjs.com/package/poemui-miniprogram>。
 
 当前产品仅支持默认 WebView 渲染：`app.json` 不声明 `renderer: "skyline"`、`rendererOptions` 或 `componentFramework: "glass-easel"`。不要以 Skyline 的 CSS、GridView、宿主盒模型或真机行为作为本项目的实现与验收前提。
 
@@ -35,7 +35,7 @@
 
 `pages/styles/index` 是真实小程序的 Style Utilities 入口，不复制官网 DOM 或 WXSS。Navbar 已承担“快速样式”唯一页面标题，因此内容区从 Tabs 直接开始；Tabs 内不再保留分类标题、说明、已选 class 或目录标题，只保留一个真实预览和无标题的当前分类目录。页面工作区固定在 Navbar 与 Tabbar 之间：`pui-tabs` Header 和预览都是该工作区内的 absolute 层，明确 `sticky=false`；唯一 `pui-scroll-area` 只承载目录。Tabs 显式 `swipeable=false`，避免横滑识别与目录纵向手势竞争。
 
-`pages/codex/index` 是第三个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Button、Icon、Tabbar 与共享 Section 组合“快速开始 / 让你的 AI 懂得用它”两个分区。快速开始展示真实 npm 安装命令和最小页面引用，并由共享 `code-snippet` 组合 PUI Card、Icon 与圆形文字 Button 完成复制；只有代码横向阅读使用原生 `scroll-view`。SKILL 尚未交付时只保留 `SKILL` 留白和 `codex` 图标，不提供下载按钮、复制内容或假完成状态。
+`pages/codex/index` 是第三个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Button、Icon、Tabbar 与共享 Section 组合“快速开始 / 让你的 AI 懂得用它”两个分区。它通过 `wx.cloud.Cloud({ resourceAppid, resourceEnv })` 从共享资源 AppID `wxa1b9a4d6549c6cd1`、环境 `poemcoder-1gkbkid139b08f45` 的 `pui-codepage` 集合读取公开 Page 与 Skill；不能误接 PoemUI 自建云环境，也不能以本地 fallback 把云端失败包装成成功。快速开始展示 `npm i poemui-miniprogram@0.1.0 -S --production`、完整公共 npm 地址和最小页面引用；Skill 展示固定 `v0.1.0` GitHub 安装代码。两类代码均由共享 `code-snippet` 组合 PUI Card、Icon 与圆形文字 Button 完成真实复制，只有代码横向阅读使用原生 `scroll-view`；加载失败必须进入可重试错误态。
 
 `pages/me/index` 是第四个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Avatar、Input、Button、Cell/CellGroup、Toast 与 Tabbar；昵称通过唯一 `user-profile` Store 本地持久化，Store 只读写昵称，不再读取、缓存或复制 OpenID。隐私协议调用 `wx.openPrivacyContract`，关于诗上调用 `wx.navigateToMiniProgram` 打开正式版 `wxa1b9a4d6549c6cd1`。授权与订单尚无后端合同，因此只显示明确未开放反馈，不伪造支付、订单数据或路由。完整合同见 `docs/MINIPROGRAM_ME_PAGE.md`。
 
@@ -50,7 +50,7 @@ ScrollArea 与 BackTop 继续共同消费页面持有的唯一 `scrollTop`：真
 - 首页搜索保留受控 `pui-overlay`；首页与所有当前基础组件独立页的外观菜单都使用受控 `pui-popup`。首页打开任一入口会关闭另一个：搜索点击遮罩空白区关闭，外观 Popup 通过 `visible-change` 接收遮罩点击或自身关闭按钮的真实关闭请求。
 - 外观 Popup 使用 `placement="bottom" + card=true + show-header + blur-overlay + prevent-scroll-through`；Card 形态只由 Popup 本身提供，内部不再嵌套第二张 Card。默认 Header 右侧关闭按钮常驻，左侧是 `theme="primary"` 的 `pui-button` `refresh` 纯图标重置按钮，恢复默认外观且不重复传入与 Slot 同名的 `close-btn` 属性。
 - 外观控制统一使用共享 `miniprogram/components/appearance-settings`（内部组合 `pui-cell-group + pui-cell + pui-switch`），首页与详情页不再重复维护外观 WXML。边框、阴影、毛玻璃、大圆角、间距相等与深色直接写入 npm 入口的 `visualConfig` Store；每个页面根的 `use-global-config` Provider 订阅同一配置，因此不会维护页面私有的组件视觉状态。`visualConfig` 首次读取不到 `poemui-visual-config` 时使用公开默认配置，旧存储缺少 `equalSpacing` 时回退 `false`，后续每次写入和重置都会回写微信本地存储。
-- “果味”不是独立保存字段：它由 `effectsEnabled + shadow + frostedGlass + largeRadius + bordered + 页面渐变` 的真实当前值推导，`equalSpacing` 不参与果味组合。开启写入 H5 同源的组合（阴影/毛玻璃/大圆角开、边框/渐变关），关闭恢复标准组合，深色主题与等距选择保持不变。
+- “果味”不是独立保存字段：它由 `effectsEnabled + shadow + frostedGlass + largeRadius + bordered + 页面渐变` 的真实当前值推导，`equalSpacing` 不参与果味组合。开启写入 H5 同源的组合（阴影/毛玻璃/大圆角开、边框/渐变关），关闭恢复标准组合，深色主题与等距选择保持不变。`effectsEnabled` 只保留为 Store/API 与预设内部字段，不在外观 Popup 中显示；旧的暂停状态在共享 `appearance-settings` 初始化时恢复为开启并保留三个单项。
 - 渐变明确不进入 `visualConfig` 或 ConfigProvider；全局开关由 `miniprogram/common/utils/page-background-preference.js` 持久化并作用首页与 Icon 页的页面背景，首次无存储时默认关闭。重置外观会同时写入 `gradient=false`，使用 `--pui-bg-page / --pui-bg-muted` 中性 Token；独立 `pui-bg-gradient-*` 不污染任何 PUI Component Surface。
 
 ## 早期组件独立页记录（历史）

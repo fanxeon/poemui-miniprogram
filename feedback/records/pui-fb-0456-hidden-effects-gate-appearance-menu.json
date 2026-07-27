@@ -1,0 +1,126 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0456",
+  "title": "用户外观菜单不应暴露含糊的总效果闸门",
+  "scope": "global",
+  "components": ["config-provider", "miniprogram", "preview-site", "switch"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "删除外观设置中含糊且重复的视觉效果总开关，同时保留开发者 API、预设与旧偏好兼容。",
+  "environment": {
+    "surfaces": ["miniprogram appearance popup", "h5 appearance menu"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开小程序或 H5 的外观设置。",
+    "视觉效果 Switch 与阴影、毛玻璃、大圆角三个独立 Switch 重复，且暂停文案与开启状态方向相反。",
+    "若只隐藏总开关，旧 effectsEnabled=false 会继续禁用三个可见 Switch，用户无法恢复。"
+  ],
+  "expected": "用户菜单只显示七个直接外观选项；effectsEnabled 保留为开发者 API 和预设内部字段；旧暂停状态恢复为开启且不丢失三个单项。",
+  "actual": "小程序和 H5 已移除总效果 Switch及其禁用逻辑；外观 UI 归一化旧暂停状态，公共 visualConfig、ConfigProvider 和 setEffectsEnabled 保持不变。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前任务对话",
+      "note": "用户确认从外观设置移除暂停视觉效果入口。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/components/appearance-settings/appearance-settings.wxml",
+      "note": "小程序菜单只保留七个直接外观 Switch。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 菜单删除 effectsEnabled 定义并迁移旧暂停偏好。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-appearance-settings.js",
+      "note": "锁定小程序入口移除、旧状态迁移和三个单项保留。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-appearance-menu.js",
+      "note": "锁定 H5 七项菜单和不可达暂停状态清理。"
+    },
+    {
+      "kind": "browser",
+      "ref": "/tmp/poemui-appearance-seven-options-390.png",
+      "note": "微信开发者工具热重载后的 390px 首页外观 Popup 显示果味与七个直接设置，不再显示视觉效果总开关。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179",
+      "note": "H5 390x844 运行态确认七项菜单、独立阴影切换、视口边界和控制台。"
+    }
+  ],
+  "rootCause": "总闸门作为 Store 能力加入后被直接暴露为普通用户选项，既重复三个单项，又让开启开关与暂停描述形成语义冲突。",
+  "decision": {
+    "outcome": "小程序与 H5 用户菜单隐藏 effectsEnabled；旧 false 在外观 UI 初始化时迁移为 true 并保留 shadow/frost/radius；公共 Store/API、Provider 和预设继续支持该字段。",
+    "rationale": "普通用户直接控制可见效果更清晰；开发者仍可在不使用示例外观菜单时通过 API 一次暂停三项，既不破坏公共合同也不留下不可恢复状态。",
+    "alternativesRejected": [
+      "只改文案：仍保留与三个单项重复的控制层。",
+      "只隐藏 Switch：旧暂停状态会锁死三个可见选项。",
+      "删除 effectsEnabled 字段和 API：会破坏公共 Store、旧存储和消费者代码。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/components/appearance-settings/appearance-settings.wxml",
+      "miniprogram/components/appearance-settings/appearance-settings.js",
+      "preview/app.js",
+      "scripts/test-appearance-settings.js",
+      "scripts/test-preview-appearance-menu.js",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/components/CONFIG-PROVIDER.md"
+    ],
+    "dependencies": ["visualConfig", "ConfigProvider", "PUI Switch", "preview preferences"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-appearance-settings.js",
+      "scripts/test-preview-appearance-menu.js",
+      "scripts/test-config-provider.js",
+      "scripts/test-preview-fruit-flavor-preset.js",
+      "scripts/test-miniprogram-component-pages.js"
+    ],
+    "commands": [
+      "node scripts/test-appearance-settings.js：通过。",
+      "node scripts/test-preview-appearance-menu.js：通过。",
+      "node scripts/test-config-provider.js：通过。",
+      "node scripts/test-preview-fruit-flavor-preset.js：通过。",
+      "node scripts/test-miniprogram-component-pages.js：通过。",
+      "npm run site:build：通过，生成 438 条 Ledger、562 个样式工具、220 个图标、71 个组件目录与 5 份 catalog 产物。",
+      "npm run pack:check：通过，545 个发布文件进入 npm dry-run 清单。",
+      "npm run example:install：通过，0.1.0 tarball 已安装到 _example。",
+      "npm run check：通过；同时将 miniprogram/package.json 发布前 file:.. 旧断言更新为公共固定版 0.1.0 合同。"
+    ],
+    "browser": [
+      "Chrome 390x844：外观 dialog 为 264x413，边界 left=99/right=363/top=60/bottom=473，完整落在视口内；effectsEnabled 行为 0，七个可见 key 为 border/shadow/frost/radius/gradient/equalSpacing/theme，无 disabled Switch，控制台无 error/warn。",
+      "Chrome 390x844：阴影 Switch aria-checked 可由 false 切到 true 并恢复 false，证明删除总闸门后独立设置仍可操作。",
+      "微信开发者工具热重载：pages/index/index 的 appearancePopupVisible 可正常打开；390px 截图显示果味与七个直接设置，未重启或关闭开发者工具。"
+    ],
+    "deviceRisks": [
+      "H5 首项焦点恢复和真实刷新后的旧存储迁移由契约测试覆盖，尚未在浏览器通过注入旧 localStorage 做破坏性复核。",
+      "小程序跨页面恢复及 iOS/Android 真机仍需验证；当前仅完成微信开发者工具 390px 热重载验收。"
+    ]
+  },
+  "ai": {
+    "summary": "用户外观菜单只显示直接可理解的七项；effectsEnabled 仅作为开发者 API 和预设内部闸门。",
+    "rules": [
+      "不得在小程序或 H5 用户外观菜单重新渲染 effectsEnabled Switch。",
+      "隐藏总闸门时必须迁移旧 false，不能让阴影、毛玻璃和大圆角失去恢复入口。",
+      "不得删除 visualConfig.effectsEnabled、setEffectsEnabled、ConfigProvider 有效值或预设兼容。"
+    ],
+    "tags": ["appearance", "effects-enabled", "visual-config", "miniprogram", "h5", "migration"]
+  }
+}

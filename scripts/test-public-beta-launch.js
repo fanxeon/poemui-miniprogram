@@ -16,6 +16,7 @@ const packageJson = JSON.parse(read('package.json'));
 assert(previewHtml.includes('href="#/guide">快速开始</a>'), '官网一级入口必须显示快速开始');
 assert(previewApp.includes('公共 npm 与 GitHub 已发布'), '快速开始必须展示真实公共发布状态');
 assert(previewApp.includes('npm i poemui-miniprogram@0.1.0 -S --production'), '快速开始必须提供固定版本 npm 安装');
+assert(previewApp.includes('https://www.npmjs.com/package/poemui-miniprogram'), '快速开始必须完整展示公共 npm 地址');
 assert(previewApp.includes('github.com/fanxeon/poemui-miniprogram'), '快速开始必须指向公开 GitHub 真相源');
 assert(previewApp.includes("demoAction: 'copy-guide-code'") && previewApp.includes('[data-demo-action="copy-guide-code"]'), '可用页面代码必须使用共享 PUI 复制入口和真实剪贴板结果');
 assert(previewApp.includes("if (type === 'copy-guide-code') return;"), '快速开始复制按钮不得被通用预览分发重绘掉反馈状态');

@@ -1235,7 +1235,7 @@ window.POEMUI_COMPONENT_DATA = {
   "details": {
     "getting-started": {
       "desc": "从安装、微信构建到 AI Skill 的 PoemUI 受限 Beta 接入路径。",
-      "path": "poemui-miniprogram@0.1.0 · npm 尚未发布",
+      "path": "https://www.npmjs.com/package/poemui-miniprogram",
       "states": "发布状态、安装、构建 npm、按需引用、主题配置、AI Skill、许可证",
       "props": []
     },

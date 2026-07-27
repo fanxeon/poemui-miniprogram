@@ -34,9 +34,15 @@ assert(mount.includes('aria-hidden="true"'));
 assert(mount.includes('inert'));
 assert(!mount.includes('<button'), 'appearance infrastructure must not handwrite Button or Switch platform roots');
 
-for (const preference of ['effectsEnabled', 'border', 'shadow', 'frost', 'radius', 'gradient', 'theme']) {
+for (const preference of ['border', 'shadow', 'frost', 'radius', 'gradient', 'equalSpacing', 'theme']) {
   assert(app.includes(`key: '${preference}'`), `${preference} must remain in the shared appearance menu`);
 }
+const preferenceDefinitions = app.slice(app.indexOf('const previewPreferenceDefinitions = ['), app.indexOf('function previewPreferenceChecked'));
+assert(!preferenceDefinitions.includes('effectsEnabled'), 'effectsEnabled must remain an internal preference and not render in the appearance menu');
+const normalizePreferences = functionBlock('normalizePreviewPreferences');
+assert(normalizePreferences.includes('effectsEnabled: true'), 'old H5 paused preferences must migrate to an enabled hidden gate');
+assert(!normalizePreferences.includes('source.effectsEnabled'), 'the hidden H5 gate must not restore an unreachable paused state');
+assert(!mount.includes("['shadow', 'frost', 'radius'].includes(item.key)"), 'visible switches must not be disabled by the hidden gate');
 
 const sync = functionBlock('syncAppearanceMenu');
 assert(sync.includes("root.classList.toggle('is-open', state.appearanceMenuOpen)"));
