@@ -1,5 +1,5 @@
 <pui-config-provider class="component-config-provider" use-global-config>
-  <view class="component-page {{canvasGradientEnabled ? 'component-page--gradient' : ''}}">
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
     <view id="component-navbar" class="component-page__navbar">
       <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
     </view>
@@ -14,12 +14,11 @@
         aria-label="Icon 图标目录"
       >
         <view class="component-page__content">
-          <view class="component-page__icon-library">
-            <view class="component-page__icon-intro">
-              <text class="component-page__icon-intro-title">图标资源</text>
-              <text class="component-page__icon-intro-description">共 {{iconCatalog.length}} 个图标，按分类浏览；可搜索图标名称或分类。</text>
-            </view>
-
+          <component-page-section
+            title="图标资源"
+            subtitle="PoemUI Roundline"
+            description="共 {{iconCatalog.length}} 个图标，按分类浏览；可搜索图标名称或分类。"
+          >
             <view class="component-page__icon-search-row">
               <pui-search
                 class="component-page__icon-search-host"
@@ -34,13 +33,15 @@
                 bind:search="onIconSearchChange"
               />
             </view>
+          </component-page-section>
 
-            <block wx:for="{{visibleIconGroups}}" wx:for-item="group" wx:key="key">
-              <view class="component-page__icon-group">
-                <view class="component-page__icon-group-header">
-                  <text class="component-page__icon-group-title">{{group.label}}</text>
-                  <text class="component-page__icon-group-description">{{group.description}} · {{group.count}} 个</text>
-                </view>
+          <block wx:for="{{visibleIconGroups}}" wx:for-item="group" wx:key="key">
+            <component-page-section
+              title="{{group.label}}"
+              subtitle="{{group.description}}"
+              description="{{group.count}} 个可用图标"
+              spacing="regular"
+            >
                 <view class="component-page__icon-grid" aria-label="{{group.label}}图标">
                   <block wx:for="{{group.icons}}" wx:for-item="icon" wx:key="name">
                     <view class="component-page__icon-grid-item">
@@ -49,11 +50,10 @@
                     </view>
                   </block>
                 </view>
-              </view>
-            </block>
+            </component-page-section>
+          </block>
 
-            <text wx:if="{{!visibleIconGroups.length}}" class="component-page__empty">没有匹配的图标</text>
-          </view>
+          <text wx:if="{{!visibleIconGroups.length}}" class="component-page__empty">没有匹配的图标</text>
         </view>
       </pui-scroll-area>
     </view>

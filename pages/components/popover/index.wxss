@@ -1,0 +1,17 @@
+@import "../../../styles/component-page.wxss";
+
+.popover-page__reference {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+}
+
+.overlay-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pui-content-gap);
+  width: 100%;
+  min-width: 0;
+}

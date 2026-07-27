@@ -1,5 +1,5 @@
 var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
-var canvasPreference = require('../../common/utils/home-canvas-preference');
+var backgroundPreference = require('../../common/utils/page-background-preference');
 
 function currentVisualConfig() {
   return visualConfig.get();
@@ -26,24 +26,24 @@ Component({
     navbarRightBtn: { icon: 'menu', ariaLabel: '打开外观设置' },
     appearancePopupVisible: false,
     visualConfig: currentVisualConfig(),
-    canvasGradientEnabled: canvasPreference.get(),
-    fruitFlavorEnabled: isFruitFlavor(currentVisualConfig(), canvasPreference.get())
+    backgroundGradientEnabled: backgroundPreference.get(),
+    fruitFlavorEnabled: isFruitFlavor(currentVisualConfig(), backgroundPreference.get())
   },
   lifetimes: {
     attached: function attached() {
       var self = this;
       visualConfig.restore();
-      canvasPreference.restore();
+      backgroundPreference.restore();
       this._unsubscribeVisualConfig = visualConfig.subscribe(function onVisualConfigChange(nextConfig) {
-        self.syncAppearanceState(nextConfig, canvasPreference.get());
+        self.syncAppearanceState(nextConfig, backgroundPreference.get());
       });
-      this._unsubscribeCanvasPreference = canvasPreference.subscribe(function onCanvasPreferenceChange(gradientEnabled) {
+      this._unsubscribeBackgroundPreference = backgroundPreference.subscribe(function onBackgroundPreferenceChange(gradientEnabled) {
         self.syncAppearanceState(visualConfig.get(), gradientEnabled);
       });
     },
     detached: function detached() {
       if (this._unsubscribeVisualConfig) this._unsubscribeVisualConfig();
-      if (this._unsubscribeCanvasPreference) this._unsubscribeCanvasPreference();
+      if (this._unsubscribeBackgroundPreference) this._unsubscribeBackgroundPreference();
     }
   },
   methods: {
@@ -72,15 +72,15 @@ Component({
       if (!Object.keys(patch).length) return;
       visualConfig.set(patch, { source: 'miniprogram-component-page:appearance:' + setting });
     },
-    onCanvasGradientChange: function onCanvasGradientChange(event) {
-      canvasPreference.set(Boolean(event && event.detail && event.detail.checked), {
+    onBackgroundGradientChange: function onBackgroundGradientChange(event) {
+      backgroundPreference.set(Boolean(event && event.detail && event.detail.checked), {
         source: 'miniprogram-component-page:gradient'
       });
     },
     onFruitFlavorChange: function onFruitFlavorChange(event) {
       var enabled = Boolean(event && event.detail && event.detail.checked);
       var source = enabled ? 'miniprogram-component-page:fruit' : 'miniprogram-component-page:standard';
-      canvasPreference.set(false, { source: source });
+      backgroundPreference.set(false, { source: source });
       visualConfig.set(enabled ? {
         effectsEnabled: true,
         shadow: true,
@@ -89,14 +89,14 @@ Component({
         bordered: false
       } : {
         effectsEnabled: true,
-        shadow: false,
+        shadow: true,
         frostedGlass: false,
-        largeRadius: false,
-        bordered: true
+        largeRadius: true,
+        bordered: false
       }, { source: source });
     },
     onResetAppearance: function onResetAppearance() {
-      canvasPreference.set(false, { source: 'miniprogram-component-page:appearance-reset' });
+      backgroundPreference.set(false, { source: 'miniprogram-component-page:appearance-reset' });
       visualConfig.reset({ source: 'miniprogram-component-page:appearance-reset' });
     },
     syncAppearanceState: function syncAppearanceState(nextVisualConfig, gradientEnabled) {
@@ -104,7 +104,7 @@ Component({
       var gradient = Boolean(gradientEnabled);
       this.setData({
         visualConfig: config,
-        canvasGradientEnabled: gradient,
+        backgroundGradientEnabled: gradient,
         fruitFlavorEnabled: isFruitFlavor(config, gradient)
       });
     }

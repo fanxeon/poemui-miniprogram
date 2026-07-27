@@ -1,0 +1,19 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};"><pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay><view class="component-page__content">
+      <component-page-section title="填写组件名称" subtitle="核心示例" description="标签、输入框、帮助文字和错误提示组成一个完整字段。">
+        <pui-field name="componentName" label="组件名称" required status="{{fieldStatus}}" message="{{fieldMessage}}" help="至少输入 3 个字符。">
+          <pui-input value="{{fieldValue}}" placeholder="例如 Tabs" bordered="{{false}}" clearable aria-label="组件名称" bind:change="onFieldValueChange" />
+        </pui-field>
+        <text class="component-page__status" aria-live="polite">{{fieldSummary}}</text>
+      </component-page-section>
+      <component-page-section title="区分帮助与错误" subtitle="重要反馈" description="帮助文字长期可见；只有内容不合要求时才显示错误。">
+        <view class="component-page__stack">
+          <pui-field label="版本说明" help="这段内容会展示给使用者。"><pui-input value="首个稳定版本" bordered="{{false}}" readonly /></pui-field>
+          <pui-field label="组件简称" status="error" message="简称不能只有一个字母"><pui-input value="P" bordered="{{false}}" status="error" readonly /></pui-field>
+        </view>
+      </component-page-section>
+    </view></pui-scroll-area></view>
+  </view>
+</pui-config-provider>

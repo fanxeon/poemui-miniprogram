@@ -1,0 +1,20 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Empty 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="还没有收藏" subtitle="首次使用的空内容" description="说明当前为什么为空，并为后续内容留出清晰的视觉中心。">
+            <pui-empty title="还没有收藏" description="浏览组件时，点击收藏即可在这里快速找到。" icon="inbox" />
+          </component-page-section>
+          <component-page-section title="没有搜索结果" subtitle="给出可恢复的下一步" description="筛选导致内容为空时，直接提供清除条件的操作。">
+            <pui-empty title="没有找到组件" description="试试减少筛选条件，或换一个关键词。" icon="search">
+              <pui-button slot="action" content="清除筛选" theme="primary" bind:click="onClearFilter" />
+            </pui-empty>
+            <text class="component-page__status" aria-live="polite">{{emptyStatus}}</text>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

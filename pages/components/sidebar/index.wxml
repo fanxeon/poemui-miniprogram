@@ -1,0 +1,25 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="SideBar 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="浏览组件分类" subtitle="核心示例" description="左侧切换分类，右侧同步展示该分类的用途和代表组件。">
+            <view class="navigation-page__columns">
+              <pui-sidebar class="navigation-page__sidebar" items="{{sidebarItems}}" value="{{sidebarValue}}" width="280" height="520" show-icon="{{true}}" show-description="{{true}}" show-badge="{{true}}" aria-label="组件分类导航" bind:change="onSidebarChange" />
+              <view class="navigation-page__panel">
+                <text class="navigation-page__sidebar-title">{{sidebarCurrent.title}}</text>
+                <text class="navigation-page__sidebar-copy">{{sidebarCurrent.description}}</text>
+                <text class="navigation-page__sidebar-copy">{{sidebarCurrent.examples}}</text>
+              </view>
+            </view>
+            <text class="navigation-page__status" aria-live="polite">{{sidebarStatus}}</text>
+          </component-page-section>
+          <component-page-section title="查看固定分类" subtitle="只读状态" description="当前分类仍清楚可见，但权限受限时不会响应切换。">
+            <pui-sidebar items="{{sidebarItems}}" value="navigation" readonly="{{true}}" height="360" show-icon="{{true}}" show-description="{{true}}" show-badge="{{true}}" aria-label="只读组件分类导航" />
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

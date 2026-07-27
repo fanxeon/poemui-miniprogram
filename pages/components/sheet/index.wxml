@@ -1,0 +1,35 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Sheet 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="基础用法" subtitle="底部面板" description="Sheet 适合承载连续任务内容，并支持真实拖拽关闭。">
+            <pui-button content="打开底部面板" theme="primary" block bind:click="onOpenSheet" />
+            <text class="component-page__status" aria-live="polite">{{lastAction}}</text>
+          </component-page-section>
+          <component-page-section title="内容状态" subtitle="消费者组合" description="加载、错误与空态由 Sheet 的真实状态 API 承担，业务操作仍由 Slot 组合。">
+            <pui-cell-group aria-label="Sheet 内容状态">
+              <pui-cell title="拖拽关闭" description="默认保留拖拽柄和底部面板手势" left-icon="rows" />
+              <pui-cell title="内容滚动" description="面板内部 Content 是唯一滚动区域" left-icon="panel-bottom" />
+            </pui-cell-group>
+          </component-page-section>
+          <component-page-section title="三段结构" subtitle="Header / Body / Footer" description="标题、任务内容与主要操作保持清晰分区。">
+            <pui-cell-group aria-label="Sheet 三段结构">
+              <pui-cell title="Header" description="标题与关闭入口" left-icon="layers" />
+              <pui-cell title="Body" description="默认 Slot 承载任务内容" left-icon="file-text" />
+              <pui-cell title="Footer" description="主要 Button 由调用方组合" left-icon="check" />
+            </pui-cell-group>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+    <pui-sheet visible="{{sheetVisible}}" title="Sheet 示例" description="可拖拽关闭的底部面板" show-header show-close show-handle draggable show-footer custom-footer close-on-overlay-click bind:change="onSheetChange" aria-label="Sheet 示例面板">
+      <pui-cell-group aria-label="Sheet 内容">
+        <pui-cell title="任务内容" description="这里是 Sheet 的默认内容区域" left-icon="file-text" />
+        <pui-cell title="关联资源" description="内容可以继续组合 PUI Cell 与表单组件" left-icon="folder" />
+      </pui-cell-group>
+      <pui-button slot="footer" block theme="primary" content="关闭示例" bind:click="onSheetFooterAction" />
+    </pui-sheet>
+  </view>
+</pui-config-provider>

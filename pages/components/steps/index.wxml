@@ -1,0 +1,26 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Steps 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="完成组件发布流程" subtitle="核心示例" description="清楚展示当前阶段、已完成阶段和接下来的步骤。">
+            <pui-steps items="{{stepItems}}" current="{{stepValue}}" layout="horizontal" theme="default" aria-label="发布流程" bind:change="onStepsChange" />
+            <text class="navigation-page__status" aria-live="polite">{{stepStatus}}</text>
+            <view class="navigation-page__controls">
+              <pui-button block content="上一步" variant="outline" bind:click="onPreviousStep" />
+              <pui-button block content="下一步" theme="primary" bind:click="onNextStep" />
+            </view>
+          </component-page-section>
+          <component-page-section title="阅读说明较长的流程" subtitle="纵向布局" description="纵向排列为每一步保留更多文字空间，也能明确展示完成与错误状态。">
+            <pui-steps items="{{stepItems}}" default-current="confirm" layout="vertical" theme="default" aria-label="纵向发布流程" />
+            <pui-steps items="{{stepItems}}" default-current="done" current-status="finish" layout="horizontal" theme="default" aria-label="已完成发布流程" />
+          </component-page-section>
+          <component-page-section title="展示暂不可操作的流程" subtitle="禁用状态" description="流程仍保持可读，但不会响应步骤切换。">
+            <pui-steps items="{{stepItems}}" default-current="info" layout="horizontal" disabled aria-label="禁用发布流程" />
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

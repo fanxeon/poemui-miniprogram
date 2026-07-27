@@ -1,0 +1,21 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Loading 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="准备页面内容" subtitle="短暂等待时给出明确反馈" description="让用户知道任务仍在继续，同时不提前承诺结果。">
+            <pui-loading loading="{{loadingVisible}}" text="正在准备组件目录" />
+            <pui-button content="{{loadingVisible ? '暂时隐藏' : '再次显示'}}" theme="primary" block bind:click="onToggleLoading" />
+          </component-page-section>
+          <component-page-section title="不同等待任务" subtitle="按信息密度选择呈现方式" description="短任务可以紧凑显示，明确知道百分比时可同时给出进度。">
+            <view class="component-page__stack">
+              <pui-loading loading text="正在同步资源" theme="dots" layout="vertical" />
+              <pui-loading loading text="资源已下载 68%" progress="68" theme="spinner" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

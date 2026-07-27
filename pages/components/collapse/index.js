@@ -1,0 +1,3 @@
+var createComponentPage = require('../../../utils/component-page');
+var PANELS = [{ title: '如何安装 Poem UI？', value: 'install', content: '通过 npm 安装后，在开发者工具中构建 npm。' }, { title: '是否支持深色模式？', value: 'theme', content: '组件会跟随全局主题，也支持页面局部覆盖。' }, { title: '示例可以直接复制吗？', value: 'copy', content: '示例只输出当前需要的属性，便于按需组合。' }];
+Page(createComponentPage({ title: 'Collapse', data: { collapseItems: PANELS, collapseValue: ['install'], collapseStatus: '当前展开 1 个答案。' }, methods: { onCollapseChange: function (event) { var value = event && event.detail ? event.detail.value : []; this.setData({ collapseValue: value, collapseStatus: '当前展开 ' + value.length + ' 个答案。' }); } }}));

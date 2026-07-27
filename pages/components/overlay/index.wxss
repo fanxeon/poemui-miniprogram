@@ -1,0 +1,12 @@
+@import "../../../styles/component-page.wxss";
+
+.overlay-page__greeting {
+  position: absolute;
+  top: 50%;
+  right: var(--pui-panel-padding);
+  left: var(--pui-panel-padding);
+  box-sizing: border-box;
+  color: var(--pui-text-on-inverse);
+  text-align: center;
+  transform: translateY(-50%);
+}

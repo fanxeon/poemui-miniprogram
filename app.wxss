@@ -1,6 +1,8 @@
 @import "miniprogram_npm/poemui-miniprogram/theme/utilities.wxss";
 
 page {
+  height: 100vh;
   min-height: 100%;
+  overflow: hidden;
   background: var(--pui-bg-page);
 }

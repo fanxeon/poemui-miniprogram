@@ -1,27 +1,89 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/styles/index",
+    "pages/codex/index",
+    "pages/me/index",
     "pages/components/button/index",
     "pages/components/divider/index",
-    "pages/components/icon/index"
+    "pages/components/icon/index",
+    "pages/components/aspect-ratio/index",
+    "pages/components/direction/index",
+    "pages/components/grid/index",
+    "pages/components/scroll-area/index",
+    "pages/components/sticky/index",
+    "pages/components/navbar/index",
+    "pages/components/navigation-menu/index",
+    "pages/components/tabs/index",
+    "pages/components/breadcrumb/index",
+    "pages/components/tabbar/index",
+    "pages/components/steps/index",
+    "pages/components/back-top/index",
+    "pages/components/indexes/index",
+    "pages/components/sidebar/index",
+    "pages/components/alert/index",
+    "pages/components/empty/index",
+    "pages/components/loading/index",
+    "pages/components/notice-bar/index",
+    "pages/components/progress/index",
+    "pages/components/result/index",
+    "pages/components/skeleton/index",
+    "pages/components/toast/index",
+    "pages/components/dialog/index",
+    "pages/components/popup/index",
+    "pages/components/popover/index",
+    "pages/components/sheet/index",
+    "pages/components/action-sheet/index",
+    "pages/components/dropdown-menu/index",
+    "pages/components/overlay/index"
+    ,"pages/components/pull-refresh/index"
+    ,"pages/components/virtual-list/index"
+    ,"pages/components/watermark/index"
+    ,"pages/components/avatar/index"
+    ,"pages/components/badge/index"
+    ,"pages/components/card/index"
+    ,"pages/components/image/index"
+    ,"pages/components/tag/index"
+    ,"pages/components/cell/index"
+    ,"pages/components/list/index"
+    ,"pages/components/collapse/index"
+    ,"pages/components/collapsible/index"
+    ,"pages/components/bubble/index"
+    ,"pages/components/swipe-cell/index"
+    ,"pages/components/count-down/index"
+    ,"pages/components/swiper/index"
+    ,"pages/components/table/index"
+    ,"pages/components/form/index"
+    ,"pages/components/field/index"
+    ,"pages/components/label/index"
+    ,"pages/components/input/index"
+    ,"pages/components/input-otp/index"
+    ,"pages/components/textarea/index"
+    ,"pages/components/search/index"
+    ,"pages/components/checkbox/index"
+    ,"pages/components/radio/index"
+    ,"pages/components/switch/index"
+    ,"pages/components/select/index"
+    ,"pages/components/picker/index"
+    ,"pages/components/combobox/index"
+    ,"pages/components/slider/index"
+    ,"pages/components/stepper/index"
+    ,"pages/components/rate/index"
+    ,"pages/components/calendar/index"
+    ,"pages/components/date-time-picker/index"
+    ,"pages/components/upload/index"
+    ,"pages/components/config-provider/index"
+    ,"pages/guides/getting-started/index"
+    ,"pages/guides/theme-tokens/index"
+    ,"pages/guides/color/index"
+    ,"pages/guides/spacing/index"
+    ,"pages/guides/typography/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
     "navigationStyle": "custom"
   },
   "style": "v2",
-  "renderer": "skyline",
-  "rendererOptions": {
-    "skyline": {
-      "defaultDisplayBlock": true,
-      "defaultContentBox": true,
-      "tagNameStyleIsolation": "legacy",
-      "disableABTest": true,
-      "sdkVersionBegin": "3.0.0",
-      "sdkVersionEnd": "15.255.255"
-    }
-  },
-  "componentFramework": "glass-easel",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"
 }

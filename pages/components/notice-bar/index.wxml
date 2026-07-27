@@ -1,0 +1,22 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="NoticeBar 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="服务更新公告" subtitle="不打断当前任务" description="适合在页面顶部持续展示需要用户知道、但无需立即处理的信息。">
+            <pui-notice-bar visible="{{noticeVisible}}" content="组件目录已更新，收藏和最近浏览不会受影响。" operation="关闭" bind:click="onNoticeClick" />
+            <pui-button wx:if="{{!noticeVisible}}" content="重新显示公告" theme="primary" block bind:click="onReopenNotice" />
+            <text class="component-page__status" aria-live="polite">{{noticeStatus}}</text>
+          </component-page-section>
+          <component-page-section title="多条动态与注意事项" subtitle="按优先级组织消息" description="轮播适合简短动态，需确认的事项应使用更醒目的提醒颜色。">
+            <view class="component-page__stack">
+              <pui-notice-bar direction="vertical" content="{{verticalNotices}}" />
+              <pui-notice-bar theme="warning" content="发布前请确认公开范围和封面图片。" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

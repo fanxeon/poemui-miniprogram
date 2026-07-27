@@ -1,0 +1,14 @@
+.appearance-settings,
+.appearance-settings__group {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.appearance-settings__group .pui-cell-group__content {
+  gap: var(--pui-space-sm);
+}
+
+.pui-spacing--equal .appearance-settings__group .pui-cell-group__content {
+  gap: var(--pui-surface-inset);
+}

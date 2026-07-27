@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "pui-card": "poemui-miniprogram/card/card",
+    "pui-button": "poemui-miniprogram/button/button",
+    "pui-icon": "poemui-miniprogram/icon/icon"
+  }
+}

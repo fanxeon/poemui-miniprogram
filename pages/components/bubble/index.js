@@ -1,0 +1,2 @@
+var createComponentPage = require('../../../utils/component-page');
+Page(createComponentPage({ title: 'Bubble', data: { bubbleExpanded: false, bubbleReactions: [{ label: '有帮助', value: 'helpful', count: 2 }], bubbleStatus: '长消息当前收起。' }, methods: { onBubbleChange: function (event) { var expanded = Boolean(event && event.detail && event.detail.expanded); this.setData({ bubbleExpanded: expanded, bubbleStatus: expanded ? '长消息已展开。' : '长消息已收起。' }); }, onBubbleReaction: function () { this.setData({ bubbleStatus: '已标记这条回复有帮助。' }); } }}));

@@ -1,0 +1,22 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Toast 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="保存反馈" subtitle="短暂且不打断操作" description="适合告知刚刚发生的结果，提示会自动收起，用户可以继续当前任务。">
+            <pui-button content="保存草稿" theme="primary" block aria-label="保存草稿" data-theme="" bind:click="onShowToast" />
+            <text class="component-page__status" aria-live="polite">{{toastStatus}}</text>
+          </component-page-section>
+          <component-page-section title="处理中与已完成" subtitle="不同阶段使用不同提示" description="正在执行时不给出成功暗示，只有任务真正完成后才展示成功样式。">
+            <view class="component-page__stack">
+              <pui-button content="模拟正在保存" variant="outline" aria-label="模拟正在保存" data-theme="loading" bind:click="onShowToast" />
+              <pui-button content="模拟保存完成" variant="outline" aria-label="模拟保存完成" data-theme="success" bind:click="onShowToast" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+    <pui-toast id="feedback-toast" bind:close="onToastClose" />
+  </view>
+</pui-config-provider>

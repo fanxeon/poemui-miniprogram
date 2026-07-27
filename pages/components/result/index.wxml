@@ -1,0 +1,19 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Result 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="发布完成" subtitle="清晰呈现最终结果" description="任务结束后集中表达结果，让用户一眼确认当前状态。">
+            <pui-result theme="success" title="发布成功" description="新版本已经上线，访问链接保持不变。" />
+          </component-page-section>
+          <component-page-section title="仍需处理" subtitle="结果后紧接下一步" description="结果组件负责说明现状，页面可以继续提供明确的后续操作。">
+            <pui-result theme="warning" title="还有一项待确认" description="封面图片尚未选择，暂时不能公开分享。" />
+            <pui-button content="返回组件目录" theme="primary" block bind:click="onReturnCatalog" />
+            <text class="component-page__status" aria-live="polite">{{resultStatus}}</text>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

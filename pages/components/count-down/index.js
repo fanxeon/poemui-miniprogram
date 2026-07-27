@@ -1,0 +1,2 @@
+var createComponentPage = require('../../../utils/component-page');
+Page(createComponentPage({ title: 'CountDown', data: { countPaused: true, countStatus: '倒计时处于暂停状态。' }, methods: { onToggleCountDown: function () { var paused = !this.data.countPaused; this.setData({ countPaused: paused, countStatus: paused ? '倒计时已暂停。' : '倒计时已经开始。' }); }, onCountFinish: function () { this.setData({ countPaused: true, countStatus: '等待时间已经结束，可以重新获取验证码。' }); } }}));

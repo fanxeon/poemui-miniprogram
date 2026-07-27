@@ -1,0 +1,29 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="Stepper 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="调整组件数量" subtitle="核心示例" description="使用加减按钮逐个调整，达到 0 或 5 时不再越界。">
+            <view class="component-page__inline component-page__inline--center">
+              <pui-stepper value="{{stepperValue}}" min="0" max="5" step="1" theme="outline" aria-label="组件数量" bind:change="onStepperChange" bind:overlimit="onStepperOverlimit" />
+            </view>
+            <text class="component-page__status" aria-live="polite">{{stepperStatus}}</text>
+          </component-page-section>
+          <component-page-section title="限制直接输入" subtitle="关键边界" description="只允许通过按钮调整时可锁定输入框；禁用状态会阻止全部操作。">
+            <view class="component-page__stack">
+              <view class="component-page__inline component-page__inline--center">
+                <pui-stepper value="3" min="0" max="5" disable-input aria-label="只能使用按钮调整的数量" />
+              </view>
+              <view class="component-page__inline component-page__inline--center">
+                <pui-stepper value="5" min="0" max="5" disabled aria-label="禁用的数量" />
+              </view>
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

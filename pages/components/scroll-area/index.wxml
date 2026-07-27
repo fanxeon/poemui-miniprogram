@@ -1,0 +1,30 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area
+        wx:if="{{layoutReady}}"
+        class="component-page__scroll-area"
+        height="{{scrollAreaHeight}}"
+        gradient-overlay="{{areaGradientOverlay}}"
+        gradient-overlay-size="{{areaGradientOverlaySize}}"
+        aria-label="可滚动的组件更新记录"
+        bind:scroll="onAreaScroll"
+      >
+        <view class="component-page__content">
+          <view class="component-page__stack">
+            <pui-cell title="渐变遮罩" description="开启后，滚动边缘会提示还有内容。">
+              <pui-switch id="scroll-area-overlay-switch" slot="right" value="{{areaGradientOverlay}}" aria-label="渐变遮罩" bind:change="onAreaGradientChange" />
+            </pui-cell>
+            <view class="component-page__row component-page__row--actions">
+              <pui-button id="scroll-area-overlay-decrease" block content="减小遮罩" variant="outline" disabled="{{!areaGradientOverlay || !areaGradientCanDecrease}}" bind:click="onDecreaseAreaGradient" />
+              <pui-button id="scroll-area-overlay-increase" block content="增大遮罩" variant="outline" disabled="{{!areaGradientOverlay || !areaGradientCanIncrease}}" bind:click="onIncreaseAreaGradient" />
+            </view>
+            <text class="component-page__status" aria-live="polite">{{areaGradientStatus}}</text>
+          </view>
+          <block wx:for="{{areaRows}}" wx:key="title"><pui-cell title="{{item.title}}" description="{{item.description}}" left-icon="{{item.icon}}" /></block>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

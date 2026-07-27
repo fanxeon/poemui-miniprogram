@@ -1,0 +1,136 @@
+<pui-config-provider class="me-config-provider" use-global-config>
+  <view class="me-page {{backgroundGradientEnabled ? 'me-page--gradient' : ''}}">
+    <view id="me-navbar" class="me-page__navbar">
+      <pui-navbar
+        title="我的"
+        left-arrow="{{false}}"
+        fixed="{{false}}"
+        capsule="{{true}}"
+        safe-area-inset-top="{{true}}"
+        bordered="{{false}}"
+      />
+    </view>
+
+    <view class="me-page__content-row" style="height: {{contentHeight}};">
+      <pui-scroll-area
+        wx:if="{{layoutReady}}"
+        class="me-page__scroll-area"
+        height="{{contentHeight}}"
+        gradient-overlay
+        gradient-overlay-size="md"
+        aria-label="我的账户与服务"
+      >
+        <view class="me-page__content">
+          <pui-card padding="compact" bordered="{{true}}" shadow="{{false}}" aria-label="账户资料">
+            <view class="me-profile">
+              <view class="me-profile__summary">
+                <pui-avatar text="{{avatarText}}" size="large" aria-label="{{nickname + '的头像'}}" />
+                <view class="me-profile__identity">
+                  <text class="me-profile__nickname">{{nickname}}</text>
+                  <text class="me-profile__caption">PoemUI 用户</text>
+                </view>
+              </view>
+              <view class="me-profile__editor">
+                <pui-input
+                  id="me-nickname-input"
+                  value="{{nicknameDraft}}"
+                  label="昵称"
+                  placeholder="请输入昵称"
+                  prefix-icon="edit"
+                  maxlength="20"
+                  clearable
+                  status="{{nicknameError ? 'error' : 'default'}}"
+                  tips="{{nicknameError}}"
+                  confirm-type="done"
+                  aria-label="昵称"
+                  bind:change="onNicknameChange"
+                  bind:enter="onSaveNickname"
+                />
+                <pui-button
+                  id="me-save-nickname"
+                  content="保存昵称"
+                  theme="primary"
+                  size="small"
+                  block
+                  disabled="{{!nicknameDraft || nicknameDraft === nickname}}"
+                  aria-label="保存昵称"
+                  bind:click="onSaveNickname"
+                />
+              </view>
+            </view>
+          </pui-card>
+
+          <pui-cell-group card="{{true}}" bordered="{{true}}" aria-label="账户标识">
+            <pui-cell
+              id="me-openid-cell"
+              title="OpenID"
+              description="{{openIdDisplay}}"
+              value="{{hasOpenId ? '复制' : '未获取'}}"
+              right-icon="{{hasOpenId ? 'copy' : 'help-circle'}}"
+              clickable="{{hasOpenId}}"
+              disabled="{{!hasOpenId}}"
+              aria-label="{{hasOpenId ? '复制 OpenID' : 'OpenID 尚未获取'}}"
+              bind:click="onCopyOpenId"
+            />
+          </pui-cell-group>
+
+          <pui-cell-group card="{{true}}" bordered="{{true}}" aria-label="账户与服务">
+            <pui-cell
+              title="购买高级版授权"
+              description="解锁更多 PoemUI 使用权益"
+              value="尚未开放"
+              left-icon="crown"
+              clickable
+              arrow
+              aria-label="购买高级版授权，尚未开放"
+              bind:click="onPurchaseLicense"
+            />
+            <pui-cell
+              title="我的订单"
+              description="查看授权与订单记录"
+              value="暂无订单"
+              left-icon="receipt"
+              clickable
+              arrow
+              aria-label="我的订单"
+              bind:click="onOpenOrders"
+            />
+            <pui-cell
+              title="用户私隐协议"
+              description="查看微信小程序隐私保护指引"
+              left-icon="shield-check"
+              clickable
+              arrow
+              aria-label="查看用户私隐协议"
+              bind:click="onOpenPrivacy"
+            />
+            <pui-cell
+              title="关于诗上"
+              description="前往诗上科技小程序"
+              left-icon="app"
+              right-icon="external-link"
+              clickable
+              aria-label="打开诗上科技小程序"
+              bind:click="onOpenShishang"
+            />
+          </pui-cell-group>
+        </view>
+      </pui-scroll-area>
+    </view>
+
+    <view id="me-tabbar" class="me-page__tabbar">
+      <pui-tabbar
+        items="{{tabbarItems}}"
+        value="{{activeTab}}"
+        theme="normal"
+        shape="normal"
+        split="{{true}}"
+        fixed="{{false}}"
+        safe-area-inset-bottom="{{true}}"
+        bind:change="onTabChange"
+      />
+    </view>
+
+    <pui-toast id="me-toast" />
+  </view>
+</pui-config-provider>

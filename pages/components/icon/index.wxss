@@ -1,38 +1,5 @@
 @import "../../../styles/component-page.wxss";
 
-.component-page__icon-library,
-.component-page__icon-group,
-.component-page__icon-intro,
-.component-page__icon-group-header {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-}
-
-.component-page__icon-library {
-  gap: var(--pui-section-gap);
-}
-
-.component-page__icon-intro,
-.component-page__icon-group-header {
-  gap: var(--pui-space-xs);
-}
-
-.component-page__icon-intro-title {
-  color: var(--pui-text-primary);
-  font-size: var(--pui-font-size-title-small);
-  font-weight: var(--pui-font-weight-semibold);
-  line-height: var(--pui-line-height-title-small);
-}
-
-.component-page__icon-intro-description,
-.component-page__icon-group-description {
-  color: var(--pui-text-secondary);
-  font-size: var(--pui-font-size-body-small);
-  line-height: var(--pui-line-height-body-small);
-}
-
 .component-page__icon-search-row {
   display: flex;
   width: 100%;
@@ -44,16 +11,6 @@
   flex: 1;
   width: 100%;
   min-width: 0;
-}
-
-.component-page__icon-group {
-  gap: var(--pui-section-gap);
-}
-
-.component-page__icon-group-title {
-  color: var(--pui-text-secondary);
-  font-size: var(--pui-font-size-body-medium);
-  line-height: var(--pui-line-height-body-medium);
 }
 
 .component-page__icon-grid {

@@ -1,0 +1,26 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Overlay 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="基础用法" subtitle="全屏遮罩" description="Overlay 遮罩当前页面以聚焦内容，点击请求由父级决定是否关闭。">
+            <pui-button content="打开遮罩" theme="primary" block bind:click="onOpenOverlay" />
+            <text class="component-page__status" aria-live="polite">{{lastAction}}</text>
+          </component-page-section>
+          <component-page-section title="遮罩配置" subtitle="Blur / Scroll" description="局部 blur 控制背景模糊，prevent-scroll-through 防止底层滚动穿透。">
+            <pui-cell-group aria-label="Overlay 配置">
+              <pui-cell title="毛玻璃遮罩" description="Overlay 独立控制背景模糊效果">
+                <pui-switch slot="right" value="{{overlayBlur}}" aria-label="毛玻璃遮罩" bind:change="onOverlayBlurChange" />
+              </pui-cell>
+              <pui-cell title="点击遮罩关闭" description="点击 Overlay 内容外区域请求关闭" left-icon="close-circle" />
+            </pui-cell-group>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+    <pui-overlay visible="{{overlayVisible}}" blur="{{overlayBlur}}" prevent-scroll-through using-custom-navbar aria-label="关闭 Overlay 遮罩" bind:click="onOverlayClick">
+      <text class="overlay-page__greeting pui-text-display">Hi PoemCoder</text>
+    </pui-overlay>
+  </view>
+</pui-config-provider>

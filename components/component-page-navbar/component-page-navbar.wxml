@@ -6,6 +6,7 @@
   fixed="{{false}}"
   capsule="{{true}}"
   safe-area-inset-top="{{true}}"
+  bordered="{{false}}"
   bind:leftBtn="onBack"
   bind:rightBtn="onOpenAppearance"
 />
@@ -33,27 +34,5 @@
     aria-label="恢复默认外观"
     bind:click="onResetAppearance"
   />
-  <pui-cell-group aria-label="全局外观设置">
-    <pui-cell title="果味" description="一键应用视觉组合">
-      <pui-switch slot="right" value="{{fruitFlavorEnabled}}" aria-label="一键果味" bind:change="onFruitFlavorChange" />
-    </pui-cell>
-    <pui-cell title="边框">
-      <pui-switch slot="right" value="{{visualConfig.bordered}}" aria-label="组件边框" bind:change="onAppearanceSwitchChange" data-setting="bordered" />
-    </pui-cell>
-    <pui-cell title="阴影">
-      <pui-switch slot="right" value="{{visualConfig.shadow}}" aria-label="组件阴影" bind:change="onAppearanceSwitchChange" data-setting="shadow" />
-    </pui-cell>
-    <pui-cell title="毛玻璃">
-      <pui-switch slot="right" value="{{visualConfig.frostedGlass}}" aria-label="组件毛玻璃" bind:change="onAppearanceSwitchChange" data-setting="frostedGlass" />
-    </pui-cell>
-    <pui-cell title="大圆角">
-      <pui-switch slot="right" value="{{visualConfig.largeRadius}}" aria-label="组件大圆角" bind:change="onAppearanceSwitchChange" data-setting="largeRadius" />
-    </pui-cell>
-    <pui-cell title="渐变">
-      <pui-switch slot="right" value="{{canvasGradientEnabled}}" aria-label="页面渐变背景" bind:change="onCanvasGradientChange" />
-    </pui-cell>
-    <pui-cell title="深色">
-      <pui-switch slot="right" value="{{visualConfig.theme === 'dark'}}" aria-label="深色模式" bind:change="onAppearanceSwitchChange" data-setting="theme" />
-    </pui-cell>
-  </pui-cell-group>
+  <appearance-settings />
 </pui-popup>

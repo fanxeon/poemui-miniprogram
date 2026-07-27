@@ -1,0 +1,11 @@
+{
+  "usingComponents": {
+    "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
+    "pui-scroll-area": "poemui-miniprogram/scroll-area/scroll-area",
+    "pui-cell": "poemui-miniprogram/cell/cell",
+    "pui-cell-group": "poemui-miniprogram/cell/cell-group",
+    "pui-dropdown-menu": "poemui-miniprogram/dropdown-menu/dropdown-menu",
+    "component-page-navbar": "/components/component-page-navbar/component-page-navbar",
+    "component-page-section": "/components/component-page-section/component-page-section"
+  }
+}

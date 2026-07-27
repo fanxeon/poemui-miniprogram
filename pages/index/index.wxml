@@ -1,5 +1,5 @@
-<pui-config-provider class="home-config-provider" use-global-config>
-  <view class="home-page {{canvasGradientEnabled ? 'home-page--gradient' : ''}}">
+<pui-config-provider class="home-config-provider" use-global-config bind:themechange="onProviderThemeChange">
+  <view class="home-page {{backgroundGradientEnabled ? 'home-page--gradient' : ''}}">
     <view id="home-navbar" class="home-navbar">
       <pui-navbar
         title="Poem UI"
@@ -9,6 +9,7 @@
         fixed="{{false}}"
         capsule="{{true}}"
         safe-area-inset-top="{{true}}"
+        bordered="{{false}}"
         bind:leftBtn="onOpenSearch"
         bind:rightBtn="onOpenAppearance"
       />
@@ -19,48 +20,63 @@
         wx:if="{{layoutReady}}"
         class="home-scroll-area"
         height="{{scrollAreaHeight}}"
+        scroll-top="{{homeScrollTop}}"
+        scroll-into-view="{{homeScrollIntoView}}"
         gradient-overlay
         gradient-overlay-size="md"
         aria-label="首页内容"
+        bind:scroll="onHomeScroll"
       >
         <view class="home-scroll-content">
           <view class="home-brand">
-            <pui-image
-              class="home-brand__logo"
-              src="{{brandLogo}}"
-              mode="aspectFit"
-              width="144rpx"
-              height="144rpx"
-              shape="round"
-              aria-label="月下成行"
-            />
-            <text class="home-brand__tagline">为原生小程序而生，让界面拥有清晰的节奏与留白。</text>
+            <view class="home-brand__headline">
+              <view class="home-brand__identity">
+                <text class="home-brand__name">Poem UI</text>
+                <text class="home-brand__stanza">月下成行</text>
+              </view>
+              <pui-image
+                class="home-brand__mark"
+                src="{{brandMark}}"
+                mode="aspectFit"
+                width="144rpx"
+                height="144rpx"
+                shape="rectangle"
+                custom-style="background: transparent; border: 0;"
+                aria-label="月下成行标记"
+              />
+            </view>
+            <text class="home-brand__description">原生小程序组件库，按需组合。</text>
+            <text class="home-brand__catalog">组件目录 / {{catalogSummary.componentCount}} 个组件 / {{catalogSummary.guideCount}} 份规范</text>
           </view>
 
-          <pui-collapsible
-            class="home-components"
-            label="基础组件"
-            aria-label="基础组件列表"
-            open="{{componentsOpen}}"
-            custom-content="{{true}}"
-            bind:change="onComponentsToggle"
-          >
-            <view class="home-component-list">
-              <block wx:for="{{componentCatalog}}" wx:key="key">
-                <pui-cell
-                  title="{{item.name}}"
-                  description="{{item.description}}"
-                  left-icon="{{item.icon}}"
-                  arrow
-                  clickable
-                  hover
-                  url="{{item.url}}"
-                  jump-type="navigateTo"
-                  aria-label="{{'打开 ' + item.name + ' 组件页面'}}"
-                />
-              </block>
-            </view>
-          </pui-collapsible>
+          <block wx:for="{{catalogSections}}" wx:for-item="section" wx:key="key">
+            <pui-collapsible
+              id="home-section-{{section.key}}"
+              class="home-components"
+              label="{{section.label}}"
+              aria-label="{{section.ariaLabel}}"
+              open="{{activeCatalogSection === section.key}}"
+              data-section="{{section.key}}"
+              custom-content="{{true}}"
+              bind:change="onCatalogSectionChange"
+            >
+              <view class="home-component-list">
+                <block wx:for="{{section.items}}" wx:for-item="component" wx:key="key">
+                  <pui-cell
+                    title="{{component.name}}"
+                    description="{{component.description}}"
+                    left-icon="{{component.icon}}"
+                    arrow
+                    clickable
+                    hover
+                    url="{{component.url}}"
+                    jump-type="navigateTo"
+                    aria-label="{{'打开 ' + component.name + (component.kind === 'guide' ? '规范页面' : '组件页面')}}"
+                  />
+                </block>
+              </view>
+            </pui-collapsible>
+          </block>
         </view>
       </pui-scroll-area>
     </view>
@@ -75,20 +91,26 @@
       bind:click="onSearchOverlayClick"
     >
       <view class="home-search-overlay__content" catchtap="onSearchContentTap">
+        <pui-search
+          class="home-search-input"
+          value="{{searchQuery}}"
+          focus="{{searchInputFocus}}"
+          placeholder="搜索组件"
+          shape="round"
+          center
+          aria-label="搜索组件"
+          bind:change="onSearchChange"
+        />
         <pui-combobox
           class="home-search-combobox"
           options="{{searchOptions}}"
-          query="{{searchQuery}}"
           visible="{{searchComboboxVisible}}"
-          filterable
+          list-height="360"
           clearable="{{false}}"
           show-check="{{false}}"
-          show-panel-close="{{false}}"
           shape="round"
           placeholder="选择组件"
-          search-placeholder="搜索组件"
           aria-label="搜索组件"
-          bind:query-input="onSearchQueryInput"
           bind:visible-input="onSearchVisibleInput"
           bind:select="onSearchSelect"
         />
@@ -118,69 +140,7 @@
           aria-label="恢复默认外观"
           bind:click="onResetAppearance"
         />
-        <pui-cell-group aria-label="全局外观设置">
-          <pui-cell title="果味" description="一键应用视觉组合">
-            <pui-switch
-              slot="right"
-              value="{{fruitFlavorEnabled}}"
-              aria-label="一键果味"
-              bind:change="onFruitFlavorChange"
-            />
-          </pui-cell>
-          <pui-cell title="边框">
-            <pui-switch
-              slot="right"
-              value="{{visualConfig.bordered}}"
-              aria-label="组件边框"
-              bind:change="onAppearanceSwitchChange"
-              data-setting="bordered"
-            />
-          </pui-cell>
-          <pui-cell title="阴影">
-            <pui-switch
-              slot="right"
-              value="{{visualConfig.shadow}}"
-              aria-label="组件阴影"
-              bind:change="onAppearanceSwitchChange"
-              data-setting="shadow"
-            />
-          </pui-cell>
-          <pui-cell title="毛玻璃">
-            <pui-switch
-              slot="right"
-              value="{{visualConfig.frostedGlass}}"
-              aria-label="组件毛玻璃"
-              bind:change="onAppearanceSwitchChange"
-              data-setting="frostedGlass"
-            />
-          </pui-cell>
-          <pui-cell title="大圆角">
-            <pui-switch
-              slot="right"
-              value="{{visualConfig.largeRadius}}"
-              aria-label="组件大圆角"
-              bind:change="onAppearanceSwitchChange"
-              data-setting="largeRadius"
-            />
-          </pui-cell>
-          <pui-cell title="渐变">
-            <pui-switch
-              slot="right"
-              value="{{canvasGradientEnabled}}"
-              aria-label="页面渐变背景"
-              bind:change="onCanvasGradientChange"
-            />
-          </pui-cell>
-          <pui-cell title="深色">
-            <pui-switch
-              slot="right"
-              value="{{visualConfig.theme === 'dark'}}"
-              aria-label="深色模式"
-              bind:change="onAppearanceSwitchChange"
-              data-setting="theme"
-            />
-          </pui-cell>
-        </pui-cell-group>
+        <appearance-settings />
     </pui-popup>
 
     <view id="home-tabbar" class="home-tabbar">

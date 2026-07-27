@@ -1,0 +1,24 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Progress 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="资源下载进度" subtitle="进度明确时持续反馈" description="适合能够计算完成比例的任务，让用户了解还需要等待多久。">
+            <pui-progress percentage="{{progressValue}}" />
+            <view class="component-page__row component-page__row--actions">
+              <pui-button block content="下一档" theme="primary" bind:click="onAdvanceProgress" />
+              <pui-button block content="重置" variant="outline" bind:click="onResetProgress" />
+            </view>
+          </component-page-section>
+          <component-page-section title="进行中与已完成" subtitle="线形和圆形表达" description="长任务使用线形节省空间，单个关键结果可以用圆形突出完成状态。">
+            <view class="component-page__stack">
+              <pui-progress percentage="72" theme="plump" status="active" />
+              <pui-progress percentage="100" theme="circle" status="success" size="144" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

@@ -1,0 +1,33 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+    <pui-pull-refresh
+      wx:if="{{layoutReady}}"
+      class="advanced-page__scroll-owner"
+      custom-style="height:{{scrollAreaHeight}};"
+      value="{{pullRefreshing}}"
+      loading-texts="{{['下拉查看更新','松手刷新动态','正在刷新','已获取最新动态']}}"
+      aria-label="最近更新列表"
+      bind:refresh="onPullRefresh"
+      bind:change="onPullRefreshChange"
+      bind:timeout="onPullTimeout"
+    >
+      <view class="advanced-page__content">
+        <pui-cell title="最近更新" description="在列表顶部向下拖动，查看最新的组件动态。" left-icon="refresh" />
+        <pui-button
+          wx:if="{{pullRefreshing}}"
+          content="完成本次刷新"
+          theme="primary"
+          block
+          bind:click="onCompleteLocalRefresh"
+        />
+        <text class="component-page__status" aria-live="polite">{{pullStatus}}</text>
+        <block wx:for="{{pullRows}}" wx:key="title">
+          <pui-cell title="{{item.title}}" description="{{item.description}}" left-icon="{{item.icon}}" />
+        </block>
+      </view>
+    </pui-pull-refresh>
+  </view>
+</pui-config-provider>

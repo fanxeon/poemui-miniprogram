@@ -1,0 +1,2 @@
+var createComponentPage = require('../../../utils/component-page');
+Page(createComponentPage({ title: 'Cell', data: { cellSelected: false, cellStatus: '“加入常用组件”当前未选择。' }, methods: { onCellChange: function (event) { var selected = Boolean(event && event.detail && event.detail.selected); this.setData({ cellSelected: selected, cellStatus: selected ? '已加入常用组件。' : '已从常用组件移除。' }); }, onCellClick: function () {} }}));

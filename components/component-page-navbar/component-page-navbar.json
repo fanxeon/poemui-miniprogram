@@ -4,8 +4,6 @@
     "pui-navbar": "poemui-miniprogram/navbar/navbar",
     "pui-button": "poemui-miniprogram/button/button",
     "pui-popup": "poemui-miniprogram/popup/popup",
-    "pui-cell-group": "poemui-miniprogram/cell/cell-group",
-    "pui-cell": "poemui-miniprogram/cell/cell",
-    "pui-switch": "poemui-miniprogram/switch/switch"
+    "appearance-settings": "/components/appearance-settings/appearance-settings"
   }
 }

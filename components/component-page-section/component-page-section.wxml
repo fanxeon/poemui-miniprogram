@@ -1,0 +1,10 @@
+<view class="component-page-section component-page-section--{{spacing}}">
+  <view class="component-page-section__header">
+    <text wx:if="{{subtitle}}" class="component-page-section__subtitle">{{subtitle}}</text>
+    <text class="component-page-section__title">{{title}}</text>
+    <text wx:if="{{description}}" class="component-page-section__description">{{description}}</text>
+  </view>
+  <view class="component-page-section__content">
+    <slot />
+  </view>
+</view>

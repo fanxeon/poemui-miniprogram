@@ -1,0 +1,2 @@
+@import "../../../styles/component-page.wxss";
+@import "../../../styles/advanced-pages.wxss";

@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "pui-cell-group": "poemui-miniprogram/cell/cell-group",
+    "pui-cell": "poemui-miniprogram/cell/cell",
+    "pui-switch": "poemui-miniprogram/switch/switch"
+  }
+}

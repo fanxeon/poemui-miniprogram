@@ -1,0 +1,117 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}" style="--pui-page-navbar-height: {{navbarHeight}};">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area
+        wx:if="{{layoutReady}}"
+        class="component-page__scroll-area"
+        height="{{scrollAreaHeight}}"
+        gradient-overlay
+        gradient-overlay-size="md"
+        aria-label="Popup 组件用法"
+      >
+        <view class="component-page__content">
+          <component-page-section
+            title="基础用法"
+            subtitle="五向入口"
+            description="Popup 支持从顶部、底部、左右两侧或中心展开内容。"
+          >
+            <view class="popup-page__placement-grid">
+              <pui-button content="顶部" data-placement="top" bind:click="onOpenPopup" />
+              <pui-button content="底部" data-placement="bottom" bind:click="onOpenPopup" />
+              <pui-button content="左侧" data-placement="left" bind:click="onOpenPopup" />
+              <pui-button content="右侧" data-placement="right" bind:click="onOpenPopup" />
+              <pui-button content="居中" data-placement="center" bind:click="onOpenPopup" />
+            </view>
+            <text class="component-page__status" aria-live="polite">{{lastAction}}</text>
+          </component-page-section>
+
+          <component-page-section
+            title="外观配置"
+            subtitle="Surface 与遮罩"
+            description="卡片模式控制浮层边缘安全距离，毛玻璃遮罩控制背景模糊。"
+          >
+            <pui-cell-group aria-label="Popup 外观配置">
+              <pui-cell title="卡片模式" description="保留浮层与视口边缘的安全间距">
+                <pui-switch
+                  slot="right"
+                  value="{{popupCard}}"
+                  aria-label="卡片模式"
+                  bind:change="onPopupSettingChange"
+                  data-setting="card"
+                />
+              </pui-cell>
+              <pui-cell title="毛玻璃遮罩" description="让遮罩直接参与背景模糊合成">
+                <pui-switch
+                  slot="right"
+                  value="{{popupBlurOverlay}}"
+                  aria-label="毛玻璃遮罩"
+                  bind:change="onPopupSettingChange"
+                  data-setting="blurOverlay"
+                />
+              </pui-cell>
+            </pui-cell-group>
+          </component-page-section>
+
+          <component-page-section
+            title="三段结构"
+            subtitle="Header / Content / Footer"
+            description="Popup 的 Header、Content 与 Footer 都由真实 PUI 子组件组合。"
+          >
+            <pui-cell-group aria-label="Popup 三段结构">
+              <pui-cell title="Header" description="标题、副标题与常驻关闭按钮" left-icon="layers" />
+              <pui-cell title="Content" description="唯一可滚动的内容区域" left-icon="panel-bottom" />
+              <pui-cell title="Footer" description="承载主要操作的 PUI Button" left-icon="check" />
+            </pui-cell-group>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+
+    <pui-popup
+      visible="{{popupVisible}}"
+      placement="{{popupPlacement}}"
+      card="{{popupCard}}"
+      show-header
+      title="Popup 示例"
+      subtitle="真实 Header / Content / Footer"
+      show-footer
+      close-on-overlay-click
+      prevent-scroll-through
+      show-overlay
+      blur-overlay="{{popupBlurOverlay}}"
+      using-custom-navbar
+      aria-label="Popup 示例弹出层"
+      bind:visible-change="onPopupVisibleChange"
+    >
+      <pui-button
+        slot="header-left"
+        theme="primary"
+        variant="base"
+        shape="circle"
+        size="small"
+        icon="sparkles"
+        icon-only
+        aria-label="触发 Popup Header 操作"
+        bind:click="onPopupHeaderAction"
+      />
+
+      <pui-cell-group slot="content" aria-label="Popup 内容">
+        <pui-cell title="执行成员" description="Content 区域可以组合真实 Cell 列表" left-icon="user" />
+        <pui-cell title="关联文件" description="Content 是 Popup 内唯一滚动区域" left-icon="file" />
+      </pui-cell-group>
+
+      <pui-button
+        slot="footer"
+        block
+        theme="primary"
+        content="关闭示例"
+        aria-label="关闭 Popup 示例"
+        bind:click="onPopupFooterAction"
+      />
+    </pui-popup>
+  </view>
+</pui-config-provider>

@@ -1,0 +1,28 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="Watermark 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="内部资料预览" subtitle="标注来源但不阻断操作" description="水印覆盖在内容上方，下面的文字和操作仍应保持清晰可用。">
+            <pui-watermark watermark-content="{{watermarkContent}}" layout="{{watermarkLayout}}" movable="{{watermarkMovable}}" alpha="0.18" aria-label="内部资料水印区域">
+              <view class="advanced-page__watermark-content">
+                <pui-cell title="2026 年组件发布计划" description="内部资料 · 请勿外传" left-icon="file-text" />
+                <pui-button content="标记为已阅读" variant="outline" block aria-label="标记为已阅读" bind:click="onMarkWatermarkRead" />
+              </view>
+            </pui-watermark>
+            <text class="component-page__status" aria-live="polite">{{watermarkStatus}}</text>
+          </component-page-section>
+          <component-page-section title="排列与动态标记" subtitle="适应不同内容密度" description="切换规则排列或蜂窝排列，也可以让标记缓慢移动以降低截图复用风险。">
+            <view class="component-page__row component-page__row--actions">
+              <pui-button block content="切换排列" theme="primary" bind:click="onToggleWatermarkLayout" />
+              <pui-button block content="{{watermarkMovable ? '停止移动' : '开始移动'}}" variant="outline" bind:click="onToggleWatermarkMove" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

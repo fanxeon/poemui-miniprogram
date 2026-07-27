@@ -1,0 +1,15 @@
+{
+  "usingComponents": {
+    "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
+    "pui-navbar": "poemui-miniprogram/navbar/navbar",
+    "pui-scroll-area": "poemui-miniprogram/scroll-area/scroll-area",
+    "pui-tabbar": "poemui-miniprogram/tabbar/tabbar",
+    "pui-card": "poemui-miniprogram/card/card",
+    "pui-avatar": "poemui-miniprogram/avatar/avatar",
+    "pui-input": "poemui-miniprogram/input/input",
+    "pui-button": "poemui-miniprogram/button/button",
+    "pui-cell": "poemui-miniprogram/cell/cell",
+    "pui-cell-group": "poemui-miniprogram/cell/cell-group",
+    "pui-toast": "poemui-miniprogram/toast/toast"
+  }
+}

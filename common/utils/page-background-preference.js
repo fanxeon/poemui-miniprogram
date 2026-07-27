@@ -1,4 +1,5 @@
-var STORAGE_KEY = 'poemui-home-canvas-preference';
+var STORAGE_KEY = 'poemui-page-background-preference';
+var LEGACY_STORAGE_KEY = 'poemui-home-canvas-preference';
 var listeners = [];
 var value = false;
 var restored = false;
@@ -44,12 +45,18 @@ function restore(options) {
   if (!storage) return { value: value, restored: false, error: null };
   try {
     var saved = storage.getStorageSync(STORAGE_KEY);
+    var migrated = false;
+    if (!saved || typeof saved.gradient !== 'boolean') {
+      saved = storage.getStorageSync(LEGACY_STORAGE_KEY);
+      migrated = Boolean(saved && typeof saved.gradient === 'boolean');
+    }
     var next = Boolean(saved && saved.gradient);
     var changed = next !== value;
     value = next;
     restored = true;
     if (changed) notify(options && options.source ? options.source : 'restore');
-    return { value: value, restored: true, error: null };
+    if (migrated) storage.setStorageSync(STORAGE_KEY, { gradient: value });
+    return { value: value, restored: true, migrated: migrated, error: null };
   } catch (readError) {
     restored = false;
     return { value: value, restored: false, error: readError };

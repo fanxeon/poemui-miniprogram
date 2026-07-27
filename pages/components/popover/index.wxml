@@ -1,0 +1,33 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Popover 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="基础用法" subtitle="锚点与内容" description="在触发元素旁展示轻量提示。">
+            <view class="popover-page__reference">
+              <pui-popover visible="{{popoverVisible}}" placement="{{popoverPlacement}}" content="这是一个轻量提示。" show-arrow close-on-click-outside bind:visible-change="onPopoverVisibleChange">
+                <pui-button content="点击显示气泡" theme="primary" bind:click="onOpenPopover" />
+              </pui-popover>
+            </view>
+            <text class="component-page__status" aria-live="polite">{{lastAction}}</text>
+          </component-page-section>
+          <component-page-section title="定位方式" subtitle="相对锚点" description="切换方向查看定位。">
+            <view class="overlay-page__grid">
+              <pui-button content="顶部" data-placement="top" bind:click="onOpenPopover" />
+              <pui-button content="底部" data-placement="bottom" bind:click="onOpenPopover" />
+              <pui-button content="左侧" data-placement="left" bind:click="onOpenPopover" />
+              <pui-button content="右侧" data-placement="right" bind:click="onOpenPopover" />
+            </view>
+          </component-page-section>
+          <component-page-section title="内容组合" subtitle="Content Slot" description="复杂内容由调用方组合。">
+            <pui-cell-group aria-label="Popover 内容组合">
+              <pui-cell title="轻量提示" description="用于短说明" left-icon="chat" />
+              <pui-cell title="业务状态" description="由调用方组合" left-icon="info-circle" />
+            </pui-cell-group>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

@@ -1,0 +1,20 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Tabbar 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="切换应用一级目的地" subtitle="核心示例" description="图标、名称、未读数量和纯图标创建入口共同组成底部导航。">
+            <pui-tabbar items="{{tabbarItems}}" value="{{tabbarValue}}" theme="normal" shape="normal" fixed="{{false}}" split="{{true}}" safe-area-inset-bottom="{{false}}" aria-label="示例底部导航" bind:change="onTabbarChange" />
+            <text class="navigation-page__status" aria-live="polite">{{tabbarStatus}}</text>
+          </component-page-section>
+          <component-page-section title="固定在页面底部" subtitle="页面位置" description="固定后会自动预留内容空间并避开底部安全区，不覆盖正文。">
+            <pui-tabbar items="{{tabbarItems}}" value="{{tabbarValue}}" theme="normal" shape="{{tabbarFixed ? 'round' : 'normal'}}" fixed="{{tabbarFixed}}" placeholder="{{tabbarFixed}}" split="{{true}}" safe-area-inset-bottom="{{true}}" aria-label="固定示例底部导航" bind:change="onTabbarChange" />
+            <view class="navigation-page__fixed-space"></view>
+            <pui-button content="{{tabbarFixed ? '取消固定' : '固定到页面底部'}}" theme="primary" block bind:click="onToggleTabbarFixed" />
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

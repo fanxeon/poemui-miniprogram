@@ -1,0 +1,22 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Breadcrumb 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="看清当前所在位置" subtitle="核心示例" description="路径从首页逐级指向当前组件，点击上级可以返回对应层级。">
+            <pui-breadcrumb items="{{breadcrumbItems}}" value="{{breadcrumbValue}}" current-clickable="{{true}}" separator-icon="chevron-right" aria-label="示例面包屑" bind:change="onBreadcrumbChange" />
+            <text class="navigation-page__status" aria-live="polite">{{breadcrumbStatus}}</text>
+          </component-page-section>
+          <component-page-section title="在窄屏中保留完整路径" subtitle="长路径" description="内容较长时只在组件内部横向浏览，不会撑宽整个页面。">
+            <pui-breadcrumb items="{{breadcrumbItems}}" value="{{breadcrumbValue}}" wrap="{{false}}" separator="/" max-label-length="12" aria-label="横向面包屑" bind:change="onBreadcrumbChange" />
+          </component-page-section>
+          <component-page-section title="路径暂时无法读取" subtitle="恢复入口" description="错误信息保留重新加载入口；点击后等待页面提供新路径。">
+            <pui-breadcrumb items="{{breadcrumbItems}}" error="{{true}}" retry-text="重新加载路径" aria-label="错误面包屑" bind:retry="onBreadcrumbRetry" />
+            <text class="navigation-page__status" aria-live="polite">{{breadcrumbStatus}}</text>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

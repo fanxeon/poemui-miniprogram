@@ -1,0 +1,8 @@
+@import "../../../styles/component-page.wxss";
+
+.dialog-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pui-content-gap);
+  min-width: 0;
+}

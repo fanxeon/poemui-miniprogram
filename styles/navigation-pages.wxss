@@ -1,0 +1,116 @@
+.navigation-page__stack,
+.navigation-page__row,
+.navigation-page__controls,
+.navigation-page__long-list,
+.navigation-page__columns,
+.navigation-page__panel {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+.navigation-page__stack,
+.navigation-page__long-list {
+  flex-direction: column;
+  gap: var(--pui-content-gap);
+}
+
+.navigation-page__row {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--pui-content-gap);
+}
+
+.navigation-page__controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--pui-content-gap);
+}
+
+.navigation-page__controls > pui-button {
+  width: 100%;
+  min-width: 0;
+}
+
+.navigation-page__status,
+.navigation-page__copy,
+.navigation-page__tab-panel,
+.navigation-page__sidebar-copy,
+.navigation-page__long-row {
+  color: var(--pui-text-secondary);
+  font-size: var(--pui-font-size-body-small);
+  line-height: var(--pui-line-height-body-small);
+}
+
+.navigation-page__status {
+  display: block;
+  width: 100%;
+}
+
+.navigation-page__tab-panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pui-space-xs);
+  min-height: 120rpx;
+  padding: var(--pui-content-gap);
+  border-radius: var(--pui-radius-medium);
+  background: var(--pui-bg-muted);
+}
+
+.navigation-page__tab-panel-title,
+.navigation-page__sidebar-title {
+  color: var(--pui-text-primary);
+  font-size: var(--pui-font-size-body-medium);
+  font-weight: var(--pui-font-weight-semibold);
+  line-height: var(--pui-line-height-body-medium);
+}
+
+.navigation-page__columns {
+  align-items: stretch;
+  gap: var(--pui-content-gap);
+}
+
+/* 组件 WXSS 仅使用类选择器，避免开发者工具拒绝通配符与标签选择器。 */
+.navigation-page__sidebar,
+.navigation-page__panel {
+  min-width: 0;
+}
+
+.navigation-page__sidebar {
+  flex: 0 0 280rpx;
+}
+
+.navigation-page__panel {
+  box-sizing: border-box;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: var(--pui-space-xs);
+  min-height: 260rpx;
+  padding: var(--pui-content-gap);
+  border-radius: var(--pui-radius-medium);
+  background: var(--pui-bg-muted);
+}
+
+.navigation-page__long-row {
+  box-sizing: border-box;
+  min-height: 88rpx;
+  padding: var(--pui-space-xs) var(--pui-content-gap);
+  border-bottom: 1rpx solid var(--pui-border-muted);
+}
+
+.navigation-page__fixed-space {
+  height: 120rpx;
+}
+
+@media (max-width: 520px) {
+  .navigation-page__columns {
+    flex-direction: column;
+  }
+
+  .navigation-page__sidebar {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+}

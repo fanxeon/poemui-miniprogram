@@ -1,0 +1,16 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area id="navigation-page-scroll" wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" scroll-top="{{pageScrollTop}}" gradient-overlay gradient-overlay-size="md" aria-label="BackTop 组件用法" bind:scroll="onPageScroll">
+        <view class="component-page__content">
+          <component-page-section title="快速返回长列表顶部" subtitle="核心示例" description="向下滚动后，右下角出现回顶入口；点击会让当前列表平滑回到开头。">
+            <text class="navigation-page__status" aria-live="polite">{{backTopStatus}}</text>
+            <pui-back-top fixed icon="arrow-up" theme="round" scroll-top="{{pageScrollTop}}" visibility-height="120" aria-label="返回顶部" bind:to-top="onBackTop" />
+            <view class="navigation-page__long-list"><pui-cell wx:for="{{backTopRows}}" wx:key="*this" title="{{index + 1}}. {{item}}" description="继续向下浏览组件更新记录。" left-icon="file-text" /></view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

@@ -1,0 +1,132 @@
+<pui-config-provider class="styles-config-provider" use-global-config>
+  <view class="styles-page {{backgroundGradientEnabled ? 'styles-page--gradient' : ''}}">
+    <view id="styles-navbar" class="styles-page__navbar">
+      <pui-navbar
+        title="快速样式"
+        left-arrow="{{false}}"
+        left-btn="{{navbarLeftBtn}}"
+        right-btn="{{navbarRightBtn}}"
+        fixed="{{false}}"
+        capsule="{{true}}"
+        safe-area-inset-top="{{true}}"
+        bordered="{{false}}"
+        bind:leftBtn="onOpenSearch"
+        bind:rightBtn="onOpenAppearance"
+      />
+    </view>
+
+    <view id="styles-workspace" class="styles-page__workspace" style="height: {{scrollAreaHeight}};">
+      <pui-tabs class="styles-page__tabs" items="{{groupTabs}}" value="{{activeGroup}}" split="{{true}}" sticky="{{false}}" swipeable="{{false}}" aria-label="样式分类" bind:change="onGroupChange">
+          <view class="styles-page__tab-content">
+            <view
+              id="styles-preview-layer"
+              class="styles-page__preview-layer styles-page__preview--{{previewKind}} styles-page__preview--{{previewSafety}}"
+              style="height: {{previewHeight}}px;"
+              role="img"
+              aria-label="{{previewAriaLabel}}"
+            >
+              <view class="styles-page__preview-current-wrap">
+                <view class="styles-page__preview-current {{previewThemeClass}}">
+                  <view wx:if="{{activeGroup === 'layout'}}" class="styles-page__preview-sandbox">
+                    <image
+                      wx:if="{{previewKind === 'object'}}"
+                      class="styles-page__preview-media {{previewMediaClasses}}"
+                      src="/assets/poemui-moon-lines-black.png"
+                      aria-hidden="true"
+                    />
+                    <view wx:else class="styles-page__preview-target {{previewTargetClasses}}">
+                      <view class="styles-page__preview-layout {{previewLayoutClasses ? previewLayoutClasses : 'pui-flex pui-items-center pui-gap-xs'}}">
+                        <view class="styles-page__preview-item styles-page__preview-item--primary {{previewItemClasses}}"></view>
+                        <view class="styles-page__preview-item"></view>
+                        <view class="styles-page__preview-item"></view>
+                        <view class="styles-page__preview-overflow-trace"></view>
+                      </view>
+                    </view>
+                  </view>
+
+                  <view wx:elif="{{activeGroup === 'size'}}" class="styles-page__preview-measure">
+                    <view class="styles-page__preview-measure-guide"></view>
+                    <view class="styles-page__preview-measure-target {{previewMeasureClasses ? previewMeasureClasses : 'pui-w-half pui-h-half'}}">
+                      <view class="styles-page__preview-measure-content"></view>
+                    </view>
+                  </view>
+
+                  <view wx:elif="{{activeGroup === 'spacing'}}" class="styles-page__preview-spacing">
+                    <view class="styles-page__preview-spacing-outer {{previewOuterClasses ? previewOuterClasses : 'pui-m-0'}}">
+                      <view class="styles-page__preview-spacing-surface {{previewSurfaceClasses ? previewSurfaceClasses : 'pui-p-sm'}}">
+                        <view class="styles-page__preview-spacing-items pui-flex {{previewItemsClasses ? previewItemsClasses : 'pui-gap-xs'}}">
+                          <view class="styles-page__preview-spacing-item"></view>
+                          <view class="styles-page__preview-spacing-item"></view>
+                          <view class="styles-page__preview-spacing-item"></view>
+                        </view>
+                      </view>
+                    </view>
+                  </view>
+
+                  <view wx:elif="{{activeGroup === 'typography'}}" class="styles-page__preview-type-guide">
+                    <text class="styles-page__preview-text {{previewTextClasses ? previewTextClasses : 'pui-text-body-md'}}">PoemUI 24</text>
+                  </view>
+
+                  <view wx:else class="styles-page__preview-visual-guide">
+                    <view class="styles-page__preview-surface {{previewSurfaceClasses ? previewSurfaceClasses : 'pui-bg-muted pui-radius-sm'}}">
+                      <view class="styles-page__preview-surface-line"></view>
+                      <view class="styles-page__preview-surface-line styles-page__preview-surface-line--short"></view>
+                    </view>
+                  </view>
+                </view>
+
+                <view class="styles-page__preview-reset-wrap">
+                  <pui-button
+                    class="styles-page__preview-reset-host"
+                    custom-class="styles-page__preview-reset"
+                    theme="default"
+                    variant="text"
+                    shape="circle"
+                    size="small"
+                    icon="refresh"
+                    icon-only
+                    disabled="{{!previewHasSelection}}"
+                    aria-label="恢复当前分类默认预览"
+                    bind:click="onResetPreview"
+                  />
+                </view>
+              </view>
+            </view>
+
+          <view class="styles-page__utility-scroll-wrap" style="top: {{utilityScrollTop}}px; height: {{utilityScrollHeight}};">
+            <pui-scroll-area wx:if="{{layoutReady}}" class="styles-page__utility-scroll" height="{{utilityScrollHeight}}" scroll-top="{{scrollTop}}" gradient-overlay gradient-overlay-size="md" aria-label="当前分类样式" bind:scroll="onScrollAreaScroll">
+              <view class="styles-page__utility-grid" role="list" aria-label="当前分类样式">
+                <block wx:for="{{visibleUtilities}}" wx:for-item="utility" wx:key="name">
+                  <pui-cell title="{{utility.name}}" selectable selected="{{utility.selected}}" clickable data-utility="{{utility.name}}" data-group="{{utility.group}}" bind:click="onUtilityTap" />
+                </block>
+              </view>
+            </pui-scroll-area>
+          </view>
+        </view>
+      </pui-tabs>
+    </view>
+
+    <pui-overlay visible="{{searchOverlayVisible}}" duration="{{searchOverlayDuration}}" blur prevent-scroll-through z-index="11000" aria-label="关闭样式搜索" bind:click="onSearchOverlayClick">
+      <view class="styles-search-overlay__content" catchtap="onSearchContentTap">
+        <pui-search value="{{searchQuery}}" focus="{{searchInputFocus}}" placeholder="搜索样式、用途或 class" shape="round" center aria-label="搜索样式" bind:change="onStyleSearchChange" bind:clear="onStyleSearchClear" bind:search="onStyleSearchChange" />
+        <pui-cell-group class="styles-search-overlay__results" title="搜索样式" description="选择后回到对应分类示例">
+          <block wx:for="{{searchResults}}" wx:for-item="utility" wx:key="name">
+            <pui-cell title="{{utility.name}}" description="{{utility.description}}" value="查看" arrow clickable data-utility="{{utility.name}}" data-group="{{utility.group}}" bind:click="onSearchResultTap" />
+          </block>
+        </pui-cell-group>
+        <text wx:if="{{!searchResults.length}}" class="styles-search-overlay__empty">没有匹配的样式，换一个关键词试试。</text>
+      </view>
+    </pui-overlay>
+
+    <pui-popup visible="{{appearancePopupVisible}}" placement="bottom" card="{{true}}" show-header title="外观" blur-overlay prevent-scroll-through z-index="11010" aria-label="外观设置" bind:visible-change="onAppearancePopupVisibleChange">
+      <pui-button slot="header-left" theme="primary" variant="base" shape="circle" size="small" icon="refresh" icon-only aria-label="恢复默认外观" bind:click="onResetAppearance" />
+      <appearance-settings />
+    </pui-popup>
+
+    <view id="styles-tabbar" class="styles-page__tabbar">
+      <pui-tabbar items="{{tabbarItems}}" value="{{activeTab}}" theme="normal" shape="normal" split="{{true}}" fixed="{{false}}" safe-area-inset-bottom="{{true}}" bind:change="onTabChange" />
+    </view>
+
+    <pui-back-top fixed="{{true}}" scroll-top="{{scrollTop}}" visibility-height="{{200}}" custom-style="--pui-back-top-bottom-offset:calc(var(--pui-tabbar-content-height) + env(safe-area-inset-bottom) + var(--pui-space-normal));" aria-label="回到顶部" bind:to-top="onBackToTop" />
+  </view>
+</pui-config-provider>

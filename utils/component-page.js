@@ -1,4 +1,4 @@
-var canvasPreference = require('../common/utils/home-canvas-preference');
+var backgroundPreference = require('../common/utils/page-background-preference');
 
 function getWindowHeight() {
   return wx.getWindowInfo ? wx.getWindowInfo().windowHeight : 0;
@@ -9,16 +9,17 @@ function createComponentPage(config) {
   var page = {
     data: Object.assign({
       pageTitle: source.title || '',
+      navbarHeight: 'var(--pui-navbar-content-height-fallback)',
       scrollAreaHeight: '1px',
       layoutReady: false,
-      canvasGradientEnabled: canvasPreference.get()
+      backgroundGradientEnabled: backgroundPreference.get()
     }, source.data || {}),
 
     onLoad: function () {
       var self = this;
-      canvasPreference.restore();
-      this._unsubscribeCanvasPreference = canvasPreference.subscribe(function onCanvasPreferenceChange(gradientEnabled) {
-        self.setData({ canvasGradientEnabled: Boolean(gradientEnabled) });
+      backgroundPreference.restore();
+      this._unsubscribeBackgroundPreference = backgroundPreference.subscribe(function onBackgroundPreferenceChange(gradientEnabled) {
+        self.setData({ backgroundGradientEnabled: Boolean(gradientEnabled) });
       });
       this._windowResizeHandler = this.onWindowResize.bind(this);
       if (wx.onWindowResize) {
@@ -45,7 +46,7 @@ function createComponentPage(config) {
 
     onUnload: function () {
       clearTimeout(this._measureTimer);
-      if (this._unsubscribeCanvasPreference) this._unsubscribeCanvasPreference();
+      if (this._unsubscribeBackgroundPreference) this._unsubscribeBackgroundPreference();
       if (wx.offWindowResize && this._windowResizeHandler) {
         wx.offWindowResize(this._windowResizeHandler);
       }
@@ -76,10 +77,18 @@ function createComponentPage(config) {
           if (!navbarHeight) {
             return;
           }
+          var layout = {
+            navbarHeight: Math.max(1, Math.floor(navbarHeight)),
+            scrollAreaHeight: Math.max(1, Math.floor(windowHeight - navbarHeight))
+          };
           this.setData({
-            scrollAreaHeight: Math.max(1, Math.floor(windowHeight - navbarHeight)) + 'px',
+            navbarHeight: layout.navbarHeight + 'px',
+            scrollAreaHeight: layout.scrollAreaHeight + 'px',
             layoutReady: true
           });
+          if (typeof source.onLayoutMeasured === 'function') {
+            source.onLayoutMeasured.call(this, layout);
+          }
         }.bind(this))
         .exec();
     },

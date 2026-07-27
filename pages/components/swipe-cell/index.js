@@ -1,0 +1,2 @@
+var createComponentPage = require('../../../utils/component-page');
+Page(createComponentPage({ title: 'SwipeCell', data: { swipeStatus: '向左或向右滑动展示真实快捷操作。', swipeRight: [{ text: '删除', icon: 'trash', theme: 'danger' }], swipeLeft: [{ text: '置顶', icon: 'arrow-up', theme: 'primary' }] }, methods: { onSwipeAction: function (event) { var detail = event && event.detail ? event.detail : {}; this.setData({ swipeStatus: '已收到 ' + ((detail.action && detail.action.text) || '快捷') + ' 操作请求。' }); } }}));

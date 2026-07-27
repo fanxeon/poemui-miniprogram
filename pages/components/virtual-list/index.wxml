@@ -1,0 +1,31 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+    <view wx:if="{{layoutReady}}" class="advanced-page__owner">
+      <view class="advanced-page__toolbar">
+        <pui-button block content="回到顶部" variant="outline" bind:click="onVirtualToTop" />
+        <pui-button block content="{{virtualMultiple ? '使用单选' : '批量选择'}}" theme="primary" bind:click="onToggleVirtualMultiple" />
+      </view>
+      <text class="component-page__status" aria-live="polite">{{virtualStatus}}</text>
+      <pui-virtual-list
+        items="{{virtualItems}}"
+        value="{{virtualValue}}"
+        multiple="{{virtualMultiple}}"
+        selectable
+        height="{{virtualListHeight}}"
+        item-height="88"
+        scroll-top="{{virtualScrollTop}}"
+        show-index
+        show-description
+        show-item-icon
+        aria-label="大型组件资源列表"
+        bind:change="onVirtualChange"
+        bind:item-click="onVirtualItemClick"
+        bind:scroll="onVirtualScroll"
+        bind:retry="onVirtualRetry"
+      />
+    </view>
+  </view>
+</pui-config-provider>

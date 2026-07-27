@@ -1,0 +1,29 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Tabs 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="切换四类文档内容" subtitle="四项等分" description="四项以内平均分配宽度，当前内容会跟随选择立即更新。">
+            <pui-tabs items="{{evenTabs}}" value="{{evenTabValue}}" space-evenly="{{true}}" sticky="{{true}}" aria-label="四项等分标签" bind:change="onEvenTabsChange">
+              <view class="navigation-page__tab-panel">
+                <text class="navigation-page__tab-panel-title">{{evenTabTitle}}</text>
+                <text class="navigation-page__copy">{{evenTabDescription}}</text>
+              </view>
+            </pui-tabs>
+            <text class="navigation-page__status" aria-live="polite">{{tabsStatus}}</text>
+          </component-page-section>
+          <component-page-section title="发现右侧还有更多分类" subtitle="第五项半露" description="超过四项时自动露出下一项的一半，不依赖箭头或额外说明提示滑动。">
+            <pui-tabs items="{{overflowTabs}}" value="{{overflowTabValue}}" space-evenly="{{false}}" sticky="{{true}}" aria-label="横向滚动标签" bind:change="onOverflowTabsChange">
+              <view class="navigation-page__tab-panel">
+                <text class="navigation-page__tab-panel-title">{{overflowTabTitle}}</text>
+                <text class="navigation-page__copy">{{overflowTabDescription}}</text>
+              </view>
+            </pui-tabs>
+            <text class="navigation-page__status" aria-live="polite">{{tabsStatus}}</text>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

@@ -1,0 +1,29 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="ActionSheet 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="基础用法" subtitle="动作列表" description="ActionSheet 从底部展示一组与当前情境相关的操作。">
+            <pui-button content="打开动作面板" theme="primary" block bind:click="onOpenActionSheet" />
+            <text class="component-page__status" aria-live="polite">{{lastAction}}</text>
+          </component-page-section>
+          <component-page-section title="遮罩配置" subtitle="局部外观" description="毛玻璃仅覆盖当前 ActionSheet 遮罩，不改写全局外观设置。">
+            <pui-cell-group aria-label="ActionSheet 遮罩配置">
+              <pui-cell title="毛玻璃遮罩" description="打开后模糊当前面板后的页面内容">
+                <pui-switch slot="right" value="{{actionSheetBlurOverlay}}" aria-label="ActionSheet 毛玻璃遮罩" bind:change="onActionSheetBlurChange" />
+              </pui-cell>
+            </pui-cell-group>
+          </component-page-section>
+          <component-page-section title="动作内容" subtitle="List / Grid" description="列表项由 items 数据驱动，也可以切换为图标宫格。">
+            <pui-cell-group aria-label="ActionSheet 说明">
+              <pui-cell title="列表动作" description="每个动作都提供真实选择事件" left-icon="list-bullet" />
+              <pui-cell title="取消入口" description="取消后请求关闭面板，不伪造业务结果" left-icon="close-circle" />
+            </pui-cell-group>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+    <pui-action-sheet visible="{{actionSheetVisible}}" items="{{actionItems}}" description="选择一个 AI 工作流动作" blur-overlay="{{actionSheetBlurOverlay}}" show-cancel show-overlay using-custom-navbar bind:visible-change="onActionSheetVisibleChange" bind:selected="onActionSelected" bind:cancel="onActionCancelled" aria-label="ActionSheet 示例动作面板" />
+  </view>
+</pui-config-provider>

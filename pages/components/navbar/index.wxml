@@ -1,0 +1,63 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Navbar 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="单按钮 Slot" subtitle="单个左侧操作" description="通过 left Slot 放入一个真实 PUI 图标按钮；右侧继续留给微信原生胶囊。">
+            <view class="navbar-page__stage">
+              <pui-navbar title="编辑资料" left-arrow="{{false}}" fixed="{{false}}" capsule="{{true}}" safe-area-inset-top="{{true}}" bordered="{{true}}">
+                <pui-button slot="left" theme="default" variant="text" surface="transparent" size="small" shape="circle" icon="search" icon-only aria-label="搜索组件" bind:click="onNavbarSingleSlotClick" />
+              </pui-navbar>
+            </view>
+          </component-page-section>
+          <component-page-section title="双按钮 Slot" subtitle="同一侧的紧凑操作" description="两个 PUI 图标按钮共同投影到 left Slot，不占用右侧的原生微信胶囊。">
+            <view class="navbar-page__stage">
+              <pui-navbar title="编辑资料" left-arrow="{{false}}" fixed="{{false}}" capsule="{{true}}" safe-area-inset-top="{{true}}" bordered="{{true}}">
+                <view slot="left" class="navbar-page__slot-actions">
+                  <pui-button theme="default" variant="text" surface="transparent" size="extra-small" shape="circle" icon="search" icon-only aria-label="搜索组件" bind:click="onNavbarLeftSlotClick" />
+                  <pui-button theme="default" variant="text" surface="transparent" size="extra-small" shape="circle" icon="menu" icon-only aria-label="打开页面菜单" bind:click="onNavbarRightSlotClick" />
+                </view>
+              </pui-navbar>
+            </view>
+          </component-page-section>
+          <component-page-section
+            title="胶囊式按钮"
+            subtitle="与微信右侧胶囊对称"
+            description="leftBtn 与 rightBtn 被组件组合为一个左侧镜像胶囊，独立事件仍会真实回写。"
+          >
+            <view class="navbar-page__visibility-control">
+              <view class="navbar-page__visibility-copy">
+                <text class="navbar-page__visibility-title">显示示例导航</text>
+                <text class="navbar-page__visibility-description">关闭后观察整条导航平滑退场，页面位置保持稳定。</text>
+              </view>
+              <pui-switch
+                value="{{navbarVisible}}"
+                size="small"
+                aria-label="显示示例导航"
+                bind:change="onNavbarVisibilityChange"
+              />
+            </view>
+            <view class="navbar-page__stage">
+              <pui-navbar
+                id="navbar-demo"
+                title="编辑资料"
+                left-arrow="{{false}}"
+                left-btn="{{navbarLeftBtn}}"
+                right-btn="{{navbarRightBtn}}"
+                visible="{{navbarVisible}}"
+                fixed="{{false}}"
+                capsule="{{true}}"
+                safe-area-inset-top="{{true}}"
+                bordered="{{true}}"
+                bind:leftBtn="onNavbarLeftBtnClick"
+                bind:rightBtn="onNavbarRightBtnClick"
+              />
+            </view>
+            <text class="navigation-page__status" aria-live="polite">{{navbarStatus}}</text>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

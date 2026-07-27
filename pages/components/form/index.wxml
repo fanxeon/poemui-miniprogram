@@ -1,0 +1,20 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};"><pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay><view class="component-page__content">
+      <component-page-section title="填写组件资料" subtitle="核心示例" description="填写名称并决定是否公开；提交前会先检查必填项。">
+        <pui-form data="{{formData}}" rules="{{formRules}}" aria-label="组件信息表单" bind:validate="onFormValidate" bind:submit="onFormSubmit" bind:reset="onFormReset">
+          <pui-field name="componentName" label="组件名称" required help="至少输入 3 个字符。"><pui-input value="{{formData.componentName}}" placeholder="例如 Calendar" clearable bind:change="onFormNameChange" /></pui-field>
+          <pui-field name="publicRelease" label="公开发布" help="关闭时仅保存在当前草稿。"><pui-switch value="{{formData.publicRelease}}" aria-label="公开发布" bind:change="onFormReleaseChange" /></pui-field>
+          <view class="component-page__row component-page__row--actions"><pui-button block form-type="reset" variant="outline">重置</pui-button><pui-button block form-type="submit" theme="primary">校验并提交</pui-button></view>
+        </pui-form>
+        <text class="component-page__status" aria-live="polite">{{formStatus}}</text>
+      </component-page-section>
+      <component-page-section title="看清错误所在" subtitle="重要反馈" description="问题跟随对应字段出现，用户不必在页面里寻找统一报错。">
+        <pui-field label="组件名称" required status="error" message="至少输入 3 个字符">
+          <pui-input value="UI" status="error" tips="还差 1 个字符" readonly />
+        </pui-field>
+      </component-page-section>
+    </view></pui-scroll-area></view>
+  </view>
+</pui-config-provider>

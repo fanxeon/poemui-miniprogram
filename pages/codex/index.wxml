@@ -1,0 +1,63 @@
+<pui-config-provider class="codex-config-provider" use-global-config>
+  <view class="codex-page {{backgroundGradientEnabled ? 'codex-page--gradient' : ''}}">
+    <view id="codex-navbar" class="codex-page__navbar">
+      <pui-navbar
+        title="Codex"
+        left-arrow="{{false}}"
+        fixed="{{false}}"
+        capsule="{{true}}"
+        safe-area-inset-top="{{true}}"
+        bordered="{{false}}"
+      />
+    </view>
+
+    <view class="codex-page__content-row" style="height: {{contentHeight}};">
+      <pui-scroll-area
+        wx:if="{{layoutReady}}"
+        class="codex-page__scroll-area"
+        height="{{contentHeight}}"
+        gradient-overlay
+        gradient-overlay-size="md"
+        aria-label="Codex 使用说明"
+      >
+        <view class="codex-page__content">
+          <component-page-section
+            title="快速开始"
+            subtitle="安装与引用"
+            description="安装 npm 包，然后在页面中按需引入 PUI 组件。"
+          >
+            <view class="codex-page__stack">
+              <code-snippet id="codex-install-snippet" title="安装依赖" code="{{installCode}}" aria-label="复制 npm 安装命令" />
+              <code-snippet id="codex-usage-snippet" title="页面引用" code="{{usageCode}}" aria-label="复制页面引用代码" />
+            </view>
+          </component-page-section>
+
+          <component-page-section
+            title="让你的 AI 懂得用它"
+            subtitle="SKILL"
+          >
+            <pui-card padding="compact" bordered="{{false}}" shadow="{{false}}" aria-label="SKILL 尚未提供">
+              <view class="codex-page__skill-placeholder">
+                <pui-icon name="codex" size="48" aria-hidden="true" />
+                <text>SKILL</text>
+              </view>
+            </pui-card>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+
+    <view id="codex-tabbar" class="codex-page__tabbar">
+      <pui-tabbar
+        items="{{tabbarItems}}"
+        value="{{activeTab}}"
+        theme="normal"
+        shape="normal"
+        split="{{true}}"
+        fixed="{{false}}"
+        safe-area-inset-bottom="{{true}}"
+        bind:change="onTabChange"
+      />
+    </view>
+  </view>
+</pui-config-provider>

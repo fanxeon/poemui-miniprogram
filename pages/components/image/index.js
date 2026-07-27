@@ -1,0 +1,2 @@
+var createComponentPage = require('../../../utils/component-page');
+Page(createComponentPage({ title: 'Image', data: { imageError: false, imageStatus: '正在读取品牌图片。' }, methods: { onToggleImageError: function () { var error = !this.data.imageError; this.setData({ imageError: error, imageStatus: error ? '图片当前不可用。' : '正在重新读取品牌图片。' }); }, onImageLoad: function () { this.setData({ imageStatus: '品牌图片已显示。' }); }, onImageError: function () { this.setData({ imageStatus: '图片加载失败，请检查资源。' }); } }}));

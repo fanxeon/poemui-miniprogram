@@ -24,7 +24,9 @@
     "minifyWXML": true,
     "localPlugins": false,
     "disableUseStrict": false,
-    "condition": false
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "miniprogram",
   "simulatorPluginLibVersion": {},
@@ -33,5 +35,6 @@
     "include": []
   },
   "appid": "wx23aa017375535746",
-  "editorSetting": {}
+  "editorSetting": {},
+  "libVersion": "3.17.0"
 }

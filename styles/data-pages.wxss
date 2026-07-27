@@ -1,0 +1,1 @@
+.data-page__row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--pui-content-gap); width: 100%; min-width: 0; }

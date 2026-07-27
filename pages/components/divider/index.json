@@ -4,6 +4,7 @@
     "pui-scroll-area": "poemui-miniprogram/scroll-area/scroll-area",
     "pui-divider": "poemui-miniprogram/divider/divider",
     "pui-tag": "poemui-miniprogram/tag/tag",
-    "component-page-navbar": "/components/component-page-navbar/component-page-navbar"
+    "component-page-navbar": "/components/component-page-navbar/component-page-navbar",
+    "component-page-section": "/components/component-page-section/component-page-section"
   }
 }

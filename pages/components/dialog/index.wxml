@@ -1,0 +1,61 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Dialog 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="删除草稿" subtitle="需要用户明确确认" description="用于影响较大的操作，确认与取消都应有清楚且可预期的结果。">
+            <pui-button content="删除这份草稿" theme="primary" block aria-label="删除这份草稿" bind:click="onOpenDialog" />
+            <text class="component-page__status" aria-live="polite">{{dialogStatus}}</text>
+          </component-page-section>
+          <component-page-section title="内容状态" subtitle="等待与暂无内容" description="对话框可以承载页面已有的加载或空内容反馈，并始终保留关闭路径。">
+            <pui-button content="查看不同内容状态" variant="outline" block aria-label="查看不同内容状态" bind:click="onToggleDialogContent" />
+          </component-page-section>
+          <component-page-section title="必须读完的说明" subtitle="避免误触遮罩关闭" description="内容较长且必须阅读时，点击背景不会关闭，顶部仍保留明确的关闭入口。">
+            <pui-button content="阅读发布说明" variant="outline" block aria-label="阅读发布说明" bind:click="onOpenLockedDialog" />
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+
+    <pui-dialog
+      visible="{{dialogVisible}}"
+      title="删除这份草稿？"
+      content="删除后无法恢复，但不会影响已经发布的内容。"
+      close-btn="{{true}}"
+      close-on-overlay-click="{{true}}"
+      cancel-btn="{{dialogCancelBtn}}"
+      confirm-btn="{{dialogConfirmBtn}}"
+      aria-label="确认当前操作"
+      bind:confirm="onDialogConfirm"
+      bind:cancel="onDialogCancel"
+      bind:close="onDialogClose"
+      bind:overlay-click="onDialogOverlayClick"
+    >
+      <view slot="content" class="dialog-page__content">
+        <pui-loading wx:if="{{dialogContentState === 'loading'}}" text="正在读取发布说明" />
+        <pui-empty wx:elif="{{dialogContentState === 'empty'}}" title="暂无补充说明" description="你仍可以关闭并返回。" />
+        <pui-cell wx:else title="发布后仍可继续编辑" description="新的修改会保存为下一版草稿。" left-icon="dialog" />
+      </view>
+    </pui-dialog>
+
+    <pui-dialog
+      visible="{{lockedDialogVisible}}"
+      title="发布前说明"
+      close-btn="{{true}}"
+      close-on-overlay-click="{{false}}"
+      actions="{{dialogActions}}"
+      button-layout="vertical"
+      aria-label="长内容对话框"
+      bind:action="onDialogAction"
+      bind:close="onLockedDialogClose"
+      bind:overlay-click="onLockedDialogOverlayClick"
+    >
+      <view slot="content" class="dialog-page__content">
+        <pui-cell title="公开范围" description="发布后，拥有链接的人都可以查看这份内容。" left-icon="eye" />
+        <pui-cell title="后续修改" description="再次编辑会生成新草稿，不会立即覆盖线上版本。" left-icon="edit" />
+        <pui-cell title="退出方式" description="点击背景不会关闭，请使用顶部关闭按钮。" left-icon="lock" />
+      </view>
+    </pui-dialog>
+  </view>
+</pui-config-provider>

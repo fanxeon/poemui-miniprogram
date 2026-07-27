@@ -1,9 +1,9 @@
 var createComponentPage = require('../../../utils/component-page');
-var ICON_MAP = require('poemui-miniprogram/icon/icon-map');
+var ICON_FONT_CATALOG = require('poemui-miniprogram/icon/icon-font-catalog');
 
 var CATEGORY_ORDER = [
   'navigation', 'action', 'editing', 'status', 'form', 'file', 'media', 'communication',
-  'user', 'commerce', 'device', 'chart', 'map', 'development', 'layout', 'abstract'
+  'user', 'commerce', 'device', 'chart', 'map', 'development', 'layout', 'components', 'abstract'
 ];
 
 var CATEGORY_LABELS = {
@@ -22,6 +22,7 @@ var CATEGORY_LABELS = {
   map: '地图',
   development: '开发',
   layout: '布局',
+  components: '组件',
   abstract: '抽象'
 };
 
@@ -41,17 +42,14 @@ var CATEGORY_DESCRIPTIONS = {
   map: '位置与地图能力',
   development: '开发与工程工具',
   layout: '布局与页面结构',
+  components: 'PoemUI 已落地组件',
   abstract: '通用抽象图形'
 };
 
-function getCategory(iconPath) {
-  var segments = String(iconPath || '').split('/');
-  return segments[3] || 'abstract';
-}
-
 function createIconCatalog() {
-  return Object.keys(ICON_MAP).map(function (name) {
-    var category = getCategory(ICON_MAP[name]);
+  return ICON_FONT_CATALOG.icons.map(function (item) {
+    var name = item.name;
+    var category = item.category || 'abstract';
     return {
       name: name,
       category: category,

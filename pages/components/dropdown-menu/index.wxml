@@ -1,0 +1,22 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="DropdownMenu 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="基础用法" subtitle="筛选菜单" description="DropdownMenu 在触发项下方展开单选或多选筛选项。">
+            <pui-dropdown-menu items="{{dropdownItems}}" value="{{dropdownValue}}" show-overlay close-on-click-overlay bind:change="onDropdownChange" aria-label="组件筛选菜单" />
+            <text class="component-page__status" aria-live="polite">{{lastAction}}</text>
+          </component-page-section>
+          <component-page-section title="选项语义" subtitle="Single / Multiple" description="选项状态、菜单项语义和父级 value 回写由组件统一管理。">
+            <pui-cell-group aria-label="DropdownMenu 选项语义">
+              <pui-cell title="单选" description="选择后真实更新 value 并关闭菜单" left-icon="radio" />
+              <pui-cell title="多选" description="可由组件 Footer 承载重置和确定" left-icon="checkbox" />
+              <pui-cell title="遮罩" description="点击外部区域请求关闭当前菜单" left-icon="layers" />
+            </pui-cell-group>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

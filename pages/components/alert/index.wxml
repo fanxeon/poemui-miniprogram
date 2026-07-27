@@ -1,0 +1,28 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Alert 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="离开前提醒" subtitle="可关闭的信息提示" description="适合放在内容上方，及时说明不会阻断操作的重要信息。">
+            <pui-alert visible="{{alertVisible}}" theme="info" title="草稿会自动保存" description="你可以放心离开，回来后继续编辑。" closable bind:change="onAlertChange" />
+            <text class="component-page__status" aria-live="polite">{{alertStatus}}</text>
+          </component-page-section>
+          <component-page-section title="检查完成" subtitle="较长内容也清晰对齐" description="标题、说明和关闭入口保持稳定，适合需要完整阅读的结果提醒。">
+            <pui-alert theme="success" vertical-align="center" title="发布前检查已完成" description="链接、图片和必填信息都已准备好，可以继续发布。" />
+          </component-page-section>
+          <component-page-section title="不同重要程度" subtitle="用语义色区分处理优先级" description="普通信息、待确认事项与阻断问题应有明确但克制的视觉差异。">
+            <view class="alert-page__stack">
+              <pui-alert theme="info" variant="tinted" title="内容正在同步" description="完成前请保持网络连接。" />
+              <pui-alert theme="warning" variant="tinted" title="还有一项待确认" description="请检查公开范围是否正确。" />
+              <pui-alert theme="danger" variant="tinted" title="暂时无法发布" description="封面图片上传失败，请稍后重试。" />
+            </view>
+          </component-page-section>
+          <component-page-section title="关闭后恢复" subtitle="重要提醒可以再次查看" description="关闭提醒不会改变内容，页面仍能提供清晰的恢复入口。">
+            <pui-button wx:if="{{!alertVisible}}" content="重新显示提示" theme="primary" block bind:click="onReopenAlert" />
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

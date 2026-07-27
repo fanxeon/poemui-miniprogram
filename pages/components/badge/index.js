@@ -1,0 +1,2 @@
+var createComponentPage = require('../../../utils/component-page');
+Page(createComponentPage({ title: 'Badge', data: { badgeCount: 8, badgeStatus: '当前显示 8 条提醒。' }, methods: { onCycleBadge: function () { var count = this.data.badgeCount === 8 ? 0 : (this.data.badgeCount === 0 ? 128 : 8); this.setData({ badgeCount: count, badgeStatus: count > 99 ? '当前显示 99+ 条提醒。' : '当前显示 ' + count + ' 条提醒。' }); } }}));

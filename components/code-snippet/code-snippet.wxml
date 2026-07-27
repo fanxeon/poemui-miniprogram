@@ -1,0 +1,28 @@
+<pui-card
+  padding="compact"
+  bordered="{{true}}"
+  shadow="{{false}}"
+  aria-label="{{ariaLabel || title}}"
+>
+  <view class="code-snippet__header">
+    <view class="code-snippet__title">
+      <pui-icon name="terminal" size="28" aria-hidden="true" />
+      <text>{{title}}</text>
+    </view>
+    <pui-button
+      theme="default"
+      variant="text"
+      size="small"
+      shape="circle"
+      icon="{{copyIcon}}"
+      icon-only
+      disabled="{{!code}}"
+      aria-label="{{copyLabel}}"
+      bind:click="onCopy"
+    />
+  </view>
+  <scroll-view class="code-snippet__viewport" scroll-x enhanced show-scrollbar="{{false}}">
+    <text class="code-snippet__code" selectable>{{code}}</text>
+  </scroll-view>
+  <text wx:if="{{copyStatus}}" class="code-snippet__status" aria-live="polite">{{copyStatus}}</text>
+</pui-card>

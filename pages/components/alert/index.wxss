@@ -1,0 +1,7 @@
+@import "../../../styles/component-page.wxss";
+
+.alert-page__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pui-space-normal);
+}
