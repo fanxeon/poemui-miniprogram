@@ -1,9 +1,9 @@
 # PoemUI 组件交付进度
 
-## 2026-07-27 · PoemUI 受限 Beta、AI Skill 与公网双入口
+## 2026-07-28 · PoemUI 受限 Beta、公共 npm、GitHub、AI Skill 与公网双入口
 
-- **H5 与落地页**：H5 “安装”升级为“快速开始”，只对真实可执行的页面、视觉配置和 AI
-  任务示例提供 PUI Copy IconButton；公共 npm/GitHub 未发布时明确禁用对应动作。PoemCoder
+- **H5 与落地页**：H5 “安装”升级为“快速开始”，对固定 npm 安装、公开 GitHub、页面、视觉配置和 AI
+  任务示例提供真实入口或 PUI Copy IconButton。PoemCoder
   `/poem-ui` 已使用三张真实微信开发者工具截图、正式小程序码留白、MIT Core/未来独立
   Pro 边界和 H5 CTA 发布；H5 独立静态容器发布于
   `https://poemcoder.com/poem-ui/docs/`，落地页发布于
@@ -13,21 +13,26 @@
   PoemUI `0.1.0`，要求优先复用 PUI、真实父级回写、平台失败/取消闭环、390px、默认
   500ms/上限 1000ms 和 `pending-device` 边界；已安装到当前 Codex Skill 目录并通过
   `quick_validate.py` 与真实项目自用验证。
-- **发布与许可证**：`docs/PUBLIC_BETA_NOTICE.md` 作为公开事实源，明确当前 71 个组件、
+- **发布与许可证**：`poemui-miniprogram@0.1.0` 已发布到公共 npm，Registry tarball shasum
+  为 `bd9a2468d771ff3d631d59c6096247fdccc83b7d`；公开仓库为
+  `https://github.com/fanxeon/poemui-miniprogram`，默认分支
+  `codex/public-beta-0.1.0`。`docs/PUBLIC_BETA_NOTICE.md` 作为公开事实源，明确当前 71 个组件、
   562 个快速样式和 220 个图标属于 MIT Core；当前开放 Beta 能力无需购买，未来 Pro
-  只能独立发行未进入 MIT Core 的新能力。公共 npm 仍因 `ENEEDAUTH`、Registry `E404`
-  未发布；GitHub 因缺少明确 owner/repository 与 remote 未发布，页面没有制造可复制的假安装。
+  只能独立发行未进入 MIT Core 的新能力。
 - **构建与产物**：`site:build`、完整 `npm run check`、`pack:check`、
   `example:install` 通过；真实 AppID `wx23aa017375535746` 工程执行微信
   `build-npm` 成功且 `warnings=[]`。`miniprogram_dist`、示例
   `node_modules/poemui-miniprogram/miniprogram_dist` 与真实
   `miniprogram_npm/poemui-miniprogram` 的 540 个文件逐文件 SHA-256 一致。
   `_example` 的 `touristappid` 仍返回 `code 10 / 不存在此 AppID`，未伪造其微信构建产物。
+- **公共安装复验**：全新临时目录从 Registry 安装 `poemui-miniprogram@0.1.0` 成功；
+  真实 `miniprogram/` 已从 `file:..` 切换到固定公共版本。微信 DevTools 使用
+  AppID `wx23aa017375535746` 再次 `build-npm` 成功，`warnings=[]`；Registry 安装包
+  `miniprogram_dist` 与微信 `miniprogram_npm` 均为 540 个文件、哈希差异为 0。
 - **公网实测与风险**：落地页桌面/390px、light/dark、真实 CTA、四张图片加载和 console
   已通过；H5 在移动视口无横向溢出，light/dark、真实复制、资源与 console 已通过。
-  正式小程序码、云端 `pui-codepage` 写确认、公共 npm 干净安装、GitHub clone/Tag/Release、
-  微信正式审核和 iOS/Android 真机仍待外部权限或材料。Ledger：`PUI-FB-0455`
-  （investigating / accepted）。
+  正式小程序码、云端 `pui-codepage` 写确认、微信正式审核和 iOS/Android 真机仍待
+  外部流程或材料。Ledger：`PUI-FB-0455`（resolved / accepted）。
 
 ## 2026-07-27 · DynamicMessage 分阶段变形动效修正
 

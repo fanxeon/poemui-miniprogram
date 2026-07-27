@@ -3229,7 +3229,7 @@ function makeUsageCode(detail, props) {
     return `// shadcn/ui ${detail.title}\n// 当前条目仅用于组件分类与微信平台边界说明。\n// 该能力尚未生成可安装的 PoemUI 原生目录。\n\n// 兼容矩阵：docs/SHADCN_COMPATIBILITY.md`;
   }
   if (detail.id === 'getting-started') {
-    return `/* 公共 npm 尚未发布；安装完成后配置 page.json */
+    return `/* npm i poemui-miniprogram@0.1.0 -S --production */
 {
   "usingComponents": {
     "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
@@ -6870,6 +6870,7 @@ function configProviderShowcase(props) {
 }
 
 const guideCopySources = {
+  install: `npm i poemui-miniprogram@0.1.0 -S --production`,
   reference: `{
   "usingComponents": {
     "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
@@ -6890,6 +6891,8 @@ App({
     visualConfig.restore();
   }
 });`,
+  skill: `git clone --depth 1 https://github.com/fanxeon/poemui-miniprogram.git
+cp -R poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/`,
 };
 
 function guideCodeBlockSample(key, title, description) {
@@ -6929,10 +6932,10 @@ function gettingStartedGuide() {
       </header>
 
       <section class="pui-guide__notice" role="status" aria-label="发布状态">
-        <span class="pui-guide__notice-icon">${iconComponent('warning-triangle', { size: 'small' })}</span>
+        <span class="pui-guide__notice-icon">${iconComponent('check-circle', { size: 'small' })}</span>
         <div>
-          <strong>公共 npm 与 GitHub 尚未发布</strong>
-          <p>当前页面不会提供不可执行的安装复制按钮。待 Registry 和公开仓库真实可读后，安装入口才会解锁。</p>
+          <strong>公共 npm 与 GitHub 已发布</strong>
+          <p>固定版本安装、公开源码和 PoemUI Skill 均已通过真实回读；仍请把模拟器、H5 与真机验收分开报告。</p>
         </div>
       </section>
 
@@ -6941,17 +6944,18 @@ function gettingStartedGuide() {
           <span>01</span>
           <div>
             <h2 id="guideInstallTitle">安装与微信构建</h2>
-            <p>包名已经冻结，公共发布仍待 npm 登录与 GitHub 归属确认。</p>
+            <p>固定安装 0.1.0，不使用 latest 漂移当前组件合同。</p>
           </div>
         </header>
         <div class="pui-guide__status-grid">
           <div><span>包名</span><strong>poemui-miniprogram</strong></div>
           <div><span>当前版本</span><strong>0.1.0</strong></div>
-          <div><span>npm Registry</span><strong class="is-pending">尚未发布</strong></div>
-          <div><span>微信 build-npm</span><strong>本地产物已验证</strong></div>
+          <div><span>npm Registry</span><strong>已发布</strong></div>
+          <div><span>微信 build-npm</span><strong>公共包已验证</strong></div>
         </div>
+        ${guideCodeBlockSample('install', '固定版本安装', 'Terminal')}
         <ol class="pui-guide__steps">
-          <li><span>1</span><p>公共包发布后执行固定版本安装，不使用 latest 漂移合同。</p></li>
+          <li><span>1</span><p>执行固定版本安装，并在项目设置中启用 npm 构建。</p></li>
           <li><span>2</span><p>在微信开发者工具执行“工具 → 构建 npm”。</p></li>
           <li><span>3</span><p>核对 node_modules、miniprogram_npm 与页面组件路径。</p></li>
         </ol>
@@ -6999,10 +7003,11 @@ function gettingStartedGuide() {
           <div class="pui-guide__skill-icon">${iconComponent('ai', { size: 'large' })}</div>
           <div>
             <strong>poemui-miniprogram Skill</strong>
-            <span>适配 0.1.0 · 本地验证中</span>
-            <p>公开 GitHub 尚未绑定，因此暂不展示虚假的一键安装命令。源文件发布后再开放安装入口。</p>
+            <span>适配 0.1.0 · 公开可用</span>
+            <p>公开真相源为 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/codex/public-beta-0.1.0/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>；安装后仍需让 AI 运行合同测试和微信构建。</p>
           </div>
         </div>
+        ${guideCodeBlockSample('skill', '安装 PoemUI Skill', 'Terminal')}
       </section>
 
       <section class="pui-guide__section" aria-labelledby="guideLicenseTitle">

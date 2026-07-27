@@ -2,7 +2,7 @@
 
 > 本文件由 `feedback/records/*.json` 自动生成，请勿手工编辑。工作流见 `docs/COMPONENT_FEEDBACK.md`。
 
-当前 437 条记录，数据更新至 2026-07-27：open 0、investigating 1、planned 0、needs-device 1、resolved 434；pending-user 249、accepted 181。
+当前 437 条记录，数据更新至 2026-07-28：open 0、investigating 0、planned 0、needs-device 1、resolved 435；pending-user 249、accepted 181。
 
 | ID | 范围 | 类型 | 严重度 | 状态 | 验收 | 问题 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -442,7 +442,7 @@
 | PUI-FB-0452 | miniprogram, tabbar, card, avatar, input, button | visual-layout | medium | resolved | pending-user | 我的页资料版头不应重复展示昵称和编辑框 |
 | PUI-FB-0453 | miniprogram, card, input, cell, cell-group | visual-layout | medium | resolved | pending-user | 我的页服务 CellGroup 需要避让资料输入区的投影 |
 | PUI-FB-0454 | miniprogram, button, icon, tabbar | visual-layout | low | resolved | pending-user | 我的页客服入口应进入 Navbar 左 Slot |
-| PUI-FB-0455 | h5, miniprogram, npm, skill, documentation | ai-usability | high | investigating | accepted | 公共发布准备需要真实快速开始、Beta 边界与 AI Skill |
+| PUI-FB-0455 | h5, miniprogram, npm, skill, documentation | ai-usability | high | resolved | accepted | 公共发布准备需要真实快速开始、Beta 边界与 AI Skill |
 
 ## PUI-FB-0001 · Style Utilities 缺少显式深色条件变体
 
@@ -11921,16 +11921,16 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0455-public-beta-quick-start-ai-skill.json`
 - 范围：`global` / `h5`、`miniprogram`、`npm`、`skill`、`documentation`
-- 状态：`investigating`，用户验收：`accepted`，更新：2026-07-27
+- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-28
 - 用户目标：把 PoemUI 从本地完成态推进到可公开验证的受限 Beta：H5 提供真实快速开始与 AI Skill，公告不混淆 MIT Core、未来 Pro、本地构建和公共发布。
-- 实际问题：H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成并通过运行态验收；公共 npm、GitHub、云端 pui-codepage 写入、正式小程序码与真机仍保持明确未完成状态，页面不显示假成功。
-- 决策：采用 MIT Core + 未来独立 Pro；H5 安装入口升级为快速开始；建立 poemui-miniprogram Skill 与两个只读验证脚本；npm/GitHub 未真实发布时禁用安装复制并显示尚未发布。
+- 实际问题：H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成；公共 npm 0.1.0 与 GitHub 仓库已公开并通过 Registry 安装、微信 build-npm 和公开回读。云端 pui-codepage、正式小程序码与真机继续保持独立未验证状态。
+- 决策：采用 MIT Core + 未来独立 Pro；H5 安装入口升级为快速开始；建立 poemui-miniprogram Skill 与两个只读验证脚本；npm/GitHub 发布前禁用动作，发布且通过独立回读后才开放固定版本入口。
 - 理由：将用户可执行动作绑定到 Registry、公开仓库、浏览器和微信运行态证据，既保留当前 Beta 的开放体验，也不追溯限制已经以 MIT 交付的代码。
 
 AI 必须遵守：
 
-- 公共 npm 未能通过 npm view 读取目标版本时，不展示可复制的 npm 安装动作。
-- GitHub 未绑定远端和公开 clone 前，不展示 Skill 一键网络安装或声称源码已公开。
+- 公共 npm 未能通过 npm view 读取目标版本时，不展示可复制的 npm 安装动作；发布后还必须做全新目录安装与微信 build-npm。
+- GitHub 未公开回读前，不展示 Skill 网络安装或声称源码已公开；公开快照不得带云凭据、开发者私有配置和生成的 miniprogram_npm。
 - Skill 从固定版本的包入口和组件合同工作，不复制会漂移的完整 API。
 - 已经进入 MIT 根包的代码继续属于 MIT Core；未来 Pro 只包含独立发行的新能力。
 - 快速开始的复制结果必须来自真实剪贴板成功或失败，并复用 PUI Button/Icon。
@@ -11943,12 +11943,13 @@ AI 必须遵守：
 - 验证：`npm run check`
 - 验证：`npm run pack:check`
 - 验证：`npm run example:install`
+- 验证：`npm publish --access public：poemui-miniprogram@0.1.0 发布成功。`
+- 验证：`npm view poemui-miniprogram@0.1.0：版本、integrity、shasum、repository 与 homepage 回读成功。`
+- 验证：`全新临时目录 npm install poemui-miniprogram@0.1.0 --save-exact：通过，0 vulnerabilities。`
 - 验证：`/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project "/Users/fanx/Documents/poemUI 小程序组件库/miniprogram"：AppID wx23aa017375535746 通过，warnings=[]。`
-- 验证：`miniprogram_dist、_example/node_modules 安装目录与真实 miniprogram_npm：540 个文件逐文件 SHA-256 一致。`
+- 验证：`公共 Registry 安装包 miniprogram_dist 与真实 miniprogram_npm：540 个文件逐文件 SHA-256 一致。`
 - 验证：`node skills/poemui-miniprogram/scripts/inspect-project.mjs .`
 - 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs .`
-- 真机/兼容风险：公共 npm 尚未登录和发布，Registry 安装链未验证。
-- 真机/兼容风险：GitHub owner/repository 尚未确认，公开 clone、Tag、Release 和 Skill 网络安装未验证。
 - 真机/兼容风险：_example 使用 touristappid，微信 CLI 返回 code 10，不存在此 AppID；真实 AppID 工程已通过，但游客安装示例未生成 miniprogram_npm。
 - 真机/兼容风险：小程序 pui-codepage 云端更新仍等待数据库写操作确认，未把待确认任务报告成成功。
 - 真机/兼容风险：正式小程序码、微信审核/发布以及 iOS/Android 真机的组件、Skill 指导产物和共享云安装页仍需发布版本复核。

@@ -2,14 +2,17 @@
 
 PoemUI 是面向微信小程序原生开发的 UI 组件库，目标是通过 npm 安装、按需引入组件，并内置深浅色主题能力。工程结构和使用方式对标 `tdesign-miniprogram`：开发者安装包后，在页面 JSON 的 `usingComponents` 中指向包内组件路径。
 
-> **受限 Beta / 发布状态（2026-07-27）**
-> 当前 `0.1.0` 仍在发布准备中，公共 npm 与公开 GitHub 尚未完成真实发布。下方 npm 命令只在 Registry 能实际读取 `poemui-miniprogram@0.1.0` 后可用；本地 tarball、构建成功或代码中的包名都不等于公共发布。完整稳定性与授权边界见 [受限 Beta 公告](docs/PUBLIC_BETA_NOTICE.md)。
+> **受限 Beta / 发布状态（2026-07-28）**
+> 当前公开版本为 `poemui-miniprogram@0.1.0`，源码位于
+> [fanxeon/poemui-miniprogram](https://github.com/fanxeon/poemui-miniprogram)。
+> 本地 tarball、构建成功或代码中的包名仍不能替代 Registry 回读和微信
+> `build-npm`；完整稳定性与授权边界见 [受限 Beta 公告](docs/PUBLIC_BETA_NOTICE.md)。
 
 参与组件、预览或设计规范开发前，请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)；AI 代理还必须遵守根目录 [AGENTS.md](AGENTS.md)。布局、组件复用与交互规则由 `npm run check` 自动验证。
 
 ## 安装
 
-公共包发布后固定版本安装：
+固定版本安装：
 
 ```bash
 npm i poemui-miniprogram@0.1.0 -S --production
