@@ -118,6 +118,14 @@ var routes = {
     title: 'Dialog',
     headings: ['基础用法', '内容边界', '遮罩与长内容']
   },
+  'top-loading': {
+    title: 'TopLoading',
+    headings: ['当前卡片任务', '状态回写']
+  },
+  'dynamic-message': {
+    title: 'DynamicMessage',
+    headings: ['生成任务通知', '页面仍可操作']
+  },
   'pull-refresh': {
     title: 'PullRefresh',
     headings: []
@@ -212,7 +220,7 @@ var taskFocusedPages = [
   'form', 'field', 'label', 'input', 'input-otp', 'textarea', 'search', 'checkbox', 'radio', 'switch', 'select', 'picker', 'combobox', 'slider', 'stepper', 'rate', 'calendar', 'date-time-picker', 'upload',
   'collapse', 'avatar', 'badge', 'bubble', 'card', 'cell', 'collapsible', 'count-down', 'image', 'list', 'swipe-cell', 'swiper', 'table', 'tag',
   'alert', 'dialog', 'empty', 'loading', 'notice-bar', 'progress', 'result', 'skeleton', 'toast',
-  'pull-refresh', 'virtual-list', 'watermark'
+  'top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'
 ];
 
 assert.ok(appStyle.indexOf('height: 100vh') !== -1 && appStyle.indexOf('overflow: hidden') !== -1, '小程序 App 根必须提供全屏且不滚动的页面基础');
@@ -309,7 +317,7 @@ Object.keys(routes).forEach(function (name) {
     assert.ok(wxss.indexOf('@import "../../../styles/component-page.wxss";') === 0, name + ' 页面必须复用共享页面壳样式');
     assert.ok(wxss.indexOf('@import "../../../styles/data-pages.wxss";') !== -1, name + ' 页面必须复用数据展示组合布局');
     assert.ok(wxss.indexOf('#') === -1, name + ' 页面不得写入私有颜色');
-  } else if (['pull-refresh', 'virtual-list'].indexOf(name) !== -1) {
+  } else if (['top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list'].indexOf(name) !== -1) {
     assert.ok(wxss.indexOf('@import "../../../styles/component-page.wxss";') === 0, name + ' 页面必须复用共享页面壳样式');
     assert.ok(wxss.indexOf('@import "../../../styles/advanced-pages.wxss";') !== -1, name + ' 页面必须使用滚动所有者布局');
     assert.ok(wxss.indexOf('#') === -1, name + ' 页面不得写入私有颜色');
@@ -536,8 +544,8 @@ vm.runInNewContext(iconJs, {
   },
   Page: function (definition) { iconPageDefinition = definition; }
 }, { filename: 'miniprogram/pages/components/icon/index.js' });
-assert.strictEqual(installedIconFontCatalog.icons.length, 218, '微信 npm 字体图标目录必须包含当前 218 个真实图标');
-assert.strictEqual(iconPageDefinition.data.iconCatalog.length, 218, 'Icon 页面必须把完整 npm 目录作为运行态真相源');
+assert.strictEqual(installedIconFontCatalog.icons.length, 220, '微信 npm 字体图标目录必须包含当前 220 个真实图标');
+assert.strictEqual(iconPageDefinition.data.iconCatalog.length, 220, 'Icon 页面必须把完整 npm 目录作为运行态真相源');
 var iconRuntime = {
   data: JSON.parse(JSON.stringify(iconPageDefinition.data)),
   setData: function (next) { Object.assign(this.data, next); }
@@ -555,6 +563,10 @@ iconPageDefinition.applyIconSearch.call(iconRuntime, 'sheet');
 assert.deepStrictEqual(JSON.parse(JSON.stringify(iconRuntime.data.visibleIconGroups.map(function (group) {
   return [group.key, group.icons.map(function (icon) { return icon.name; })];
 }))), [['components', ['sheet', 'action-sheet']]], 'Icon 搜索必须从 npm Icon Font 目录中真实检索组件专属图标');
+iconPageDefinition.applyIconSearch.call(iconRuntime, 'poemcoder-mark');
+assert.deepStrictEqual(JSON.parse(JSON.stringify(iconRuntime.data.visibleIconGroups.map(function (group) {
+  return [group.key, group.icons.map(function (icon) { return icon.name; })];
+}))), [['abstract', ['poemcoder-mark']]], 'Icon 页面必须从 npm Icon Font 目录检索公开 PoemCoder Mark');
 
 var previousWx = global.wx;
 var previousPage = global.Page;

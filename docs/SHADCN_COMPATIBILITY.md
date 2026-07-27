@@ -22,7 +22,7 @@
 | Checkbox | `poemui-miniprogram/checkbox/checkbox` | `adapter` | `tap` | 原生 Checkbox 提供受控/非受控选中与半选、mark/content 分区交互、内部 Icon/Loading、标签说明与 slot、只读/加载/错误边界、完整事件方法和 0–500ms 低动效。 |
 | Collapsible | `poemui-miniprogram/collapsible/collapsible` | `adapter` | `tap` | 独立原生 Collapsible 提供单触发器/单内容区、受控/非受控 open、trigger/default slot、实测高度动画、完整状态与实例方法；多面板仍由 Collapse/Accordion 承担。 |
 | Combobox | `poemui-miniprogram/combobox/combobox` | `adapter` | `input/tap` | 独立原生 Combobox 提供真实搜索过滤、受控选值/查询/显隐、单选/多选、分组、创建、状态、slot、完整事件方法和测量高度动画；普通 picker 继续由 Select 承担。 |
-| Date Picker | `poemui-miniprogram/date-time-picker/date-time-picker` | `adapter` | `tap` | DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。 |
+| Date Picker | `poemui-miniprogram/date-time-picker/date-time-picker` | `adapter` | `tap` | DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。 |
 | Dialog | `poemui-miniprogram/dialog/dialog` | `native` | `tap` | 原生 Dialog 提供 16 Props、受控显隐、Header/Content/Footer 三区、七个具名 slot、按钮 actions、遮罩滚动保护与 close()。请求状态由 content slot 组合 PUI Loading/Empty/Button 承担。 |
 | Direction | `poemui-miniprogram/direction/direction` | `native` | `none` | 原生 Direction Provider 为子树提供 ltr/rtl/auto 阅读方向、语言解析、逻辑对齐、容器形态、默认 slot、完整解析/变更事件和实例查询；不会伪称旧物理 left/right 样式或所有图标会自动镜像。 |
 | Dropdown Menu | `poemui-miniprogram/dropdown-menu/dropdown-menu` | `adapter` | `tap` | 原生 DropdownMenu 以 8 Props 的筛选项数组承载单选/多选选项，提供受控选值、禁用项、遮罩关闭、默认/footer Slot、change/open/close/confirm/reset 与固定低动效；不承担业务状态、滚动控制或实例方法。 |

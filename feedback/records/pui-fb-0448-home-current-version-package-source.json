@@ -1,0 +1,99 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0448",
+  "title": "首页缺少与 npm 包同源的当前版本标识",
+  "scope": "component",
+  "components": ["miniprogram-home", "tag"],
+  "type": "capability-gap",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "在小程序首页找到克制且清晰的位置展示当前 PoemUI 版本号，并确保版本不会和发布包发生漂移。",
+  "environment": {
+    "surfaces": ["miniprogram home brand header"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 pages/index/index，Navbar 与品牌区都没有可见版本号。",
+    "搜索首页数据，页面没有读取 poemui-miniprogram 公开 version。"
+  ],
+  "expected": "首页在品牌名旁以低干扰 PUI Tag 显示 v 前缀版本，并直接读取 npm 包公开 version，不手写第二份字符串。",
+  "actual": "用户只能从更新公告或工程文件间接推断版本，首页没有当前版本标识。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户要求在 index 主页找合适位置放当前版本号。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.js",
+      "note": "页面从 poemui-miniprogram/version 轻量子入口读取版本，并派生带 v 前缀的 currentVersion。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.wxml",
+      "note": "Poem UI 品牌名旁使用 default light small round 的 PUI Tag 展示 currentVersion。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-home.js",
+      "note": "锁定 PUI Tag 组合、轻量子入口、package.json 单一来源与 v0.1.0 运行态值。"
+    }
+  ],
+  "rootCause": "首页品牌区此前只展示产品名、品牌短句、简介与目录统计，没有建立应用版本的公开数据源和可见位置。",
+  "decision": {
+    "outcome": "在 home-brand 名称行组合小尺寸默认浅色圆形 PUI Tag；构建脚本从 package.json.version 生成 miniprogram_dist/version.js，页面通过 require('poemui-miniprogram/version') 读取并添加 v 前缀。",
+    "rationale": "名称行能让版本与产品身份关联但不抢占 Navbar；轻量子入口避免页面维护版本字符串，也避免加载 poemui-miniprogram 总入口时把全部组件拉入微信模块图。",
+    "alternativesRejected": [
+      "把版本放进 Navbar 标题：会挤压胶囊镜像双按钮和唯一标题。",
+      "在页面硬编码 v0.1.0：下一次发版容易遗漏同步。",
+      "新增独立版本卡片：会增加无必要 Surface 和纵向空间。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/index/index.json",
+      "miniprogram/pages/index/index.js",
+      "miniprogram/pages/index/index.wxml",
+      "miniprogram/pages/index/index.wxss",
+      "scripts/test-miniprogram-home.js",
+      "scripts/generate-miniprogram-dist.js",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/COMPONENT_RULES_INDEX.md",
+      "feedback/records/pui-fb-0448-home-current-version-package-source.json"
+    ],
+    "dependencies": ["poemui-miniprogram version subpath", "PUI Tag"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": [
+      "npm run miniprogram:build",
+      "node scripts/test-miniprogram-home.js",
+      "微信开发者工具 build-npm：982ms，warnings=[]"
+    ],
+    "browser": [
+      "微信开发者工具 390x844 打开 pages/index/index；品牌名称行实际 PUI Tag content=v0.1.0，截图 /tmp/poemui-home-version-code-tab-390.png 确认版本未挤压 Poem UI、月下成行或右侧品牌标记。",
+      "直接加载组件总入口曾触发 direction 模块未定义并阻断页面注册；改用 poemui-miniprogram/version 后重新 build-npm，console 不再命中 error、exception、not found 或 not defined。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机仍需确认版本 Tag 在系统字体缩放下不挤压品牌名或右侧标记。",
+      "深色与全部外观组合下的 Tag 对比度仍需运行态复核。"
+    ]
+  },
+  "ai": {
+    "summary": "首页版本号属于产品身份元信息，应放在品牌名旁，并从 package.json 生成的轻量 npm version 子入口读取。",
+    "rules": [
+      "首页不得维护第二份版本字符串；读取 poemui-miniprogram/version 轻量子入口。",
+      "小程序页面不得为读取版本加载 poemui-miniprogram 组件总入口。",
+      "版本使用低干扰 PUI Tag，不修改 Navbar 双按钮和胶囊几何。",
+      "发版验证必须同时检查公开 version 与首页可见值。"
+    ],
+    "tags": ["miniprogram", "home", "version", "package-source", "tag", "single-source"]
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0441",
+  "title": "Picker / DateTimePicker 默认图标 Header 与 Classic 底部模式",
+  "scope": "component",
+  "components": ["picker", "popup", "date-time-picker", "preview-site", "miniprogram"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Picker 默认类型应像 Popup 一样使用三轨 Header：左侧为 primary Check 圆形图标确认、标题居中、右侧为 default Close 圆形图标取消；DateTimePicker 同步这一 API，旧底部双按钮版本命名为 classic。",
+  "environment": {
+    "surfaces": ["picker component page", "picker H5 preview", "date-time-picker composition"],
+    "platforms": ["wechat-miniprogram", "h5-preview"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark", "frosted-glass"]
+  },
+  "reproduction": [
+    "打开 Picker 的 Popup 默认示例。",
+    "早期默认 Header 使用左右文字按钮，不能表达 Popup Header 左 Check 图标、标题、右 Close 图标的产品默认。",
+    "需要保留旧 Footer 布局时，没有公开类型可选择。"
+  ],
+  "expected": "未传 type 时，Popup Header 固定为左 primary Check 圆形图标确认、标题居中、右 default Close 圆形图标取消；传入 type=classic 时，保留底部全宽两列取消/确定；Picker、DateTimePicker、小程序与 H5 同源。",
+  "actual": "上一版虽已把操作移入 Popup Header，但仍使用左右文字按钮；DateTimePicker 未公开 type，H5 也未镜像 Popup 的 36px 三轨图标 Header。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-27 当前任务对话", "note": "用户明确指定默认 Header 操作方向和 classic 命名。"},
+    {"kind": "file", "ref": "picker/picker.wxml", "note": "默认类型通过 Popup header-left/close-btn Slot 使用 primary Check 与 default Close 的圆形 icon-only Button，classic 才渲染 Footer。"},
+    {"kind": "file", "ref": "picker/template.wxml", "note": "滚轮标签改用语义类，避免组件 WXSS 的 text 标签选择器编译警告。"},
+    {"kind": "file", "ref": "picker/picker.js", "note": "type 归一化为 default/classic，非法输入安全回退默认。"},
+    {"kind": "file", "ref": "date-time-picker/date-time-picker.wxml", "note": "DateTimePicker 公开 type 并只透传给一个 PUI Picker，不复制 Header 结构。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 使用同一 type 分支、完整 Props/枚举定义和共享 iconButtonSample 图标镜像。"},
+    {"kind": "test", "ref": "scripts/test-date-time-picker.js", "note": "锁定 IconButton 几何、Popup Slot、Picker 26 Props 与 DateTimePicker 22 Props。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/picker", "note": "官方 Picker 源码目录与本次解包的固定 TDesign 1.15.3 源码共同显示其 Toolbar 为左取消、右确认，仅作为差异化参考。"}
+  ],
+  "rootCause": "PUI-FB-0416 修复了失效 header Slot 后，把 Footer 两列作为唯一 Picker 操作布局；首轮 type API 仅调整到左右文字 Header，未逐字遵守 Popup 的圆形图标三轨合同，DateTimePicker 也未透传 type。",
+  "decision": {
+    "outcome": "Picker 与 DateTimePicker 都公开 type: 'default' | 'classic'；默认 Header 为左 primary Check 圆形图标确认、标题、右 default Close 圆形图标取消，classic 复用原有 Footer 两列。",
+    "rationale": "以 Popup 已存在的三列 Header、header-left 和 close-btn Slot 组合真实 PUI IconButton；DateTimePicker 只把 type 透传给 Picker，不在页面或 H5 单独复制 Header。",
+    "alternativesRejected": [
+      "继续把 Footer 两列作为唯一默认：不符合用户指定的 Popup 对齐语义。",
+      "只在 Picker 独立页调换按钮：安装端组件和 H5 仍保留旧行为。",
+      "为 DateTimePicker 再复制 Popup 和 Button 结构：会破坏其只组合 Picker 的边界。"
+    ]
+  },
+  "impact": {
+    "files": ["picker/picker.js", "picker/picker.wxml", "picker/template.wxml", "picker/picker.wxss", "date-time-picker/date-time-picker.js", "date-time-picker/date-time-picker.wxml", "miniprogram/pages/components/picker/index.js", "miniprogram/pages/components/picker/index.wxml", "miniprogram/pages/components/date-time-picker/index.js", "miniprogram/pages/components/date-time-picker/index.wxml", "metadata/components.js", "preview/app.js", "preview/styles.css", "scripts/test-picker.js", "scripts/test-popup.js", "scripts/test-date-time-picker.js", "docs/components/PICKER.md", "docs/components/POPUP.md", "docs/components/DATE-TIME-PICKER.md", "docs/COMPONENT_API.md"],
+    "dependencies": ["PUI Popup", "PUI Button", "PUI ConfigProvider", "picker-view"]
+  },
+  "verification": {
+    "tests": ["scripts/test-picker.js", "scripts/test-popup.js", "scripts/test-date-time-picker.js"],
+    "commands": [
+      "node scripts/test-picker.js（通过）",
+      "node scripts/test-popup.js（通过）",
+      "node scripts/test-date-time-picker.js（通过）",
+      "node scripts/test-miniprogram-form-pages.js（通过）",
+      "node --check preview/app.js（通过）",
+      "npm run miniprogram:build（通过，生成 71 个组件目录）",
+      "npm run site:build（通过）",
+      "npm run example:install（通过）",
+      "微信开发者工具：工具 → 构建 npm（通过，414ms，问题面板 0）",
+      "npm run pack:check（通过，npm pack --dry-run）",
+      "npm run check（未通过：scripts/test-component-catalog-pruning.js 仍断言 69 个组件，当前工作区已有 top-loading / dynamic-message 后实际为 71；与本条 Picker / DateTimePicker 改动无直接关系）"
+    ],
+    "browser": [
+      "H5 390×844：Picker 默认 Header 为 36px / 231px / 36px 三轨；左 Check 与右 Close 都是 36px 圆形按钮，PreviewDevice 无横向溢出。",
+      "H5 390×844：Picker、DateTimePicker 分别点击 Check / Close，确认均发布 confirm → visible-change → close，取消均发布 cancel → visible-change → close 并恢复草稿。",
+      "H5 390×844：DateTimePicker type=classic 显示等宽两列 Footer（取消/确定），不与默认 Header 同时叠加。",
+      "H5 深色果味：DateTimePicker 默认 Header 的半透明 Surface、primary Check 与 default Close 均保持对比和圆形，无控制台 error/warning。"
+    ],
+    "deviceRisks": [
+      "微信开发者工具已完成 npm 构建，但模拟器对首页组件入口和调试控制台路由命令未产生页面跳转；本轮未能在模拟器实际执行 Picker / DateTimePicker 的点击链，标记 pending-device。",
+      "微信真机需复核 Popup 命名 Slot 投影、圆形图标命中区、picker-view 惯性、遮罩、底部安全区、深浅色、毛玻璃和读屏顺序。"
+    ]
+  },
+  "ai": {
+    "summary": "Picker 操作布局属于组件 API：默认图标 Header 与 classic Footer 必须同时同步 Picker、DateTimePicker、小程序、H5、合同、测试和示例。",
+    "rules": [
+      "默认 Picker Popup 通过 Popup header-left 放 primary/base/circle Check 确认、close-btn 放 default/base/circle Close 取消，并显式关闭 Popup 默认 closeBtn。",
+      "Classic Footer 只能由公开 type=classic 启用，不能作为页面私有旧样式。",
+      "切换操作位置不得改变 confirm/cancel 的草稿、受控值、显隐或事件顺序。",
+      "DateTimePicker 只组合 Picker；公开 type 时只能透传给 Picker，而不能复制 Header 结构。"
+    ],
+    "tags": ["picker", "popup", "header", "classic", "api", "h5-parity", "no-fake-success"]
+  }
+}

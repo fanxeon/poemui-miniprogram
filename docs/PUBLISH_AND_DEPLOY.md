@@ -58,6 +58,21 @@ HOST=0.0.0.0 PORT=4179 npm run site:dev
 
 仓库内的 `vercel.json` 已指定同一构建命令和 `preview` 输出目录。导入仓库后直接部署；不需要使用框架预设。自定义域名生效后，同样同步到 `package.json` 的 `homepage`。
 
+### poemcoder.com 独立 H5 容器
+
+生产 H5 固定挂载在 `https://poemcoder.com/poem-ui/docs/`，与承载 `/poem-ui` 产品落地页的 Next.js 容器分开运行。先完成 `npm run site:build`，再从仓库根构建静态镜像：
+
+```bash
+docker buildx build \
+  --platform linux/amd64 \
+  --file deploy/h5/Dockerfile \
+  --tag poemui-h5:<release-tag> \
+  --load \
+  .
+```
+
+生产容器只监听宿主机 `127.0.0.1:3102`，容器端口为 `8080`；OpenResty 的 `/poem-ui/docs/` location 负责去掉前缀后转发。`/healthz` 是容器级健康检查，公网发布仍须逐项验证 HTML、CSS、JS、字体、hash 路由、390px、light/dark 和真实组件交互。服务器内存有限，禁止在远端构建 Node/Next 镜像；必须在本机生成 `linux/amd64` 镜像后传输。
+
 ## 发布后验收
 
 1. 在一个干净目录执行 `npm pack`，检查 tarball 中存在 `miniprogram_dist/`，其内包含组件目录、`common/`、`theme/` 和 `assets/`，且不包含 `preview/`、`docs/`、`_example/` 与源码目录。

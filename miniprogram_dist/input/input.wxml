@@ -45,27 +45,35 @@
       bindblur="onBlur"
       bindconfirm="onConfirm"
     />
-    <pui-button
-      wx:if="{{clearable && innerValue && interactive}}"
-      custom-class="pui-input__clear"
-      theme="default"
-      variant="text"
-      size="extra-small"
-      shape="square"
-      icon="close-circle"
-      aria-label="清空{{semanticLabel}}"
-      reduce-motion="{{reduceMotion}}"
-      color-scheme="{{colorScheme}}"
-      catch:click="onClear"
-    />
-    <pui-loading wx:if="{{loading}}" loading size="28rpx" aria-label="{{semanticLabel}}加载中" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
-    <view wx:if="{{suffix}}" class="pui-input__suffix">
-      <slot wx:if="{{suffix === 'slot'}}" name="suffix"></slot>
-      <text wx:else>{{suffix}}</text>
-    </view>
-    <view wx:if="{{suffixIcon}}" class="pui-input__suffix-icon">
-      <slot wx:if="{{suffixIcon === 'slot'}}" name="suffix-icon"></slot>
-      <pui-icon wx:else name="{{suffixIcon}}" size="32" color-scheme="{{colorScheme}}" />
+    <view
+      wx:if="{{(clearable && innerValue && interactive) || loading || suffix || suffixIcon}}"
+      class="pui-input__trailing"
+    >
+      <view wx:if="{{clearable && innerValue && interactive}}" class="pui-input__clear-host">
+        <pui-button
+          custom-class="pui-input__clear"
+          theme="default"
+          variant="text"
+          size="extra-small"
+          shape="square"
+          icon="close-circle"
+          aria-label="清空{{semanticLabel}}"
+          reduce-motion="{{reduceMotion}}"
+          color-scheme="{{colorScheme}}"
+          catch:click="onClear"
+        />
+      </view>
+      <view wx:if="{{loading}}" class="pui-input__loading-host">
+        <pui-loading loading size="28rpx" aria-label="{{semanticLabel}}加载中" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
+      </view>
+      <view wx:if="{{suffix}}" class="pui-input__suffix">
+        <slot wx:if="{{suffix === 'slot'}}" name="suffix"></slot>
+        <text wx:else>{{suffix}}</text>
+      </view>
+      <view wx:if="{{suffixIcon}}" class="pui-input__suffix-icon">
+        <slot wx:if="{{suffixIcon === 'slot'}}" name="suffix-icon"></slot>
+        <pui-icon wx:else name="{{suffixIcon}}" size="32" color-scheme="{{colorScheme}}" />
+      </view>
     </view>
   </view>
   <view wx:if="{{tips}}" class="pui-input__tips">

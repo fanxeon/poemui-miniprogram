@@ -763,6 +763,19 @@
           <pui-tag theme="primary" variant="outline">同步中</pui-tag>
         </pui-loading>
       </view>
+      <pui-card custom-class="top-loading-example-card" title="顶部加载安装验证" description="轨道依附当前 Card">
+        <pui-top-loading state="{{topLoadingState}}" progress="{{topLoadingProgress}}" aria-label="安装验证进度" />
+        <pui-cell title="poemui-miniprogram" description="0、精确进度与显式 success 都由页面回写。" value="{{topLoadingProgress === null ? 'idle' : topLoadingProgress + '%'}}" />
+        <view class="top-loading-example-actions">
+          <pui-button size="small" variant="outline" content="开始" bind:click="startExampleTopLoading" />
+          <pui-button size="small" theme="primary" content="推进 25%" bind:click="advanceExampleTopLoading" />
+        </view>
+      </pui-card>
+      <view class="top-loading-example-actions">
+        <pui-button size="small" variant="outline" content="显示灵动通知" bind:click="showExampleDynamicMessage" />
+        <pui-button size="small" theme="primary" content="原位完成" bind:click="completeExampleDynamicMessage" />
+      </view>
+      <pui-cell title="DynamicMessage 状态" description="show/update 使用同一个 install-check key。" value="{{dynamicMessageStatus}}" />
       <view class="toast-example-action"><pui-button size="small" variant="outline" icon="bell" bind:click="openExampleToast">显示 Toast</pui-button></view>
       <pui-cell title="Toast 状态" description="show() 展示后按 duration 自动收起；close 不代表业务成功。" value="{{toastStatus}}" />
       <pui-cell title="基础开关" description="无需事件即可使用非受控初值。">
@@ -1451,4 +1464,5 @@
   <pui-toast id="delivery-toast" bind:close="onToastClose">
     <pui-tag slot="message" theme="primary" variant="outline">Toast + Tag slot</pui-tag>
   </pui-toast>
+  <pui-dynamic-message id="delivery-dynamic-message" bind:close="onDynamicMessageClose" />
 </pui-config-provider>

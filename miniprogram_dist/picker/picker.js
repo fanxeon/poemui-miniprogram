@@ -106,6 +106,7 @@ function buildModel(source, requestedValues, preferredIndexes, keys) {
 }
 function isControlledValue(data) { return data.value !== null && data.value !== undefined; }
 function isControlledVisible(data) { return data.visible !== null && data.visible !== undefined; }
+function normalizeType(value) { return value === 'classic' ? 'classic' : 'default'; }
 
 Component({
   behaviors: [themeBehavior],
@@ -117,6 +118,7 @@ Component({
     visible: { type: null, value: null },
     defaultVisible: { type: Boolean, value: false },
     title: { type: String, value: '' },
+    type: { type: String, value: 'default' },
     cancelText: { type: String, value: '取消' },
     confirmText: { type: String, value: '确定' },
     showHeader: { type: Boolean, value: true },
@@ -157,9 +159,11 @@ Component({
     rootClass: 'pui-picker pui-picker--popup pui-picker--empty',
     rootStyle: '--pui-picker-duration:500ms;',
     semanticLabel: '滚轮选择器',
+    pickerType: 'default',
+    showClassicFooter: false,
   },
   observers: {
-    'columns,value,defaultValue,visible,defaultVisible,title,usePopup,keys,visibleItemCount,itemHeight,disabled,readonly,loading,error,retryText,ariaLabel,reduceMotion,colorScheme': function observeAll() { this.syncState(); },
+    'columns,value,defaultValue,visible,defaultVisible,title,type,usePopup,keys,visibleItemCount,itemHeight,disabled,readonly,loading,error,retryText,ariaLabel,reduceMotion,colorScheme': function observeAll() { this.syncState(); },
   },
   lifetimes: {
     attached: function attached() {
@@ -200,10 +204,11 @@ Component({
       var count = boundedNumber(this.data.visibleItemCount, 3, 7, 5);
       if (count % 2 === 0) count += count === 7 ? -1 : 1;
       var itemHeight = boundedNumber(this.data.itemHeight, 64, 112, 80);
+      var pickerType = normalizeType(this.data.type);
       var empty = !draftModel.columns.length || !draftModel.columns[0].length || draftModel.columns.some(function everyColumn(column) { return firstEnabled(column) < 0; });
       var stateType = this.data.error ? 'error' : this.data.loading ? 'loading' : (empty ? 'empty' : 'content');
       var blocked = Boolean(this.data.disabled || this.data.readonly || stateType !== 'content');
-      var rootClass = ['pui-picker', this.getColorSchemeClass(), this.data.usePopup ? 'pui-picker--popup' : 'pui-picker--inline', 'pui-picker--' + stateType, this.data.disabled ? 'pui-picker--disabled' : '', this.data.readonly ? 'pui-picker--readonly' : '', this.data.reduceMotion ? 'pui-picker--reduced' : ''].filter(Boolean).join(' ');
+      var rootClass = ['pui-picker', this.getColorSchemeClass(), this.data.usePopup ? 'pui-picker--popup' : 'pui-picker--inline', 'pui-picker--' + pickerType, 'pui-picker--' + stateType, this.data.disabled ? 'pui-picker--disabled' : '', this.data.readonly ? 'pui-picker--readonly' : '', this.data.reduceMotion ? 'pui-picker--reduced' : ''].filter(Boolean).join(' ');
       this._selectedModel = selectedModel;
       this._draftValue = draftModel.value.slice();
       this.setData({
@@ -226,6 +231,8 @@ Component({
         rootClass: rootClass,
         rootStyle: '--pui-picker-duration:' + (this.data.reduceMotion ? 1 : 500) + 'ms;',
         semanticLabel: String(this.data.ariaLabel || this.data.title || '滚轮选择器').trim() || '滚轮选择器',
+        pickerType: pickerType,
+        showClassicFooter: Boolean(this.data.usePopup && this.data.showHeader && pickerType === 'classic'),
       });
     },
     detailFromModel: function detailFromModel(model, source, extra) {

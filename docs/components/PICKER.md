@@ -4,7 +4,7 @@
 
 `npm run feedback:list -- --component picker`
 
-Props、事件和方法完整清单以 `docs/COMPONENT_API.md` 为准。当前公开合同固定为 25 Props / 8 Events / 0 Slots / 6 Methods。
+Props、事件和方法完整清单以 `docs/COMPONENT_API.md` 为准。当前公开合同固定为 26 Props / 8 Events / 0 Slots / 6 Methods。
 
 ## 1. 组件定位
 
@@ -17,19 +17,20 @@ Props、事件和方法完整清单以 `docs/COMPONENT_API.md` 为准。当前�
 ```text
 Picker
 ├─ usePopup=true → PUI Popup
-│  ├─ Header: title
+│  ├─ type=default → Header: primary Check IconButton / title / default Close IconButton
 │  ├─ Content: Body
-│  └─ Footer: PUI Button(cancel) / PUI Button(confirm)
+│  └─ type=classic → Footer: PUI Button(cancel) / PUI Button(confirm)
 └─ usePopup=false → Inline Surface
-   ├─ Toolbar(optional): PUI Button(cancel) / title / PUI Button(confirm)
+   ├─ type=default → Toolbar(optional): primary Check IconButton / title / default Close IconButton
+   ├─ type=classic → Toolbar(optional): PUI Button(cancel) / title / PUI Button(confirm)
    └─ Body
       ├─ picker-view + picker-view-column
       ├─ PUI Loading
       └─ PUI Empty(error/empty, optional retry Button)
 ```
 
-- 弹层必须调用 PUI Popup，并真实消费它的 `title` Header、滚动 Content 与 Footer Slot；不得向 Popup 不存在的 `header` Slot 投递内容。确认/取消必须调用 PUI Button，选项图标必须调用 PUI Icon，状态必须调用 PUI Loading/Empty。
-- Popup 模式的确认/取消固定进入两列 Footer；内联模式才保留单行 Toolbar。两种模式共享同一滚轮 Body、草稿与事件合同。
+- 弹层必须调用 PUI Popup，并真实消费它的 `header-left`、`title`、`close-btn`、滚动 Content 与 Footer Slot；不得向 Popup 不存在的 `header` Slot 投递内容。确认/取消必须调用 PUI Button，选项图标必须调用 PUI Icon，状态必须调用 PUI Loading/Empty。
+- `type` 只接受 `default | classic`，非法值安全回退 `default`。Popup 默认 `default`：确认进入 Header 左侧 `header-left`，为 `primary/base/circle + check` 的 PUI IconButton；取消替换 Header 右侧 `close-btn`，为 `default/base/circle + close` 的 PUI IconButton。二者都保留 Popup 三列 Header 的等宽轨道和可访问名称。`classic` 保留既有 Footer 两列的取消 / 确定。内联模式也跟随同一图标左右顺序。两种模式共享同一滚轮 Body、草稿与事件合同。
 - `picker-view` 是组件自身的底层交互根，不为了消除平台节点额外嵌套 PUI Button。
 - Popup 负责唯一弹层 Surface；Loading/Empty 作为嵌入状态保持透明，不增加第二层卡片。
 
@@ -66,8 +67,8 @@ Picker
 - 微信原生 `picker-view` 的默认浅色 mask 必须显式透明化；当前选项由 `--selected` 类使用主题文字色、字重和透明度表达，避免深色 Popup 出现固定白色渐变块。
 - 滚轮状态与 Popup 统一固定 500ms、standard easing；`reduceMotion=true` 将自定义过渡压缩为 1ms。
 - 禁止 `display:none` 制造显隐瞬移，禁止对 `height:auto` 做 transition。
-- Popup 必须覆盖完整 PreviewDevice viewport；390px 下标题、双列和状态可以换行或滚动，但不得产生页面级横向溢出。
-- Popup 模式固定使用 PUI Popup 的 card Surface、Header/Content/Footer 间距与 500ms/1ms 动效，不得再用 Picker 私有 180ms 或页面私有标题栏。
+- Popup 必须覆盖完整 PreviewDevice viewport；390px 下 Header 左右操作、标题、Classic 双列和状态可以换行或滚动，但不得产生页面级横向溢出。
+- Popup 模式固定使用 PUI Popup 的 card Surface、Header/Content/Footer 间距与 500ms/1ms 动效。`default` 使用 Popup Header 的三列几何，`classic` 使用 Footer；不得再用 Picker 私有 180ms 或页面私有标题栏。
 
 ## 7. H5 演示
 
@@ -83,7 +84,7 @@ Picker
 - 2026-07-27 再次访问官方 Picker 页面与仓库，并解包 `tdesign-miniprogram@1.15.3` 核对 `miniprogram_dist/picker/picker.wxml`、`template.wxml` 与 `picker.wxss`；参考其 Popup 承载滚轮与完整操作区的任务关系，但 PoemUI 的可见 Surface 必须遵守本项目 PUI Popup 三分区合同。
 - 借鉴 Popup/内联双形态、草稿确认、单列/多列/级联、值与显隐受控、可见项数和列高主干。
 - PoemUI 使用数据驱动 `columns`，不公开 PickerItem 子组件；微信小程序消费者无需为每列声明额外组件，级联重算由 Picker 统一负责。
-- `cancelBtn/confirmBtn/header/popupProps` 收敛为 `cancelText/confirmText/showHeader` 和固定 PUI Popup 合同，拒绝任意节点/任意 Popup Props 穿透破坏布局。
+- `cancelBtn/confirmBtn/header/popupProps` 收敛为 `type/cancelText/confirmText/showHeader` 和固定 PUI Popup 合同，拒绝任意节点/任意 Popup Props 穿透破坏布局。
 - `keys` 扩展 disabled/icon 映射；PoemUI 额外保留 loading/error/empty/retry、readonly、ariaLabel 和 reduceMotion。
 - 不照搬 `usingCustomNavbar`：Picker 只位于当前页面/PreviewDevice 边界内，不拥有页面导航栏定位职责。
 

@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0452",
+  "title": "我的页资料版头不应重复展示昵称和编辑框",
+  "scope": "component",
+  "components": ["miniprogram", "tabbar", "card", "avatar", "input", "button"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "优化“我的”Tab 的版头，将昵称展示与编辑昵称合并为更紧凑、清晰的一组资料信息。",
+  "environment": {
+    "surfaces": ["miniprogram me top-level page"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 pages/me/index。",
+    "资料卡先显示 Avatar、静态昵称和“PoemUI 用户”，再在下一行提供同一昵称的编辑 Input。",
+    "同一条资料被重复表达，版头高度被不必要地拉长。"
+  ],
+  "expected": "资料卡在同一行展示 Avatar 与唯一带“昵称”标签的 PUI Input；用户可直接编辑并通过 Input suffix 的 PUI IconButton 保存，姓名信息不重复。",
+  "actual": "静态昵称摘要与编辑 Input 分两行，造成重复信息与过高的资料版头。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求优化“我的”Tab 版头，并将展示昵称和编辑昵称合并。"},
+    {"kind": "file", "ref": "miniprogram/pages/me/index.wxml", "note": "Avatar 与单一 pui-input 现组合在 me-profile 同一行，保存继续使用 suffix Slot 的 PUI IconButton。"},
+    {"kind": "file", "ref": "miniprogram/pages/me/index.wxss", "note": "me-profile 以 Token gap 的横向 Flex 布局，编辑区占据 Avatar 以外的可用宽度。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-me-page.js", "note": "锁定同一行组合、静态重复昵称删除和 390px 收缩约束。"}
+  ],
+  "rootCause": "账户页初版把资料摘要和表单编辑当成两个独立分区，昵称是唯一可编辑资料时形成重复内容。",
+  "decision": {
+    "outcome": "保留 Card、Avatar、Input、Input suffix IconButton 与 user-profile Store；删除静态昵称和身份副标题，改为 Avatar 左侧、带 label 的 Input 右侧的一行资料编辑布局。",
+    "rationale": "昵称是唯一资料字段，单一可编辑 Field 同时承担展示和编辑，减少高度并保留清晰字段语义。",
+    "alternativesRejected": [
+      "保留静态昵称并在下方增加编辑框：继续重复信息。",
+      "把 Avatar 或昵称做成页面私有点击编辑器：会绕过 PUI Input 的真实输入、状态和无障碍边界。",
+      "为资料卡再加额外操作按钮或第二层 Surface：不能解决信息重复，且增加视觉层级。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/me/index.wxml", "miniprogram/pages/me/index.wxss", "scripts/test-miniprogram-me-page.js", "docs/MINIPROGRAM_ME_PAGE.md", "feedback/records/pui-fb-0452-me-profile-inline-nickname-editor.json"],
+    "dependencies": ["PUI Card", "PUI Avatar", "PUI Input", "PUI Button", "user-profile Store"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-me-page.js", "scripts/test-miniprogram-tabbar-pages.js"],
+    "commands": ["node scripts/test-miniprogram-me-page.js：通过。", "node scripts/test-miniprogram-tabbar-pages.js：通过。", "微信开发者工具 compile_wxml / compile_wxss：通过。"],
+    "browser": ["微信开发者工具 iPhone 12/13 390px：Avatar 与带 label 的昵称 Input 在同一资料行，静态昵称与“PoemUI 用户”副标题不存在；截图 /tmp/poemui-me-inline-nickname-390.png。", "真实点击昵称 Input 后改写值、点击 suffix Check 按钮，PUI Toast 显示“昵称已保存”；随后通过页面真实 Store 回写还原为 PoemUI 用户。"],
+    "deviceRisks": ["浅色 390px 模拟器已验证；深色、毛玻璃和大圆角组合仍需在本页运行验证。", "iOS/Android 真机的触摸、系统字体、中文输入法、键盘与读屏仍未验证。"]
+  },
+  "ai": {
+    "summary": "我的页昵称是唯一资料字段时，使用 Avatar 与单一 PUI Input 的同一行组合，不重复渲染静态昵称。",
+    "rules": [
+      "页面资料行的 Avatar 只能展示，昵称编辑由唯一 PUI Input 承担。",
+      "保存必须继续通过 Input suffix Slot 的 PUI IconButton 触发既有 Store，不创建页面私有编辑机制。",
+      "资料行的 gap、宽度和文字均使用 PUI Token；编辑区必须可收缩，390px 不得横向溢出。"
+    ],
+    "tags": ["miniprogram", "me", "profile", "nickname", "avatar", "input", "visual-layout"]
+  }
+}

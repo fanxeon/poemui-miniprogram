@@ -1,11 +1,14 @@
 'use strict';
 
+require('./test-top-loading');
+require('./test-dynamic-message');
+
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 var vm = require('vm');
 var ROOT = path.resolve(__dirname, '..');
-var pages = ['pull-refresh', 'virtual-list', 'watermark'];
+var pages = ['top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'];
 function read(relativePath) { return fs.readFileSync(path.join(ROOT, relativePath), 'utf8'); }
 function load(name) {
   var page;
@@ -62,5 +65,23 @@ watermark.onToggleWatermarkLayout();
 assert.strictEqual(watermark.data.watermarkLayout, 'hexagonal', 'Watermark 布局必须由页面回写');
 watermark.onToggleWatermarkMove();
 assert.strictEqual(watermark.data.watermarkMovable, true, 'Watermark 移动状态必须由页面回写');
+
+var topLoading = load('top-loading');
+topLoading.clearProgressTimer = function () { this._progressTimer = null; };
+topLoading.onStartUnknown();
+assert.strictEqual(topLoading.data.taskState, 'loading', 'TopLoading 未知进度必须由页面真实回写 loading');
+assert.strictEqual(topLoading.data.taskProgress, null, 'TopLoading 未知进度必须保留 null');
+topLoading.onComplete();
+assert.strictEqual(topLoading.data.taskState, 'success', 'TopLoading 只有显式完成操作才能写入 success');
+topLoading.onCancel();
+assert.strictEqual(topLoading.data.taskState, 'idle', 'TopLoading 失败或取消必须回到 idle');
+
+var dynamicWxml = read('miniprogram/pages/components/dynamic-message/index.wxml');
+var dynamicJs = read('miniprogram/pages/components/dynamic-message/index.js');
+assert.ok(dynamicWxml.indexOf('<pui-dynamic-message') !== -1, 'DynamicMessage 页面必须使用真实组件');
+assert.ok(dynamicWxml.indexOf('bind:action="onNotificationAction"') !== -1 && dynamicWxml.indexOf('bind:close="onNotificationClose"') !== -1, 'DynamicMessage 页面必须承接真实事件');
+assert.ok(dynamicJs.indexOf("selectComponent('#dynamic-message')") !== -1, 'DynamicMessage 页面必须调用真实实例');
+assert.ok(dynamicJs.indexOf(".update('component-build'") !== -1, 'DynamicMessage 页面必须展示同 key 原位更新');
+assert.ok(dynamicJs.indexOf("key = 'queue-' + Date.now()") !== -1, 'DynamicMessage 页面必须展示不同 key 队列');
 
 console.log('miniprogram advanced page contract tests passed');

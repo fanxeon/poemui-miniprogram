@@ -1,0 +1,102 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0454",
+  "title": "我的页客服入口应进入 Navbar 左 Slot",
+  "scope": "component",
+  "components": ["miniprogram", "button", "icon", "tabbar"],
+  "type": "visual-layout",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "将“我的”页联系客服改成无灰底的低存在感圆形图标按钮，并放入 Navbar 最左侧公开 Slot。",
+  "environment": {
+    "surfaces": ["miniprogram me top-level page"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 pages/me/index。",
+    "服务 CellGroup 下方的联系客服最初是 block 满宽文案 Button，视觉权重接近主要操作。",
+    "首轮收敛为 CellGroup 下方靠右的圆形 Button 后，用户进一步明确要求把它放入 Navbar Slot。",
+    "Navbar 在 capsule=true 时只允许左 Slot 进入胶囊镜像轨，右 Slot 不渲染；leftBtn 配置只能触发普通事件，不能承载 open-type=contact。"
+  ],
+  "expected": "客服入口继续使用真实 PUI Button open-type=contact，并作为无灰底、无边框、无外投影的低强调圆形图标按钮投影到 Navbar 最左侧 left Slot；右 Slot 保持原生胶囊安全边界，正文不再保留客服节点。",
+  "actual": "客服入口最初是 CellGroup 下方的满宽 base Button；首轮收敛后仍位于正文，不符合用户最终指定的 Navbar Slot 位置。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户要求把联系客服改成圆形图标按钮并放到不显眼的位置。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "客服入口使用 PUI Button 的 text、transparent、small、circle、iconOnly 与 openType contact 组合，并投影到 Navbar 最左侧 left Slot。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "专项测试锁定 Navbar left Slot、按钮几何、入口唯一、正文样式删除和真实失败回调。"
+    }
+  ],
+  "rootCause": "早期为确保客服入口清晰可见，页面直接使用满宽 Button；首轮只降低了视觉权重，却仍把低频平台动作留在正文。Navbar 已有能承载真实子 Button 的 left Slot，但此前没有用于该入口。",
+  "decision": {
+    "outcome": "删除正文客服节点和 me-page__contact 样式；在 pui-navbar 内投影 slot=left 的 PUI Button，使用 theme=default、variant=text、surface=transparent、size=small、shape=circle、icon=comment、iconOnly 与 open-type=contact。",
+    "rationale": "Navbar left Slot 能保留真实 PUI Button 及微信开放能力，并由组件按原生胶囊矩形提供对称镜像轨；right Slot 在 capsule=true 时不渲染，leftBtn 又不能透传 open-type，因此真实 left Slot 是唯一符合当前合同的组合。",
+    "alternativesRejected": [
+      "继续放在服务集合下方靠右：虽然不遮挡，但不符合用户最终指定的 Navbar Slot。",
+      "放入 Navbar right Slot：capsule=true 时该 Slot 按合同不渲染，且会侵犯原生胶囊安全区。",
+      "改用 Navbar leftBtn 配置：内建配置只接受 icon/ariaLabel 并触发普通事件，无法承载微信 open-type=contact。",
+      "使用 fixed 或 FAB 悬浮在右下角：会与 Tabbar、安全区和页面滚动内容竞争。",
+      "使用 base 弱填充：仍会产生用户不需要的灰色 Surface。",
+      "手写原生 button 或图标字符：绕过 PUI Button、Icon、外观与无障碍合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.wxss",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_RULES_INDEX.md",
+      "feedback/records/pui-fb-0421-miniprogram-me-account-services-page.json",
+      "feedback/records/pui-fb-0454-me-contact-icon-button-placement.json"
+    ],
+    "dependencies": ["PUI Button", "PUI Icon", "WeChat open-type contact", "PUI Tabbar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-me-page.js", "scripts/test-miniprogram-tabbar-pages.js"],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过。",
+      "node scripts/test-navbar.js：通过。",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过。",
+      "PUI-FB-0454 standalone validateFeedbackRecord：通过。",
+      "本范围 git diff --check：通过。",
+      "全局 feedback:generate/check 当前被范围外 PUI-FB-0451 的 cloud-read/runtime 非法 evidence kind 阻断；Slot 修改前同轮 436 条记录、site:build、example:install、check 与 545 文件 pack:check 曾通过，不能替代当前全局 Ledger 闭环。"
+    ],
+    "browser": [
+      "微信开发者工具 iPhone 12/13 Pro 390x844 热重载截图 /tmp/poemui-me-contact-navbar-transparent-390.png：客服按钮位于 Navbar 最左侧胶囊镜像轨，只显示 comment 图标且无灰底，标题保持居中，正文没有第二个客服入口。",
+      "运行态测量：客服 Button left=32px、top=48.5px、37x37px；querySelectorAll 只返回 1 个 me-contact-service 节点。",
+      "运行态 outerWxml 回读 slot=left、variant=text、surface=transparent、原生 open-type=contact、small/circle/iconOnly、26rpx comment Icon 与 aria-label=联系 PoemUI 客服。"
+    ],
+    "deviceRisks": [
+      "微信客服会话依赖小程序后台客服配置；模拟器属性与点击不能替代 iOS/Android 真机进入、返回和失败回调验收。",
+      "深色、毛玻璃、大圆角和等距组合仍需在我的页运行态确认按钮的低强调层级。"
+    ]
+  },
+  "ai": {
+    "summary": "低频客服入口使用 Navbar 最左侧 left Slot 中的透明圆形 PUI IconButton，保留真实微信 contact 能力且不占正文层级。",
+    "rules": [
+      "微信客服必须保留 PUI Button openType=contact 与 error 回调，不得用普通点击或 Toast 伪造。",
+      "账户页低频客服入口使用 text/transparent/small/circle/iconOnly，不显示灰底、边框或外投影，并提供准确 ariaLabel。",
+      "capsule=true 时客服按钮只能投影到 Navbar left Slot；right Slot 不渲染，leftBtn 也不能代替需要 openType 的真实 Button。",
+      "正文不得保留第二个客服节点或定位样式；按钮尺寸、圆形、图标居中由 PUI Button 合同负责，胶囊镜像位置由 Navbar 合同负责。"
+    ],
+    "tags": ["miniprogram", "me", "contact", "button", "icon-button", "tabbar", "visual-hierarchy"]
+  }
+}

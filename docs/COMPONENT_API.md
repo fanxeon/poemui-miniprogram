@@ -29,7 +29,7 @@ PoemUI 的运行时边界是 WXML、WXSS、`Component.properties` 和 `triggerEv
 
 ## Icon
 
-`pui-icon` 是内置图标的唯一入口。`name` 对应 `assets/icons-src/manifest.json` 中的 218 个稳定 PoemUI 名称；其中 `components / 组件` 分类收录 14 个需要专属几何的组件图形，其余组件目录优先复用已有通用图标。H5 与小程序都把 `name` 解析为同一份本地 Icon Font 字形，不存在 SVG、image、CSS mask 或 Canvas 运行时分支。业务图片必须使用 `pui-image`。Icon 是没有内容 slot 的展示叶子，适合被 `Button`、`Cell`、`Tag`、`Popup` 等组件组合。需要点击、禁用、选中或键盘操作时必须使用 `Button + Icon`，Icon 本身不伪装成不完整的交互控件。
+`pui-icon` 是内置图标的唯一入口。`name` 对应 `assets/icons-src/manifest.json` 中的 220 个稳定 PoemUI 名称；其中 `components / 组件` 分类收录 14 个需要专属几何的组件图形，`abstract / 抽象` 收录用户自有的 `poemcoder-mark`，`premium` 是映射既有 Lucide `crown` 的公开语义名，其余组件目录优先复用已有通用图标。H5 与小程序都把 `name` 解析为同一份本地 Icon Font 字形，不存在 SVG、image、CSS mask 或 Canvas 运行时分支。业务图片必须使用 `pui-image`。Icon 是没有内容 slot 的展示叶子，适合被 `Button`、`Cell`、`Tag`、`Popup` 等组件组合。需要点击、禁用、选中或键盘操作时必须使用 `Button + Icon`，Icon 本身不伪装成不完整的交互控件。
 
 官网图标资源库的每个资源卡是 PUI Button：点击后会回写当前 `name`，并通过真实剪贴板能力复制该图标名；复制结果复用 Toast 的 success/error 短暂提示。这不为 `pui-icon` 增加 `click` 事件。
 
@@ -783,7 +783,7 @@ H5 与原生都保留 content/loading/error/empty 四层，以 500ms opacity/tra
 
 | 参数 | 类型 | 演示初值 | 可选值 | 说明 |
 | --- | --- | --- | --- | --- |
-| `height` | `String` | `'320rpx'` | 正数、`rpx`、`px` | 滚动区域高度。裸正数按 rpx 处理；`0`、负数、空值或非数字均回退 `'320rpx'`。 |
+| `height` | `String` | `'320rpx'` | 正数、`rpx`、`px`、`vh` | 滚动区域高度。裸正数按 rpx 处理，正 `vh` 用于 Popup 等有界视口组合；`0`、负数、空值或非数字均回退 `'320rpx'`。 |
 | `scrollTop` | `Number` | `0` | `≥ 0` | 受控纵向位置。用户滚动时通过 `scroll` 回写真值；父级写入 `0` 可让 BackTop 组合以平台原生动画真实回到局部滚动区顶部。 |
 | `scrollIntoView` | `String` | `''` | slot 内节点的 `id` | 父级传入目标节点 id 后，由原生 `scroll-view` 定位；空字符串不请求定位。 |
 | `gradientOverlay` | `Boolean` | `true` | `true`、`false` | 是否在真实滚动边缘显示渐变遮罩。顶部仅底层、底部仅顶层、中段两层、无溢出零层；不改变滚动、事件或定位。 |
@@ -877,9 +877,10 @@ H5 镜像通过共享 PUI Button 与主题菜单复现同一选择路径，只�
 | `visible` | `boolean \| null` | `null` | `true`、`false`、`null` | Popup 受控显隐；父级必须处理 `visible-change` 并回写。内联模式忽略该值。 |
 | `defaultVisible` | `boolean` | `false` | `true`、`false` | 仅首次初始化非受控 Popup 显隐。 |
 | `title` | `string` | `'选择组件'` | 任意完整文本 | Header 标题；空字符串保留无标题布局。 |
-| `cancelText` | `string` | `'取消'` | 任意完整文本 | Header 左侧 PUI Button 文案。 |
-| `confirmText` | `string` | `'确定'` | 任意完整文本 | Header 右侧 PUI Button 文案。 |
-| `showHeader` | `boolean` | `true` | `true`、`false` | 是否显示标题、取消和确认操作；关闭后由消费者调用方法提交或取消。 |
+| `type` | `'default' \| 'classic'` | `'default'` | `default`、`classic` | `default` 在 Popup Header 左侧使用 primary Check 圆形图标确认、右侧使用 default Close 圆形图标取消；`classic` 保留底部两列取消/确认。内联模式也跟随同一图标左右顺序。 |
+| `cancelText` | `string` | `'取消'` | 任意完整文本 | `classic` 的 Footer 左侧取消文案；默认图标 Header 的可访问名称固定为“取消选择”。 |
+| `confirmText` | `string` | `'确定'` | 任意完整文本 | `classic` 的 Footer 右侧确认文案；默认图标 Header 的可访问名称固定为“确认选择”。 |
+| `showHeader` | `boolean` | `true` | `true`、`false` | 是否显示标题和操作区；关闭后由消费者调用方法提交或取消。 |
 | `usePopup` | `boolean` | `true` | `true`、`false` | `true` 组合 PUI Popup；`false` 以内联 Surface 始终展示滚轮。 |
 | `closeOnOverlayClick` | `boolean` | `true` | `true`、`false` | Popup 遮罩点击是否请求关闭；遮罩关闭不等同 cancel。 |
 | `autoClose` | `boolean` | `true` | `true`、`false` | 确认或取消后是否自动请求关闭 Popup；内联模式不执行关闭。 |
@@ -951,7 +952,7 @@ Picker 没有公开 Slot。标题、操作和状态结构由固定 PUI 组合保
 
 `pui-date-time-picker` 是基于 PUI Picker 的日期时间滚轮。它将年、月、日、时、分、秒转换为动态列，复用 Picker 的 Popup、草稿、确认和取消生命周期；可视月历与日期范围选择仍由 `Calendar + Popover` 组合承担。
 
-### 21 Props
+### 22 Props
 
 | 参数 | 类型 | 演示初值 | 可选值 | 说明 |
 | --- | --- | --- | --- | --- |
@@ -966,8 +967,9 @@ Picker 没有公开 Slot。标题、操作和状态结构由固定 PUI 组合保
 | `steps` | `Object` | `{}` | `{ year, month, date, hour, minute, second }` | 每列正整数步长。范围边界始终保留，即使边界不能被步长整除。 |
 | `showWeek` | `Boolean` | `false` | `true`, `false` | 在日列标签后显示周几，不改变该列的数值。 |
 | `title` | `String` | `''` | 任意文本 | Picker Header 标题；也参与辅助名称回退。 |
-| `cancelText` | `String` | `'取消'` | 任意文本 | Header 取消按钮文字。 |
-| `confirmText` | `String` | `'确定'` | 任意文本 | Header 确认按钮文字。 |
+| `type` | `'default' \| 'classic'` | `'default'` | `default`, `classic` | 透传给 PUI Picker。默认 Header 左侧是 primary Check 圆形图标确认、右侧是 default Close 圆形图标取消；`classic` 使用底部两列取消/确认。 |
+| `cancelText` | `String` | `'取消'` | 任意文本 | `classic` Footer 左侧取消文案；默认图标 Header 的可访问名称固定为“取消选择”。 |
+| `confirmText` | `String` | `'确定'` | 任意文本 | `classic` Footer 右侧确认文案；默认图标 Header 的可访问名称固定为“确认选择”。 |
 | `showHeader` | `Boolean` | `true` | `true`, `false` | 是否显示 Picker Header。关闭后仍可通过实例方法 confirm/cancel。 |
 | `usePopup` | `Boolean` | `true` | `true`, `false` | `true` 使用 Popup；`false` 直接显示内联滚轮。 |
 | `autoClose` | `Boolean` | `true` | `true`, `false` | confirm/cancel 后是否请求关闭 Popup；不影响事件先后顺序。 |
@@ -1557,7 +1559,7 @@ H5 使用真实 `<button>`、常驻内容节点、`scrollHeight` 和 `transition
 | `label` | `label="slot"` | 接管字段标签；required 星号仍由 Input 管理。 |
 | `prefix` | `prefix="slot"` | 接管输入前置短文本区域。 |
 | `prefix-icon` | `prefix-icon="slot"` | 接管输入前置图标区域。 |
-| `suffix` | `suffix="slot"` | 接管后置短文本或操作内容。 |
+| `suffix` | `suffix="slot"` | 接管右侧后置内容；可组合一个紧凑 PUI IconButton 作为保存、验证或复制操作。它与 Clear、Loading、suffix-icon 共用尾部操作轨，按钮事件仍由消费者直接绑定。 |
 | `suffix-icon` | `suffix-icon="slot"` | 接管最右侧图标区域。 |
 | `tips` | `tips="slot"` | 接管状态提示，颜色跟随 status。 |
 | `extra` | 直接传入 | 输入框下方的消费者扩展内容，不参与值与事件计算。 |
@@ -2979,6 +2981,7 @@ Slider 不公开 Slot 或实例方法。基础用法保持最小 WXML 且零 `bi
 | `title` | `String` / `''` | Header 中间的主标题；允许空字符串，不伪造默认标题。 |
 | `subtitle` | `String` / `''` | Header 中间的辅助说明；允许空字符串，超过标题区宽度时保持单行并以省略号截断。 |
 | `showFooter` | `Boolean` / `false` | 是否渲染 Footer；主要动作由 `footer` Slot 内的真实 PUI Button 提供。 |
+| `contentScrollable` | `Boolean` / `true` | 是否由 Popup Content 自己承担纵向滚动。组合内部 PUI ScrollArea 时设为 `false`，避免同方向双滚动所有者。 |
 | `closeOnOverlayClick` | `Boolean` / `true` | 遮罩点击是否请求关闭；为 `false` 时不发布事件也不改变显隐。 |
 | `content` | `String` / `''` | 内容 Slot 均未提供可见内容时的文本回退。 |
 | `card` | `Boolean` / `true` | 是否保留浮层与视口之间的 `24rpx` 卡片安全距离。默认 `true`；设为 `false` 后 Surface 贴合当前弹出边缘，内容分区内边距不变。 |
@@ -3000,6 +3003,7 @@ Slider 不公开 Slot 或实例方法。基础用法保持最小 WXML 且零 `bi
 | --- | --- |
 | 默认 slot | Content 中的完整业务内容；可组合 PUI Cell、Form、Loading、Empty 和 Button。 |
 | `content` | Content 区域的具名补充内容；与默认 Slot、`content` 属性并列时由调用方避免重复。 |
+| `surface-top` | Popup Surface 顶边的非布局内容；推荐放置 `pui-top-loading`，由 Popup 提供定位上下文与圆角裁切。 |
 | `header-left` | Header 左侧操作区；调用方应放入圆形 PUI IconButton，并自行处理该业务动作。 |
 | `close-btn` | Header 右侧自定义关闭区；替换默认圆形关闭控件时，同时传入 `closeBtn=false`，并提供等价的可访问名称与关闭交互。 |
 | `footer` | Footer 主要动作区；调用方放入真实 PUI Button，Popup 不自动提交、关闭或伪造业务成功。 |
@@ -3204,6 +3208,98 @@ Overlay 有 9 个 Props、1 个 Event、1 个 Slot，没有公开 Methods。
 ```
 
 关闭时节点在透明度退场完成前保留，且没有 `display:none` 或 `height:auto` 过渡。H5 仅在 PreviewDevice 内用 absolute、wheel/touchmove 阻断近似原生 fixed 与 `catchtouchmove`；`usingCustomNavbar` 在 H5 的示例页面有明确的 44px 自定义导航栏上下文。390px 下遮罩、Slot 内容和 API 表格均不应产生页面级横向溢出；微信 fixed 层、胶囊距离、Slot 投影与读屏仍需真机复核。
+
+## TopLoading
+
+`pui-top-loading` 是依附当前 Card 或业务 Surface 顶边的请求进度轨道。它不占正文布局高度，也不根据定时器、进度值或请求结束自行推断成功：未知总量使用双轨变换，精确进度保留 `0–100`，只有父级显式回写 `state="success"` 才进入成功色完成态；失败或取消统一回写 `idle` 并真实退场。
+
+TopLoading 有 8 个 Props，没有 Events、Slots 或公开 Methods。
+
+| 属性 | 类型 | 演示初值 | 可选值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `state` | `String` | `idle` | `idle, loading, success` | 唯一状态机。`idle` 隐藏，`loading` 按 progress 选择未知或精确轨道，`success` 显式完成。 |
+| `progress` | `Number \| null` | `null` | `null, 0–100` | `null` 为未知总量；有效数字限制到 `0–100`，其中 `0` 是合法精确进度。 |
+| `delay` | `Number` | `220` | `0–5000ms` | loading 持续达到该时间后才挂载轨道，避免短任务闪烁。 |
+| `minimumVisible` | `Number` | `500` | `0–60000ms` | 已显示 loading 在进入 success 前的最短可见时间；取消和失败不借此伪装成功。 |
+| `successDuration` | `Number` | `700` | `0–60000ms` | 显式成功态保持时间，随后播放退场。 |
+| `duration` | `Number` | `500` | `0–1000ms` | 透明度、transform 与进度变化的统一动效时长。 |
+| `ariaLabel` | `String` | `加载进度` | — | 进度根的可访问名称；精确进度同步 `aria-valuenow`。 |
+| `reduceMotion` | `Boolean` | `false` | `true, false` | 保留状态与时序语义，将视觉动效压缩到 `1ms`。 |
+
+```xml
+<pui-card title="组件发布检查">
+  <pui-top-loading
+    state="{{taskState}}"
+    progress="{{taskProgress}}"
+    aria-label="组件发布检查进度"
+  />
+  <pui-cell title="npm 组件产物" />
+</pui-card>
+```
+
+父级应在真实任务开始时写入 `loading`，已知总量时持续更新 progress；真实完成写入 `success`，失败或取消写回 `idle`。组件没有 `start/finish/fail` 方法，也不会发出业务成功事件。
+
+## DynamicMessage
+
+`pui-dynamic-message` 是页面顶部的非模态灵动通知。它先以 PUI Icon/Loading + 标题的紧凑胶囊从顶部出现，再长成完整消息面板；关闭时先反向收回胶囊，再向上退出。它保留同一个通知节点完成 `loading → info/success/error` 原位更新；不同 key 按调用顺序排队。通知不使用遮罩、不锁页面滚动，Action 只把用户意图交给父级，组件不会伪造业务完成。
+
+DynamicMessage 有 10 个 Props、3 个 Events、3 个公开 Methods，没有 Slots。
+
+| 属性 | 类型 | 演示初值 | 可选值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `theme` | `String` | `info` | `loading, info, success, warning, error` | 默认消息主题；实例 `show/update` 可按消息覆盖。 |
+| `title` | `String` | 空字符串 | — | 默认主标题；单行显示，过长时在组件边界内截断。 |
+| `message` | `String` | 空字符串 | — | 默认补充说明；保持紧凑且不会撑破通知宽度。 |
+| `icon` | `String` | 空字符串 | — | 自定义 PUI Icon 名；为空时使用主题图标，loading 使用 PUI Loading。 |
+| `actionText` | `String` | 空字符串 | — | 可选动作文字；为空时不展示 Action Button。 |
+| `closable` | `Boolean` | `true` | `true, false` | 是否展示 PUI 圆形关闭 IconButton。 |
+| `duration` | `Number` | `3000` | `0–60000ms` | 入场完成后的停留时间；`0` 持续显示。loading 未显式传值时默认为 `0`。 |
+| `safeArea` | `Boolean` | `true` | `true, false` | 结合微信状态栏与胶囊下缘计算顶部偏移。 |
+| `ariaLabel` | `String` | 空字符串 | — | 整条通知的可访问名称；为空时回退标题、说明或主题语义。 |
+| `reduceMotion` | `Boolean` | `false` | `true, false` | 不改变 retained node、队列、事件和关闭原因；正常进场为 `180ms` 胶囊 + `320ms` 面板，退场反向执行，低动效压缩到 `1ms`。 |
+
+事件：
+
+| 事件 | Detail | 说明 |
+| --- | --- | --- |
+| `click` | `{ key, theme }` | 点按当前通知 Surface 时触发；不代表动作完成或通知关闭。 |
+| `action` | `{ key, theme }` | 点按可选 PUI Action Button 时触发；父级负责真实后续动作与回写。 |
+| `close` | `{ key, theme, reason: "timeout" \| "manual" \| "programmatic" }` | 当前通知完成退场并卸载后触发一次；未展示的排队消息被移除时不触发。 |
+
+方法：
+
+| 方法 | 返回值 | 说明 |
+| --- | --- | --- |
+| `show(options)` | `String` | 展示消息并返回 key；当前同 key 原位 patch，不同 key 入队。loading 未显式传 duration 时持续显示。 |
+| `update(key, patch)` | `Boolean` | 原位更新当前或排队消息；命中返回 `true`，未知 key 返回 `false`，不创建假消息。 |
+| `hide(key?)` | `Boolean` | 当前消息真实退场；指定排队 key 时只移出队列。没有匹配消息时返回 `false`。 |
+
+```xml
+<pui-dynamic-message
+  id="buildMessage"
+  bind:action="onBuildMessageAction"
+  bind:close="onBuildMessageClose"
+/>
+```
+
+```js
+const message = this.selectComponent('#buildMessage')
+const key = message.show({
+  key: 'build',
+  theme: 'loading',
+  title: '正在生成组件',
+  duration: 0
+})
+
+// 真实任务有新状态时复用同一个 key。
+message.update(key, {
+  theme: 'success',
+  title: '组件已生成',
+  duration: 3000
+})
+```
+
+进退场固定使用 `500ms`，低动效为 `1ms`；离场期间节点继续保留，完成后才发出 close。微信安全区、原生字体回流、触摸命中、读屏与系统级低动效仍需合法 AppID 真机复核。
 
 ## PullRefresh
 

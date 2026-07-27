@@ -59,6 +59,16 @@ async function main() {
   const SVGPathCommander = commanderModule.default;
   const hollowCircles = [];
   const solidDots = [];
+  assert.deepStrictEqual(
+    parseTransform(createIconBody('premium')),
+    { scale: 1, translateX: 0, translateY: -1.5 },
+    'premium 字体轮廓必须在字体生成前完成标题行光学校正',
+  );
+  assert.deepStrictEqual(
+    parseTransform(createIconBody('crown')),
+    { scale: 1, translateX: 0, translateY: 0 },
+    '通用 crown 必须保留原始居中轮廓',
+  );
 
   for (const item of manifest.icons) {
     const body = createIconBody(item.name);
@@ -98,8 +108,8 @@ async function main() {
     }
   }
 
-  assert.strictEqual(hollowCircles.length, 59, 'current 218-icon catalog must preserve all 59 closed circle holes');
-  assert.strictEqual(solidDots.length, 25, 'current 218-icon catalog must retain 25 intentional semantic dots');
+  assert.strictEqual(hollowCircles.length, 59, 'current 220-icon catalog must preserve all 59 closed circle holes');
+  assert.strictEqual(solidDots.length, 25, 'current 220-icon catalog must retain 25 intentional semantic dots');
   for (const representative of ['user:5', 'icon:3', 'orbit:3', 'orbit:2']) {
     assert(hollowCircles.includes(representative), `${representative} must be covered by the hollow-circle audit`);
   }

@@ -6,7 +6,7 @@ window.POEMUI_ICON_DATA = {
     "lineCap": "round",
     "lineJoin": "round",
     "color": "currentColor",
-    "notes": "以 Lucide 成熟构形为底稿，统一为 PoemUI 的圆线权重与光学微调。源图标保持单色、currentColor 和 24 x 24 画布。"
+    "notes": "Lucide 来源图标统一为 PoemUI 的圆线权重与光学微调；登记的用户自有品牌字标使用闭合 currentColor 填充轮廓。全部图标保持单色和 24 x 24 画布。"
   },
   "upstream": {
     "name": "Lucide",
@@ -68,7 +68,7 @@ window.POEMUI_ICON_DATA = {
       "key": "user",
       "label": "User 用户",
       "desc": "账户、团队、身份、收藏",
-      "count": 12
+      "count": 13
     },
     {
       "key": "commerce",
@@ -116,7 +116,7 @@ window.POEMUI_ICON_DATA = {
       "key": "abstract",
       "label": "Abstract 抽象",
       "desc": "智能、灵感、玻璃、品牌氛围",
-      "count": 13
+      "count": 14
     }
   ],
   "font": {
@@ -124,9 +124,9 @@ window.POEMUI_ICON_DATA = {
     "format": "woff2",
     "delivery": "embedded-data-uri",
     "unitsPerEm": 1024,
-    "glyphCount": 218,
-    "bytes": 22476,
-    "sha256": "e33800fdf026677a24da5707c43b18c8722c23cc2112df4b16dc459ea4712c95"
+    "glyphCount": 220,
+    "bytes": 22952,
+    "sha256": "841018a955ec3bb126698a6d5092acbaf869fb9b396461af45992d5dd67504c2"
   },
   "icons": [
     {
@@ -844,6 +844,12 @@ window.POEMUI_ICON_DATA = {
       "codepoint": "E074"
     },
     {
+      "name": "premium",
+      "category": "user",
+      "source": "crown",
+      "codepoint": "E0DC"
+    },
+    {
       "name": "cart",
       "category": "commerce",
       "source": "shopping-cart",
@@ -1436,6 +1442,12 @@ window.POEMUI_ICON_DATA = {
       "category": "abstract",
       "source": "focus",
       "codepoint": "E0D1"
+    },
+    {
+      "name": "poemcoder-mark",
+      "category": "abstract",
+      "source": "user-owned:poemcoder-mark",
+      "codepoint": "E0DB"
     }
   ]
 };

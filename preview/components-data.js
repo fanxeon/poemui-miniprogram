@@ -8,11 +8,11 @@ window.POEMUI_COMPONENT_DATA = {
       "items": [
         {
           "id": "getting-started",
-          "name": "Getting Started 安装",
+          "name": "Getting Started 快速开始",
           "status": "done",
           "kind": "guide",
           "nameEn": "Getting Started",
-          "nameZh": "安装"
+          "nameZh": "快速开始"
         },
         {
           "id": "config-provider",
@@ -500,7 +500,7 @@ window.POEMUI_COMPONENT_DATA = {
           "variantOf": "",
           "shadcnStatus": "adapter",
           "trigger": "tap",
-          "note": "DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。",
+          "note": "DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。",
           "nameEn": "Date Picker"
         },
         {
@@ -768,7 +768,7 @@ window.POEMUI_COMPONENT_DATA = {
               "variantOf": "",
               "shadcnStatus": "adapter",
               "trigger": "tap",
-              "note": "DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。",
+              "note": "DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。",
               "nameEn": "Date Picker"
             },
             {
@@ -1189,12 +1189,28 @@ window.POEMUI_COMPONENT_DATA = {
           "nameEn": "Chart"
         },
         {
+          "id": "dynamic-message",
+          "name": "DynamicMessage 灵动通知",
+          "status": "done",
+          "kind": "component",
+          "nameEn": "DynamicMessage",
+          "nameZh": "灵动通知"
+        },
+        {
           "id": "pull-refresh",
           "name": "PullRefresh 下拉刷新",
           "status": "done",
           "kind": "component",
           "nameEn": "PullRefresh",
           "nameZh": "下拉刷新"
+        },
+        {
+          "id": "top-loading",
+          "name": "TopLoading 顶部加载",
+          "status": "done",
+          "kind": "component",
+          "nameEn": "TopLoading",
+          "nameZh": "顶部加载"
         },
         {
           "id": "virtual-list",
@@ -1218,9 +1234,9 @@ window.POEMUI_COMPONENT_DATA = {
   ],
   "details": {
     "getting-started": {
-      "desc": "从 npm 安装到微信开发者工具构建 npm 的最短接入路径。",
-      "path": "npm i poemui-miniprogram",
-      "states": "安装、构建 npm、按需引用、主题配置",
+      "desc": "从安装、微信构建到 AI Skill 的 PoemUI 受限 Beta 接入路径。",
+      "path": "poemui-miniprogram@0.1.0 · npm 尚未发布",
+      "states": "发布状态、安装、构建 npm、按需引用、主题配置、AI Skill、许可证",
       "props": []
     },
     "config-provider": {
@@ -2178,9 +2194,9 @@ window.POEMUI_COMPONENT_DATA = {
       ]
     },
     "picker": {
-      "desc": "基于原生 picker-view 的滚轮选择器，支持单列、多列、级联、值与显隐双受控、Popup/内联呈现、真实状态和确认事件。",
+      "desc": "基于原生 picker-view 的滚轮选择器，支持单列、多列、级联、值与显隐双受控，以及默认 Header 操作与 Classic 底部操作。",
       "path": "poemui-miniprogram/picker/picker",
-      "states": "单列/多列/级联、值与显隐受控、Popup/内联、禁用项、loading/error/empty、事件、方法、低动效",
+      "states": "单列/多列/级联、值与显隐受控、默认 Header/Classic、Popup/内联、禁用项、loading/error/empty、事件、方法、低动效",
       "props": [
         {
           "key": "columns",
@@ -2260,6 +2276,17 @@ window.POEMUI_COMPONENT_DATA = {
           "label": "title",
           "type": "text",
           "value": "选择组件"
+        },
+        {
+          "key": "type",
+          "label": "type",
+          "type": "select",
+          "value": "default",
+          "options": [
+            "default",
+            "classic"
+          ],
+          "apiType": "'default' | 'classic'"
         },
         {
           "key": "cancelText",
@@ -2385,7 +2412,7 @@ window.POEMUI_COMPONENT_DATA = {
       ]
     },
     "date-time-picker": {
-      "desc": "把日期时间范围转换为 PUI Picker 滚轮列，支持年到秒精度、范围步长、格式、值与显隐双受控以及 Popup/内联草稿确认。",
+      "desc": "把日期时间范围转换为 PUI Picker 滚轮列，支持年到秒精度、范围步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作以及 Popup/内联草稿确认。",
       "path": "poemui-miniprogram/date-time-picker/date-time-picker",
       "states": "年/月/日/时/分/秒、范围/步长/周几、值与显隐双受控、Popup/内联、禁用/只读、事件、方法、低动效",
       "props": [
@@ -2468,6 +2495,16 @@ window.POEMUI_COMPONENT_DATA = {
           "value": "选择发布时间"
         },
         {
+          "key": "type",
+          "label": "type",
+          "type": "select",
+          "value": "default",
+          "options": [
+            "default",
+            "classic"
+          ]
+        },
+        {
           "key": "cancelText",
           "label": "cancel-text",
           "type": "text",
@@ -2544,6 +2581,156 @@ window.POEMUI_COMPONENT_DATA = {
     "loading": {
       "desc": "展示页面或操作正在处理的反馈，不代表业务已经完成。",
       "states": "环形、刻度、圆点、文字、延迟、全屏、低动效"
+    },
+    "top-loading": {
+      "desc": "依附当前 Card 或业务 Surface 顶边的轻量加载轨道，支持未知总量、精确进度、延迟显示、最短可见时间和显式完成态。",
+      "path": "poemui-miniprogram/top-loading/top-loading",
+      "states": "idle/loading/success、null/0/100、delay、minimumVisible、retained node、低动效",
+      "props": [
+        {
+          "key": "state",
+          "label": "state",
+          "type": "select",
+          "value": "idle",
+          "options": [
+            "idle",
+            "loading",
+            "success"
+          ]
+        },
+        {
+          "key": "progress",
+          "label": "progress",
+          "type": "json",
+          "value": null,
+          "apiType": "number | null"
+        },
+        {
+          "key": "delay",
+          "label": "delay",
+          "type": "range",
+          "value": 220,
+          "min": 0,
+          "max": 5000,
+          "step": 20
+        },
+        {
+          "key": "minimumVisible",
+          "label": "minimum-visible",
+          "type": "range",
+          "value": 500,
+          "min": 0,
+          "max": 60000,
+          "step": 100
+        },
+        {
+          "key": "successDuration",
+          "label": "success-duration",
+          "type": "range",
+          "value": 700,
+          "min": 0,
+          "max": 60000,
+          "step": 100
+        },
+        {
+          "key": "duration",
+          "label": "duration",
+          "type": "range",
+          "value": 500,
+          "min": 0,
+          "max": 1000,
+          "step": 20
+        },
+        {
+          "key": "ariaLabel",
+          "label": "aria-label",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "key": "reduceMotion",
+          "label": "reduce-motion",
+          "type": "boolean",
+          "value": false
+        }
+      ]
+    },
+    "dynamic-message": {
+      "desc": "页面顶部非模态灵动通知，以保留节点的紧凑展开动效承接 loading 到结果的原位更新，并按 key 提供真实队列。",
+      "path": "poemui-miniprogram/dynamic-message/dynamic-message",
+      "states": "五种主题、同 key update、不同 key 队列、自动/手动关闭、Action、安全区、低动效",
+      "props": [
+        {
+          "key": "theme",
+          "label": "theme",
+          "type": "select",
+          "value": "info",
+          "options": [
+            "loading",
+            "info",
+            "success",
+            "warning",
+            "error"
+          ]
+        },
+        {
+          "key": "title",
+          "label": "title",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "key": "message",
+          "label": "message",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "key": "icon",
+          "label": "icon",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "key": "actionText",
+          "label": "action-text",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "key": "closable",
+          "label": "closable",
+          "type": "boolean",
+          "value": true
+        },
+        {
+          "key": "duration",
+          "label": "duration",
+          "type": "range",
+          "value": 3000,
+          "min": 0,
+          "max": 60000,
+          "step": 100
+        },
+        {
+          "key": "safeArea",
+          "label": "safe-area",
+          "type": "boolean",
+          "value": true
+        },
+        {
+          "key": "ariaLabel",
+          "label": "aria-label",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "key": "reduceMotion",
+          "label": "reduce-motion",
+          "type": "boolean",
+          "value": false
+        }
+      ]
     },
     "popup": {
       "desc": "从屏幕边缘或中心展开内容，按 Header、Content、Footer 组织结构；显隐与业务动作由父级回写。",
@@ -2777,7 +2964,7 @@ window.POEMUI_COMPONENT_DATA = {
     }
   },
   "componentSummaries": {
-    "getting-started": "安装并开始使用 PoemUI。",
+    "getting-started": "安装、构建并让 AI 正确使用 PoemUI。",
     "config-provider": "统一配置组件的主题与视觉效果。",
     "theme-tokens": "查看并复用 PoemUI 设计变量。",
     "color": "查看组件使用的语义色彩。",
@@ -2842,6 +3029,8 @@ window.POEMUI_COMPONENT_DATA = {
     "progress": "展示已知任务的确定完成进度。",
     "skeleton": "为内容加载过程预示结构。",
     "loading": "展示任务正在处理。",
+    "top-loading": "在当前卡片或内容表面顶边反馈请求进度。",
+    "dynamic-message": "在页面顶部展示可原位更新的非模态实时通知。",
     "result": "展示流程完成后的结果状态。",
     "dropdown-menu": "从触发项下方展开选项。",
     "popover": "在对象旁展示轻量内容。",
@@ -2948,12 +3137,12 @@ window.POEMUI_COMPONENT_DATA = {
       "Field 注册、规则校验、提交与重置、服务端错误、受控数据"
     ],
     "picker": [
-      "基于原生 picker-view 的滚轮选择器，支持单列、多列、级联、值与显隐双受控、Popup/内联、禁用项和完整状态。",
-      "单列/多列/级联、双受控、Popup/内联、禁用项、状态、事件、方法"
+      "基于原生 picker-view 的滚轮选择器，支持单列、多列、级联、值与显隐双受控、默认 Header 操作、Classic 底部操作和完整状态。",
+      "单列/多列/级联、双受控、默认 Header/Classic、Popup/内联、禁用项、状态、事件、方法"
     ],
     "date-time-picker": [
-      "基于 PUI Picker 的日期时间滚轮，支持年到秒精度、范围、步长、格式、值与显隐双受控、Popup/内联和草稿确认。",
-      "年/月/日/时/分/秒、范围、步长、格式、双受控、Popup/内联、事件、方法"
+      "基于 PUI Picker 的日期时间滚轮，支持年到秒精度、范围、步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作、Popup/内联和草稿确认。",
+      "年/月/日/时/分/秒、范围、步长、格式、双受控、默认 Header/Classic、Popup/内联、事件、方法"
     ],
     "search": [
       "搜索输入，支持受控/非受控值、字符限制、形状、清空、取消、确认与低动效。",
@@ -2978,6 +3167,14 @@ window.POEMUI_COMPONENT_DATA = {
     "toast": [
       "单条轻提示，通过 show()/hide() 展示短暂反馈，可选遮罩、方向和主题。",
       "基础、主题与图标、方向与位置、遮罩与滚动保护"
+    ],
+    "top-loading": [
+      "依附当前卡片或内容表面顶边展示未知总量或精确请求进度；只有显式 success 才展示完成态。",
+      "未知/精确进度、延迟与最短可见、显式完成、失败/取消、低动效"
+    ],
+    "dynamic-message": [
+      "页面顶部非模态灵动通知，支持 loading 到结果的同 key 原位更新、不同 key 队列、动作与真实退场。",
+      "五种主题、原位 update、队列、自动/手动关闭、Action、安全区、低动效"
     ],
     "dialog": [
       "用于确认、选择或承载关键内容的受控模态对话框。",
@@ -3222,6 +3419,7 @@ window.POEMUI_COMPONENT_DATA = {
       "title",
       "subtitle",
       "showFooter",
+      "contentScrollable",
       "closeOnOverlayClick",
       "content",
       "card",
@@ -3436,6 +3634,28 @@ window.POEMUI_COMPONENT_DATA = {
       "ariaLabel",
       "reduceMotion"
     ],
+    "top-loading": [
+      "state",
+      "progress",
+      "delay",
+      "minimumVisible",
+      "successDuration",
+      "duration",
+      "ariaLabel",
+      "reduceMotion"
+    ],
+    "dynamic-message": [
+      "theme",
+      "title",
+      "message",
+      "icon",
+      "actionText",
+      "closable",
+      "duration",
+      "safeArea",
+      "ariaLabel",
+      "reduceMotion"
+    ],
     "icon": [
       "name",
       "size",
@@ -3644,6 +3864,7 @@ window.POEMUI_COMPONENT_DATA = {
       "visible",
       "defaultVisible",
       "title",
+      "type",
       "cancelText",
       "confirmText",
       "showHeader",
@@ -3676,6 +3897,7 @@ window.POEMUI_COMPONENT_DATA = {
       "steps",
       "showWeek",
       "title",
+      "type",
       "cancelText",
       "confirmText",
       "showHeader",
@@ -4477,6 +4699,70 @@ window.POEMUI_COMPONENT_DATA = {
         ]
       }
     ],
+    "top-loading": [
+      {
+        "id": "state-and-progress",
+        "title": "状态与进度",
+        "description": "idle/loading/success 是唯一状态机；progress=null 为未知总量，0–100 为精确进度，失败或取消回写 idle。",
+        "keys": [
+          "state",
+          "progress"
+        ]
+      },
+      {
+        "id": "timing",
+        "title": "反馈计时与动效",
+        "description": "delay 避免短任务闪烁，minimumVisible 与 successDuration 约束反馈停留；只有 duration 是动效时长且上限 1000ms。",
+        "keys": [
+          "delay",
+          "minimumVisible",
+          "successDuration",
+          "duration"
+        ]
+      },
+      {
+        "id": "accessibility",
+        "title": "语义与低动效",
+        "description": "ariaLabel 命名当前请求；低动效保留状态并把动效压缩到 1ms。",
+        "keys": [
+          "ariaLabel",
+          "reduceMotion"
+        ]
+      }
+    ],
+    "dynamic-message": [
+      {
+        "id": "content",
+        "title": "内容与主题",
+        "description": "五种主题承接实时状态；title/message/icon/actionText 只描述当前消息，真实业务结果由 show/update 写入。",
+        "keys": [
+          "theme",
+          "title",
+          "message",
+          "icon",
+          "actionText",
+          "closable"
+        ]
+      },
+      {
+        "id": "timing-and-position",
+        "title": "停留与安全区",
+        "description": "duration 是进入完成后的停留时间，0 表示持续显示；safeArea 根据微信状态栏与胶囊真实定位。",
+        "keys": [
+          "duration",
+          "safeArea"
+        ]
+      },
+      {
+        "id": "accessibility",
+        "title": "语义与低动效",
+        "description": "ariaLabel 命名整条通知；低动效不改变 retained node、队列、事件或关闭原因。",
+        "keys": [
+          "ariaLabel",
+          "reduceMotion"
+        ]
+      }
+    ],
     "progress": [
       {
         "id": "value-and-shape",
@@ -4617,7 +4903,8 @@ window.POEMUI_COMPONENT_DATA = {
           "showHeader",
           "title",
           "subtitle",
-          "showFooter"
+          "showFooter",
+          "contentScrollable"
         ]
       },
       {
@@ -5453,11 +5740,12 @@ window.POEMUI_COMPONENT_DATA = {
       {
         "id": "visibility",
         "title": "显隐与操作栏",
-        "description": "Popup 模式支持受控/非受控显隐；确认后才提交值，取消只丢弃草稿，不伪造 change。",
+        "description": "Popup 模式支持受控/非受控显隐；默认 Header 左确右取，classic 保留底部两列，确认后才提交值。",
         "keys": [
           "visible",
           "defaultVisible",
           "title",
+          "type",
           "cancelText",
           "confirmText",
           "showHeader",
@@ -5519,11 +5807,12 @@ window.POEMUI_COMPONENT_DATA = {
       {
         "id": "visibility",
         "title": "显隐与操作栏",
-        "description": "Popup 支持受控显隐和草稿确认；内联模式始终可见，确认与取消继续保持固定顺序。",
+        "description": "Popup 支持受控显隐和草稿确认；默认 Header 使用左确认图标、右关闭图标，classic 使用底部两列；内联模式始终可见。",
         "keys": [
           "visible",
           "defaultVisible",
           "title",
+          "type",
           "cancelText",
           "confirmText",
           "showHeader",
@@ -5981,6 +6270,23 @@ window.POEMUI_COMPONENT_DATA = {
         "name": "close",
         "detail": "无",
         "description": "hide() 或 duration 自动收起完成固定退场、节点实际卸载后触发；不表示业务操作成功。"
+      }
+    ],
+    "dynamic-message": [
+      {
+        "name": "click",
+        "detail": "{ key, theme }",
+        "description": "用户点按当前通知 Surface 时触发；不代表动作完成或通知关闭。"
+      },
+      {
+        "name": "action",
+        "detail": "{ key, theme }",
+        "description": "点按可选 PUI Action Button 时触发；组件不自动宣布成功，也不自动关闭。"
+      },
+      {
+        "name": "close",
+        "detail": "{ key, theme, reason: \"timeout\" | \"manual\" | \"programmatic\" }",
+        "description": "当前通知完成真实退场并卸载后触发一次；排队但未展示的消息被移除时不触发。"
       }
     ],
     "dialog": [
@@ -6964,6 +7270,10 @@ window.POEMUI_COMPONENT_DATA = {
         "description": "内容区域的具名补充或替换内容；与 default slot、content 属性并列时由调用方避免重复。"
       },
       {
+        "name": "surface-top",
+        "description": "直接贴合 Popup Surface 顶边的非布局内容；推荐组合 pui-top-loading，由 Surface 提供定位上下文与圆角裁切。"
+      },
+      {
         "name": "header-left",
         "description": "Header 左侧操作区；调用方应放入圆形 PUI IconButton，并自行处理该业务动作。"
       },
@@ -7262,6 +7572,23 @@ window.POEMUI_COMPONENT_DATA = {
         "name": "hide()",
         "returns": "void",
         "description": "取消等待计时并进入退场；节点卸载后触发 close。"
+      }
+    ],
+    "dynamic-message": [
+      {
+        "name": "show(options)",
+        "returns": "String",
+        "description": "展示消息并返回 key；当前同 key 时原位更新，不同 key 时按调用顺序进入队列。loading 未显式传 duration 时持续显示。"
+      },
+      {
+        "name": "update(key, patch)",
+        "returns": "Boolean",
+        "description": "原位更新当前或排队消息；命中返回 true，未知 key 返回 false，不创建假消息。"
+      },
+      {
+        "name": "hide(key?)",
+        "returns": "Boolean",
+        "description": "当前消息进入真实退场；指定排队 key 时只移出队列。没有匹配消息时返回 false。"
       }
     ],
     "dialog": [
@@ -7579,6 +7906,8 @@ window.POEMUI_COMPONENT_DATA = {
     "action-sheet",
     "dropdown-menu",
     "overlay",
+    "top-loading",
+    "dynamic-message",
     "pull-refresh",
     "virtual-list",
     "sticky",
@@ -7718,7 +8047,7 @@ window.POEMUI_COMPONENT_DATA = {
       "poem": "date-time-picker",
       "status": "adapter",
       "trigger": "tap",
-      "note": "DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。",
+      "note": "DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。",
       "delivery": "done"
     },
     {

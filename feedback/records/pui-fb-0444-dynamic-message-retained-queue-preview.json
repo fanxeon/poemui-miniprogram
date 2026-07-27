@@ -1,0 +1,121 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0444",
+  "title": "DynamicMessage 需要 retained update、队列和双阶段变形动效",
+  "scope": "component",
+  "components": ["dynamic-message", "button", "icon", "loading", "preview-site", "miniprogram-advanced-page"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "新增类似 iOS 灵动岛的顶部非模态通知：先从顶部弹出 Icon + 标题的紧凑胶囊，再展开长出完整面板；退场严格反向，同时保证同一任务原位更新、不同任务排队、真实 Action/关闭事件，并同步 H5 与小程序独立页面。",
+  "environment": {
+    "surfaces": ["miniprogram-source", "miniprogram-page", "h5-preview", "npm-dist", "example"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 H5 高级目录打开 DynamicMessage，点按开始生成、更新进度、成功、失败和加入队列。",
+    "在消息显示期间用鼠标按住下方真实列表拖动，确认非模态通知不锁住页面。",
+    "关闭当前持续消息，确认先在 320ms 内收回面板，再由紧凑胶囊在 180ms 内向上退出；排队消息只在完整 500ms 退场结束后出现，reduceMotion 压缩为 1ms。",
+    "切换阴影、毛玻璃、大圆角和 light/dark，检查通知 Surface 的计算样式与 390px 边界。"
+  ],
+  "expected": "同 key show/update 保留当前节点并原位更新；不同 key FIFO 排队；进场先用 180ms 展示只含 Icon/Loading + 标题的紧凑胶囊，再用 320ms 长成完整面板；退场按 320ms 收拢 + 180ms 上移严格反向；loading 默认持续显示，非 loading 默认 3000ms；Action、Surface click、manual/timeout/programmatic close 都有真实事件，通知不阻断下方滚动。",
+  "actual": "新增前没有该组件；首版修复 retained update 和队列后，视觉仍把整张 Surface、标题、正文和操作放进同一次 translateY + scale 过渡，退场仅移除 active class，没有先收拢面板、再退出胶囊的分段语义。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前 Goal 对话",
+      "note": "用户授权按照既定双组件计划持续执行，直到完成最终交付版本后统一验收。"
+    },
+    {
+      "kind": "file",
+      "ref": "dynamic-message/dynamic-message.js",
+      "note": "同 key retained update、不同 key FIFO、自动/手动/程序关闭和三类事件均由真实状态机实现。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 使用 PreviewDevice 内 retained island，并在捕获阶段隔离已消费的 DynamicMessage demo action，避免全局重绘清空运行态。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/dynamic-message",
+      "note": "真实点击后采集入场 compact 39ms、expanding 221ms、visible 541ms；退场 collapsing 30ms、leave-compact 351ms、hidden 533ms，并完成 390px 边界实测。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dynamic-message.js",
+      "note": "专项测试锁定 retained node、默认图标刷新、队列归一化、事件顺序、H5 事件隔离和视觉 Token。"
+    }
+  ],
+  "rootCause": "首版只用 active 布尔值驱动一组 opacity/translateY/scale transition，标题、正文、Action、Close 和 Surface 没有独立阶段；退场也只有一个 leaving 计时器，因此代码结构无法表达紧凑胶囊与完整面板之间的先后关系。",
+  "decision": {
+    "outcome": "保留单一 retained Surface、currentCustomIcon、同 key patch、FIFO 和 H5 事件隔离；双端新增 entering/compact/expanding/visible/collapsing/leave-compact/hidden 状态机。compact 固定 180ms，只呈现 PUI Icon/Loading + title；panel 固定 320ms，通过明确 max-width/min-height/max-height 边界长开正文与操作；退场反向执行后才卸载并发出 close。",
+    "rationale": "灵动通知的识别度来自内容层级和形态连续变化，而不是整卡缩放。显式阶段既能保持文字不被缩放，又能让 close、队列、自动关闭和低动效继续绑定真实生命周期。",
+    "alternativesRejected": [
+      "每次更新销毁重建会破坏灵动岛连续动画、焦点与读屏上下文。",
+      "不同任务覆盖当前消息会丢失通知；并发堆叠多座岛又会遮挡内容。",
+      "在全局监听末尾增加静态成功提示不能修复 retained 状态和真实事件链。",
+      "继续使用单段 scale 会同时缩放标题与正文，无法表达先胶囊、后面板以及反向退场。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "dynamic-message/dynamic-message.js",
+      "dynamic-message/dynamic-message.wxml",
+      "dynamic-message/dynamic-message.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/components/dynamic-message/index.wxml",
+      "metadata/components.js",
+      "docs/components/DYNAMIC-MESSAGE.md",
+      "scripts/test-dynamic-message.js"
+    ],
+    "dependencies": ["pui-button", "pui-icon", "pui-loading", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dynamic-message.js", "scripts/test-miniprogram-advanced-pages.js"],
+    "commands": [
+      "node scripts/test-dynamic-message.js：通过",
+      "node scripts/test-miniprogram-advanced-pages.js：通过",
+      "npm run site:build：通过",
+      "npm run check：通过",
+      "npm run pack:check：通过，347.0 kB / 1.7 MB / 543 files",
+      "npm run example:install：通过，0 vulnerabilities",
+      "真实 miniprogram 微信 build-npm：1292ms，warnings=[]"
+    ],
+    "browser": [
+      "入场真实阶段为 entering 35ms、compact 39ms、expanding 221ms、visible 541ms；compact 宽 180px、message opacity=0，展开后宽 320px、message opacity=1。",
+      "退场真实阶段为 collapsing 30ms、leave-compact 351ms、hidden 533ms；宽度 320px→180px、message opacity 1→0 后胶囊才向上淡出。",
+      "真实点击开始生成后进入 loading；更新进度保持同 key 并变为 info 68%，success 与 error 同步刷新主题图标，error 使用 assertive live region。",
+      "Action 点击写入真实 action 事件；关闭持续消息后，FIFO warning 在 500ms 退场结束后出现。",
+      "下方 452px 列表通过鼠标按住拖动从 scrollTop=0 到 248，通知仍显示；390px 页面与 PreviewDevice 横向溢出均为 0，展开通知左右安全边界均为 16px。",
+      "reduceMotion 计算为 1ms；阴影/毛玻璃/大圆角关闭时分别为 none/none/16px，开启时为真实 shadow/blur/24px；light/dark 均保持高对比。"
+    ],
+    "deviceRisks": [
+      "微信 iOS/Android 真机仍需验证状态栏与胶囊差异下 safeArea 顶部定位。",
+      "真机 VoiceOver/TalkBack 对 retained live region 的连续播报、Action 与 Close 顺序仍需确认。",
+      "低端 Android 连续更新和长队列下的动画帧率、内存释放仍需压力回归。",
+      "通用 _example 保持 touristappid，微信 CLI 返回 code 10；真实 miniprogram 已完成官方 build-npm。"
+    ]
+  },
+  "ai": {
+    "summary": "DynamicMessage 是单实例 retained island；进场先出现 Icon/Loading + 标题胶囊，再长成完整面板，退场反向；同 key 原位更新，不同 key 排队，所有结果和关闭原因必须来自真实状态。",
+    "rules": [
+      "进场必须是 compact 180ms 后 expanding 320ms；退场必须先 collapsing 320ms 再 leave-compact 180ms。",
+      "compact 只显示 PUI Icon/Loading 与 title；message、Action、Close 和 accent 只能在完整面板阶段出现。",
+      "不得用单段 scale 缩放标题正文，不得 transition height:auto 或用 display:none 制造瞬移。",
+      "同 key 更新不得销毁当前节点或重播完整入场。",
+      "消费者未传 icon 时主题变化必须同步刷新默认 PUI Icon。",
+      "不同 key 使用 FIFO，不得覆盖当前消息或同时堆叠多座通知。",
+      "H5 局部 demo action 被消费后必须阻止全局 renderStage 清空运行态。",
+      "通知保持非模态，页面列表必须仍可鼠标按住拖动和滚动。"
+    ],
+    "tags": ["dynamic-message", "retained-node", "staged-motion", "compact-island", "queue", "event-order", "pui-icon", "reduce-motion", "h5-parity"]
+  }
+}

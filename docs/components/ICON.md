@@ -26,7 +26,7 @@ view.pui-icon[role=img]
 
 ## 3. 资源与生成
 
-- 218 个公开名称来自 `assets/icons-src/manifest.json`。SVG 只作为设计与字体生成真相源；稳定码点、WOFF2、`icon-font-map.js`、`icon-font-catalog.js`、`icon-font.wxss` 与 H5 `icon-font.css` 由 `scripts/generate-icons.js` 统一生成，禁止手改生成物。
+- 220 个公开名称来自 `assets/icons-src/manifest.json`。SVG 只作为设计与字体生成真相源；稳定码点、WOFF2、`icon-font-map.js`、`icon-font-catalog.js`、`icon-font.wxss` 与 H5 `icon-font.css` 由 `scripts/generate-icons.js` 统一生成，禁止手改生成物。
 - 小程序 `pui-icon` 运行时只能导入 `icon-font-map.js`；H5 共享 `iconComponent` 只能读取生成目录中的 `codepoint` 并渲染同一字体字形。两端均不得导入 SVG path map、内联 SVG、image、CSS mask 或 Canvas 作为 `pui-icon` 渲染分支。
 - `components / 组件` 分类收录当前 14 个需要 PoemUI 专属几何的名称：`button`、`divider`、`icon`、`popup`、`popover`、`sheet`、`action-sheet`、`dropdown-menu`、`overlay`、`badge`、`cell`、`swipe-cell`、`scroll-area`、`dialog`。它们和全部图标共享唯一生成链路，不维护页面私有名单。
 - 新组件目录先判断语义是否已被成熟图形覆盖，禁止机械地为每个组件重画同名图标。Avatar/Card/Image/List/Collapse/Collapsible/Bubble/CountDown/Table 直接复用现有 `user/panel-top/image/list-bullet/rows/chevron-down/message/clock/table`；Tag、Swiper、Direction 分别引入锁定版 Lucide `tag/gallery-horizontal/arrow-left-right` 并留在通用语义分类；只有存在目录辨识冲突的 Badge、Cell、SwipeCell、ScrollArea、Dialog 新增专属几何。
@@ -37,13 +37,14 @@ view.pui-icon[role=img]
 - 资产固定为 24×24 viewBox、2.15 圆线、round linecap/linejoin。生成链路先把描边转成封闭轮廓，再生成本地 WOFF2；码点由 `assets/icon-codepoints.json` 在 Unicode Private Use Area 中稳定分配，不得因排序或新增图标改写既有码点。
 - 字体轮廓采用 nonzero 绕向：圆环、头像头部、轨道节点等半径大于半描边宽度的闭口圆形必须保留方向相反的外轮廓和内轮廓，不能被字体填成实心。省略号、Radio 中心点、Popover 锚点等半径不大于半描边宽度的语义点保持实心，避免小尺寸针孔。`scripts/test-icon-font-outlines.js` 对当前 59 个镂空圆与 25 个语义点执行全量门禁。
 - WOFF2 以同一 data URI 同步写入 `icon/icon-font.wxss` 与 `preview/icon-font.css`，随 npm 和 H5 本地交付，不依赖远程字体、CDN 或运行时下载；原始 SVG 只用于字体生成、资源审计和辨识对照。
-- 公司书写字标属于独立品牌字体资产，由 `scripts/generate-company-mark.js` 输出到 `assets/company-mark/`，不计入本组件的 218 个名称、码点表或 WOFF2。需要呈现公司字标时使用其独立 SVG / CSS / WXSS；不得为此恢复 Icon 的 SVG、图片或 Canvas 运行时分支。
+- 用户明确登记的公司书写字标以唯一名称 `poemcoder-mark` 位于 `abstract / 抽象` 分类，`source=user-owned:poemcoder-mark`、码点 `U+E0DB`；其五段闭合实心轮廓直接进入同一 `PoemUI Roundline` WOFF2。旧名 `company-mark` 与独立品牌字体链不得保留。
+- `premium` 是面向高级组件分区的稳定语义名称，位于 `user / 用户` 分类并显式映射到锁定 Lucide `crown` 轮廓、码点 `U+E0DC`；它在字体生成前以 `translate(0 -1.5)` 做语义级向上光学校正，使皇冠轮廓与同行标题的视觉基线一致。通用 `crown` 保留原始轮廓，页面和消费者不得再以 margin、定位或 transform 二次偏移。
 
 ## 4. 颜色与深浅色
 
 - 内置 `name` 字形使用 `currentColor`。未传 `color` 时根节点必须使用 `color: inherit`，继承页面正文或 Button 等组合宿主的当前前景色；不得在 Icon 根重新写死正文 Token，否则实色 Button 会出现黑底黑图标。传入安全 HEX、RGB(A)、HSL(A)、命名色或 `var(--pui-*)` 时直接写入根文字颜色，深浅色 Token 可实时解析。
 - 小程序与 H5 都渲染同一 WOFF2 的字体字形，并使用 `currentColor`；不存在跨端 SVG/字体两套视觉运行时。
-- 品牌图、业务图片和多彩图形默认使用 `pui-image`；经品牌合同登记的单色公司字标可以使用独立 `PoemUI Company Mark` 字体，但不得借 `pui-icon` 恢复图片、SVG 或 Canvas 着色分支。
+- 品牌图、业务图片和多彩图形默认使用 `pui-image`；经品牌合同登记的单色 `poemcoder-mark` 可以通过 `pui-icon` 使用，但不得借此恢复图片、SVG 或 Canvas 运行时分支，也不得把字标当作通用操作图标。
 
 ## 5. 事件
 

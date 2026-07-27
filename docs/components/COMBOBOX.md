@@ -45,6 +45,7 @@ Combobox(role=group)
 - Trigger 与 Panel 共同消费 `--pui-combobox-radius`；`shape=round` 只改变这套语义半径。可见搜索字段由嵌入 Input Field 承担唯一字段 Surface，展开 Panel 是唯一独立浮动 Surface；Combobox 根不得叠加第二层阴影、边框或毛玻璃。
 - 等距模式只作用 Panel 的 Surface inset；不改变 Option、Tag、图标和控件内部微间距。
 - 每个 Option 行固定消费内部 `--pui-combobox-option-inset-inline/block` 与 `--pui-combobox-option-gap`：左 Icon 起点和右侧 Check（或正文末端）到行边界使用同一横向 inset，Icon 与正文之间使用内容 gap。它们不是页面可覆写的私有补丁；消费者不得为首页或单个 Search 候选重写 padding/margin。
+- 选中 Option 是列表内唯一出现背景的独立选择 Surface，必须显式跟随控制圆角：小程序端使用 `--pui-radius-medium`，H5 使用 `--pui-site-radius-control`。它不借用 `shape=round` 的 Panel 半径，也不能在果味/大圆角时保留直角或用页面样式补偿。
 - H5 与小程序均须验证固定 `listHeight`、唯一滚动区、外置 Search 组合、390px、深浅色与全局视觉开关。真机的软键盘、scroll-view、读屏与触摸边界仍需单独验收。
 
 ## 明确禁止

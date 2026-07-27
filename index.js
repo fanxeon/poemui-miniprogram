@@ -68,6 +68,8 @@ module.exports = {
     'action-sheet',
     'dropdown-menu',
     'overlay',
+    'top-loading',
+    'dynamic-message',
     'pull-refresh',
     'virtual-list',
     'sticky',

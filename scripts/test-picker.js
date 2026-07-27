@@ -15,7 +15,7 @@ vm.runInNewContext(source, {
 assert(definition, 'Picker component definition must be registered');
 
 const PROPS = [
-  'columns', 'value', 'defaultValue', 'visible', 'defaultVisible', 'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup',
+  'columns', 'value', 'defaultValue', 'visible', 'defaultVisible', 'title', 'type', 'cancelText', 'confirmText', 'showHeader', 'usePopup',
   'closeOnOverlayClick', 'autoClose', 'keys', 'visibleItemCount', 'itemHeight', 'disabled', 'readonly', 'loading', 'loadingText',
   'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion',
 ];
@@ -55,7 +55,7 @@ function cascadeColumns() {
   ];
 }
 
-assert.deepStrictEqual(Object.keys(definition.properties), PROPS, 'Picker publishes the exact 25-Prop contract');
+assert.deepStrictEqual(Object.keys(definition.properties), PROPS, 'Picker publishes the exact 26-Prop contract');
 
 const empty = create();
 assert.strictEqual(empty.instance.data.stateType, 'empty');
@@ -63,6 +63,9 @@ assert.strictEqual(empty.instance.data.currentVisible, false);
 assert.strictEqual(empty.instance.data.pickerBlocked, true);
 assert(empty.instance.data.rootClass.includes('pui-picker--popup'));
 assert(empty.instance.data.rootClass.includes('pui-picker--empty'));
+assert(empty.instance.data.rootClass.includes('pui-picker--default'));
+assert.strictEqual(empty.instance.data.pickerType, 'default');
+assert.strictEqual(empty.instance.data.showClassicFooter, false);
 assert(empty.instance.data.rootStyle.includes('--pui-picker-duration:500ms'));
 
 const cascade = create({ columns: cascadeColumns(), defaultValue: ['basic', 0], title: '选择组件' });
@@ -131,6 +134,14 @@ assert(inline.instance.data.rootClass.includes('pui-picker--inline'));
 assert.strictEqual(inline.instance.open(), false);
 assert.strictEqual(inline.instance.close(), false);
 
+const classic = create({ columns: cascadeColumns(), defaultValue: ['basic', 0], type: 'classic' });
+assert.strictEqual(classic.instance.data.pickerType, 'classic');
+assert(classic.instance.data.rootClass.includes('pui-picker--classic'));
+assert.strictEqual(classic.instance.data.showClassicFooter, true, 'classic Popup keeps the bottom action row');
+const unknownType = create({ columns: cascadeColumns(), defaultValue: ['basic', 0], type: 'legacy' });
+assert.strictEqual(unknownType.instance.data.pickerType, 'default', 'unsupported types safely resolve to the default Header action layout');
+assert.strictEqual(unknownType.instance.data.showClassicFooter, false);
+
 ['disabled', 'readonly'].forEach((state) => {
   const blocked = create({ columns: cascadeColumns(), defaultValue: ['basic', 0], [state]: true });
   assert.strictEqual(blocked.instance.data.pickerBlocked, true);
@@ -184,14 +195,22 @@ const example = fs.readFileSync(path.join(root, '_example/miniprogram/pages/comp
 assert(wxml.includes('<pui-popup'));
 assert(wxml.includes('show-header="{{showHeader}}"'), 'Popup mode forwards Picker showHeader so cancel and confirm remain reachable');
 assert(wxml.includes('title="{{title}}"'), 'Popup mode forwards the Picker title into the shared Popup Header');
-assert(wxml.includes('show-footer="{{showHeader}}"'), 'Popup mode exposes the shared Popup Footer when Picker actions are enabled');
-assert(wxml.includes('slot="footer" class="pui-picker__actions"'), 'Popup actions render in the shared Popup Footer');
+assert(wxml.includes('show-footer="{{showClassicFooter}}"'), 'only classic Popup mode exposes the shared Popup Footer');
+assert(wxml.includes('slot="header-left"'), 'default Popup mode puts confirm in the shared Popup Header left slot');
+assert(wxml.includes('slot="close-btn"'), 'default Popup mode puts cancel in the shared Popup Header right slot');
+assert(wxml.includes('theme="primary"') && wxml.includes('variant="base"') && wxml.includes('shape="circle"') && wxml.includes('icon="check"') && wxml.includes('icon-only'), 'default Header confirm uses the primary circular Check PUI IconButton');
+assert(wxml.includes('theme="default"') && wxml.includes('icon="close"'), 'default Header cancel uses the default circular Close PUI IconButton');
+assert(wxml.includes('wx:if="{{showClassicFooter}}" slot="footer" class="pui-picker__actions"'), 'classic Popup actions render in the shared Popup Footer');
+assert(wxml.includes("pickerType === 'default'"), 'Picker template switches Header actions from the normalized type state');
 assert(wxml.includes('duration="{{reduceMotion ? 1 : 500}}"'), 'Picker and Popup share the 500ms/1ms motion contract');
 assert(!template.includes('slot="header"'), 'Picker must not target the removed Popup header slot');
 assert(template.includes('<picker-view'));
 assert(template.includes('<picker-view-column'));
 assert(template.includes('mask-style="background:transparent;"'), 'Picker must disable the native fixed-light mask in dark mode');
 assert(template.includes("draftIndexes[columnIndex] === optionIndex ? 'pui-picker__item--selected'"), 'Picker renders an explicit cross-theme selected option state');
+assert(template.includes('class="pui-picker__item-text"'), 'Picker item label keeps a semantic class instead of relying on an unsupported WXSS tag selector');
+assert(wxss.includes('.pui-picker__item-text'), 'Picker item label overflow styling uses the semantic class');
+assert(!wxss.includes('.pui-picker__item text'), 'Picker avoids unsupported WXSS tag selectors');
 assert(wxml.includes('<pui-button'));
 assert(template.includes('<pui-icon'));
 assert(template.includes('<pui-loading'));
@@ -203,6 +222,7 @@ assert(wxss.includes('var(--pui-picker-duration)'));
 
 assert.deepStrictEqual(metadata.apiProps.picker, PROPS);
 assert.strictEqual(metadata.details.picker.props.find((prop) => prop.key === 'defaultVisible').value, false);
+assert.deepStrictEqual(metadata.details.picker.props.find((prop) => prop.key === 'type').options, ['default', 'classic']);
 assert.deepStrictEqual(metadata.apiEvents.picker.map((item) => item.name), EVENTS);
 assert.strictEqual(metadata.apiSlots.picker, undefined);
 assert.deepStrictEqual(metadata.apiMethods.picker.map((item) => item.name), METHODS);
@@ -210,6 +230,12 @@ assert.strictEqual(metadata.apiPropGroups.picker.length, 4);
 
 ['基础用法', '多列与级联', '状态与反馈', '内联模式'].forEach((title) => assert(preview.includes(`<h3>${title}</h3>`)));
 assert(preview.includes('function pickerH5Select'));
+assert(preview.includes("const pickerType = props.type === 'classic' ? 'classic' : 'default';"));
+assert(preview.includes('pui-picker-h5__panel--${pickerType}'));
+assert(preview.includes("iconButtonSample({ theme: 'primary', variant: 'base', shape: 'circle', size: 'small', icon: 'check'"), 'H5 default Header confirm uses the shared primary Check IconButton');
+assert(preview.includes("iconButtonSample({ theme: 'default', variant: 'base', shape: 'circle', size: 'small', icon: 'close'"), 'H5 default Header cancel uses the shared default Close IconButton');
+assert(preview.includes("title: '选择组件', type: 'default', cancelText: '取消'"), 'H5 Picker runtime defaults expose the public type');
+assert(preview.includes("type: { type: 'select', value: 'default', options: ['default', 'classic'] }"), 'H5 Props workspace exposes the same type enum');
 const pickerRuntimeBlock = preview.slice(preview.indexOf('function bindPickerPreviewRuntime'), preview.indexOf('const dateTimePreviewDateUnits'));
 assert(pickerRuntimeBlock.includes("onStep(pointer.index - Math.round(distance / itemHeight), 'drag')"), 'Picker Pointer release reports its own drag source');
 assert(preview.includes("type === 'picker-retry'"));
@@ -232,14 +258,18 @@ assert(previewStyles.includes('box-shadow: var(--preview-shadow-card, none)'));
 assert(previewStyles.includes('backdrop-filter: var(--preview-blur, none)'));
 assert(previewStyles.includes('.pui-picker-h5__wheel.is-dragging'));
 assert(previewStyles.includes('.pui-picker-h5__header--popup'));
+assert(previewStyles.includes('.pui-picker-h5__header--popup.is-header-actions'));
+assert(previewStyles.includes('.pui-picker-h5__header--popup.is-header-actions { grid-template-columns: 36px minmax(0, 1fr) 36px; }'), 'H5 default Header retains Popup-equivalent three-track icon geometry');
 assert(previewStyles.includes('.pui-picker-h5__footer'));
 assert(previewStyles.includes('.element-inspector-mount.preview-code-mount'));
 
 assert(api.includes('## Picker'));
-assert(api.includes('25 Props / 8 Events / 0 Slots / 6 Methods') || contract.includes('25 Props / 8 Events / 0 Slots / 6 Methods'));
+assert(api.includes('26 Props / 8 Events / 0 Slots / 6 Methods') || contract.includes('26 Props / 8 Events / 0 Slots / 6 Methods'));
+assert(api.includes("| `type` | `'default' \\| 'classic'` | `'default'` | `default`、`classic` |"), 'Picker API documents the default/classic presentation API');
 assert(api.includes('confirm → change（值变化时）→ visible-change → close'));
-assert(compatibility.includes('Picker 的 H5 镜像必须与原生共享 25 Props'));
+assert(compatibility.includes('Picker 的 H5 镜像必须与原生共享 26 Props'));
 assert(contract.includes('禁止恢复旧 `options + 单个标量 value + 原生 <picker>`'));
+assert(contract.includes('`type` 只接受 `default | classic`'));
 assert(example.includes('id="deliveryPicker"'));
 assert(example.includes('bind:visible-change="onDeliveryPickerVisibleChange"'));
 

@@ -24,6 +24,7 @@
 ## 4. Token、间距与排版
 
 - Trigger 使用字段 Surface 的主题、边界、圆角、文字和间距 Token，不额外增加 Card。
+- Option 无论普通还是选中，均使用与 Trigger 相同的控制圆角：小程序端为 `--pui-radius-medium`，H5 端为 `--pui-site-radius-control`。选中态保持品牌文字与柔和 PUI Button Surface；背景不得因透明 Button 的基础规则退化为透明、直角或固定私有半径。
 - Trigger/Popup/菜单过渡默认 500ms、最大 1000ms、reduceMotion 为 1ms；禁用和只读只改变语义状态，不改变盒模型。
 
 ## 5. 内容、Slot 与组合边界
@@ -53,7 +54,7 @@
 ## 10. 响应式、主题与视觉配置
 
 - 390px 下 Trigger 与菜单在 PreviewDevice 内收缩，document/body 无横向溢出。
-- light/dark、边框、阴影、毛玻璃与大圆角消费全局 Token，不改变 value、禁用或事件顺序。
+- light/dark、边框、阴影、毛玻璃与大圆角消费全局 Token，不改变 value、禁用或事件顺序；选中 Option 的可见背景必须随圆角外观同步变化，并与 Trigger 保持同一控制几何。
 - `equalSpacing` 只作用于 H5 的真实展开 `.pui-select-menu` Surface：菜单四向 inset 与选项结构 gap 使用 Surface 别名；微信端 Popup 使用同一面板/控件间距 Token。Trigger、选项内部 Icon/文字 gap 与受控事件不受影响。
 
 ## 11. 明确禁止

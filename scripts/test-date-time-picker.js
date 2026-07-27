@@ -24,10 +24,10 @@ assert(definition, 'DateTimePicker component definition must be registered');
 
 const expectedProps = [
   'value', 'defaultValue', 'visible', 'defaultVisible', 'mode', 'start', 'end', 'format', 'steps', 'showWeek',
-  'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick',
+  'title', 'type', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick',
   'disabled', 'readonly', 'ariaLabel', 'reduceMotion',
 ];
-assert.deepStrictEqual(Object.keys(definition.properties), expectedProps, 'DateTimePicker publishes the 21-prop wheel contract');
+assert.deepStrictEqual(Object.keys(definition.properties), expectedProps, 'DateTimePicker publishes the 22-prop wheel contract');
 
 function create(overrides) {
   const defaults = {};
@@ -149,6 +149,7 @@ const example = fs.readFileSync(path.join(root, '_example/miniprogram/pages/comp
 
 assert.strictEqual((wxml.match(/<pui-picker\b/g) || []).length, 1, 'DateTimePicker composes one PUI Picker');
 assert(!/<picker\b|<picker-view\b|<input\b|<button\b|<slot\b/.test(wxml), 'DateTimePicker does not duplicate Picker internals or expose slots');
+assert(wxml.includes('type="{{type}}"'), 'DateTimePicker forwards the public default/classic presentation type to its one Picker child');
 assert(wxml.includes('bind:pick="onPickerPick"'));
 assert(wxml.includes('bind:confirm="onPickerConfirm"'));
 assert.strictEqual(json.usingComponents['pui-picker'], '../picker/picker');
@@ -156,9 +157,12 @@ assert(wxss.includes(':host') && !wxss.includes('box-shadow'), 'wrapper stays la
 assert(preview.includes("'date-time-picker': ['value', 'defaultValue', 'visible', 'defaultVisible', 'mode'"));
 assert(preview.includes('function dateTimePickerShowcase'));
 assert(preview.includes('dateTimePickerH5Model'));
+assert(preview.includes("title: '选择发布时间', type: 'default', cancelText: '取消'"), 'DateTimePicker H5 default exposes the public type');
+assert(preview.includes("type: { type: 'select', value: 'default', options: ['default', 'classic'] }"), 'DateTimePicker H5 Props workspace exposes the same type enum');
+assert(preview.includes("type: props.type === 'classic' ? 'classic' : 'default',"), 'DateTimePicker H5 normalizes and forwards type through the shared Picker model');
 assert(/edgeToEdgePreviewIds[\s\S]*'date-time-picker'/.test(preview), 'DateTimePicker Popup stays inside the edge-to-edge PreviewDevice');
 assert(api.includes('## DateTimePicker'));
-assert(api.includes('21 Props'));
+assert(api.includes('22 Props'));
 assert(compatibility.includes('DateTimePicker 直接组合 PUI Picker'));
 assert(example.includes('id="deliveryDateTimePicker"'));
 assert(example.includes('bind:confirm="onDeliveryDateTimeConfirm"'));

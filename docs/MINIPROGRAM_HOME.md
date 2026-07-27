@@ -6,10 +6,11 @@
 
 ## 2026-07-26 当前搬迁状态
 
-本节优先于本文后续的早期迁移记录：`miniprogram/app.json` 已登记 69 个稳定组件独立页和 5 个 `pages/guides/*` 规范页。首页目录包含“开始与规范、基础组件、浮层、布局、导航、表单组件、数据展示、反馈、高级”九分区，Search 从同一目录数据生成 74 条可导航候选；5 个规范候选以“规范 ·”前缀区别于组件。
+本节优先于本文后续的早期迁移记录：`miniprogram/app.json` 已登记 71 个稳定组件独立页和 5 个 `pages/guides/*` 规范页。首页目录包含“开始与规范、基础组件、浮层、布局、导航、表单组件、数据展示、反馈、高级”九分区，Search 从同一目录数据生成 76 条可导航候选；5 个规范候选以“规范 ·”前缀区别于组件。
 
 - `ConfigProvider` 页根部使用唯一的 `visualConfig` Store，局部 Provider 只覆盖自身子树；不复制全局状态。
 - `Form` 只报告本地校验，`Upload` 只回传微信本地文件选择结果；两者均不伪造发布、保存或服务器上传成功。
+- `TopLoading` 依附 Card 顶边且不占正文高度；`DynamicMessage` 是无遮罩、同 key 原位更新的页面顶部非模态通知。两者在“高级”分区拥有独立详情页。
 - `PullRefresh`、`VirtualList` 是页面滚动所有者；VirtualList 将真实剩余 px 高度换算为组件所需 rpx 数值，避免把 `604px` 这样的字符串传入 Number Prop。
 - 分区合同位于 `docs/MINIPROGRAM_*_PAGES.md`，全量执行状态位于 `docs/MINIPROGRAM_REMAINING_SECTIONS_MIGRATION_PLAN.md`；390px 新页与 iOS/Android 真机仍须按 Ledger 中的 `deviceRisks` 实测，不能由 Node 测试替代。
 
@@ -23,11 +24,12 @@
 
 - 第一行是非 fixed 的 `pui-navbar`。组件读取胶囊完整矩形、窗口宽度和状态栏高度，左侧搜索与外观菜单两个 `pui-button + pui-icon` 操作作为同一组位于胶囊宽度的镜像区域内；右侧仍不放业务内容。
 - 中间唯一滚动上下文是 `pui-scroll-area`。页面运行时测量 Navbar、Tabbar 与窗口高度后回写有效 px 高度。
-- 内容先以独立 `home-brand` 呈现白底、左文右标记的紧凑留白版头：左侧依次显示 `Poem UI / 月下成行 / 原生小程序组件库，按需组合。`，右侧以 `144rpx` `pui-image` 呈现从既有 `poemui-moon-lines-black.png` 明暗蒙版抠出的透明底黑/白完整 Logo。页面订阅 ConfigProvider 的实际主题事件，浅色读取黑标、深色和 `auto` 的实际深色状态读取白标，不依赖 CSS `filter`；品牌调用点以 Image 既有 `custom-style` 在其根内联清除默认的灰底和边框，不让页面样式隔离覆盖失效。版头上/下仅使用 `28rpx / 16rpx` 留白，描述与目录统计共用 `8rpx` 内容间距且统计不再额外顶距，为下方目录腾出空间，不改变 Navbar、ScrollArea、Collapsible、目录排序、Cell、两秒自动展开或搜索真相源。
+- 内容先以独立 `home-brand` 呈现左文右标记的紧凑留白版头：`Poem UI` 右侧使用小尺寸、默认浅色、圆形 PUI Tag 展示 `poemui-miniprogram/version` 轻量子入口提供的当前版本；该子入口由构建脚本从 `package.json.version` 生成，不加载组件总入口，页面不得维护第二份版本字符串。其下依次显示 `月下成行 / 原生小程序组件库，按需组合。`，右侧以 `144rpx` `pui-image` 呈现透明底黑/白完整 Logo。页面订阅 ConfigProvider 的实际主题事件，浅色读取黑标、深色和 `auto` 的实际深色状态读取白标，不依赖 CSS `filter`；品牌调用点以 Image 既有 `custom-style` 在其根内联清除默认的灰底和边框，不让页面样式隔离覆盖失效。版头上/下仅使用 `28rpx / 16rpx` 留白，描述与目录统计共用 `8rpx` 内容间距且统计不再额外顶距，为下方目录腾出空间，不改变 Navbar、ScrollArea、Collapsible、目录排序、Cell、两秒自动展开或搜索真相源。
+- 仅“高级”目录分区通过 Collapsible 的真实 `trigger` Slot 组合标题与 `<pui-icon name="premium" size="30" />`；`premium` 是 Icon Font 的公开语义名称，映射到同源 crown 字形，并在统一字体生成链中向上做 `1.5/24` 画布单位的光学校正。图标位于文字右侧、继承标题前景色且不单独朗读；首页不得用负 margin、相对定位或 transform 修补基线，其余目录继续走 Collapsible 默认标题，不复制一套分区 Header 或改变开合、滚动和搜索真相源。
 - 首页初显保持全部目录收起；页面可见满 2 秒后自动展开“浮层”。若用户先手动切换任一分区，页面取消该自动动作，不覆盖用户当前选择；页面隐藏或卸载时也会取消未触发的定时器。
-- 搜索过滤同一目录中的 69 个真实组件路由与 5 个规范路由；清空或关闭会恢复完整目录。
+- 搜索过滤同一目录中的 71 个真实组件路由与 5 个规范路由；清空或关闭会恢复完整目录。
 - 每条组件 Cell 显式显示 `chevron-right`，由 Cell 自身的 `url + jumpType=navigateTo` 执行真实导航，不在页面维护第二套点击跳转。
-- 底部是非 fixed 的纯图标 `pui-tabbar`：使用组件原生 `normal + normal + split` 形态，全宽短横选中态和条目间微分隔均由组件负责。normal 是透明的屏幕附着导航布局，不带面板底色、阴影或毛玻璃；仅 round 是独立悬浮 Surface。四个真实目的地依次为首页、快速样式（`palette`）、Codex（`codex`）和我的；第二项是 `pages/styles/index`，第三项是 `pages/codex/index`，第四项 `pages/me/index` 组合 PUI 资料编辑、OpenID 复制与服务 Cell，不再使用空白占位壳。页面消费者继续通过 `change → wx.redirectTo` 路由，不让 Tabbar 组件承担自动导航。
+- 底部是非 fixed 的纯图标 `pui-tabbar`：使用组件原生 `normal + normal + split` 形态，全宽短横选中态和条目间微分隔均由组件负责。normal 是透明的屏幕附着导航布局，不带面板底色、阴影或毛玻璃；仅 round 是独立悬浮 Surface。四个真实目的地依次为首页、快速样式（`palette`）、安装（`code`）和我的；第二项是 `pages/styles/index`，第三项是 `pages/codex/index`，第四项 `pages/me/index` 组合 PUI 昵称编辑与服务 Cell，不再展示或读取 OpenID。页面消费者继续通过 `change → wx.redirectTo` 路由，不让 Tabbar 组件承担自动导航。
 
 ## 快速样式第二 Tab
 
@@ -35,7 +37,7 @@
 
 `pages/codex/index` 是第三个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Button、Icon、Tabbar 与共享 Section 组合“快速开始 / 让你的 AI 懂得用它”两个分区。快速开始展示真实 npm 安装命令和最小页面引用，并由共享 `code-snippet` 组合 PUI Card、Icon 与圆形文字 Button 完成复制；只有代码横向阅读使用原生 `scroll-view`。SKILL 尚未交付时只保留 `SKILL` 留白和 `codex` 图标，不提供下载按钮、复制内容或假完成状态。
 
-`pages/me/index` 是第四个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Avatar、Input、Button、Cell/CellGroup、Toast 与 Tabbar；昵称通过唯一 `user-profile` Store 本地持久化，OpenID 只读取真实登录链注入值，没有值时复制 Cell 保持禁用。隐私协议调用 `wx.openPrivacyContract`，关于诗上调用 `wx.navigateToMiniProgram` 打开正式版 `wxa1b9a4d6549c6cd1`。授权与订单尚无后端合同，因此只显示明确未开放反馈，不伪造支付、订单数据或路由。完整合同见 `docs/MINIPROGRAM_ME_PAGE.md`。
+`pages/me/index` 是第四个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Avatar、Input、Button、Cell/CellGroup、Toast 与 Tabbar；昵称通过唯一 `user-profile` Store 本地持久化，Store 只读写昵称，不再读取、缓存或复制 OpenID。隐私协议调用 `wx.openPrivacyContract`，关于诗上调用 `wx.navigateToMiniProgram` 打开正式版 `wxa1b9a4d6549c6cd1`。授权与订单尚无后端合同，因此只显示明确未开放反馈，不伪造支付、订单数据或路由。完整合同见 `docs/MINIPROGRAM_ME_PAGE.md`。
 
 预览固定为 `120rpx` 高的透明单一当前效果条，目录以 `8rpx` 关联间距紧随其后并至少保留 `520rpx` 可视高度；预览和目录不建立第二层面板。预览右侧使用 `default / text / small / circle / icon-only` 的 PUI Refresh IconButton，只清空当前分类的选择，其余分类状态继续保留；恢复是低存在感的次要回退动作，不使用 primary 实底或常驻文案。页面只测量 Navbar、Tabbar 与 workspace，不查询或依赖会被 utility 改写的 preview DOM。`scripts/style-utilities-preview-schema.js` 为全部 562 个发布类生成 `previewKind / previewTarget / previewSafety / previewTheme / previewScaffold`，生成器同步输出小程序目录、`preview/style-utilities-data.js` 和 H5 scoped `preview/style-utilities.css`。运行时把选择结果分发到 `layout / item / target / media / measure / outer / surface / items / text` 九类适格目标；禁止把 width、height、position、display、overflow、theme 或 visibility 类挂到页面、Tabs、ScrollArea、当前效果容器或其他基础设施根。viewport、fixed、hidden、safe-area 等风险结果必须在当前效果条内裁切或留下可读 trace，不能逃出预览或制造空白。
 
@@ -127,6 +129,8 @@ node scripts/test-miniprogram-me-page.js
 2026-07-26 当前图标目录继续由同一生成源扩充到 17 类、217 个图标。新批次不按组件名机械重画：Avatar/Card/Image/List/Collapse/Collapsible/Bubble/CountDown/Table 复用已有通用图标，Tag/Swiper/Direction 使用锁定版 Lucide 直接来源；Badge/Cell/SwipeCell/ScrollArea/Dialog 才进入 `components / 组件` 的专属减线几何，因此该分类现为 14 项。首页目录只引用真实 `icon-font-catalog` 名称；本轮开发者工具、390px 和真机结论必须以 2026-07-26 的后续验收记录为准。
 
 2026-07-26 后续验收复用微信开发者工具 Stable v2.01.2510290 的现有会话，在 AppID `wx23aa017375535746`、iPhone 12/13 Pro `390px`、主 WebView 下重新编译并完成标准 `build-npm`（1380ms，`warnings: []`）。首页的数据展示、布局与反馈分区已实际滚动检查：新增的 Badge、Cell、SwipeCell、ScrollArea、Dialog 在 `20rpx` 目录尺寸可辨，点击 Dialog 可进入真实独立页并返回；Icon 页显示 `217` 个图标、`components 14`，三列 `56rpx` 网格名称完整换行且无横向溢出，浅深色 `currentColor` 均正常。运行面板为 `0 errors`，但已有“文章推荐”和环境噪音 warnings 没有伪装为零。H5 `#/icons` 也在真实 `390×844` 视口完成同一分类的三列、完整名称、浅深色与无横向溢出检查，控制台 `0 error / 0 warning`。iOS、Android 真机的字体抗锯齿、触摸、读屏和惯性滚动仍未验证。
+
+2026-07-27 用户确认把公司书写 Logo 以唯一公开名称 `poemcoder-mark` 收录到 `pui-icon`。该自有轮廓进入 `abstract / 抽象` 分类和同一 `PoemUI Roundline` 字体生成链，初始目录为 17 类、219 个名称；后续新增映射 Lucide `crown` 的公开 `premium` 名称，当前目录为 17 类、220 个名称。旧 `company-mark` 名称与独立字体不保留。
 
 ## 2026-07-27 返回位置修缮
 

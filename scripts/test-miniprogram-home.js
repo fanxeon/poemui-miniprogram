@@ -19,11 +19,13 @@ var pagePackage = JSON.parse(read('miniprogram/package.json'));
 var appJson = JSON.parse(read('miniprogram/app.json'));
 var appJs = read('miniprogram/app.js');
 var iconCatalog = require(path.join(ROOT, 'icon/icon-font-catalog.js'));
+var packageVersion = JSON.parse(read('package.json')).version;
+var distVersionSource = read('miniprogram_dist/version.js');
 
 assert.ok(wxml.indexOf('<pui-config-provider') !== -1, '首页必须使用 ConfigProvider');
 assert.ok(wxml.indexOf('use-global-config') !== -1, '首页必须接入全局视觉配置');
 assert.ok(wxml.indexOf('bind:themechange="onProviderThemeChange"') !== -1, '首页必须读取 Provider 解析后的主题，以切换透明底品牌标记');
-['pui-navbar', 'pui-button', 'pui-scroll-area', 'pui-collapsible', 'pui-cell', 'pui-combobox', 'pui-overlay', 'pui-popup', 'appearance-settings', 'pui-tabbar'].forEach(function (component) {
+['pui-navbar', 'pui-button', 'pui-icon', 'pui-tag', 'pui-scroll-area', 'pui-collapsible', 'pui-cell', 'pui-combobox', 'pui-overlay', 'pui-popup', 'appearance-settings', 'pui-tabbar'].forEach(function (component) {
   assert.ok(wxml.indexOf('<' + component) !== -1, '首页缺少 ' + component);
 });
 assert.ok(wxml.indexOf('<navigation-bar') === -1, '首页不能继续引用旧 navigation-bar');
@@ -82,6 +84,9 @@ assert.ok(wxml.indexOf('height="320rpx"') === -1, '首页不能使用 ScrollArea
 assert.ok(wxml.indexOf('title="Poem UI"') !== -1 && wxml.indexOf('bind:leftBtn="onOpenSearch"') !== -1 && wxml.indexOf('bind:rightBtn="onOpenAppearance"') !== -1, '版头重构不得改变现有 Navbar 的标题与两个真实入口');
 assert.ok(wxml.indexOf('class="home-brand__headline"') !== -1, '首页版头必须建立左文右图的独立头部轨道');
 assert.ok(wxml.indexOf('class="home-brand__name">Poem UI</text>') !== -1, '首页版头必须保留 Poem UI 品牌名');
+assert.ok(wxml.indexOf('content="{{currentVersion}}"') !== -1 && wxml.indexOf("aria-label=\"{{'当前版本 ' + currentVersion}}\"") !== -1, '首页品牌名旁必须通过 PUI Tag 展示当前版本');
+assert.ok(pageJs.indexOf("var poemuiVersion = require('poemui-miniprogram/version');") !== -1 && pageJs.indexOf("currentVersion: 'v' + poemuiVersion") !== -1, '首页版本必须读取 npm 轻量 version 子入口，不能加载组件总入口或维护第二份版本字符串');
+assert.ok(distVersionSource.indexOf('module.exports = ' + JSON.stringify(packageVersion)) !== -1, '发布 version 子入口必须由 package.json.version 生成');
 assert.ok(wxml.indexOf('class="home-brand__stanza">月下成行</text>') !== -1, '首页版头必须保留月下成行品牌语义');
 assert.ok(wxml.indexOf('class="home-brand__description">原生小程序组件库，按需组合。</text>') !== -1, '首页版头必须明确组件库定位');
 assert.ok(wxml.indexOf('src="{{brandMark}}"') !== -1 && wxml.indexOf('width="144rpx"') !== -1 && wxml.indexOf('height="144rpx"') !== -1, '首页版头必须通过更紧凑的 PUI Image 呈现完整月下成行标记');
@@ -100,6 +105,16 @@ assert.ok(wxml.indexOf('activeCatalogSection === section.key') !== -1, '首页�
 assert.ok(wxml.indexOf('data-section="{{section.key}}"') !== -1, '首页分区必须传递互斥状态键');
 assert.ok(wxml.indexOf('scroll-into-view="{{homeScrollIntoView}}"') !== -1, '首页必须通过 ScrollArea 公开 API 恢复上次分区位置');
 assert.ok(wxml.indexOf('id="home-section-{{section.key}}"') !== -1, '每个首页分区必须提供稳定滚动锚点');
+assert.ok(pageJs.indexOf("hasPremiumIcon: true") !== -1, '高级分区必须提供单一数据标记，避免 WXML 内联比较造成 Slot 组合漂移');
+assert.ok(wxml.indexOf('custom-trigger="{{section.hasPremiumIcon}}"') !== -1, '高级分区必须通过 Collapsible 真实 trigger Slot 承载专属标题组合');
+assert.ok(wxml.indexOf('wx:if="{{section.hasPremiumIcon}}" slot="trigger"') !== -1, '高级图标 Slot 必须与同一数据标记联动');
+assert.ok(wxml.indexOf('slot="trigger" class="home-components__advanced-trigger"') !== -1, '高级分区图标必须位于 trigger Slot，不能另建页面标题');
+assert.ok(wxml.indexOf('<pui-icon name="premium" size="30" custom-class="home-components__advanced-icon" />') !== -1, '高级标题右侧必须使用公开 PUI premium 图标');
+assert.ok(/\.home-components__advanced-trigger\s*\{[\s\S]*?gap:\s*var\(--pui-space-xs\);[\s\S]*?color:\s*var\(--pui-text-primary\);/.test(wxss), '高级标题组合必须使用现有 Token 管理间距与前景色');
+assert.ok(/\.home-components__advanced-label\s*\{[\s\S]*?font-size:\s*var\(--pui-font-size-medium\);[\s\S]*?font-weight:\s*var\(--pui-font-weight-semibold\);/.test(wxss), '自定义 trigger 标题必须保持 Collapsible 的文字层级');
+var advancedIconRule = wxss.match(/\.home-components__advanced-icon\s*\{([\s\S]*?)\}/);
+assert.ok(advancedIconRule, '高级标题必须保留单独的图标类用于收缩边界');
+assert.ok(!/\b(?:transform|margin|top|bottom)\s*:/.test(advancedIconRule[1]), '首页不得用页面偏移修补 premium 基线，光学校正必须归属 Icon 生成链');
 assert.ok(pageJs.indexOf('if (this.data.homeScrollTop !== scrollTop) this.setData({ homeScrollTop: scrollTop });') !== -1, '首页真实滚动必须同步受控位置，返回时不能退回旧锚点');
 assert.ok(pageJs.indexOf('catalogSections: CATALOG_SECTIONS') !== -1, '首页目录必须按分区组织');
 assert.ok(pageJs.indexOf("activeCatalogSection: ''") !== -1, '首页初始不应抢占用户视线展开任何分区');
@@ -194,6 +209,8 @@ assert.deepStrictEqual(
   'pages/components/action-sheet/index',
   'pages/components/dropdown-menu/index',
   'pages/components/overlay/index'
+  ,'pages/components/top-loading/index'
+  ,'pages/components/dynamic-message/index'
   ,'pages/components/pull-refresh/index'
   ,'pages/components/virtual-list/index'
   ,'pages/components/watermark/index'
@@ -277,6 +294,7 @@ assert.ok(wxss.indexOf('.home-search-input,\n.home-search-combobox {\n  align-se
 assert.ok(wxss.indexOf('max-width: 640rpx') === -1, 'Search 不得在首页额外缩窄，避免与 Combobox 产生不等左右间距');
 assert.strictEqual(pageJson.usingComponents['pui-navbar'], 'poemui-miniprogram/navbar/navbar');
 assert.strictEqual(pageJson.usingComponents['pui-image'], 'poemui-miniprogram/image/image');
+assert.strictEqual(pageJson.usingComponents['pui-tag'], 'poemui-miniprogram/tag/tag');
 assert.strictEqual(pageJson.usingComponents['pui-button'], 'poemui-miniprogram/button/button');
 assert.strictEqual(pageJson.usingComponents['pui-cell-group'], 'poemui-miniprogram/cell/cell-group');
 assert.strictEqual(pageJson.usingComponents['pui-switch'], 'poemui-miniprogram/switch/switch');
@@ -317,7 +335,7 @@ var tabbarNavigationMock = {
     return [
       { label: '', value: 'home', icon: 'home', ariaLabel: '首页' },
       { label: '', value: 'styles', icon: 'palette', ariaLabel: '快速样式' },
-      { label: '', value: 'codex', icon: 'codex', ariaLabel: 'Codex' },
+      { label: '', value: 'codex', icon: 'code', ariaLabel: 'Codex' },
       { label: '', value: 'me', icon: 'user', ariaLabel: '我的' }
     ];
   },
@@ -369,6 +387,7 @@ var sandbox = {
     setStorageSync: function (key, value) { storage[key] = value; }
   },
   require: function (request) {
+    if (request === 'poemui-miniprogram/version') return '0.1.0';
     if (request === 'poemui-miniprogram/common/utils/visual-config') return visualConfigMock;
     if (request === '../../common/utils/page-background-preference') return backgroundPreferenceMock;
     if (request === '../../common/utils/tabbar-navigation') return tabbarNavigationMock;
@@ -386,6 +405,7 @@ var sandbox = {
 };
 vm.runInNewContext(pageJs, sandbox, { filename: 'miniprogram/pages/index/index.js' });
 assert.ok(capturedPage, '首页必须注册 Page');
+assert.strictEqual(capturedPage.data.currentVersion, 'v0.1.0', '首页运行态版本必须保留 v 前缀');
 capturedPage.data = Object.assign({}, capturedPage.data);
 capturedPage.setData = function (next) { Object.assign(capturedPage.data, next); };
 capturedPage.onLoad();
@@ -452,7 +472,7 @@ assert.strictEqual(capturedPage.data.searchOptions.length, 0, 'Overlay 进入期
 timers[timers.length - 1].callback();
 assert.strictEqual(capturedPage.data.searchComboboxVisible, true, 'Overlay 进入结束后才展开 Combobox');
 assert.strictEqual(capturedPage.data.searchInputFocus, true, 'Overlay 进入后聚焦独立 Search');
-assert.strictEqual(capturedPage.data.searchOptions.length, 74, '首页搜索打开后必须展示全部 69 个组件和 5 个规范页');
+assert.strictEqual(capturedPage.data.searchOptions.length, 76, '首页搜索打开后必须展示全部 71 个组件和 5 个规范页');
 ['Button', 'Divider', 'Icon', 'ConfigProvider', 'AspectRatio', 'Direction', 'Grid', 'ScrollArea', 'Sticky', 'Navbar', 'NavigationMenu', 'Tabs', 'Breadcrumb', 'Tabbar', 'Steps', 'BackTop', 'Indexes', 'SideBar', 'Alert', 'Empty', 'Loading', 'NoticeBar', 'Progress', 'Result', 'Skeleton', 'Toast', 'Dialog', 'Popup', 'Popover', 'Sheet', 'ActionSheet', 'DropdownMenu', 'Overlay', 'PullRefresh', 'VirtualList', 'Watermark', 'Avatar', 'Badge', 'Card', 'Image', 'Tag', 'Cell', 'List', 'Collapse', 'Collapsible', 'Bubble', 'SwipeCell', 'CountDown', 'Swiper', 'Table', 'Form', 'Field', 'Label', 'Input', 'InputOTP', 'Textarea', 'Search', 'Checkbox', 'Radio', 'Switch', 'Select', 'Picker', 'Combobox', 'Slider', 'Stepper', 'Rate', 'Calendar', 'DateTimePicker', 'Upload', '开始使用', '主题 Token', '颜色', '间距', '字体排版'].forEach(function (name) {
   assert.ok(capturedPage.data.searchOptions.some(function (option) { return option.label === name; }), '搜索候选缺少真实组件 ' + name);
 });

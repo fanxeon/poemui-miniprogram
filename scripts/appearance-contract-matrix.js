@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * The 72 entries are the PUI roots that the real miniprogram WXML currently
+ * The 74 entries are the PUI roots that the real miniprogram WXML currently
  * renders. Input is now also a standalone page root; the composed rule below
  * additionally governs its embedded use inside Search and Combobox.
  * A value of false means that the global preference must not add that effect
@@ -33,6 +33,7 @@ const appearanceContracts = Object.freeze({
   direction: { surface: 'layout', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   divider: { surface: 'hierarchy-mark', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   'dropdown-menu': { surface: 'anchored-surface', shadow: 'floating', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
+  'dynamic-message': { surface: 'detached-surface', shadow: 'floating', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },
   empty: { surface: 'content-state', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: false, equalSpacing: false, gradient: false },
   field: { surface: 'layout', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   form: { surface: 'layout', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
@@ -78,6 +79,7 @@ const appearanceContracts = Object.freeze({
   tag: { surface: 'leaf', shadow: 'none', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },
   textarea: { surface: 'field-surface', shadow: 'card', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },
   toast: { surface: 'detached-surface', shadow: 'floating', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },
+  'top-loading': { surface: 'content-state', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   upload: { surface: 'collection-root', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
   'virtual-list': { surface: 'collection-root', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
   watermark: { surface: 'layout', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },

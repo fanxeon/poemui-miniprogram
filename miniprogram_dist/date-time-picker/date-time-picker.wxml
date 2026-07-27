@@ -4,6 +4,7 @@
   value="{{pickerValue}}"
   visible="{{currentVisible}}"
   title="{{title}}"
+  type="{{type}}"
   cancel-text="{{cancelText}}"
   confirm-text="{{confirmText}}"
   show-header="{{showHeader}}"

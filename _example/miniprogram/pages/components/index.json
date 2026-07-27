@@ -37,6 +37,8 @@
     "pui-rate": "poemui-miniprogram/rate/rate",
     "pui-upload": "poemui-miniprogram/upload/upload",
     "pui-loading": "poemui-miniprogram/loading/loading",
+    "pui-top-loading": "poemui-miniprogram/top-loading/top-loading",
+    "pui-dynamic-message": "poemui-miniprogram/dynamic-message/dynamic-message",
     "pui-toast": "poemui-miniprogram/toast/toast",
     "pui-progress": "poemui-miniprogram/progress/progress",
     "pui-radio": "poemui-miniprogram/radio/radio",

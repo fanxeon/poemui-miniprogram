@@ -6,7 +6,7 @@ const sourceGroups = [
     key: 'getting-started',
     title: '开始与规范',
     items: [
-      { id: 'getting-started', name: 'Getting Started 安装', status: 'done', kind: 'guide' },
+      { id: 'getting-started', name: 'Getting Started 快速开始', status: 'done', kind: 'guide' },
       { id: 'config-provider', name: 'ConfigProvider', status: 'done', kind: 'component' },
       { id: 'direction', name: 'Direction 方向容器', status: 'done', kind: 'component' },
       { id: 'theme-tokens', name: 'Theme Tokens', status: 'done', kind: 'document' },
@@ -113,6 +113,8 @@ const sourceGroups = [
     key: 'advanced',
     title: '高级',
     items: [
+      { id: 'top-loading', name: 'TopLoading 顶部加载', status: 'done', kind: 'component' },
+      { id: 'dynamic-message', name: 'DynamicMessage 灵动通知', status: 'done', kind: 'component' },
       { id: 'pull-refresh', name: 'PullRefresh 下拉刷新', status: 'done', kind: 'component' },
       { id: 'virtual-list', name: 'VirtualList 虚拟列表', status: 'done', kind: 'component' },
       { id: 'sticky', name: 'Sticky 粘性布局', status: 'done', kind: 'component' },
@@ -431,6 +433,8 @@ const releaseComponentIds = new Set([
   'cell',
   'tag',
   'loading',
+  'top-loading',
+  'dynamic-message',
   'icon',
   'alert',
   'aspect-ratio',
@@ -506,7 +510,7 @@ for (const group of groups) {
 }
 
 const componentSummaries = {
-  'getting-started': '安装并开始使用 PoemUI。',
+  'getting-started': '安装、构建并让 AI 正确使用 PoemUI。',
   'config-provider': '统一配置组件的主题与视觉效果。',
   'theme-tokens': '查看并复用 PoemUI 设计变量。',
   color: '查看组件使用的语义色彩。',
@@ -576,6 +580,8 @@ const componentSummaries = {
   skeleton: '为内容加载过程预示结构。',
 
   loading: '展示任务正在处理。',
+  'top-loading': '在当前卡片或内容表面顶边反馈请求进度。',
+  'dynamic-message': '在页面顶部展示可原位更新的非模态实时通知。',
   result: '展示流程完成后的结果状态。',
 
   'dropdown-menu': '从触发项下方展开选项。',
@@ -592,9 +598,9 @@ const componentSummaries = {
 
 const details = {
   'getting-started': {
-    desc: '从 npm 安装到微信开发者工具构建 npm 的最短接入路径。',
-    path: 'npm i poemui-miniprogram',
-    states: '安装、构建 npm、按需引用、主题配置',
+    desc: '从安装、微信构建到 AI Skill 的 PoemUI 受限 Beta 接入路径。',
+    path: 'poemui-miniprogram@0.1.0 · npm 尚未发布',
+    states: '发布状态、安装、构建 npm、按需引用、主题配置、AI Skill、许可证',
     props: [],
   },
   'config-provider': {
@@ -797,9 +803,9 @@ const details = {
 
 
   picker: {
-    desc: '基于原生 picker-view 的滚轮选择器，支持单列、多列、级联、值与显隐双受控、Popup/内联呈现、真实状态和确认事件。',
+    desc: '基于原生 picker-view 的滚轮选择器，支持单列、多列、级联、值与显隐双受控，以及默认 Header 操作与 Classic 底部操作。',
     path: 'poemui-miniprogram/picker/picker',
-    states: '单列/多列/级联、值与显隐受控、Popup/内联、禁用项、loading/error/empty、事件、方法、低动效',
+    states: '单列/多列/级联、值与显隐受控、默认 Header/Classic、Popup/内联、禁用项、loading/error/empty、事件、方法、低动效',
     props: [
       { key: 'columns', label: 'columns', type: 'json', value: [
         { label: '基础组件', value: 'basic', children: [{ label: 'Button', value: 'button', icon: 'component' }, { label: 'Icon', value: 0, icon: 'spark' }] },
@@ -810,6 +816,7 @@ const details = {
       { key: 'visible', label: 'visible', type: 'nullable-boolean', value: null, apiType: 'boolean | null' },
       { key: 'defaultVisible', label: 'default-visible', type: 'boolean', value: false },
       { key: 'title', label: 'title', type: 'text', value: '选择组件' },
+      { key: 'type', label: 'type', type: 'select', value: 'default', options: ['default', 'classic'], apiType: "'default' | 'classic'" },
       { key: 'cancelText', label: 'cancel-text', type: 'text', value: '取消' },
       { key: 'confirmText', label: 'confirm-text', type: 'text', value: '确定' },
       { key: 'showHeader', label: 'show-header', type: 'boolean', value: true },
@@ -832,7 +839,7 @@ const details = {
     ],
   },
   'date-time-picker': {
-    desc: '把日期时间范围转换为 PUI Picker 滚轮列，支持年到秒精度、范围步长、格式、值与显隐双受控以及 Popup/内联草稿确认。',
+    desc: '把日期时间范围转换为 PUI Picker 滚轮列，支持年到秒精度、范围步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作以及 Popup/内联草稿确认。',
     path: 'poemui-miniprogram/date-time-picker/date-time-picker',
     states: '年/月/日/时/分/秒、范围/步长/周几、值与显隐双受控、Popup/内联、禁用/只读、事件、方法、低动效',
     props: [
@@ -847,6 +854,7 @@ const details = {
       { key: 'steps', label: 'steps', type: 'json', value: { minute: 15 }, apiType: 'Partial<Record<TimeUnit, number>>' },
       { key: 'showWeek', label: 'show-week', type: 'boolean', value: true },
       { key: 'title', label: 'title', type: 'text', value: '选择发布时间' },
+      { key: 'type', label: 'type', type: 'select', value: 'default', options: ['default', 'classic'] },
       { key: 'cancelText', label: 'cancel-text', type: 'text', value: '取消' },
       { key: 'confirmText', label: 'confirm-text', type: 'text', value: '确定' },
       { key: 'showHeader', label: 'show-header', type: 'boolean', value: true },
@@ -863,6 +871,38 @@ const details = {
   badge: { desc: '在对象旁展示数量、短文字或红点；交互和业务状态由 Button、Cell、Tabs、Tabbar 等宿主承担。', states: '数量/文字、dot、上限/零值、主题/变体、尺寸/形状、默认/count slot、右上角偏移' },
   tag: { desc: '用简短文字、Icon 和语义外观标记属性或状态；关闭由父级真实回写。', states: '主题/变体、尺寸/形状、Icon/Slot、安全宽度、关闭/禁用' },
   loading: { desc: '展示页面或操作正在处理的反馈，不代表业务已经完成。', states: '环形、刻度、圆点、文字、延迟、全屏、低动效' },
+  'top-loading': {
+    desc: '依附当前 Card 或业务 Surface 顶边的轻量加载轨道，支持未知总量、精确进度、延迟显示、最短可见时间和显式完成态。',
+    path: 'poemui-miniprogram/top-loading/top-loading',
+    states: 'idle/loading/success、null/0/100、delay、minimumVisible、retained node、低动效',
+    props: [
+      { key: 'state', label: 'state', type: 'select', value: 'idle', options: ['idle', 'loading', 'success'] },
+      { key: 'progress', label: 'progress', type: 'json', value: null, apiType: 'number | null' },
+      { key: 'delay', label: 'delay', type: 'range', value: 220, min: 0, max: 5000, step: 20 },
+      { key: 'minimumVisible', label: 'minimum-visible', type: 'range', value: 500, min: 0, max: 60000, step: 100 },
+      { key: 'successDuration', label: 'success-duration', type: 'range', value: 700, min: 0, max: 60000, step: 100 },
+      { key: 'duration', label: 'duration', type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
+  'dynamic-message': {
+    desc: '页面顶部非模态灵动通知，以保留节点的紧凑展开动效承接 loading 到结果的原位更新，并按 key 提供真实队列。',
+    path: 'poemui-miniprogram/dynamic-message/dynamic-message',
+    states: '五种主题、同 key update、不同 key 队列、自动/手动关闭、Action、安全区、低动效',
+    props: [
+      { key: 'theme', label: 'theme', type: 'select', value: 'info', options: ['loading', 'info', 'success', 'warning', 'error'] },
+      { key: 'title', label: 'title', type: 'text', value: '' },
+      { key: 'message', label: 'message', type: 'text', value: '' },
+      { key: 'icon', label: 'icon', type: 'text', value: '' },
+      { key: 'actionText', label: 'action-text', type: 'text', value: '' },
+      { key: 'closable', label: 'closable', type: 'boolean', value: true },
+      { key: 'duration', label: 'duration', type: 'range', value: 3000, min: 0, max: 60000, step: 100 },
+      { key: 'safeArea', label: 'safe-area', type: 'boolean', value: true },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
   popup: { desc: '从屏幕边缘或中心展开内容，按 Header、Content、Footer 组织结构；显隐与业务动作由父级回写。', states: '受控/非受控显隐、五向位置、卡片/贴边、遮罩模糊、Header/Content/Footer、滚动保护、Slot、低动效' },
   popover: { desc: '在触发元素旁显示轻量气泡，关闭请求由父级回写。', states: '受控/非受控、12 向定位、主题、箭头、外部点击、default/content slot、低动效' },
   sheet: { desc: '可组合底部面板，支持受控/非受控显隐、真实下拉关闭、内部 Button/Loading/Empty、三段 slot、内容滚动和完整进退场事件。', states: '受控/非受控、拖拽关闭、状态优先级、三段 slot、滚动、进退场完成事件、低动效' },
@@ -928,14 +968,16 @@ const componentCopy = {
   radio: ['用于单选的声明式输入，提供独立 RadioGroup、严格原始值、父级状态继承与唯一 change。', '基础选择、方向与布局、状态、图标与内容、change'],
 
   form: ['可组合表单父容器，通过真实 Form–Field 关系执行规则校验、提交、重置与错误定位，不生成固定字段或操作按钮。', 'Field 注册、规则校验、提交与重置、服务端错误、受控数据'],
-  picker: ['基于原生 picker-view 的滚轮选择器，支持单列、多列、级联、值与显隐双受控、Popup/内联、禁用项和完整状态。', '单列/多列/级联、双受控、Popup/内联、禁用项、状态、事件、方法'],
-  'date-time-picker': ['基于 PUI Picker 的日期时间滚轮，支持年到秒精度、范围、步长、格式、值与显隐双受控、Popup/内联和草稿确认。', '年/月/日/时/分/秒、范围、步长、格式、双受控、Popup/内联、事件、方法'],
+  picker: ['基于原生 picker-view 的滚轮选择器，支持单列、多列、级联、值与显隐双受控、默认 Header 操作、Classic 底部操作和完整状态。', '单列/多列/级联、双受控、默认 Header/Classic、Popup/内联、禁用项、状态、事件、方法'],
+  'date-time-picker': ['基于 PUI Picker 的日期时间滚轮，支持年到秒精度、范围、步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作、Popup/内联和草稿确认。', '年/月/日/时/分/秒、范围、步长、格式、双受控、默认 Header/Classic、Popup/内联、事件、方法'],
   search: ['搜索输入，支持受控/非受控值、字符限制、形状、清空、取消、确认与低动效。', '基础、形状、操作与长度、状态与受控、change/clear/search/cancel'],
   stepper: ['在明确边界内通过加减或输入调整数量。', '基础、主题与尺寸、步长与边界、状态与输入、change/overlimit'],
   slider: ['基于微信原生滑块在连续区间内选择单个数值。', '基础、边界与步长、颜色与表单、状态与受控、changing/change'],
   rate: ['点击或拖动提交星级评分，支持整星/半星、文案、受控值与只读状态。', '点击/拖动、半星、文案、受控、只读'],
   upload: ['从微信媒体或聊天文件选择器取得文件，以列表或网格展示消费者回写的真实状态；不伪造远端上传。', '基础、网格与媒体、文件状态、限制与禁用'],
   toast: ['单条轻提示，通过 show()/hide() 展示短暂反馈，可选遮罩、方向和主题。', '基础、主题与图标、方向与位置、遮罩与滚动保护'],
+  'top-loading': ['依附当前卡片或内容表面顶边展示未知总量或精确请求进度；只有显式 success 才展示完成态。', '未知/精确进度、延迟与最短可见、显式完成、失败/取消、低动效'],
+  'dynamic-message': ['页面顶部非模态灵动通知，支持 loading 到结果的同 key 原位更新、不同 key 队列、动作与真实退场。', '五种主题、原位 update、队列、自动/手动关闭、Action、安全区、低动效'],
   dialog: ['用于确认、选择或承载关键内容的受控模态对话框。', '受控显隐、按钮与 actions、具名 slot、遮罩关闭、低动效'],
   direction: ['为子树提供真实 ltr/rtl/auto 阅读方向，支持显式语言、系统语言 fallback、逻辑文本对齐、容器形态、slot/content、完整解析事件和低动效。', 'ltr/rtl/auto、language/fallback、逻辑对齐、display、slot/content、resolve/change/after-change、低动效'],
   progress: ['展示任务的确定完成进度，支持线形、饱满线形、环形与 label Slot。', '基础、形态、状态与颜色、label Slot'],
@@ -981,7 +1023,7 @@ const apiProps = {
   field: ['name', 'label', 'help', 'message', 'status', 'required', 'requiredMarkPosition', 'labelAlign', 'contentAlign', 'labelWidth', 'arrow', 'reduceMotion'],
   'input-otp': ['value', 'length', 'type', 'mask', 'focus', 'disabled', 'error', 'errorMessage'],
   label: ['content', 'required', 'disabled', 'colon'],
-  popup: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'],
+  popup: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'contentScrollable', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'],
   popover: ['visible', 'defaultVisible', 'content', 'placement', 'showArrow', 'theme', 'closeOnClickOutside', 'fixed', 'ariaLabel', 'reduceMotion'],
   'scroll-area': ['height', 'scrollTop', 'scrollIntoView', 'gradientOverlay', 'gradientOverlayColor', 'gradientOverlaySize', 'contentPaddingBottom', 'ariaLabel'],
   select: ['options', 'value', 'defaultValue', 'placeholder', 'disabled', 'readonly', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
@@ -996,6 +1038,8 @@ const apiProps = {
   cell: ['title', 'description', 'value', 'note', 'image', 'leftIcon', 'rightIcon', 'size', 'align', 'variant', 'bordered', 'hover', 'required', 'arrow', 'clickable', 'selected', 'defaultSelected', 'selectable', 'allowUnselect', 'disabled', 'readonly', 'loading', 'url', 'jumpType', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
   tag: ['theme', 'variant', 'size', 'shape', 'content', 'icon', 'closable', 'disabled', 'maxWidth'],
   loading: ['delay', 'duration', 'fullscreen', 'indicator', 'inheritColor', 'layout', 'loading', 'pause', 'progress', 'reverse', 'size', 'text', 'theme', 'ariaLabel', 'reduceMotion'],
+  'top-loading': ['state', 'progress', 'delay', 'minimumVisible', 'successDuration', 'duration', 'ariaLabel', 'reduceMotion'],
+  'dynamic-message': ['theme', 'title', 'message', 'icon', 'actionText', 'closable', 'duration', 'safeArea', 'ariaLabel', 'reduceMotion'],
   icon: ['name', 'size', 'color', 'ariaLabel'],
   divider: ['layout', 'align', 'content', 'showContent', 'dashed', 'decorative', 'ariaLabel'],
   badge: ['count', 'content', 'dot', 'maxCount', 'showZero', 'theme', 'variant', 'shape', 'size', 'color', 'offset', 'ariaLabel'],
@@ -1008,8 +1052,8 @@ const apiProps = {
   checkbox: ['checked', 'defaultChecked', 'value', 'label', 'content', 'icon', 'indeterminate', 'checkAll', 'block', 'borderless', 'contentDisabled', 'disabled', 'readonly', 'name', 'placement', 'maxLabelRow', 'maxContentRow', 'ariaLabel', 'reduceMotion'],
   radio: ['checked', 'defaultChecked', 'value', 'label', 'content', 'icon', 'allowUncheck', 'block', 'borderless', 'contentDisabled', 'disabled', 'readonly', 'name', 'placement', 'maxLabelRow', 'maxContentRow', 'ariaLabel', 'reduceMotion'],
   form: ['data', 'rules', 'showErrorMessage', 'scrollToFirstError', 'resetType', 'ariaLabel', 'reduceMotion'],
-  picker: ['columns', 'value', 'defaultValue', 'visible', 'defaultVisible', 'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'closeOnOverlayClick', 'autoClose', 'keys', 'visibleItemCount', 'itemHeight', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
-  'date-time-picker': ['value', 'defaultValue', 'visible', 'defaultVisible', 'mode', 'start', 'end', 'format', 'steps', 'showWeek', 'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick', 'disabled', 'readonly', 'ariaLabel', 'reduceMotion'],
+  picker: ['columns', 'value', 'defaultValue', 'visible', 'defaultVisible', 'title', 'type', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'closeOnOverlayClick', 'autoClose', 'keys', 'visibleItemCount', 'itemHeight', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
+  'date-time-picker': ['value', 'defaultValue', 'visible', 'defaultVisible', 'mode', 'start', 'end', 'format', 'steps', 'showWeek', 'title', 'type', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick', 'disabled', 'readonly', 'ariaLabel', 'reduceMotion'],
   search: ['value', 'defaultValue', 'placeholder', 'clearable', 'clearTrigger', 'showCancel', 'cancelText', 'shape', 'center', 'maxlength', 'maxcharacter', 'disabled', 'readonly', 'focus', 'confirmType', 'ariaLabel', 'reduceMotion'],
   stepper: ['value', 'defaultValue', 'min', 'max', 'step', 'integer', 'inputWidth', 'size', 'theme', 'disabled', 'readonly', 'disableInput', 'ariaLabel', 'reduceMotion'],
   slider: ['value', 'defaultValue', 'min', 'max', 'step', 'color', 'trackColor', 'name', 'blockSize', 'disabled', 'readonly', 'showValue', 'showMinMax', 'valueSuffix', 'ariaLabel', 'reduceMotion'],
@@ -1039,7 +1083,7 @@ const apiProps = {
   table: ['columns', 'data', 'rowKey', 'bordered', 'stripe', 'height', 'showHeader', 'emptyValue', 'selectable', 'selectedRowKeys', 'defaultSelectedRowKeys', 'multiple', 'selectOnRowClick', 'sortable', 'sort', 'defaultSort', 'customEmpty', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
   swiper: ['items', 'value', 'defaultValue', 'height', 'circular', 'autoplay', 'interval', 'duration', 'easingFunction', 'direction', 'previousMargin', 'nextMargin', 'displayMultipleItems', 'disableTouch', 'navigation', 'imageMode', 'customItem', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
   calendar: ['value', 'defaultValue', 'title', 'type', 'visible', 'defaultVisible', 'minDate', 'maxDate', 'disabledDates', 'disableWeekends', 'firstDayOfWeek', 'switchMode', 'showOutsideDays', 'allowSameDay', 'maxRange', 'maxMultiple', 'localeText', 'autoClose', 'usePopup', 'closeOnOverlayClick', 'disabled', 'readonly', 'loading', 'error', 'ariaLabel', 'reduceMotion'],
-  popup: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'],
+  popup: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'contentScrollable', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'],
   'action-sheet': ['align', 'blurOverlay', 'cancelText', 'count', 'description', 'items', 'showCancel', 'showOverlay', 'theme', 'usingCustomNavbar', 'visible', 'defaultVisible', 'ariaLabel', 'reduceMotion'],
   'dropdown-menu': ['items', 'value', 'defaultValue', 'closeOnClickOverlay', 'showOverlay', 'zIndex', 'ariaLabel', 'reduceMotion'],
   overlay: ['visible', 'backgroundColor', 'blur', 'duration', 'preventScrollThrough', 'usingCustomNavbar', 'zIndex', 'ariaLabel', 'reduceMotion'],
@@ -1095,6 +1139,46 @@ const apiPropGroups = {
       id: 'accessibility',
       title: '语义与低动效',
       description: 'ariaLabel 提供状态名称；低动效保留静态反馈并将过渡压缩到 1ms。',
+      keys: ['ariaLabel', 'reduceMotion'],
+    },
+  ],
+  'top-loading': [
+    {
+      id: 'state-and-progress',
+      title: '状态与进度',
+      description: 'idle/loading/success 是唯一状态机；progress=null 为未知总量，0–100 为精确进度，失败或取消回写 idle。',
+      keys: ['state', 'progress'],
+    },
+    {
+      id: 'timing',
+      title: '反馈计时与动效',
+      description: 'delay 避免短任务闪烁，minimumVisible 与 successDuration 约束反馈停留；只有 duration 是动效时长且上限 1000ms。',
+      keys: ['delay', 'minimumVisible', 'successDuration', 'duration'],
+    },
+    {
+      id: 'accessibility',
+      title: '语义与低动效',
+      description: 'ariaLabel 命名当前请求；低动效保留状态并把动效压缩到 1ms。',
+      keys: ['ariaLabel', 'reduceMotion'],
+    },
+  ],
+  'dynamic-message': [
+    {
+      id: 'content',
+      title: '内容与主题',
+      description: '五种主题承接实时状态；title/message/icon/actionText 只描述当前消息，真实业务结果由 show/update 写入。',
+      keys: ['theme', 'title', 'message', 'icon', 'actionText', 'closable'],
+    },
+    {
+      id: 'timing-and-position',
+      title: '停留与安全区',
+      description: 'duration 是进入完成后的停留时间，0 表示持续显示；safeArea 根据微信状态栏与胶囊真实定位。',
+      keys: ['duration', 'safeArea'],
+    },
+    {
+      id: 'accessibility',
+      title: '语义与低动效',
+      description: 'ariaLabel 命名整条通知；低动效不改变 retained node、队列、事件或关闭原因。',
       keys: ['ariaLabel', 'reduceMotion'],
     },
   ],
@@ -1177,7 +1261,7 @@ const apiPropGroups = {
       id: 'structure',
       title: '结构',
       description: 'Header、Content、Footer 负责结构；Popup 不承载拖拽手柄或拖拽关闭语义。',
-      keys: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter'],
+      keys: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'contentScrollable'],
     },
     {
       id: 'visibility-and-overlay',
@@ -1590,8 +1674,8 @@ const apiPropGroups = {
     {
       id: 'visibility',
       title: '显隐与操作栏',
-      description: 'Popup 模式支持受控/非受控显隐；确认后才提交值，取消只丢弃草稿，不伪造 change。',
-      keys: ['visible', 'defaultVisible', 'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'closeOnOverlayClick', 'autoClose'],
+      description: 'Popup 模式支持受控/非受控显隐；默认 Header 左确右取，classic 保留底部两列，确认后才提交值。',
+      keys: ['visible', 'defaultVisible', 'title', 'type', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'closeOnOverlayClick', 'autoClose'],
     },
     {
       id: 'layout-and-state',
@@ -1622,8 +1706,8 @@ const apiPropGroups = {
     {
       id: 'visibility',
       title: '显隐与操作栏',
-      description: 'Popup 支持受控显隐和草稿确认；内联模式始终可见，确认与取消继续保持固定顺序。',
-      keys: ['visible', 'defaultVisible', 'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick'],
+      description: 'Popup 支持受控显隐和草稿确认；默认 Header 使用左确认图标、右关闭图标，classic 使用底部两列；内联模式始终可见。',
+      keys: ['visible', 'defaultVisible', 'title', 'type', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick'],
     },
     {
       id: 'state',
@@ -1871,6 +1955,11 @@ const apiEvents = {
   ],
   toast: [
     { name: 'close', detail: '无', description: 'hide() 或 duration 自动收起完成固定退场、节点实际卸载后触发；不表示业务操作成功。' },
+  ],
+  'dynamic-message': [
+    { name: 'click', detail: '{ key, theme }', description: '用户点按当前通知 Surface 时触发；不代表动作完成或通知关闭。' },
+    { name: 'action', detail: '{ key, theme }', description: '点按可选 PUI Action Button 时触发；组件不自动宣布成功，也不自动关闭。' },
+    { name: 'close', detail: '{ key, theme, reason: "timeout" | "manual" | "programmatic" }', description: '当前通知完成真实退场并卸载后触发一次；排队但未展示的消息被移除时不触发。' },
   ],
   dialog: [
     { name: 'confirm', detail: '无', description: '确认按钮可用时触发；组件保持 visible，父级决定后续业务与是否关闭。' },
@@ -2165,6 +2254,7 @@ const apiSlots = {
   popup: [
     { name: 'default', description: 'Popup 的完整业务内容；可组合 Cell、Form、Loading、Empty 和 Button，业务状态与事件由消费者管理。' },
     { name: 'content', description: '内容区域的具名补充或替换内容；与 default slot、content 属性并列时由调用方避免重复。' },
+    { name: 'surface-top', description: '直接贴合 Popup Surface 顶边的非布局内容；推荐组合 pui-top-loading，由 Surface 提供定位上下文与圆角裁切。' },
     { name: 'header-left', description: 'Header 左侧操作区；调用方应放入圆形 PUI IconButton，并自行处理该业务动作。' },
     { name: 'close-btn', description: 'Header 右侧自定义关闭区；替换默认圆形关闭控件时，同时传入 closeBtn=false，并提供等价的可访问名称与关闭交互。' },
     { name: 'footer', description: 'Footer 主要动作区；调用方应放入真实 PUI Button，Footer 提供满宽承载轨，按钮可用 block 填满；事件由 Slot 内按钮与父级业务处理，Popup 不伪造成功。' },
@@ -2281,6 +2371,11 @@ const apiMethods = {
   toast: [
     { name: 'show(options?)', returns: 'void', description: '合并提供的 Toast Props，挂载并在下一帧进入；duration>0 时进入完成后安排自动 hide()。' },
     { name: 'hide()', returns: 'void', description: '取消等待计时并进入退场；节点卸载后触发 close。' },
+  ],
+  'dynamic-message': [
+    { name: 'show(options)', returns: 'String', description: '展示消息并返回 key；当前同 key 时原位更新，不同 key 时按调用顺序进入队列。loading 未显式传 duration 时持续显示。' },
+    { name: 'update(key, patch)', returns: 'Boolean', description: '原位更新当前或排队消息；命中返回 true，未知 key 返回 false，不创建假消息。' },
+    { name: 'hide(key?)', returns: 'Boolean', description: '当前消息进入真实退场；指定排队 key 时只移出队列。没有匹配消息时返回 false。' },
   ],
   dialog: [
     { name: 'close()', returns: 'Boolean', description: '发布 close({ trigger: "programmatic" }) 请求；父级回写 visible=false 后由 Popup 完成退场。visible 已为 false 时返回 false。' },

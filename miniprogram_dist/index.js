@@ -65,6 +65,8 @@ require('./sheet/sheet');
 require('./action-sheet/action-sheet');
 require('./dropdown-menu/dropdown-menu');
 require('./overlay/overlay');
+require('./top-loading/top-loading');
+require('./dynamic-message/dynamic-message');
 require('./pull-refresh/pull-refresh');
 require('./virtual-list/virtual-list');
 require('./sticky/sticky');
@@ -140,6 +142,8 @@ module.exports = {
     'action-sheet',
     'dropdown-menu',
     'overlay',
+    'top-loading',
+    'dynamic-message',
     'pull-refresh',
     'virtual-list',
     'sticky',

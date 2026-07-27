@@ -53,13 +53,14 @@ function create(overrides) {
   return { instance, events };
 }
 
-const expectedProps = ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'];
+const expectedProps = ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'contentScrollable', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'];
 assert.deepStrictEqual(Object.keys(definition.properties), expectedProps, 'Popup exposes the audited base API plus explicit structure, card and overlay-blur fields');
 assert.deepStrictEqual(Object.keys(definition.methods).sort(), ['applyVisibility', 'currentVisible', 'motionDuration', 'noop', 'onCloseTap', 'onOverlayTap', 'requestClose', 'syncLayer', 'syncLayout', 'syncMotion', 'syncOverlay', 'syncVisibility'].sort());
 
 const defaults = create();
 assert.strictEqual(defaults.instance.data.rendered, false);
 assert.strictEqual(defaults.instance.data.closeBtn, true, 'Popup Header provides its circular close control by default');
+assert.strictEqual(defaults.instance.data.contentScrollable, true, 'Popup owns Content scrolling by default');
 assert(defaults.instance.data.rootClass.includes('pui-popup--bottom'));
 assert(defaults.instance.data.rootClass.includes('pui-popup--card'));
 assert(defaults.instance.data.motionStyle.includes('500ms'));
@@ -116,7 +117,9 @@ const dialogWxml = fs.readFileSync(path.join(root, 'dialog/dialog.wxml'), 'utf8'
 const exampleWxml = fs.readFileSync(path.join(root, '_example/miniprogram/pages/components/index.wxml'), 'utf8');
 const exampleJs = fs.readFileSync(path.join(root, '_example/miniprogram/pages/components/index.js'), 'utf8');
 
-assert(wxml.includes('class="pui-popup__content"'));
+assert(wxml.includes('class="pui-popup__content '));
+assert(wxml.includes('scroll-y="{{contentScrollable}}"'), 'Popup must let a consumer hand Content scrolling to one nested PUI ScrollArea');
+assert(wxml.includes("contentScrollable ? '' : 'pui-popup__content--static'"));
 assert(wxml.includes('class="pui-popup__header"'));
 assert(wxml.includes('class="pui-popup__surface"'), 'Popup must keep a real inner Surface when its outer host becomes transparent');
 assert(!wxml.includes('pui-popup__handle'));
@@ -128,14 +131,21 @@ assert(wxml.includes('class="pui-popup__footer"'));
 assert(wxml.includes('class="pui-popup__footer-content"'));
 assert(wxml.includes('<slot name="footer"></slot>'));
 assert(wxss.includes('.pui-popup__footer-content { display: grid;') && wxss.includes('grid-template-columns: minmax(0, 1fr);'), 'Popup footer must stretch its projected block Button through a one-column grid track');
+assert(wxss.includes('.pui-popup__content--static { overflow: hidden; }'), 'disabled Popup Content scrolling must not leave a competing scroll owner');
 assert(previewStyles.includes('.pui-popup-preview__footer {\n  display: grid;'), 'H5 Popup footer mirrors the single full-width action track');
 assert(wxml.includes('<slot name="content"></slot>'));
 assert(wxml.includes('<slot></slot>'));
+assert(wxml.includes('<slot name="surface-top"></slot>'));
+assert(wxml.indexOf('<slot name="surface-top"></slot>') < wxml.indexOf('class="pui-popup__header"'), 'surface-top Slot 必须位于 Popup Surface 内且先于 Header');
 assert(wxml.includes('<slot name="close-btn">'));
 assert(wxml.includes('theme="default" variant="base" shape="circle"'));
 assert(wxml.includes('icon="close" icon-only'), 'default close control must use Button iconOnly so its native root remains circular');
 assert(!wxml.includes('custom-style="width:var(--pui-button-size);'), 'Popup close control must consume Button iconOnly geometry rather than patch the native root');
 assert(wxml.includes('wx:if="{{closeBtn}}"'), 'closeBtn=false remains the explicit compatibility opt-out for the default close control');
+assert(pickerWxml.includes('slot="header-left"') && pickerWxml.includes('slot="close-btn"'), 'Picker default type uses Popup\'s real Header slots for confirm/cancel');
+assert(pickerWxml.includes('theme="primary"') && pickerWxml.includes('variant="base"') && pickerWxml.includes('shape="circle"') && pickerWxml.includes('icon="check"') && pickerWxml.includes('icon-only'), 'Picker default confirm must use Popup-compatible primary Check icon-only geometry');
+assert(pickerWxml.includes('theme="default"') && pickerWxml.includes('icon="close"'), 'Picker default cancel must use Popup-compatible default Close icon-only geometry');
+assert(pickerWxml.includes('show-footer="{{showClassicFooter}}"'), 'Picker only enables Popup Footer for the explicit classic type');
 const closeSlotIndex = wxml.indexOf('<slot name="close-btn">');
 const closeButtonIndex = wxml.indexOf('<pui-button wx:if="{{closeBtn}}"');
 assert(closeButtonIndex < closeSlotIndex, 'default close Button must be an independent Header node, not named-slot fallback content that WeChat can suppress when Content Slot is present');
@@ -154,6 +164,7 @@ assert(wxss.includes('.pui-popup--top.pui-popup--card { overflow: visible; backg
 assert(wxss.includes('.pui-popup--custom-navbar.pui-popup--top .pui-popup__content'));
 assert(wxss.includes('--pui-popup-navbar-space'));
 assert(wxss.includes('.pui-popup--custom-navbar.pui-popup--top.pui-popup--card .pui-popup__surface { margin-top: var(--pui-popup-navbar-space); }'));
+assert(/\.pui-popup__surface\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/.test(wxss), 'Popup Surface 必须为顶部 Slot 提供定位上下文和圆角裁切');
 assert(wxss.includes('align-items: stretch'));
 assert(wxss.includes('grid-template-columns: minmax(0, 1fr);'), 'Popup Footer must provide a full-width grid track to slotted Button hosts');
 assert(!/\.pui-popup__footer-content\s+pui-button/.test(wxss), 'Popup WXSS must not use a tag selector to penetrate a slotted Button host');
@@ -180,7 +191,7 @@ assert.deepStrictEqual(metadata.apiProps.popup, expectedProps);
 assert.deepStrictEqual(metadata.apiEvents.popup.map((event) => event.name), ['visible-change']);
 assert(!metadata.apiEvents.popup[0].detail.includes('drag'));
 assert.deepStrictEqual(metadata.apiPropGroups.popup.flatMap((group) => group.keys), expectedProps);
-assert.deepStrictEqual(metadata.apiSlots.popup.map((slot) => slot.name), ['default', 'content', 'header-left', 'close-btn', 'footer']);
+assert.deepStrictEqual(metadata.apiSlots.popup.map((slot) => slot.name), ['default', 'content', 'surface-top', 'header-left', 'close-btn', 'footer']);
 assert.strictEqual(metadata.apiMethods.popup, undefined);
 
 const popupUsage = preview.slice(preview.indexOf("if (runtimeId === 'popup')"), preview.indexOf("if (runtimeId === 'sheet')"));
@@ -203,6 +214,8 @@ assert(!popupSource.includes('props.draggable'));
 assert(!popupSource.includes("trigger: 'drag'"));
 assert(preview.includes("pui-popup-preview--edge"));
 assert(preview.includes('pui-popup-preview__surface'), 'H5 Popup must mirror the native inner Surface');
+assert(preview.includes('data-popup-surface-top') && preview.includes("topLoadingPreviewMarkup({ state: 'idle'"), 'H5 Popup must mirror surface-top with the shared TopLoading helper');
+assert(preview.includes("props.contentScrollable === false ? 'is-static' : ''"), 'H5 Popup must mirror the Content scrolling owner switch');
 assert(preview.includes("pui-popup-preview__mask--blurred"));
 assert(preview.includes("'card', 'placement', 'showOverlay', 'blurOverlay'"), 'Popup trigger Inspector must expose card and blurOverlay in its contextual settings');
 assert(preview.includes("'showOverlay', 'blurOverlay', 'closeOnOverlayClick'"), 'Popup overlay Inspector must expose blurOverlay with overlay settings');
@@ -231,6 +244,8 @@ assert(preview.includes('visible-change：{ visible: false'));
 assert(previewStyles.includes('.pui-popup-preview__scroll'));
 assert(previewStyles.includes('.pui-popup-preview__header'));
 assert(previewStyles.includes('.pui-popup-preview__footer'));
+assert(/\.pui-popup-preview__surface\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/.test(previewStyles), 'H5 Popup Surface must own the same positioning and clipping boundary');
+assert(previewStyles.includes('.pui-popup-preview__surface-top {') && previewStyles.includes('inset: 0 0 auto;'), 'H5 surface-top mirror must attach to the Surface top edge');
 assert(previewStyles.includes('.pui-popup-preview--custom-navbar'));
 assert(previewStyles.includes('.pui-popup-preview--edge'));
 assert(previewStyles.includes('.pui-popup-preview__mask--blurred'));

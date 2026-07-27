@@ -94,3 +94,7 @@ H5 无法替代微信真机的 `scroll-view` 惯性、`scroll-into-view`、stick
 ## 2026-07-27 选中图标规则
 
 有左侧图标的选中项以 PUI `check` 替换该图标；右侧不再追加第二个 Check。此规则同时适用于小程序 WXML 和 H5 镜像，见 `sidebar/sidebar.wxml`、`preview/app.js`、`PUI-FB-0429`。
+
+## 2026-07-27 card 选中 Surface 圆角
+
+默认 Sidebar 是连续导航轨道，活动项保持直角并以左侧 inset 标记；只有 `theme=card` 的独立导航项形成背景 Surface，必须使用 medium 语义圆角：小程序 `--pui-radius-medium`、H5 `--pui-preview-radius-medium`。不得用固定 step 值替代，确保大圆角外观能同步生效；见 `sidebar/sidebar.wxss`、`preview/styles.css`、`PUI-FB-0446`。

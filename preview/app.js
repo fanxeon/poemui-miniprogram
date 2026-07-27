@@ -61,6 +61,7 @@ const edgeToEdgePreviewIds = new Set([
   'sticky',
   'tabbar',
   'toast',
+  'dynamic-message',
 ]);
 
 function shadcnEntryFor(id) {
@@ -217,7 +218,7 @@ const legacyComponentCopy = {
   radio: ['用于互斥选择的声明式单选控件，提供独立 RadioGroup、严格原始值与父级状态继承。', '单项/组、受控、原始值、状态继承、slot、change'],
   form: ['可组合表单父容器，通过 Field 关系执行真实校验、提交、重置与错误定位。', 'Field 注册、规则校验、提交与重置、服务端错误'],
   picker: ['基础选择器，覆盖单列、多列和级联。', '单列、多列、级联'],
-  'date-time-picker': ['基于 PUI Picker 的日期时间滚轮，支持年到秒精度、范围、步长、格式、值与显隐双受控、Popup/内联和草稿确认。', '年/月/日/时/分/秒、范围、步长、格式、双受控、Popup/内联、事件、方法'],
+  'date-time-picker': ['基于 PUI Picker 的日期时间滚轮，支持年到秒精度、范围、步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作、Popup/内联和草稿确认。', '年/月/日/时/分/秒、范围、步长、格式、双受控、默认 Header/Classic、Popup/内联、事件、方法'],
   search: ['搜索输入，支持清空、取消和建议状态。', '输入、清空、取消'],
   stepper: ['在明确边界内通过加减或输入调整数量。', '基础、主题与尺寸、步长与边界、状态与输入、change/overlimit'],
   slider: ['基于微信原生滑块在连续区间内选择单个数值。', '基础、边界与步长、颜色与表单、状态与受控、changing/change'],
@@ -271,7 +272,7 @@ const legacyApiPropsByComponent = {
   radio: ['checked', 'defaultChecked', 'value', 'label', 'content', 'icon', 'allowUncheck', 'block', 'borderless', 'contentDisabled', 'disabled', 'readonly', 'name', 'placement', 'maxLabelRow', 'maxContentRow', 'ariaLabel', 'reduceMotion'],
   form: ['data', 'rules', 'showErrorMessage', 'scrollToFirstError', 'resetType', 'ariaLabel', 'reduceMotion'],
   picker: ['columns', 'value', 'defaultValue', 'visible', 'defaultVisible', 'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'closeOnOverlayClick', 'autoClose', 'keys', 'visibleItemCount', 'itemHeight', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
-  'date-time-picker': ['value', 'defaultValue', 'visible', 'defaultVisible', 'mode', 'start', 'end', 'format', 'steps', 'showWeek', 'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick', 'disabled', 'readonly', 'ariaLabel', 'reduceMotion'],
+  'date-time-picker': ['value', 'defaultValue', 'visible', 'defaultVisible', 'mode', 'start', 'end', 'format', 'steps', 'showWeek', 'title', 'type', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick', 'disabled', 'readonly', 'ariaLabel', 'reduceMotion'],
   search: ['value', 'placeholder', 'shape', 'action', 'clearable', 'clearTrigger', 'center', 'disabled', 'readonly', 'focus', 'maxlength', 'resultList', 'confirmType'],
   stepper: ['value', 'defaultValue', 'min', 'max', 'step', 'integer', 'inputWidth', 'size', 'theme', 'disabled', 'readonly', 'disableInput', 'ariaLabel', 'reduceMotion'],
   slider: ['value', 'defaultValue', 'min', 'max', 'step', 'color', 'trackColor', 'name', 'blockSize', 'disabled', 'readonly', 'showValue', 'showMinMax', 'valueSuffix', 'ariaLabel', 'reduceMotion'],
@@ -298,7 +299,7 @@ const legacyApiPropsByComponent = {
   'count-down': ['time', 'autoStart', 'paused', 'content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit', 'ariaLabel', 'reduceMotion'],
   table: ['columns', 'data', 'rowKey', 'bordered', 'stripe', 'height', 'showHeader', 'emptyValue', 'selectable', 'selectedRowKeys', 'defaultSelectedRowKeys', 'multiple', 'selectOnRowClick', 'sortable', 'sort', 'defaultSort', 'customEmpty', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
   calendar: ['value', 'defaultValue', 'title', 'type', 'visible', 'defaultVisible', 'minDate', 'maxDate', 'disabledDates', 'disableWeekends', 'firstDayOfWeek', 'switchMode', 'showOutsideDays', 'allowSameDay', 'maxRange', 'maxMultiple', 'localeText', 'autoClose', 'usePopup', 'closeOnOverlayClick', 'disabled', 'readonly', 'loading', 'error', 'ariaLabel', 'reduceMotion'],
-  popup: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'],
+  popup: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'contentScrollable', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'],
   'action-sheet': ['align', 'cancelText', 'count', 'description', 'items', 'showCancel', 'showOverlay', 'theme', 'usingCustomNavbar', 'visible', 'defaultVisible', 'ariaLabel', 'reduceMotion'],
   'dropdown-menu': ['items', 'value', 'defaultValue', 'closeOnClickOverlay', 'showOverlay', 'zIndex', 'ariaLabel', 'reduceMotion'],
   overlay: ['visible', 'backgroundColor', 'blur', 'duration', 'preventScrollThrough', 'usingCustomNavbar', 'zIndex', 'ariaLabel', 'reduceMotion'],
@@ -663,6 +664,7 @@ const componentPropDefaults = {
   },
   popup: {
     closeBtn: true, showHeader: true, title: '分配执行动作', subtitle: '动作、状态和关联文件版本都会写入项目记录。', showFooter: true,
+    contentScrollable: true,
     closeOnOverlayClick: true, content: '', card: true, duration: 500,
     overlayProps: { backgroundColor: 'rgba(9, 9, 11, 0.42)' }, placement: 'bottom', preventScrollThrough: true, showOverlay: true, blurOverlay: false,
     usingCustomNavbar: false, visible: null, defaultVisible: false, zIndex: 11500, ariaLabel: '弹出层', reduceMotion: false,
@@ -693,8 +695,8 @@ const componentPropDefaults = {
   popover: { visible: null, defaultVisible: false, content: '这是相对触发元素显示的轻量说明。', placement: 'top', showArrow: true, theme: 'dark', closeOnClickOutside: true, fixed: false, ariaLabel: '组件说明气泡层', reduceMotion: false },
   'scroll-area': { height: '320rpx', scrollTop: 0, scrollIntoView: '', gradientOverlay: true, gradientOverlayColor: '', gradientOverlaySize: 'md', contentPaddingBottom: '10vh', ariaLabel: '组件滚动内容' },
   select: { options: [{ label: 'Button', value: 'button' }, { label: 'Card', value: 'card' }, { label: 'Select', value: 'select' }, { label: 'Popover', value: 'popover', disabled: true }], value: 'button', defaultValue: '', placeholder: '请选择组件', disabled: false, readonly: false },
-  picker: { columns: [{ label: '基础组件', value: 'basic', children: [{ label: 'Button', value: 'button', icon: 'component' }, { label: 'Icon', value: 0, icon: 'spark' }] }, { label: '表单组件', value: 'input', children: [{ label: 'Input', value: 'input' }, { label: 'Picker', value: false }, { label: '停用项', value: '', disabled: true }] }], value: null, defaultValue: ['basic', 0], visible: null, defaultVisible: false, title: '选择组件', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, closeOnOverlayClick: true, autoClose: true, keys: {}, visibleItemCount: 5, itemHeight: 80, disabled: false, readonly: false, loading: false, loadingText: '选项加载中', error: false, errorText: '选项加载失败', retryText: '重试', emptyText: '暂无可选项', ariaLabel: '组件滚轮选择器', reduceMotion: false },
-  'date-time-picker': { value: null, defaultValue: '2026-07-15 09:30', visible: null, defaultVisible: false, mode: ['date', 'minute'], start: '2026-01-01 00:00', end: '2026-12-31 23:59', format: 'YYYY-MM-DD HH:mm', steps: { minute: 15 }, showWeek: true, title: '选择发布时间', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, autoClose: true, closeOnOverlayClick: true, disabled: false, readonly: false, ariaLabel: '发布时间选择器', reduceMotion: false },
+  picker: { columns: [{ label: '基础组件', value: 'basic', children: [{ label: 'Button', value: 'button', icon: 'component' }, { label: 'Icon', value: 0, icon: 'spark' }] }, { label: '表单组件', value: 'input', children: [{ label: 'Input', value: 'input' }, { label: 'Picker', value: false }, { label: '停用项', value: '', disabled: true }] }], value: null, defaultValue: ['basic', 0], visible: null, defaultVisible: false, title: '选择组件', type: 'default', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, closeOnOverlayClick: true, autoClose: true, keys: {}, visibleItemCount: 5, itemHeight: 80, disabled: false, readonly: false, loading: false, loadingText: '选项加载中', error: false, errorText: '选项加载失败', retryText: '重试', emptyText: '暂无可选项', ariaLabel: '组件滚轮选择器', reduceMotion: false },
+  'date-time-picker': { value: null, defaultValue: '2026-07-15 09:30', visible: null, defaultVisible: false, mode: ['date', 'minute'], start: '2026-01-01 00:00', end: '2026-12-31 23:59', format: 'YYYY-MM-DD HH:mm', steps: { minute: 15 }, showWeek: true, title: '选择发布时间', type: 'default', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, autoClose: true, closeOnOverlayClick: true, disabled: false, readonly: false, ariaLabel: '发布时间选择器', reduceMotion: false },
   rate: { value: null, defaultValue: 3.5, count: 5, size: 40, gap: 8, color: '', allowHalf: true, showText: true, texts: ['很差', '一般', '不错', '很好', '极好'], disabled: false, readonly: false, ariaLabel: '组件评分', reduceMotion: false },
   upload: { files: null, defaultFiles: [], max: 3, picker: 'media', mediaType: ['image'], messageType: 'all', source: '', extensions: [], maxSize: 0, addContent: '添加附件', addBtn: true, theme: 'list', columns: 3, allowDuplicate: false, preview: true, removeBtn: true, customAdd: false, disabled: false, ariaLabel: '附件选择', reduceMotion: false },
   sheet: {
@@ -1040,7 +1042,7 @@ const releasePropDefinitions = {
   },
   picker: {
     columns: { type: 'json', value: componentPropDefaults.picker.columns }, value: { type: 'json', value: null }, defaultValue: { type: 'json', value: componentPropDefaults.picker.defaultValue },
-    visible: { type: 'nullable-boolean', value: null }, defaultVisible: { type: 'boolean', value: false }, title: { type: 'text', value: componentPropDefaults.picker.title },
+    visible: { type: 'nullable-boolean', value: null }, defaultVisible: { type: 'boolean', value: false }, title: { type: 'text', value: componentPropDefaults.picker.title }, type: { type: 'select', value: 'default', options: ['default', 'classic'] },
     cancelText: { type: 'text', value: '取消' }, confirmText: { type: 'text', value: '确定' }, showHeader: { type: 'boolean', value: true }, usePopup: { type: 'boolean', value: true },
     closeOnOverlayClick: { type: 'boolean', value: true }, autoClose: { type: 'boolean', value: true }, keys: { type: 'json', value: {} },
     visibleItemCount: { type: 'range', value: 5, min: 3, max: 7, step: 2 }, itemHeight: { type: 'range', value: 80, min: 64, max: 112, step: 8 },
@@ -1051,7 +1053,7 @@ const releasePropDefinitions = {
   'date-time-picker': {
     value: { type: 'json', value: null }, defaultValue: { type: 'json', value: '2026-07-15 09:30' }, visible: { type: 'nullable-boolean', value: null }, defaultVisible: { type: 'boolean', value: false },
     mode: { type: 'json', value: ['date', 'minute'] }, start: { type: 'json', value: '2026-01-01 00:00' }, end: { type: 'json', value: '2026-12-31 23:59' }, format: { type: 'text', value: 'YYYY-MM-DD HH:mm' }, steps: { type: 'json', value: { minute: 15 } }, showWeek: { type: 'boolean', value: true },
-    title: { type: 'text', value: '选择发布时间' }, cancelText: { type: 'text', value: '取消' }, confirmText: { type: 'text', value: '确定' }, showHeader: { type: 'boolean', value: true }, usePopup: { type: 'boolean', value: true }, autoClose: { type: 'boolean', value: true }, closeOnOverlayClick: { type: 'boolean', value: true },
+    title: { type: 'text', value: '选择发布时间' }, type: { type: 'select', value: 'default', options: ['default', 'classic'] }, cancelText: { type: 'text', value: '取消' }, confirmText: { type: 'text', value: '确定' }, showHeader: { type: 'boolean', value: true }, usePopup: { type: 'boolean', value: true }, autoClose: { type: 'boolean', value: true }, closeOnOverlayClick: { type: 'boolean', value: true },
     disabled: { type: 'boolean', value: false }, readonly: { type: 'boolean', value: false }, ariaLabel: { type: 'text', value: '发布时间选择器' }, reduceMotion: { type: 'boolean', value: false },
   },
   stepper: {
@@ -1125,6 +1127,7 @@ const releasePropDefinitions = {
   },
   popup: {
     closeBtn: { type: 'boolean', value: true }, showHeader: { type: 'boolean', value: true }, title: { type: 'text', value: '分配执行动作' }, subtitle: { type: 'text', value: '动作、状态和关联文件版本都会写入项目记录。' }, showFooter: { type: 'boolean', value: true },
+    contentScrollable: { type: 'boolean', value: true },
     closeOnOverlayClick: { type: 'boolean', value: true }, content: { type: 'text', value: '' }, card: { type: 'boolean', value: true }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 10 },
     overlayProps: { type: 'json', value: componentPropDefaults.popup.overlayProps, apiType: 'OverlayProps' }, placement: { type: 'select', value: 'bottom', options: ['top', 'bottom', 'left', 'right', 'center'] }, preventScrollThrough: { type: 'boolean', value: true }, showOverlay: { type: 'boolean', value: true }, blurOverlay: { type: 'boolean', value: false },
     usingCustomNavbar: { type: 'boolean', value: false }, visible: { type: 'nullable-boolean', value: null }, defaultVisible: { type: 'boolean', value: false }, zIndex: { type: 'range', value: 11500, min: 1, max: 12000 }, ariaLabel: { type: 'text', value: '弹出层' }, reduceMotion: { type: 'boolean', value: false },
@@ -1154,6 +1157,28 @@ const releasePropDefinitions = {
     placement: { type: 'select', value: 'top', options: ['top', 'left', 'right', 'bottom', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'left-top', 'left-bottom', 'right-top', 'right-bottom'] },
     showArrow: { type: 'boolean', value: true }, theme: { type: 'select', value: 'dark', options: ['dark', 'light', 'brand', 'success', 'warning', 'error'] }, closeOnClickOutside: { type: 'boolean', value: true }, fixed: { type: 'boolean', value: false },
     ariaLabel: { type: 'text', value: '组件说明气泡层' }, reduceMotion: { type: 'boolean', value: false },
+  },
+  'top-loading': {
+    state: { type: 'select', value: 'idle', options: ['idle', 'loading', 'success'] },
+    progress: { type: 'json', apiType: 'number | null', value: null },
+    delay: { type: 'range', value: 220, min: 0, max: 5000, step: 20 },
+    minimumVisible: { type: 'range', value: 500, min: 0, max: 60000, step: 100 },
+    successDuration: { type: 'range', value: 700, min: 0, max: 60000, step: 100 },
+    duration: { type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+    ariaLabel: { type: 'text', value: '加载进度' },
+    reduceMotion: { type: 'boolean', value: false },
+  },
+  'dynamic-message': {
+    theme: { type: 'select', value: 'info', options: ['loading', 'info', 'success', 'warning', 'error'] },
+    title: { type: 'text', value: '' },
+    message: { type: 'text', value: '' },
+    icon: { type: 'text', value: '' },
+    actionText: { type: 'text', value: '' },
+    closable: { type: 'boolean', value: true },
+    duration: { type: 'range', value: 3000, min: 0, max: 60000, step: 100 },
+    safeArea: { type: 'boolean', value: true },
+    ariaLabel: { type: 'text', value: '' },
+    reduceMotion: { type: 'boolean', value: false },
   },
   'pull-refresh': {
     disabled: { type: 'boolean', value: false }, enableBackToTop: { type: 'boolean', value: true }, enablePassive: { type: 'boolean', value: false },
@@ -1605,7 +1630,7 @@ function resetDemoRuntime(id, key) {
     if (['columns', 'value', 'defaultValue', 'keys'].includes(key)) delete demo.pickerDraft;
     delete demo.pickerEvent;
   }
-  if (id === 'date-time-picker' && ['value', 'defaultValue', 'visible', 'defaultVisible', 'mode', 'start', 'end', 'format', 'steps', 'showWeek', 'title', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick', 'disabled', 'readonly', 'ariaLabel', 'reduceMotion'].includes(key)) {
+  if (id === 'date-time-picker' && ['value', 'defaultValue', 'visible', 'defaultVisible', 'mode', 'start', 'end', 'format', 'steps', 'showWeek', 'title', 'type', 'cancelText', 'confirmText', 'showHeader', 'usePopup', 'autoClose', 'closeOnOverlayClick', 'disabled', 'readonly', 'ariaLabel', 'reduceMotion'].includes(key)) {
     delete demo.dateTimeCommittedTimestamp;
     delete demo.dateTimeLastControlledTimestamp;
     delete demo.dateTimeDraftTimestamp;
@@ -3204,9 +3229,7 @@ function makeUsageCode(detail, props) {
     return `// shadcn/ui ${detail.title}\n// 当前条目仅用于组件分类与微信平台边界说明。\n// 该能力尚未生成可安装的 PoemUI 原生目录。\n\n// 兼容矩阵：docs/SHADCN_COMPATIBILITY.md`;
   }
   if (detail.id === 'getting-started') {
-    return `npm i poemui-miniprogram -S --production
-
-/* app.json / page.json */
+    return `/* 公共 npm 尚未发布；安装完成后配置 page.json */
 {
   "usingComponents": {
     "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
@@ -4771,7 +4794,7 @@ function makeCompatNotes(detail) {
     base.push(['职责边界', 'DateTimePicker 直接组合 PUI Picker，把年/月/日/时/分/秒转换为滚轮列；Calendar + Popover 继续承担可视月历和范围选择。']);
     base.push(['双受控合同', 'value 与 visible 分别受控；滚动只更新草稿并触发 pick，确认才发布 confirm/change，取消恢复已提交值。']);
     base.push(['范围与精度', 'mode 支持年到秒及日期+时间组合；start/end 倒置时交换，闰年/月末联动，steps 使用正整数并保留边界值，showWeek 只扩展日列标签。']);
-    base.push(['组合与事件', 'Popup/内联、操作栏、滚轮和动效全部来自 PUI Picker；DateTimePicker 无 Slot、无重复 Surface，也不暴露远程数据 loading/error/empty。']);
+    base.push(['组合与事件', 'Popup/内联、默认图标 Header / Classic 操作栏、滚轮和动效全部来自 PUI Picker；DateTimePicker 无 Slot、无重复 Surface，也不暴露远程数据 loading/error/empty。']);
     base.push(['H5 与动效', 'H5 复用 Picker 滚轮，支持点击、键盘、wheel 和 Pointer 拖动；不再使用 date/time input 冒充 confirm/cancel，多端固定 500ms，reduceMotion 压缩为 1ms。']);
   }
   if (compatId === 'collapsible') {
@@ -5221,7 +5244,7 @@ function renderDocumentationStage(detail, props) {
   return `
     <section class="document-content" aria-label="${detail.title} 文档内容">
       ${preview}
-      ${propWorkspaceMarkup(detail)}
+      ${detail.id === 'getting-started' ? '' : propWorkspaceMarkup(detail)}
     </section>
   `;
 }
@@ -5332,6 +5355,25 @@ function bindPreviewRuntime(id, props) {
   if (id !== 'watermark' && state.previewWatermarkAbort) {
     state.previewWatermarkAbort.abort();
     state.previewWatermarkAbort = null;
+  }
+  if (id !== 'top-loading') {
+    clearTimeout(state.previewTopLoadingDelayTimer);
+    clearTimeout(state.previewTopLoadingSuccessTimer);
+    clearTimeout(state.previewTopLoadingLeaveTimer);
+  }
+  if (id !== 'dynamic-message') {
+    cancelAnimationFrame(state.previewDynamicMessageFrameTimer);
+    clearTimeout(state.previewDynamicMessageStageTimer);
+    clearTimeout(state.previewDynamicMessageCompleteTimer);
+    clearTimeout(state.previewDynamicMessageAutoTimer);
+    clearTimeout(state.previewDynamicMessageLeaveTimer);
+    state.previewDynamicMessageFrameTimer = null;
+    state.previewDynamicMessageStageTimer = null;
+    state.previewDynamicMessageCompleteTimer = null;
+    state.previewDynamicMessageAutoTimer = null;
+    state.previewDynamicMessageLeaveTimer = null;
+    if (state.previewDynamicMessageAbort) state.previewDynamicMessageAbort.abort();
+    state.previewDynamicMessageAbort = null;
   }
   if (id !== 'swiper') {
     clearTimeout(state.previewSwiperTimer);
@@ -5462,6 +5504,14 @@ function bindPreviewRuntime(id, props) {
     bindWatermarkPreviewRuntime(props);
     return;
   }
+  if (id === 'top-loading') {
+    bindTopLoadingPreviewRuntime(props);
+    return;
+  }
+  if (id === 'dynamic-message') {
+    bindDynamicMessagePreviewRuntime(props);
+    return;
+  }
   if (id === 'scroll-area') {
     bindScrollAreaPreviewRuntime(props);
     return;
@@ -5518,7 +5568,7 @@ function bindPreviewRuntime(id, props) {
 function apiPropDescription(id, key) {
   if (previewIdFor(id) === 'scroll-area') {
     const descriptions = {
-      height: '滚动区域高度。裸正数按 rpx 处理；只接受正数、rpx 或 px，非法值回退 320rpx。',
+      height: '滚动区域高度。裸正数按 rpx 处理；接受正数、rpx、px 或 vh，非法值回退 320rpx。',
       scrollTop: '受控纵向位置，规整为非负数；与真实 scroll 事件配合可驱动局部 BackTop 回顶。',
       scrollIntoView: '父级传入 default Slot 内目标节点的 id 后，由原生 scroll-view 定位；空字符串不请求定位。',
       gradientOverlay: '是否在真实滚动视口的顶部与底部固定渲染渐变遮罩；默认 true，仅改变阅读过渡，不改变滚动、事件或定位。',
@@ -5536,6 +5586,7 @@ function apiPropDescription(id, key) {
       title: 'Header 中间标题文本；复杂标题内容使用 title slot。',
       subtitle: 'Header 标题下方的次级说明；使用较弱文字色与紧凑间距，不截断关键内容。',
       showFooter: '是否展示 footer slot；主要动作由消费者组合 PUI Button。',
+      contentScrollable: '是否由 Popup Content 自己纵向滚动；设为 false 时调用方可在 Content 中放置唯一 PUI ScrollArea。',
       closeOnOverlayClick: '点击遮罩是否请求关闭；关闭请求仍由父级回写 visible。',
       content: '无默认 slot 时的正文回退内容；复杂内容请使用默认 slot。',
       card: '是否保留左右卡片内距；false 时贴边展示，仍保留 Popup 自身布局。',
@@ -5624,6 +5675,34 @@ function apiPropDescription(id, key) {
       trackColor: '自定义轨道色；非法 CSS 色值不会写入样式。',
       ariaLabel: 'progressbar 的辅助名称；可见读数会附加到语义文本。',
       reduceMotion: '将固定 500ms 确定进度视觉过渡压缩为 1ms，不改变数值或业务状态。',
+    };
+    if (descriptions[key]) return descriptions[key];
+  }
+  if (id === 'top-loading') {
+    const descriptions = {
+      state: '唯一状态机：idle 退场、loading 加载、success 显式完成；失败和取消必须回写 idle。',
+      progress: 'null 表示未知总量；0–100 表示精确进度，合法的 0 不会被当成空值。',
+      delay: '进入 loading 后延迟显示的毫秒数，避免极短任务闪烁；范围 0–5000。',
+      minimumVisible: '轨道已经出现后，在进入 success 前至少保持可见的毫秒数；失败/取消不等待。',
+      successDuration: '显式 success 填满后保持可见的毫秒数；不是 CSS 动画时长。',
+      duration: '所有进退场、进度和不确定态动效时长，默认 500ms，限制 0–1000ms。',
+      ariaLabel: '当前请求进度的辅助名称；空值按状态和百分比生成。',
+      reduceMotion: '保留状态反馈，把所有自定义动效压缩为 1ms。',
+    };
+    if (descriptions[key]) return descriptions[key];
+  }
+  if (id === 'dynamic-message') {
+    const descriptions = {
+      theme: '默认消息主题：loading、info、success、warning 或 error；show/update 可逐条覆盖。',
+      title: '默认通知标题；show(options) 可为当前消息覆盖。',
+      message: '默认通知正文，最多两行；关键动作和完整错误原因应进入业务页面。',
+      icon: '可选 PUI Icon 名；loading 未传 icon 时使用 PUI Loading。',
+      actionText: '可选 PUI 文字按钮；点按只触发 action，不自动关闭或宣布成功。',
+      closable: '是否展示圆形 PUI Close IconButton。',
+      duration: '进入完成后的默认停留毫秒数，0 表示持续显示；loading 未显式传值时默认为 0。',
+      safeArea: '根据微信状态栏与胶囊真实位置放置通知；关闭时仅使用最小顶部间距。',
+      ariaLabel: '整条通知的辅助名称；空值回退 title、message 或主题。',
+      reduceMotion: '正常进场为 180ms 胶囊 + 320ms 面板、退场反向；开启后保留 retained node、队列和事件顺序并压缩为 1ms。',
     };
     if (descriptions[key]) return descriptions[key];
   }
@@ -6562,7 +6641,7 @@ function bindPreviewPointerDragScroll(viewport) {
     && node.scrollHeight > node.clientHeight + 1
     && (node === viewport || /(?:auto|scroll|overlay)/.test(getComputedStyle(node).overflowY))
   ));
-  const blockedTarget = 'input, textarea, select, [contenteditable="true"], [data-preview-drag-scroll-lock], [data-picker-wheel], [data-swiper-viewport], .pui-swipe-cell-preview__content, .pui-slider-preview, .pui-rate-preview__stars, [data-pull-refresh-root], [data-sheet-handle]';
+  const blockedTarget = 'button, a, input, textarea, select, [role="button"], [contenteditable="true"], [data-preview-drag-scroll-lock], [data-picker-wheel], [data-swiper-viewport], .pui-swipe-cell-preview__content, .pui-slider-preview, .pui-rate-preview__stars, [data-pull-refresh-root], [data-sheet-handle]';
   candidates.forEach((scrollable) => {
     scrollable.dataset.previewDragScroll = 'true';
     let drag = null;
@@ -6605,7 +6684,7 @@ function bindPreviewPointerDragScroll(viewport) {
     scrollable.addEventListener('pointercancel', stopDrag, { signal });
     scrollable.addEventListener('lostpointercapture', stopDrag, { signal });
     scrollable.addEventListener('click', (event) => {
-      if (performance.now() > suppressClickUntil) return;
+      if (!suppressClickUntil || performance.now() > suppressClickUntil) return;
       event.preventDefault();
       event.stopImmediatePropagation();
     }, { signal, capture: true });
@@ -6790,6 +6869,159 @@ function configProviderShowcase(props) {
   `;
 }
 
+const guideCopySources = {
+  reference: `{
+  "usingComponents": {
+    "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
+    "pui-button": "poemui-miniprogram/button/button",
+    "pui-icon": "poemui-miniprogram/icon/icon"
+  }
+}`,
+  basic: `<pui-config-provider use-global-config>
+  <pui-button theme="primary" bind:click="submit">
+    <pui-icon name="check" />
+    确认
+  </pui-button>
+</pui-config-provider>`,
+  theme: `const { visualConfig } = require('poemui-miniprogram');
+
+App({
+  onLaunch() {
+    visualConfig.restore();
+  }
+});`,
+};
+
+function guideCodeBlockSample(key, title, description) {
+  const source = guideCopySources[key] || '';
+  const sectionId = `puiGuideCode-${key}`;
+  return `
+    <section class="pui-guide__code-section" aria-labelledby="${sectionId}">
+      <header class="pui-guide__code-header">
+        <div>
+          <h3 id="${sectionId}">${escapeHtml(title)}</h3>
+          <p>${escapeHtml(description)}</p>
+        </div>
+        ${iconButtonSample({
+          customClass: 'pui-guide__copy',
+          icon: 'copy',
+          demoAction: 'copy-guide-code',
+          ariaLabel: `复制${title}`,
+          title: `复制${title}`,
+          dataAttributes: { 'guide-copy-key': key, 'guide-copy-label': title },
+        })}
+      </header>
+      <pre class="pui-guide__code" tabindex="0" aria-label="${escapeHtml(title)}"><code>${previewCodeMarkup(source)}</code></pre>
+    </section>
+  `;
+}
+
+function gettingStartedGuide() {
+  return `
+    <article class="demo-section pui-guide" aria-label="PoemUI 快速开始">
+      <header class="pui-guide__hero">
+        <div class="pui-guide__eyebrow">
+          ${tagSample({ content: '受限 Beta', variant: 'warning', size: 'small' })}
+          <span>poemui-miniprogram@0.1.0</span>
+        </div>
+        <h2>用真实组件完成第一个小程序页面</h2>
+        <p>PoemUI 正在快速迭代。API、样式、文档和在线服务仍可能调整，当前暂不提供正式 SLA。</p>
+      </header>
+
+      <section class="pui-guide__notice" role="status" aria-label="发布状态">
+        <span class="pui-guide__notice-icon">${iconComponent('warning-triangle', { size: 'small' })}</span>
+        <div>
+          <strong>公共 npm 与 GitHub 尚未发布</strong>
+          <p>当前页面不会提供不可执行的安装复制按钮。待 Registry 和公开仓库真实可读后，安装入口才会解锁。</p>
+        </div>
+      </section>
+
+      <section class="pui-guide__section" aria-labelledby="guideInstallTitle">
+        <header class="pui-guide__section-header">
+          <span>01</span>
+          <div>
+            <h2 id="guideInstallTitle">安装与微信构建</h2>
+            <p>包名已经冻结，公共发布仍待 npm 登录与 GitHub 归属确认。</p>
+          </div>
+        </header>
+        <div class="pui-guide__status-grid">
+          <div><span>包名</span><strong>poemui-miniprogram</strong></div>
+          <div><span>当前版本</span><strong>0.1.0</strong></div>
+          <div><span>npm Registry</span><strong class="is-pending">尚未发布</strong></div>
+          <div><span>微信 build-npm</span><strong>本地产物已验证</strong></div>
+        </div>
+        <ol class="pui-guide__steps">
+          <li><span>1</span><p>公共包发布后执行固定版本安装，不使用 latest 漂移合同。</p></li>
+          <li><span>2</span><p>在微信开发者工具执行“工具 → 构建 npm”。</p></li>
+          <li><span>3</span><p>核对 node_modules、miniprogram_npm 与页面组件路径。</p></li>
+        </ol>
+      </section>
+
+      <section class="pui-guide__section" aria-labelledby="guideFirstPageTitle">
+        <header class="pui-guide__section-header">
+          <span>02</span>
+          <div>
+            <h2 id="guideFirstPageTitle">第一个页面</h2>
+            <p>按需注册组件，并由页面真实回写交互状态。</p>
+          </div>
+        </header>
+        <div class="pui-guide__code-grid">
+          ${guideCodeBlockSample('reference', '组件引用', 'page.json')}
+          ${guideCodeBlockSample('basic', '基础 WXML', 'page.wxml')}
+        </div>
+      </section>
+
+      <section class="pui-guide__section" aria-labelledby="guideThemeTitle">
+        <header class="pui-guide__section-header">
+          <span>03</span>
+          <div>
+            <h2 id="guideThemeTitle">主题与快速样式</h2>
+            <p>每个页面根使用 ConfigProvider，共享视觉配置通过公开 visualConfig Store 写入。</p>
+          </div>
+        </header>
+        ${guideCodeBlockSample('theme', '全局配置', 'app.js')}
+        <ul class="pui-guide__checklist">
+          <li>${iconComponent('check-circle', { size: 'small' })}<span>深浅色、阴影、毛玻璃、大圆角、边框和等距使用同一配置源。</span></li>
+          <li>${iconComponent('check-circle', { size: 'small' })}<span>Style Utilities 从安装版本的 utilities.wxss 读取，不靠 Tailwind 名称猜测。</span></li>
+          <li>${iconComponent('check-circle', { size: 'small' })}<span>390px 保持可读、可操作且无页面级横向溢出。</span></li>
+        </ul>
+      </section>
+
+      <section class="pui-guide__section" aria-labelledby="guideSkillTitle">
+        <header class="pui-guide__section-header">
+          <span>04</span>
+          <div>
+            <h2 id="guideSkillTitle">让 AI 正确使用 PoemUI</h2>
+            <p>仓库内 Skill 已实现安装审计、组件选型、真实事件、主题样式与微信验证工作流。</p>
+          </div>
+        </header>
+        <div class="pui-guide__skill">
+          <div class="pui-guide__skill-icon">${iconComponent('ai', { size: 'large' })}</div>
+          <div>
+            <strong>poemui-miniprogram Skill</strong>
+            <span>适配 0.1.0 · 本地验证中</span>
+            <p>公开 GitHub 尚未绑定，因此暂不展示虚假的一键安装命令。源文件发布后再开放安装入口。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="pui-guide__section" aria-labelledby="guideLicenseTitle">
+        <header class="pui-guide__section-header">
+          <span>05</span>
+          <div>
+            <h2 id="guideLicenseTitle">Beta 与许可证</h2>
+            <p>当前已经进入根包的能力遵循 MIT；未来 Pro 只适用于独立发行的新能力。</p>
+          </div>
+        </header>
+        <div class="pui-guide__license">
+          <p>Beta 期间，当前开放组件和功能均可免费体验与评估，现阶段无需购买授权。</p>
+          <p>未来独立发行的 PoemUI Pro 高级组件用于商业项目时需要购买商业授权；价格、范围和服务内容将在发布前公布。</p>
+        </div>
+      </section>
+    </article>
+  `;
+}
+
 function renderComponentPreview(id, props) {
   const previewId = previewIdFor(id);
   const detail = createDetail(id);
@@ -6797,14 +7029,7 @@ function renderComponentPreview(id, props) {
   const demo = getDemoState(previewId);
   switch (previewId) {
     case 'getting-started':
-      return `
-        <section class="demo-section pui-guide">
-          <div class="pui-guide__step"><span>1</span><div><strong>安装</strong><code>npm i poemui-miniprogram -S --production</code></div></div>
-          <div class="pui-guide__step"><span>2</span><div><strong>构建 npm</strong><p>在微信开发者工具中执行“构建 npm”。</p></div></div>
-          <div class="pui-guide__step"><span>3</span><div><strong>按需引用</strong><p>在页面 JSON 注册 <code>pui-button</code> 等组件。</p></div></div>
-          ${buttonSample({ theme: 'primary', icon: 'check', content: '查看引入代码', demoAction: 'button-click' })}
-        </section>
-      `;
+      return gettingStartedGuide();
     case 'config-provider':
       return configProviderShowcase(props);
     case 'theme-tokens':
@@ -6886,6 +7111,10 @@ function renderComponentPreview(id, props) {
       return progressShowcase(props, demo);
     case 'loading':
       return loadingShowcase(props, demo);
+    case 'top-loading':
+      return topLoadingShowcase(props, demo);
+    case 'dynamic-message':
+      return dynamicMessageShowcase(props, demo);
     case 'skeleton':
       return skeletonShowcase(props, demo);
     case 'empty':
@@ -7096,16 +7325,17 @@ function inputControlSample(props = {}) {
     return Number.isFinite(value) ? ` ${key}="${escapeHtml(value)}"` : '';
   }).join('');
   const clear = props.clearable && String(props.value ?? '') && !props.disabled && !props.readonly
-    ? iconButtonSample({
+    ? `<span class="pui-input-preview__clear-host">${iconButtonSample({
       customClass: props.clearClass || 'pui-input-preview__clear',
       icon: props.clearIcon || 'close-circle',
       ariaLabel: props.clearLabel || '清空输入',
       title: props.clearTitle || props.clearLabel || '清空输入',
       demoAction: props.clearAction,
-    })
+    })}</span>`
     : '';
   const suffix = props.suffix ? `<span class="pui-input-preview__suffix">${props.suffix}</span>` : '';
-  return `<label class="${classes}" aria-disabled="${!!props.disabled}"><span class="pui-input-preview__control">${prefix}<input${props.id ? ` id="${escapeHtml(props.id)}"` : ''}${name} type="${escapeHtml(type)}" value="${escapeHtml(props.value ?? '')}" placeholder="${escapeHtml(props.placeholder || '')}" autocomplete="${escapeHtml(props.autocomplete || 'off')}" aria-label="${escapeHtml(semanticLabel)}" aria-invalid="${!!props.invalid}" aria-required="${!!props.required}"${inputMode}${maxLengthAttr}${rangeAttrs}${dataProp}${dataPropType}${demoAction}${demoName}${props.disabled ? ' disabled' : ''}${props.readonly ? ' readonly' : ''}${props.required ? ' required' : ''}${props.autofocus ? ' autofocus' : ''} />${clear}${suffix}</span></label>`;
+  const trailing = clear || suffix ? `<span class="pui-input-preview__trailing">${clear}${suffix}</span>` : '';
+  return `<label class="${classes}" aria-disabled="${!!props.disabled}"><span class="pui-input-preview__control">${prefix}<input${props.id ? ` id="${escapeHtml(props.id)}"` : ''}${name} type="${escapeHtml(type)}" value="${escapeHtml(props.value ?? '')}" placeholder="${escapeHtml(props.placeholder || '')}" autocomplete="${escapeHtml(props.autocomplete || 'off')}" aria-label="${escapeHtml(semanticLabel)}" aria-invalid="${!!props.invalid}" aria-required="${!!props.required}"${inputMode}${maxLengthAttr}${rangeAttrs}${dataProp}${dataPropType}${demoAction}${demoName}${props.disabled ? ' disabled' : ''}${props.readonly ? ' readonly' : ''}${props.required ? ' required' : ''}${props.autofocus ? ' autofocus' : ''} />${trailing}</span></label>`;
 }
 
 function selectControlSample(props = {}) {
@@ -12815,6 +13045,316 @@ function loadingComponent(props = {}) {
   return `<span class="pui-spinner ${props.pause ? 'is-paused' : ''} ${props.reverse ? 'is-reverse' : ''} ${props.reduceMotion || duration === 0 ? 'is-reduced-motion' : ''}" style="width:${size};height:${size};border-width:2px;color:${color};animation-duration:${duration}ms" aria-hidden="true"></span>${text}`;
 }
 
+function topLoadingMotion(props) {
+  return props.reduceMotion ? 1 : Math.max(0, Math.min(1000, Math.round(Number(props.duration) || 500)));
+}
+
+function topLoadingProgress(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const next = Number(value);
+  if (!Number.isFinite(next) || next < 0) return null;
+  return Math.max(0, Math.min(100, Math.round(next)));
+}
+
+function topLoadingPreviewMarkup(props) {
+  const progress = topLoadingProgress(props.progress);
+  const stateValue = ['idle', 'loading', 'success'].includes(props.state) ? props.state : 'idle';
+  const label = String(props.ariaLabel || (stateValue === 'success' ? '加载完成' : progress === null ? '加载中' : `加载进度 ${progress}%`)).trim() || '加载中';
+  return `<div class="pui-top-loading-preview ${stateValue === 'success' ? 'is-success' : ''} ${progress !== null ? 'is-determinate' : ''}" data-top-loading-root data-state="${escapeHtml(stateValue)}" data-progress="${progress === null ? '' : progress}" style="--pui-top-loading-duration:${topLoadingMotion(props)}ms;--pui-top-loading-progress:${progress === null ? 0 : progress / 100}" role="progressbar" aria-label="${escapeHtml(label)}" aria-valuemin="0" aria-valuemax="100" ${progress !== null || stateValue === 'success' ? `aria-valuenow="${stateValue === 'success' ? 100 : progress}"` : ''} aria-hidden="${stateValue === 'idle'}"><span class="pui-top-loading-preview__one"></span><span class="pui-top-loading-preview__two"></span><span class="pui-top-loading-preview__bar"></span></div>`;
+}
+
+function topLoadingShowcase(props) {
+  return `<section class="demo-section pui-top-loading-showcase">
+    <article class="pui-card-showcase pui-top-loading-showcase__card has-shadow" data-top-loading-surface>
+      ${topLoadingPreviewMarkup(props)}
+      <header><div><strong>组件发布检查</strong><span>进度轨道依附当前 Card 顶边，不占据正文空间。</span></div>${tagSample({ theme: 'primary', variant: 'light', size: 'small', content: '当前任务' })}</header>
+      <div class="pui-card-showcase__content">
+        <div class="pui-card-showcase__meta"><span>${iconComponent('package', { size: 'small' })} npm 组件产物</span><em data-top-loading-status>${props.state === 'success' ? '已完成' : props.state === 'loading' ? '处理中' : '等待开始'}</em></div>
+        <p>未知总量使用双轨变换；已知总量从 0 精确推进。失败或取消只退场，不显示成功色。</p>
+      </div>
+    </article>
+    <div class="pui-top-loading-showcase__triggers">
+      ${buttonSample({ theme: 'primary', variant: 'outline', size: 'small', content: '未知进度', icon: 'progress', demoAction: 'top-loading-unknown' })}
+      ${buttonSample({ variant: 'outline', size: 'small', content: '精确进度', icon: 'activity', demoAction: 'top-loading-exact' })}
+      ${buttonSample({ variant: 'outline', size: 'small', content: '推进 25%', icon: 'chevron-right', demoAction: 'top-loading-advance' })}
+      ${buttonSample({ theme: 'primary', size: 'small', content: '真实完成', icon: 'check-circle', demoAction: 'top-loading-success' })}
+      ${buttonSample({ theme: 'danger', variant: 'outline', size: 'small', content: '失败 / 取消', icon: 'close', demoAction: 'top-loading-cancel' })}
+    </div>
+  </section>`;
+}
+
+function applyTopLoadingPreview(props, source = 'props') {
+  const root = document.querySelector('#previewStage [data-top-loading-root]');
+  if (!root) return;
+  const demo = getDemoState('top-loading');
+  const motion = topLoadingMotion(props);
+  const progress = topLoadingProgress(props.progress);
+  const nextState = ['idle', 'loading', 'success'].includes(props.state) ? props.state : 'idle';
+  clearTimeout(state.previewTopLoadingDelayTimer);
+  clearTimeout(state.previewTopLoadingSuccessTimer);
+  clearTimeout(state.previewTopLoadingLeaveTimer);
+  root.style.setProperty('--pui-top-loading-duration', `${motion}ms`);
+  root.style.setProperty('--pui-top-loading-progress', String(progress === null ? 0 : progress / 100));
+  root.classList.toggle('is-determinate', progress !== null);
+  root.dataset.progress = progress === null ? '' : String(progress);
+  const status = root.closest('[data-top-loading-surface]')?.querySelector('[data-top-loading-status]');
+  const activateLoading = () => {
+    demo.topLoadingVisibleAt = Date.now();
+    root.classList.add('is-active');
+    root.classList.remove('is-success');
+    root.dataset.state = 'loading';
+    root.setAttribute('aria-hidden', 'false');
+    if (progress === null) root.removeAttribute('aria-valuenow');
+    else root.setAttribute('aria-valuenow', String(progress));
+    if (status) status.textContent = progress === null ? '处理中' : `进度 ${progress}%`;
+  };
+  if (nextState === 'loading') {
+    const delay = source === 'props' ? Math.max(0, Math.min(5000, Math.round(Number(props.delay) || 0))) : 0;
+    root.classList.remove('is-success');
+    if (delay) state.previewTopLoadingDelayTimer = setTimeout(activateLoading, delay);
+    else requestAnimationFrame(activateLoading);
+    return;
+  }
+  if (nextState === 'success') {
+    const minimum = Math.max(0, Math.min(60000, Math.round(Number(props.minimumVisible) || 0)));
+    const remaining = demo.topLoadingVisibleAt ? Math.max(0, minimum - (Date.now() - demo.topLoadingVisibleAt)) : 0;
+    state.previewTopLoadingSuccessTimer = setTimeout(() => {
+      root.classList.add('is-active', 'is-success');
+      root.dataset.state = 'success';
+      root.setAttribute('aria-valuenow', '100');
+      root.setAttribute('aria-hidden', 'false');
+      if (status) status.textContent = '已完成';
+      const hold = Math.max(0, Math.min(60000, Math.round(Number(props.successDuration) || 0)));
+      state.previewTopLoadingLeaveTimer = setTimeout(() => {
+        root.classList.remove('is-active');
+        root.setAttribute('aria-hidden', 'true');
+      }, hold);
+    }, remaining);
+    return;
+  }
+  root.classList.remove('is-active', 'is-success');
+  root.dataset.state = 'idle';
+  root.setAttribute('aria-hidden', 'true');
+  root.removeAttribute('aria-valuenow');
+  if (status) status.textContent = source === 'cancel' ? '已取消' : '等待开始';
+}
+
+function bindTopLoadingPreviewRuntime(props) {
+  const setProps = (patch, source) => {
+    Object.assign(state.props[state.current], patch);
+    const next = getProps(state.current);
+    renderInspector();
+    applyTopLoadingPreview(next, source);
+  };
+  document.querySelectorAll('#previewStage [data-demo-action^="top-loading-"]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.demoAction;
+      if (action === 'top-loading-unknown') setProps({ state: 'loading', progress: null }, 'action');
+      if (action === 'top-loading-exact') setProps({ state: 'loading', progress: 0 }, 'action');
+      if (action === 'top-loading-advance') setProps({ state: 'loading', progress: Math.min(100, (topLoadingProgress(getProps(state.current).progress) || 0) + 25) }, 'action');
+      if (action === 'top-loading-success') setProps({ state: 'success', progress: 100 }, 'success');
+      if (action === 'top-loading-cancel') setProps({ state: 'idle' }, 'cancel');
+    });
+  });
+  applyTopLoadingPreview(props);
+}
+
+function dynamicMessageTheme(value) {
+  return ['loading', 'info', 'success', 'warning', 'error'].includes(value) ? value : 'info';
+}
+
+function dynamicMessageShowcase(props) {
+  const action = String(props.actionText || '');
+  return `<section class="demo-section pui-dynamic-message-showcase" data-dynamic-message-showcase>
+    <div class="pui-dynamic-message-preview-layer">
+      <article class="pui-dynamic-message-preview is-phase-hidden is-${dynamicMessageTheme(props.theme)} ${action ? 'has-action' : ''} ${props.closable !== false ? 'has-close' : ''}" data-dynamic-message-root data-motion-phase="hidden" role="status" aria-live="polite" aria-hidden="true" style="--pui-dynamic-message-duration:${props.reduceMotion ? 1 : 500}ms;--pui-dynamic-message-compact-duration:${props.reduceMotion ? 1 : 180}ms;--pui-dynamic-message-panel-duration:${props.reduceMotion ? 1 : 320}ms">
+        <i class="pui-dynamic-message-preview__accent"></i>
+        <span class="pui-dynamic-message-preview__indicator" data-dynamic-loading>${loadingComponent({ size: '32rpx', inheritColor: true, reduceMotion: !!props.reduceMotion })}</span>
+        <span class="pui-dynamic-message-preview__indicator" data-dynamic-icon>${iconComponent(props.icon || 'info-circle', { size: 'small', pxSize: 16 })}</span>
+        <span class="pui-dynamic-message-preview__content"><strong data-dynamic-title>${escapeHtml(props.title || '组件通知')}</strong><span data-dynamic-message>${escapeHtml(props.message || '实时状态会在同一个通知中原位更新。')}</span></span>
+        ${buttonSample({ customClass: 'pui-dynamic-message-preview__action', variant: 'text', surface: 'transparent', size: 'extra-small', content: action || '查看', ariaLabel: action || '查看通知', demoAction: 'dynamic-action', customStyle: '--pui-button-tone:#fafafa;' })}
+        ${iconButtonSample({ customClass: 'pui-dynamic-message-preview__close', variant: 'ghost', size: 'extra-small', shape: 'circle', icon: 'close', ariaLabel: '关闭通知', demoAction: 'dynamic-close', customStyle: '--pui-button-tone:#fafafa;' })}
+      </article>
+    </div>
+    <div class="pui-dynamic-message-showcase__feed" aria-label="通知下方仍可滚动的页面内容">
+      ${Array.from({ length: 9 }, (_, index) => cellSample({ title: `发布检查 ${index + 1}`, description: ['组件源码与合同', 'H5 真实镜像', '小程序独立页面'][index % 3], value: index < 3 ? '进行中' : '待检查', icon: ['component', 'browser', 'phone'][index % 3] })).join('')}
+    </div>
+    <div class="pui-dynamic-message-showcase__triggers">
+      ${buttonSample({ theme: 'primary', size: 'small', content: '开始生成', icon: 'progress', demoAction: 'dynamic-show' })}
+      ${buttonSample({ variant: 'outline', size: 'small', content: '更新进度', icon: 'activity', demoAction: 'dynamic-update' })}
+      ${buttonSample({ variant: 'outline', size: 'small', content: '成功', icon: 'check-circle', demoAction: 'dynamic-success' })}
+      ${buttonSample({ theme: 'danger', variant: 'outline', size: 'small', content: '失败', icon: 'error-circle', demoAction: 'dynamic-error' })}
+      ${buttonSample({ variant: 'outline', size: 'small', content: '加入队列', icon: 'bell', demoAction: 'dynamic-queue' })}
+    </div>
+  </section>`;
+}
+
+function dynamicMessageRequestFromProps(props, overrides = {}) {
+  return {
+    key: overrides.key || 'build',
+    theme: dynamicMessageTheme(overrides.theme || props.theme),
+    title: String(overrides.title ?? props.title ?? '组件通知') || '组件通知',
+    message: String(overrides.message ?? props.message ?? '实时状态会在同一个通知中原位更新。') || '实时状态会在同一个通知中原位更新。',
+    icon: String(overrides.icon ?? props.icon ?? ''),
+    actionText: String(overrides.actionText ?? props.actionText ?? ''),
+    closable: (overrides.closable ?? props.closable) !== false,
+    duration: Math.max(0, Math.min(60000, Math.round(Number(overrides.duration ?? (overrides.theme === 'loading' ? 0 : props.duration)) || 0))),
+  };
+}
+
+function bindDynamicMessagePreviewRuntime(props) {
+  const root = document.querySelector('#previewStage [data-dynamic-message-root]');
+  if (!root) return;
+  const showcase = root.closest('[data-dynamic-message-showcase]');
+  if (!showcase) return;
+  state.previewDynamicMessageAbort?.abort();
+  const controller = new AbortController();
+  state.previewDynamicMessageAbort = controller;
+  const { signal } = controller;
+  const demo = getDemoState('dynamic-message');
+  demo.dynamicQueue = demo.dynamicQueue || [];
+  const motion = props.reduceMotion ? 1 : 500;
+  const compactMotion = props.reduceMotion ? 1 : 180;
+  const panelMotion = props.reduceMotion ? 1 : 320;
+  const iconForTheme = { info: 'info-circle', success: 'success-circle', warning: 'warning-triangle', error: 'error-circle' };
+  const phases = ['hidden', 'entering', 'compact', 'expanding', 'visible', 'collapsing', 'leave-compact'];
+  const clearMotionTimers = () => {
+    cancelAnimationFrame(state.previewDynamicMessageFrameTimer);
+    clearTimeout(state.previewDynamicMessageStageTimer);
+    clearTimeout(state.previewDynamicMessageCompleteTimer);
+    clearTimeout(state.previewDynamicMessageLeaveTimer);
+    state.previewDynamicMessageFrameTimer = null;
+    state.previewDynamicMessageStageTimer = null;
+    state.previewDynamicMessageCompleteTimer = null;
+    state.previewDynamicMessageLeaveTimer = null;
+  };
+  clearMotionTimers();
+  clearTimeout(state.previewDynamicMessageAutoTimer);
+  state.previewDynamicMessageAutoTimer = null;
+  const setPhase = (phase) => {
+    phases.forEach((item) => root.classList.remove(`is-phase-${item}`));
+    root.classList.add(`is-phase-${phase}`);
+    root.dataset.motionPhase = phase;
+    root.setAttribute('aria-hidden', String(phase === 'hidden' || phase === 'entering'));
+  };
+  const paint = (request) => {
+    demo.dynamicCurrent = request;
+    root.dataset.key = request.key;
+    ['loading', 'info', 'success', 'warning', 'error'].forEach((theme) => root.classList.remove(`is-${theme}`));
+    root.classList.toggle('has-action', !!request.actionText);
+    root.classList.toggle('has-close', !!request.closable);
+    root.classList.add(`is-${request.theme}`);
+    root.style.setProperty('--pui-dynamic-message-duration', `${motion}ms`);
+    root.style.setProperty('--pui-dynamic-message-compact-duration', `${compactMotion}ms`);
+    root.style.setProperty('--pui-dynamic-message-panel-duration', `${panelMotion}ms`);
+    root.querySelector('[data-dynamic-title]').textContent = request.title;
+    root.querySelector('[data-dynamic-message]').textContent = request.message;
+    root.querySelector('[data-dynamic-loading]').setAttribute('aria-hidden', String(request.theme !== 'loading' || !!request.icon));
+    const iconRoot = root.querySelector('[data-dynamic-icon]');
+    const icon = iconData.icons.find((item) => item.name === (request.icon || iconForTheme[request.theme] || 'bell'));
+    const glyph = iconRoot.querySelector('.pui-icon__glyph');
+    if (glyph) glyph.textContent = icon ? String.fromCodePoint(Number.parseInt(icon.codepoint, 16)) : '?';
+    iconRoot.setAttribute('aria-hidden', String(request.theme === 'loading' && !request.icon));
+    root.querySelector('.pui-dynamic-message-preview__action .pui-button-preview__content').textContent = request.actionText || '查看';
+    root.setAttribute('aria-label', request.title || request.message || '通知');
+    root.setAttribute('aria-live', request.theme === 'error' ? 'assertive' : 'polite');
+  };
+  const schedule = () => {
+    clearTimeout(state.previewDynamicMessageAutoTimer);
+    const current = demo.dynamicCurrent;
+    if (!current?.duration) return;
+    state.previewDynamicMessageAutoTimer = setTimeout(() => close('timeout'), current.duration);
+  };
+  const finishEnter = () => {
+    state.previewDynamicMessageCompleteTimer = null;
+    if (!demo.dynamicCurrent) return;
+    setPhase('visible');
+    schedule();
+  };
+  const expand = () => {
+    state.previewDynamicMessageStageTimer = null;
+    if (!demo.dynamicCurrent) return;
+    setPhase('expanding');
+    state.previewDynamicMessageCompleteTimer = setTimeout(finishEnter, panelMotion);
+  };
+  const startEnter = () => {
+    clearMotionTimers();
+    setPhase('entering');
+    state.previewDynamicMessageFrameTimer = requestAnimationFrame(() => {
+      state.previewDynamicMessageFrameTimer = null;
+      if (!demo.dynamicCurrent) return;
+      if (props.reduceMotion) {
+        setPhase('visible');
+        schedule();
+        return;
+      }
+      setPhase('compact');
+      state.previewDynamicMessageStageTimer = setTimeout(expand, compactMotion);
+    });
+  };
+  const show = (request) => {
+    if (demo.dynamicCurrent) {
+      if (demo.dynamicCurrent.key === request.key) {
+        paint(request);
+        if (root.dataset.motionPhase === 'collapsing' || root.dataset.motionPhase === 'leave-compact') {
+          clearMotionTimers();
+          setPhase(props.reduceMotion ? 'visible' : 'expanding');
+          if (props.reduceMotion) schedule();
+          else state.previewDynamicMessageCompleteTimer = setTimeout(finishEnter, panelMotion);
+        } else if (root.dataset.motionPhase === 'visible') {
+          schedule();
+        }
+      } else demo.dynamicQueue.push(request);
+      return;
+    }
+    paint(request);
+    startEnter();
+  };
+  const finishClose = () => {
+    state.previewDynamicMessageLeaveTimer = null;
+    setPhase('hidden');
+    demo.dynamicCurrent = null;
+    const next = demo.dynamicQueue.shift();
+    if (next) show(next);
+  };
+  const close = (reason) => {
+    if (!demo.dynamicCurrent) return;
+    clearTimeout(state.previewDynamicMessageAutoTimer);
+    state.previewDynamicMessageAutoTimer = null;
+    clearMotionTimers();
+    root.dataset.closeReason = reason;
+    if (props.reduceMotion) {
+      setPhase('leave-compact');
+      state.previewDynamicMessageLeaveTimer = setTimeout(finishClose, 1);
+      return;
+    }
+    setPhase('collapsing');
+    state.previewDynamicMessageStageTimer = setTimeout(() => {
+      state.previewDynamicMessageStageTimer = null;
+      if (!demo.dynamicCurrent) return;
+      setPhase('leave-compact');
+      state.previewDynamicMessageLeaveTimer = setTimeout(finishClose, compactMotion);
+    }, panelMotion);
+  };
+  const previewStage = document.querySelector('#previewStage');
+  previewStage.addEventListener('click', (event) => {
+    const target = event.composedPath().find((node) => node instanceof HTMLElement && node.matches('[data-demo-action]'));
+    if (!target || !showcase.contains(target)) {
+      if (root.contains(event.target)) root.dataset.lastEvent = 'click';
+      return;
+    }
+    event.stopImmediatePropagation();
+    const action = target.dataset.demoAction;
+    if (action === 'dynamic-show') show(dynamicMessageRequestFromProps(props, { key: 'build', theme: 'loading', title: '正在生成组件', message: '分析源码并同步双端实现。', duration: 0 }));
+    if (action === 'dynamic-update') show(dynamicMessageRequestFromProps(props, { key: 'build', theme: 'info', title: '正在生成组件', message: 'H5 与小程序页面已完成 68%。', duration: 0 }));
+    if (action === 'dynamic-success') show(dynamicMessageRequestFromProps(props, { key: 'build', theme: 'success', title: '组件已生成', message: '合同测试通过，正在准备最终产物。' }));
+    if (action === 'dynamic-error') show(dynamicMessageRequestFromProps(props, { key: 'build', theme: 'error', title: '构建未通过', message: '请查看失败项并重试。', actionText: props.actionText || '查看' }));
+    if (action === 'dynamic-queue') show(dynamicMessageRequestFromProps(props, { key: `queue-${Date.now()}`, theme: 'warning', title: '等待发布', message: '上一条通知结束后按顺序展示。' }));
+    if (action === 'dynamic-close') close('manual');
+    if (action === 'dynamic-action') root.dataset.lastEvent = 'action';
+  }, { capture: true, signal });
+}
+
 function browserInputType(type) {
   if (type === 'safe-password' || type === 'password') return 'password';
   if (type === 'number' || type === 'digit') return 'number';
@@ -12913,17 +13453,23 @@ function inputPreviewMarkup(props, demo, options = {}) {
     ? `<span class="pui-input-preview__slot">${iconComponent('search', { size: 'small' })}</span>`
     : (props.prefixIcon ? iconComponent(props.prefixIcon, { size: 'small' }) : '');
   const suffix = props.suffix === 'slot'
-    ? `<span class="pui-input-preview__slot">${buttonSample({ variant: 'text', size: 'extra-small', content: '验证', ariaLabel: '验证当前输入' })}</span>`
+    ? `<span class="pui-input-preview__slot">${iconButtonSample({ icon: 'check', ariaLabel: '保存输入内容' })}</span>`
     : (props.suffix ? `<span class="pui-input-preview__suffix">${escapeHtml(props.suffix)}</span>` : '');
   const suffixIcon = props.suffixIcon === 'slot'
     ? `<span class="pui-input-preview__slot">${iconComponent('check-circle', { size: 'small' })}</span>`
     : (props.suffixIcon ? iconComponent(props.suffixIcon, { size: 'small' }) : '');
-  const clearButton = canClear ? buttonSample({
+  const clearButton = canClear ? `<span class="pui-input-preview__clear-host">${buttonSample({
     previewContract: true,
     customClass: 'pui-input-preview__clear',
     theme: 'default', variant: 'text', size: 'extra-small', shape: 'square', icon: 'close-circle', content: '',
     ariaLabel: `清空${semanticLabel}`, demoAction: current ? 'input-clear' : 'input-static-clear', reduceMotion: props.reduceMotion,
-  }) : '';
+  })}</span>` : '';
+  const loading = props.loading
+    ? `<span class="pui-input-preview__loading-host">${loadingComponent({ size: 'small', ariaLabel: `${semanticLabel}加载中`, reduceMotion: props.reduceMotion })}</span>`
+    : '';
+  const trailing = clearButton || loading || suffix || suffixIcon
+    ? `<span class="pui-input-preview__trailing">${clearButton}${loading}${suffix}${suffixIcon}</span>`
+    : '';
   const message = props.tips === 'slot'
     ? `${tagSample({ theme: snapshot.status === 'error' ? 'danger' : 'success', variant: 'outline', size: 'small', content: snapshot.status === 'error' ? '请检查' : '可用' })}`
     : escapeHtml(props.tips || (current ? (demo.inputEvent || '输入后触发 change。') : (props.clearable ? '输入后可一键清空。' : '')));
@@ -12943,7 +13489,7 @@ function inputPreviewMarkup(props, demo, options = {}) {
     <div class="pui-input-preview__control">
       ${prefix}${prefixIcon}
       <input name="${escapeHtml(props.name || '')}" type="${inputType}" value="${escapeHtml(value)}" placeholder="${escapeHtml(props.placeholder || '请输入')}"${maxLengthAttr}${!snapshot.interactive ? ' disabled' : ''}${props.readonly ? ' readonly' : ''}${props.focus && snapshot.interactive ? ' autofocus' : ''}${props.required ? ' required' : ''} aria-label="${escapeHtml(semanticLabel)}" aria-invalid="${snapshot.invalid}"${current ? ' data-demo-action="input-change"' : ''} />
-      ${clearButton}${props.loading ? loadingComponent({ size: 'small', ariaLabel: `${semanticLabel}加载中`, reduceMotion: props.reduceMotion }) : ''}${suffix}${suffixIcon}
+      ${trailing}
     </div>
     ${message || counter ? `<div class="pui-input-preview__feedback"><em>${message}</em>${counter}</div>` : ''}
     ${options.extra || ''}
@@ -12965,7 +13511,7 @@ function inputSample(props) {
     </div></article>
     <article class="pui-showcase-section"><h3>图标与清空</h3><div class="pui-input-showcase__stack">
       ${inputPreviewMarkup({ ...staticBase, defaultValue: 'PoemUI', clearable: true, prefixIcon: 'search', suffixIcon: 'check-circle' }, { ...staticDemo })}
-      ${inputPreviewMarkup({ ...staticBase, label: 'slot', prefix: 'slot', prefixIcon: 'slot', suffix: 'slot', tips: 'slot', status: 'success' }, { ...staticDemo })}
+      ${inputPreviewMarkup({ ...staticBase, defaultValue: 'PoemUI', label: 'slot', prefix: 'slot', prefixIcon: 'slot', suffix: 'slot', clearable: true, tips: 'slot', status: 'success' }, { ...staticDemo })}
       ${inputPreviewMarkup({ ...staticBase, defaultValue: 'poemui', prefix: 'npm', suffix: '.dev', clearable: true }, { ...staticDemo })}
     </div></article>
     <article class="pui-showcase-section"><h3>尺寸与类型</h3><div class="pui-input-showcase__stack">
@@ -14238,13 +14784,17 @@ function pickerH5Wheel(snapshot, props, interactive = true) {
 
 function pickerH5Panel(props, snapshot, interactive = true) {
   const actionPrefix = props.__actionPrefix || 'picker';
-  const cancelButton = buttonSample({ variant: props.usePopup === false ? 'text' : 'outline', size: props.usePopup === false ? 'small' : 'medium', block: props.usePopup !== false, content: props.cancelText || '取消', disabled: props.disabled || !interactive, demoAction: interactive ? `${actionPrefix}-cancel` : '', ariaLabel: '取消选择' });
-  const confirmButton = buttonSample({ theme: 'primary', variant: props.usePopup === false ? 'text' : 'base', size: props.usePopup === false ? 'small' : 'medium', block: props.usePopup !== false, content: props.confirmText || '确定', disabled: snapshot.blocked || !interactive, demoAction: interactive ? `${actionPrefix}-confirm` : '', ariaLabel: '确认选择' });
+  const pickerType = props.type === 'classic' ? 'classic' : 'default';
+  const popupMode = props.usePopup !== false;
+  const cancelButton = buttonSample({ variant: popupMode ? 'outline' : 'text', size: popupMode ? 'medium' : 'small', block: popupMode, content: props.cancelText || '取消', disabled: props.disabled || !interactive, demoAction: interactive ? `${actionPrefix}-cancel` : '', ariaLabel: '取消选择' });
+  const confirmButton = buttonSample({ theme: 'primary', variant: popupMode ? 'base' : 'text', size: popupMode ? 'medium' : 'small', block: popupMode, content: props.confirmText || '确定', disabled: snapshot.blocked || !interactive, demoAction: interactive ? `${actionPrefix}-confirm` : '', ariaLabel: '确认选择' });
+  const headerCancelButton = iconButtonSample({ theme: 'default', variant: 'base', shape: 'circle', size: 'small', icon: 'close', disabled: props.disabled || !interactive, demoAction: interactive ? `${actionPrefix}-cancel` : '', ariaLabel: '取消选择' });
+  const headerConfirmButton = iconButtonSample({ theme: 'primary', variant: 'base', shape: 'circle', size: 'small', icon: 'check', disabled: snapshot.blocked || !interactive, demoAction: interactive ? `${actionPrefix}-confirm` : '', ariaLabel: '确认选择' });
   const header = props.showHeader === false ? '' : props.usePopup === false
-    ? `<header class="pui-picker-h5__header pui-picker-h5__header--inline">${cancelButton}<strong>${escapeHtml(props.title || '选择项')}</strong>${confirmButton}</header>`
-    : `<header class="pui-picker-h5__header pui-picker-h5__header--popup"><span aria-hidden="true"></span><strong>${escapeHtml(props.title || '选择项')}</strong><span aria-hidden="true"></span></header>`;
-  const footer = props.showHeader === false || props.usePopup === false ? '' : `<footer class="pui-picker-h5__footer">${cancelButton}${confirmButton}</footer>`;
-  return `<div class="pui-picker-h5__panel is-${snapshot.stateType} ${props.readonly ? 'is-readonly' : ''} ${props.disabled ? 'is-disabled' : ''}" role="${props.usePopup === false ? 'group' : 'dialog'}" aria-modal="${props.usePopup !== false}" aria-label="${escapeHtml(props.ariaLabel || props.title || '滚轮选择器')}" aria-disabled="${!!props.disabled}" aria-readonly="${!!props.readonly}">${header}${pickerH5Wheel(snapshot, props, interactive)}${footer}</div>`;
+    ? `<header class="pui-picker-h5__header pui-picker-h5__header--inline ${pickerType === 'default' ? 'is-header-actions' : ''}">${pickerType === 'default' ? headerConfirmButton : headerCancelButton}<strong>${escapeHtml(props.title || '选择项')}</strong>${pickerType === 'default' ? headerCancelButton : headerConfirmButton}</header>`
+    : `<header class="pui-picker-h5__header pui-picker-h5__header--popup ${pickerType === 'default' ? 'is-header-actions' : ''}">${pickerType === 'default' ? headerConfirmButton : '<span aria-hidden="true"></span>'}<strong>${escapeHtml(props.title || '选择项')}</strong>${pickerType === 'default' ? headerCancelButton : '<span aria-hidden="true"></span>'}</header>`;
+  const footer = props.showHeader === false || props.usePopup === false || pickerType !== 'classic' ? '' : `<footer class="pui-picker-h5__footer">${cancelButton}${confirmButton}</footer>`;
+  return `<div class="pui-picker-h5__panel pui-picker-h5__panel--${pickerType} is-${snapshot.stateType} ${props.readonly ? 'is-readonly' : ''} ${props.disabled ? 'is-disabled' : ''}" role="${props.usePopup === false ? 'group' : 'dialog'}" aria-modal="${props.usePopup !== false}" aria-label="${escapeHtml(props.ariaLabel || props.title || '滚轮选择器')}" aria-disabled="${!!props.disabled}" aria-readonly="${!!props.readonly}">${header}${pickerH5Wheel(snapshot, props, interactive)}${footer}</div>`;
 }
 
 function pickerH5SetVisible(props, demo, next, source) {
@@ -14554,6 +15104,7 @@ function dateTimePickerH5Model(props, demo) {
     visible,
     defaultVisible: !!props.defaultVisible,
     title: props.title,
+    type: props.type === 'classic' ? 'classic' : 'default',
     cancelText: props.cancelText,
     confirmText: props.confirmText,
     showHeader: props.showHeader,
@@ -16113,14 +16664,16 @@ function popupSample(props, demo) {
       <div class="pui-popup-preview__header-side pui-popup-preview__header-side--right">${props.closeBtn ? buttonSample({ theme: 'default', variant: 'base', shape: 'circle', size: 'small', icon: 'close', iconOnly: true, content: '', ariaLabel: '关闭弹出层', demoAction: 'popup-close' }) : ''}</div>
     </div>`;
   const footer = props.showFooter === false ? '' : `<div class="pui-popup-preview__footer">${buttonSample({ theme: 'primary', block: true, content: '分配执行动作', ariaLabel: '请求分配执行动作', demoAction: 'popup-footer-action' })}</div>`;
+  const surfaceTop = `<div class="pui-popup-preview__surface-top" data-popup-surface-top aria-hidden="true">${topLoadingPreviewMarkup({ state: 'idle', ariaLabel: '弹出层顶部加载' })}</div>`;
   return `<section class="demo-section pui-popup-showcase pui-popup-showcase--open" style="--pui-popup-preview-duration:${current.duration}ms;--pui-popup-preview-z-index:${zIndex}">
     ${triggerMarkup}
     <div class="overlay-box pui-popup-preview-host overlay-box--${placement} ${card ? 'pui-popup-preview-host--card' : 'pui-popup-preview-host--edge'} ${props.showOverlay === false ? 'overlay-box--clear' : ''} ${current.active ? 'is-active' : ''} is-${current.phase}" data-popup-preview-host data-popup-phase="${current.phase}" aria-hidden="${!current.active}">
       ${props.showOverlay === false ? '' : `<button class="preview-scrim pui-popup-preview__mask ${props.blurOverlay ? 'pui-popup-preview__mask--blurred' : ''}" type="button" style="background:${overlayColor}" data-popup-prevent-scroll="${props.preventScrollThrough !== false}" data-demo-action="popup-overlay" aria-label="点击遮罩"></button>`}
       <div class="overlay-panel pui-popup-preview pui-popup-preview--${placement} ${card ? 'pui-popup-preview--card' : 'pui-popup-preview--edge'} ${props.usingCustomNavbar ? 'pui-popup-preview--custom-navbar' : ''}" role="dialog" aria-modal="${props.showOverlay !== false}" aria-hidden="${!current.active}" aria-label="${escapeHtml(props.ariaLabel || props.title || '弹出层')}" style="z-index:${zIndex}">
         <div class="pui-popup-preview__surface">
+        ${surfaceTop}
         ${header}
-        <div class="pui-popup-preview__scroll">${content}</div>
+        <div class="pui-popup-preview__scroll ${props.contentScrollable === false ? 'is-static' : ''}">${content}</div>
         ${footer}
         </div>
       </div>
@@ -18988,6 +19541,8 @@ function scrollAreaPreviewHeight(value) {
   if (rpx && Number(rpx[1]) > 0) return `${Math.max(1, Math.round(Number(rpx[1]) / 2))}px`;
   const px = raw.match(/^(\d+(?:\.\d+)?)px$/);
   if (px && Number(px[1]) > 0) return `${Math.max(1, Math.round(Number(px[1])))}px`;
+  const vh = raw.match(/^(\d+(?:\.\d+)?)vh$/);
+  if (vh && Number(vh[1]) > 0) return `${Number(vh[1])}vh`;
   return '160px';
 }
 
@@ -19219,7 +19774,7 @@ function renderIconLibrary(target, props = getProps('icon')) {
         <div>
           <p>PoemUI Roundline</p>
           <h2>${iconData.icons.length} 个高辨识度圆线图标</h2>
-          <span>基于 Lucide 成熟构形，统一为 2.15px 圆线权重与 PoemUI 光学细节；H5 与小程序都使用同一份本地 Icon Font。</span>
+          <span>218 个图标基于 Lucide 成熟构形，另含登记的 PoemCoder 自有字标；H5 与小程序都使用同一份本地 Icon Font。</span>
         </div>
         <div class="icon-library__stats">
           <strong>${iconData.icons.length}<span>icons</span></strong>
@@ -19244,9 +19799,9 @@ function renderIconLibrary(target, props = getProps('icon')) {
         </div>
       </section>
       <section class="icon-demo-section" aria-labelledby="icon-library-title">
-        <header class="icon-demo-section__head"><h3 id="icon-library-title">图标资源</h3><p>按名称、分类或 Lucide 来源筛选；点击卡片会回写 name Prop，并复制对应图标名。</p></header>
+        <header class="icon-demo-section__head"><h3 id="icon-library-title">图标资源</h3><p>按名称、分类或登记来源筛选；点击卡片会回写 name Prop，并复制对应图标名。</p></header>
         <div class="icon-toolbar">
-          <div class="icon-search-mount">${inputControlSample({ id: 'iconSearch', customClass: 'icon-search-control', type: 'search', size: 'small', prefixIcon: 'search', placeholder: '搜索 PoemUI 名、分类或 Lucide 来源', value: state.iconQuery, autocomplete: 'off', ariaLabel: '搜索 PoemUI 图标' })}</div>
+          <div class="icon-search-mount">${inputControlSample({ id: 'iconSearch', customClass: 'icon-search-control', type: 'search', size: 'small', prefixIcon: 'search', placeholder: '搜索 PoemUI 名、分类或登记来源', value: state.iconQuery, autocomplete: 'off', ariaLabel: '搜索 PoemUI 图标' })}</div>
           <div class="icon-category-list">
             ${categoryButton('all', '全部', iconData.icons.length)}
             ${categories.map((category) => categoryButton(category.key, category.key, category.count)).join('')}
@@ -19975,6 +20530,31 @@ document.querySelector('#preview').addEventListener('click', async (event) => {
   }, 1200));
 });
 
+document.querySelector('#preview').addEventListener('click', async (event) => {
+  const copyButton = event.target.closest('[data-demo-action="copy-guide-code"]');
+  if (!copyButton || state.current !== 'getting-started') return;
+  const key = copyButton.dataset.guideCopyKey || '';
+  const label = copyButton.dataset.guideCopyLabel || '代码';
+  const source = guideCopySources[key] || '';
+  const copied = !!source && await writePreviewClipboard(source);
+  const icon = copyButton.querySelector('.pui-icon');
+  if (icon) icon.outerHTML = iconComponent(copied ? 'check' : 'error-circle', { size: 'small', pxSize: 11 });
+  copyButton.dataset.copyState = copied ? 'success' : 'error';
+  copyButton.setAttribute('aria-label', copied ? `${label}已复制` : `${label}复制失败`);
+  copyButton.setAttribute('title', copied ? '已复制' : '复制失败');
+  const liveRegion = document.querySelector('#previewCopyStatus');
+  if (liveRegion) liveRegion.textContent = copied ? `${label}已复制` : `${label}复制失败，请稍后重试`;
+  clearTimeout(Number(copyButton.dataset.copyResetTimer) || 0);
+  copyButton.dataset.copyResetTimer = String(setTimeout(() => {
+    if (!copyButton.isConnected) return;
+    const currentIcon = copyButton.querySelector('.pui-icon');
+    if (currentIcon) currentIcon.outerHTML = iconComponent('copy', { size: 'small', pxSize: 11 });
+    copyButton.dataset.copyState = 'idle';
+    copyButton.setAttribute('aria-label', `复制${label}`);
+    copyButton.setAttribute('title', `复制${label}`);
+  }, 1200));
+});
+
 document.querySelector('#previewStage').addEventListener('click', async (event) => {
   const copyButton = event.target.closest('#copyCode');
   if (!copyButton) return;
@@ -20564,6 +21144,7 @@ document.querySelector('#previewStage').addEventListener('click', async (event) 
   const type = action.dataset.demoAction;
   const index = Number(action.dataset.index || 0);
   const value = action.dataset.value;
+  if (type === 'copy-guide-code') return;
   if (previewIdFor(state.current) === 'picker' && type === 'picker-open') {
     if (!pickerH5SetVisible(props, demo, true, 'trigger')) return;
     demo.pickerEvent = `visible-change → open：source=trigger${props.visible !== null && props.visible !== undefined ? ' · 父级已回写' : ''}`;

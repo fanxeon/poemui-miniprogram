@@ -1,6 +1,6 @@
 # PoemUI 外观资格矩阵
 
-本文是 `visualConfig` 外观开关在当前真实小程序组件树与 H5 镜像中的共享资格合同。70 个根组件来自 `miniprogram/**/*.wxml` 的真实 `<pui-*>` 标签；`Input` 现在既有独立页根，也继续作为 `Search`、`Combobox` 的嵌入式字段，因此保留组合规则约束唯一字段 Surface。
+本文是 `visualConfig` 外观开关在当前真实小程序组件树与 H5 镜像中的共享资格合同。74 个根组件来自 `miniprogram/**/*.wxml` 的真实 `<pui-*>` 标签；`Input` 现在既有独立页根，也继续作为 `Search`、`Combobox` 的嵌入式字段，因此保留组合规则约束唯一字段 Surface。
 
 ## 开关语义
 
@@ -14,7 +14,7 @@
 | `equalSpacing` | 只作用于具备分区职责的 Surface 的 inset、直接结构块 gap 和 Header/Content/Footer gap；不改变连续行、控件内部微间距和页面布局。 |
 | `gradient` | 仅属于页面画布、Stage 和 PreviewDevice 背景；矩阵中的组件一律为 `false`。 |
 
-## 70 个真实根组件
+## 74 个真实根组件
 
 `阴影资格` 的值为 `none / card / floating / directional / edge-top / edge-bottom`。`边框`、`毛玻璃`、`大圆角`、`等距` 是该组件是否有资格消费对应开关，不表示开关默认值。
 
@@ -31,6 +31,7 @@
 | ConfigProvider | Token 边界 | none | — | — | — | — | — |
 | Divider | 层级标记 | none | — | — | — | — | — |
 | DropdownMenu | 锚定 Surface | floating | ✓ | ✓ | ✓ | ✓ | — |
+| DynamicMessage | 脱离 Surface | floating | ✓ | ✓ | ✓ | — | — |
 | Empty | 内容状态 | none | — | — | ✓ | — | — |
 | Icon | 展示叶子 | none | — | — | — | — | — |
 | Image | 媒体叶子 | none | ✓ | — | ✓ | — | — |
@@ -51,6 +52,7 @@
 | Tabs | 导航控件 | none | ✓ | — | ✓ | — | — |
 | Tag | 展示叶子 | none | ✓ | ✓ | ✓ | — | — |
 | Toast | 脱离 Surface | floating | ✓ | ✓ | ✓ | — | — |
+| TopLoading | 内容状态 | none | — | — | — | — | — |
 
 下列 33 项由全量小程序迁移新增并已写入同一可执行矩阵。它们的逐项开关资格以 `scripts/appearance-contract-matrix.js` 为真源；此处记录角色分组，避免页面层以全局阴影或毛玻璃装饰布局根、条目和叶子。
 

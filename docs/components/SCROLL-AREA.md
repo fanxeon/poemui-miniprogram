@@ -36,7 +36,7 @@
 ## 4. Token、间距与排版
 
 - 透明定位根仅有定位、盒模型、宽度和由 `height` 得到的高度，不拥有背景、边框、圆角、阴影、毛玻璃、内距或私有动画。
-- 高度由 `height` 使用正数、rpx 或 px 表达；`0`、负数、空值与非数字统一回退默认 `320rpx`，H5 按 `1px≈2rpx` 镜像裸数/rpx，并对应回退 `160px`。
+- 高度由 `height` 使用正数、rpx、px 或 vh 表达；`0`、负数、空值与非数字统一回退默认 `320rpx`，H5 按 `1px≈2rpx` 镜像裸数/rpx、原样保留 px/vh，并对应回退 `160px`。`vh` 用于 Popup 等有界视口组合，不改变 ScrollArea 必须拥有明确高度的合同。
 - `gradientOverlaySize` 只允许 `sm`、`md`、`lg`：`sm` 使用 `--pui-scroll-area-gradient-overlay-size-sm`（`40rpx / 20px`），`md` 使用 `--pui-scroll-area-gradient-overlay-size-md`（`64rpx / 32px`，既有默认），`lg` 使用 `--pui-scroll-area-gradient-overlay-size-lg`（`88rpx / 44px`）。非法值统一回退 `md`；顶/底不额外消耗 Slot 空间、padding 或 margin。
 - `contentPaddingBottom` 默认 `10vh`，统一保证最后一项能够继续滚到遮罩与屏幕底部之上；接受非负裸数（按 rpx）、`rpx`、`px` 或 `vh`，`0` 可显式关闭，负数、CSS 表达式和非法值回退 `10vh`。该 padding 只落在透明内容轨，不能让根或视口产生第二层 Surface。
 - `gradientOverlayColor` 只接受 `#hex`、`rgb()`、`rgba()` 或 `var(--token)`。空值与非法值回退 `--pui-scroll-area-gradient-overlay-color-context`；默认值为 `--pui-bg-container`，页面壳可显式继承自己的画布 Token，避免与无边 Navbar 形成色层割裂。合法自定义颜色同时作用于两个渐变方向。
@@ -81,6 +81,7 @@
 - H5 与小程序端必须共同拒绝零或负高度，不能将 `0` 算成可见但不可用的 `1px/1rpx` 滚动区。
 - 官网概览为避免 622px PreviewDevice 中只出现一个 160px 小窗，明确以 `height="1128rpx"`（H5 `564px`）和 18 项真实 PUI Cell Slot 内容填满 `shadow-safe` 的可用预览高度并演示滚动。该值会出现在当前效果 WXML 中，且不改变组件公开默认值 `320rpx`。重置恢复该演示值，属性/API 仍显示真实默认值。
 - 小程序独立页继续由被测 ScrollArea 承担唯一滚动上下文；Slot 顶部组合 PUI Cell + Switch 控制 `gradientOverlay`，并用两个等分 PUI Button 在 `sm / md / lg` 三档间调整 `gradientOverlaySize`。这些控件只改公开视觉 Props，不创建第二滚动区、不改变当前位置，也不扩张组件事件或方法。
+- Popup 等父组件若默认拥有同方向滚动，必须先通过父组件公开能力关闭父级滚动，再让一个 ScrollArea 成为唯一滚动所有者。更新公告是 reference consumer：Popup `contentScrollable=false`，内部 ScrollArea `height=78vh`，固定 Footer 不进入滚动区。
 - ScrollArea 使用 `shadow-safe` PreviewDevice 父布局；根透明，PUI Cell 的 Surface 留给真实 Slot 子组件，不得通过页面私有 margin 修复阴影裁切。
 
 ## 10. 响应式、主题与视觉配置

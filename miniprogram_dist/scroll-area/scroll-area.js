@@ -4,7 +4,7 @@ function normalizeHeight(value) {
   var raw = String(value === undefined || value === null ? '' : value).trim();
   var unitless = raw.match(/^(\d+(?:\.\d+)?)$/);
   if (unitless && Number(unitless[1]) > 0) return Math.max(1, Math.round(Number(unitless[1]))) + 'rpx';
-  var dimension = raw.match(/^(\d+(?:\.\d+)?)(rpx|px)$/);
+  var dimension = raw.match(/^(\d+(?:\.\d+)?)(rpx|px|vh)$/);
   if (dimension && Number(dimension[1]) > 0) return raw;
   return '320rpx';
 }

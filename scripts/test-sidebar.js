@@ -162,6 +162,8 @@ assert(previewStyles.includes('grid-template-columns: minmax(0, var(--pui-sideba
 assert(previewStyles.includes('justify-content: flex-start;'));
 assert(previewStyles.includes('min-height: 52px;'));
 assert(previewStyles.includes('font-size: var(--pui-font-size-body-medium);'));
+assert(wxss.includes('.pui-sidebar--card .pui-sidebar__item { min-height: 80rpx; margin: var(--pui-space-step-1) 0; border-radius: var(--pui-radius-medium); }'), '小程序 card Sidebar 的独立导航项必须使用 medium 语义圆角');
+assert(previewStyles.includes('.pui-sidebar-preview.is-card .pui-sidebar-preview__item { min-height: 40px; margin: var(--pui-preview-space-step-1) 0; border-radius: var(--pui-preview-radius-medium); }'), 'H5 card Sidebar 必须镜像小程序 medium 语义圆角，不能写死旧 step-7');
 assert(!previewStyles.includes('.pui-sidebar-preview__content'));
 
 assert(preview.includes("width: { type: 'range', value: 360, min: 160, max: 480, step: 8 }") && preview.includes("height: { type: 'range', value: 1200, min: 240, max: 1200, step: 20 }"), 'Sidebar H5 base sample uses a readable full-height demonstration size');

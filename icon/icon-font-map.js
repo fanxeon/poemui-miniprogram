@@ -119,6 +119,7 @@ module.exports = {
   "star": "\uE072",
   "bookmark": "\uE073",
   "crown": "\uE074",
+  "premium": "\uE0DC",
   "cart": "\uE075",
   "bag": "\uE076",
   "wallet": "\uE077",
@@ -217,5 +218,6 @@ module.exports = {
   "wave": "\uE0CE",
   "moon": "\uE0CF",
   "sun": "\uE0D0",
-  "focus": "\uE0D1"
+  "focus": "\uE0D1",
+  "poemcoder-mark": "\uE0DB"
 };

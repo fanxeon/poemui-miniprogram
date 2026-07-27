@@ -199,6 +199,7 @@ Component({
     steps: { type: Object, value: {} },
     showWeek: { type: Boolean, value: false },
     title: { type: String, value: '' },
+    type: { type: String, value: 'default' },
     cancelText: { type: String, value: '取消' },
     confirmText: { type: String, value: '确定' },
     showHeader: { type: Boolean, value: true },
@@ -217,7 +218,7 @@ Component({
     semanticLabel: '日期时间选择器',
   },
   observers: {
-    'value,defaultValue,visible,defaultVisible,mode,start,end,format,steps,showWeek,title,usePopup,disabled,readonly,ariaLabel,reduceMotion,colorScheme': function observeAll() { this.syncState(); },
+    'value,defaultValue,visible,defaultVisible,mode,start,end,format,steps,showWeek,title,type,usePopup,disabled,readonly,ariaLabel,reduceMotion,colorScheme': function observeAll() { this.syncState(); },
   },
   lifetimes: {
     attached: function attached() {

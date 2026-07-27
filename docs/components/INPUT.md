@@ -23,10 +23,11 @@ Input(role=group)
 │  ├─ prefix-icon Slot / PUI Icon
 │  ├─ prefix Slot / text
 │  ├─ native input
-│  ├─ PUI Button(clear)
-│  ├─ PUI Loading
-│  ├─ suffix Slot / text
-│  └─ suffix-icon Slot / PUI Icon
+│  └─ Trailing
+│     ├─ PUI Button(clear)
+│     ├─ PUI Loading
+│     ├─ suffix Slot / text / PUI action
+│     └─ suffix-icon Slot / PUI Icon
 ├─ tips Slot / tips
 └─ extra Slot
 ```
@@ -34,8 +35,9 @@ Input(role=group)
 - Input 只能拥有一个可见 Field Surface；父级 Form、Field、Search 等不得再叠第二层边框、阴影或毛玻璃。
 - 原生 `<input>` 的文本色与光标色必须直接消费 `--pui-text-primary`，placeholder 通过独立 `placeholder-class` 消费 `--pui-text-placeholder`。不能依赖 `color: inherit` 穿过小程序自定义组件和原生控件边界；颜色静态存在也不能替代实际输入像素验收。
 - Clear 固定复用 PUI Button + PUI Icon，Loading 固定复用 PUI Loading；禁止 raw button、字符图标或私有 Spinner。
-- 原生 input 必须作为可收缩的主轴剩余区，Clear 是不收缩的尾部操作；没有 suffix/suffix-icon 时，Clear 必须贴齐 Field 最右侧，不能因前缀或文字长度滞留在中间。
+- 原生 input 必须作为可收缩的主轴剩余区；Clear、Loading、suffix 与 suffix-icon 进入同一个不越界的 Trailing 轨，Trailing 以 `margin-left:auto` 贴齐 Field 最右侧。Clear 与 suffix 操作同时存在时仍按该顺序并排，不得因前缀、文字长度或消费者按钮挤出 Field。
 - `label/prefix/prefixIcon/suffix/suffixIcon/tips="slot"` 是具名 Slot 的显式激活合同；extra Slot 直接投影，不增加开关 Prop。
+- `suffix="slot"` 同时是 Input 的可选右侧操作 API。消费者可以放入一个紧凑 PUI IconButton，例如保存、验证或复制；Input 不代理该按钮事件、不推断业务成功，也不新增与 suffix 重叠的 `right/action/showAction` Prop。
 
 ## 3. 值与长度
 
@@ -73,11 +75,13 @@ Input(role=group)
 - 基础 WXML 只输出非默认 Props，默认页面为 `<pui-input placeholder="请输入内容" />`，零 bind、零方法诊断卡、零工程状态面板。
 - Props 调整必须真实作用于当前 HTML input；受控模式由站点父级回写，非受控模式保留独立 runtime，退控继续最后一次受控值。
 - 390px 下标签、提示、Icon、清空 Button、Loading、Slot 和计数均可换行或收缩，不产生页面级横向溢出。
+- H5 的 `inputControlSample` 与标准 Input 概览都必须输出同名 Trailing 轨，并至少覆盖一次 Clear 与 suffix IconButton 同时存在的真实组合。
 - H5 原生 input 同样直接消费 `--text`；两端都必须以实际输入值的计算色验证深浅色，不得只检查 placeholder。
 
 ## 8. TDesign Mini Program 1.15.3 对照决定
 
 - 固定参考 TDesign Mini Program 1.15.3 Input 的 props、type、WXML、JS 和官方分区演示。
+- 2026-07-27 复核官方文档与固定安装包 `tdesign-miniprogram@1.15.3`：TDesign 同样在 Clear 之后投影 suffix Slot，官方示例用其承载“发送验证码”。PoemUI 因此复用既有 suffix API，不增加重复 right/action Prop，只用共享 Trailing 轨收敛多尾部操作几何。
 - 对齐 `value/defaultValue/name/label/placeholder/type/maxlength/maxcharacter/size/align/bordered/clearable/prefix/prefixIcon/suffix/suffixIcon/disabled/readonly/focus/confirmType/status/tips` 主干，以及 `change/clear/focus/blur/enter` 事件语义。
 - 保留 PoemUI 的 required、常用微信键盘参数、ARIA、loading、reduceMotion 与 extra Slot，因为这些已有真实组合与门禁闭环。
 - 不照搬全部平台长尾参数，不以 Props 数量接近为目标；不恢复重复 password/error/invalid、自定义 Slot 开关、私有 duration/easing 或重复 input 事件。
@@ -93,7 +97,7 @@ Input(role=group)
 
 1. 同步审计 `input/` 四件套、内部 PUI 依赖、npm 入口、metadata、H5、Props/WXML/API、示例、`miniprogram_dist` 和安装产物。
 2. 运行 `scripts/test-input.js`、语义/设计/组合/API 可读性合同，以及 `site:build/check/pack:check`。
-3. 浏览器真实验证受控/非受控、0/false/空字符串、maxlength/maxcharacter、清空顺序、焦点/Enter、disabled/readonly/loading、四类 status、Slots、180ms/1ms、390px、主题和全部外观。
+3. 浏览器真实验证受控/非受控、0/false/空字符串、maxlength/maxcharacter、清空顺序、焦点/Enter、disabled/readonly/loading、四类 status、Slots、500ms/1ms、390px、主题和全部外观。
 4. 更新 Feedback Ledger、TDesign 清单、进度、API/H5 兼容文档和真机风险。
 
 任何不能满足本文的实现必须在 Ledger 中说明原因，不得静默绕过。

@@ -1,0 +1,144 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0440",
+  "title": "我的页缺少更新公告且共享云服务边界未建立",
+  "scope": "component",
+  "components": ["miniprogram", "cell", "popup", "tag", "icon", "top-loading", "button"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "在我的页增加更新公告 Cell，点击后使用 Popup 陈列真实更新内容；接入共享环境 poemcoder-1gkbkid139b08f45 的 pui_updatelog，并突出版本、日期和组件改动。",
+  "environment": {
+    "surfaces": ["miniprogram me page", "update announcement popup"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/me/index。",
+    "账户与服务列表原本没有更新公告入口，也没有公告内容数据源。",
+    "初始仓库没有共享环境 ID、公告集合读取或远程缓存，不能把本地内容宣称为共享云端返回。"
+  ],
+  "expected": "新增真实可点击 Cell，受控 PUI Popup 以 Header/Content/Footer 陈列版本、日期和按组件分组的改动；通过资源 AppID 和共享环境读取 pui_updatelog，失败时回退但保留来源。",
+  "actual": "页面没有公告能力，共享云服务的环境共享、跨主体接入和权限分区也没有文档合同。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户要求新增更新公告 Popup，并询问能否和其他小程序共用云服务。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "更新公告 Cell 打开受控 PUI Popup，Popup 组合 Tag、Icon、受控 TopLoading 与全宽 Footer Button，并按组件呈现改动。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/services/update-announcements.js",
+      "note": "独立 Shared Cloud 实例连接资源 AppID wxa1b9a4d6549c6cd1 和环境 poemcoder-1gkbkid139b08f45，读取 pui_updatelog 并提供缓存和包内回退。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md",
+      "note": "记录同主体环境共享和跨主体 HTTP 服务的身份、权限与部署边界。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "锁定资源 AppID、环境、pui_ 集合名、Cloud.init、published 查询、缓存、组件化排版、Popup 三段结构和关闭链路。"
+    },
+    {
+      "kind": "browser",
+      "ref": "/tmp/poemui-me-update-cloud-popup-390-final.png",
+      "note": "微信开发者工具 390x844 运行态显示版本、日期、五组组件标签、长说明、胶囊安全区和固定全宽 Footer。"
+    },
+    {
+      "kind": "file",
+      "ref": ".audit/cloud/pui-updatelog-v0.1.0-readback.json",
+      "note": "共享生产环境 pui_updatelog 写后回读到唯一 _id pui-v0-1-0-20260727 及完整 published 数据。"
+    },
+    {
+      "kind": "browser",
+      "ref": "wechat devtools pages/me/index runtime announcementSource=cloud",
+      "note": "PoemUI 调用方使用 Shared Cloud 真实读到同一公告，客户端权限与缓存链路已生效。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://cloud.tencent.com/document/product/876/57380",
+      "note": "腾讯云官方 FAQ 说明同主体小程序或公众号可使用环境共享。"
+    }
+  ],
+  "rootCause": "我的页由空白目的地刚迁为账户页，尚未建立应用级公告入口；共享环境随后才由用户授权并创建 pui_updatelog，客户端仍缺少独立 Shared Cloud、缓存和组件化公告 Schema。",
+  "decision": {
+    "outcome": "新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Popup 使用唯一滚动 Content，以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。后续 PUI 云集合统一使用 pui_ 前缀。",
+    "rationale": "共享环境和集合已经由用户确认，直接使用微信环境共享可以复用现有生产资源；独立 Cloud 实例避免污染默认环境，稳定 Schema 与缓存保证弱网可读，来源字段防止 fallback 被误报为云端成功。",
+    "alternativesRejected": [
+      "在页面直接手写公告浮层：绕过 Popup 三段结构、遮罩和外观合同。",
+      "继续只使用包内公告：无法满足已确认的共享云数据更新需求。",
+      "让多个小程序直接访问可写数据库或共享管理员密钥：无法隔离应用和用户权限。",
+      "仅凭客户端传入 appId/openid 鉴权：客户端字段可伪造，不能作为服务端信任根。",
+      "把应用公告复制成 H5 标准组件页：公告不是 npm 组件，H5 只同步其消费的组件合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/common/services/update-announcements.js",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.wxss",
+      "miniprogram/pages/me/index.json",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md",
+      "docs/COMPONENT_RULES_INDEX.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md"
+    ],
+    "dependencies": ["PUI Cell", "PUI Popup", "PUI Tag", "PUI Icon", "PUI TopLoading", "PUI Button", "WeChat Shared Cloud"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-top-loading.js",
+      "scripts/test-popup.js",
+      "scripts/test-cell.js",
+      "scripts/test-tag.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node scripts/test-popup.js：通过",
+      "node scripts/test-cell.js：通过",
+      "node scripts/test-tag.js：通过",
+      "cloud_db_write_doc：insertedCount=1，insertedIds=[pui-v0-1-0-20260727]",
+      "cloud_db_read_doc：写后回读唯一文档成功",
+      "微信开发者工具 pages/me/index：announcementSource=cloud、announcementSyncError 为空，版本与五组 highlights 来自共享集合"
+    ],
+    "browser": [
+      "/tmp/poemui-me-update-cloud-popup-390-final.png",
+      "2026-07-27 390px 热重载实测公告 TopLoading loading 根为 336x2px、offset=(27,178)，双不确定进度轨真实挂载；恢复真实请求后 announcementSource=cloud、announcementLoadingState=success、announcementSyncError 为空。截图 /tmp/poemui-me-announcement-top-loading-390.png。"
+    ],
+    "deviceRisks": [
+      "390x844 微信模拟器已验证 Popup 视觉层级；长公告真实滚动边界和 Footer 点击仍需回归。",
+      "深浅色、边框、阴影、毛玻璃、大圆角、等距组合及 iOS/Android 真机仍待验证。",
+      "开发者工具已验证调用方能读 published 文档；客户端禁止读取草稿、写入、更新和删除的完整安全规则仍需在资源方控制台专项验收。",
+      "共享环境的配额、费用、日志、告警和备份仍需在资源方控制台治理。"
+    ]
+  },
+  "ai": {
+    "summary": "更新公告必须是受控 PUI Popup 和真实共享云数据源；组件名与改动必须分层，云失败时回退但不得伪装来源。",
+    "rules": [
+      "应用公告入口使用真实 Cell 和受控 Popup，不在页面重写 Overlay、Header、Content 或 Footer。",
+      "Popup Content 是唯一公告滚动区，Footer Button 通过 block 使用全宽操作轨。",
+      "公告请求使用受控 TopLoading；只有真实云端成功进入 success，缓存、本地回退和异常都回到 idle，不得保留居中 Spinner 或用停止加载推断成功。",
+      "公告 Service 使用独立 Shared Cloud，返回副本并保持稳定 Schema；远程失败时不得把缓存或包内回退冒充刚从云端刷新。",
+      "所有 PoemUI 专属云集合使用 pui_ 前缀；更新公告固定使用 pui_updatelog。",
+      "同主体小程序可评估微信云开发环境共享；跨主体或多端使用独立 HTTPS/CloudBase HTTP 服务。",
+      "共享用户、授权或订单必须由服务端按可信 AppID 和用户身份分区，不能信任客户端传入的 appId/openid。",
+      "没有环境 ID、主体授权和部署证据时不得宣称云服务已经接入。"
+    ],
+    "tags": ["miniprogram", "me", "announcement", "popup", "cloudbase", "environment-sharing", "authentication", "no-fake-success"]
+  }
+}

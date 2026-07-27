@@ -1,0 +1,17 @@
+<view
+  wx:if="{{mounted}}"
+  class="{{rootClass}} {{active ? 'pui-top-loading--active' : 'pui-top-loading--inactive'}} {{successful ? 'pui-top-loading--success' : ''}} {{customClass}}"
+  style="{{rootStyle}}{{customStyle}}"
+  role="progressbar"
+  aria-label="{{semanticLabel}}"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="{{determinate || successful ? (successful ? 100 : progressValue) : ''}}"
+  aria-live="polite"
+>
+  <view class="pui-top-loading__track">
+    <view wx:if="{{!determinate && !successful}}" class="pui-top-loading__indeterminate pui-top-loading__indeterminate--one"></view>
+    <view wx:if="{{!determinate && !successful}}" class="pui-top-loading__indeterminate pui-top-loading__indeterminate--two"></view>
+    <view wx:else class="pui-top-loading__bar"></view>
+  </view>
+</view>

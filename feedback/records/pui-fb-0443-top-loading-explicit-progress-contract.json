@@ -1,0 +1,111 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0443",
+  "title": "TopLoading 需要区分未知进度、精确零值与真实完成",
+  "scope": "component",
+  "components": ["top-loading", "preview-site", "miniprogram-advanced-page"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "新增卡片或页面顶部的真实加载反馈；短请求不闪烁、未知总量和精确进度可区分，只有业务明确完成时才显示成功。",
+  "environment": {
+    "surfaces": ["miniprogram-source", "miniprogram-page", "h5-preview", "npm-dist", "example"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 H5 高级目录打开 TopLoading，依次点按未知进度、精确进度、推进 25%、真实完成与失败/取消。",
+    "把 progress 设为 0，确认它仍是精确进度而不是未知总量。",
+    "通过属性页开启 reduceMotion，并检查实际动效时长与状态语义。"
+  ],
+  "expected": "state 只接受 idle/loading/success；progress=null 为未知总量，0–100 为精确进度；delay、minimumVisible 和 successDuration 各自承担防闪烁、最短可见和完成停留，失败/取消不得显示成功色。",
+  "actual": "新增前没有可发布 TopLoading 合同；首版 H5 概览按钮还会被 component-only 归一化移除，属性面板也曾回退到错误的通用默认值。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前 Goal 对话",
+      "note": "用户授权按照既定双组件计划持续执行，直到完成最终交付版本后统一验收。"
+    },
+    {
+      "kind": "file",
+      "ref": "top-loading/top-loading.js",
+      "note": "真实状态机保留 null 与 0 的差异，并分别约束延迟、最短可见、成功停留和 1000ms 动效上限。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/components/TOP-LOADING.md",
+      "note": "专属合同记录状态、边界、H5 和小程序双端语义。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/top-loading",
+      "note": "桌面与 390px 实测未知进度、0、25、success、取消、1ms 低动效以及 light/dark。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-top-loading.js",
+      "note": "专项测试锁定状态机、0 边界、失败不成功、低动效、H5 属性默认值和独立页面。"
+    }
+  ],
+  "rootCause": "这是新增能力；首版预览沿用了会删除直接 controls 的概览归一化规则，并缺少该组件的 releasePropDefinitions，导致真实入口与属性默认值不能稳定映射源码合同。",
+  "decision": {
+    "outcome": "用受控 state + progress 建立单一状态机，保留 null 与 0；以普通演示触发区通过 PUI Button 驱动真实运行态，失败和取消只回到 idle；默认动效 500ms、上限 1000ms、低动效 1ms。",
+    "rationale": "请求结果由业务层掌握，组件只渲染明确状态；独立的 delay/minimumVisible/successDuration 能避免把停留时间误当动画时长。",
+    "alternativesRejected": [
+      "根据 progress=100 自动推断成功会把网络或构建结果伪造成完成。",
+      "把 0 当空值会破坏精确进度起点。",
+      "公开 start/done/fail 方法会形成第二套状态源并放大 API。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "top-loading/top-loading.js",
+      "top-loading/top-loading.wxml",
+      "top-loading/top-loading.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/components/top-loading/index.wxml",
+      "metadata/components.js",
+      "docs/components/TOP-LOADING.md",
+      "scripts/test-top-loading.js"
+    ],
+    "dependencies": ["theme behavior", "pui-button", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-top-loading.js", "scripts/test-miniprogram-advanced-pages.js"],
+    "commands": [
+      "node scripts/test-top-loading.js：通过",
+      "node scripts/test-miniprogram-advanced-pages.js：通过",
+      "npm run site:build：通过",
+      "npm run check：通过",
+      "npm run pack:check：通过，346.3 kB / 1.7 MB / 543 files",
+      "npm run example:install：通过，0 vulnerabilities",
+      "真实 miniprogram 微信 build-npm：1187ms，warnings=[]"
+    ],
+    "browser": [
+      "390px 实测页面和 PreviewDevice 横向溢出均为 0；未知进度 aria-valuenow 为空，精确 0 保留 aria-valuenow=0，推进后为 25。",
+      "显式 success 进入绿色 100% 完成态并按 minimumVisible 与 successDuration 退场；失败/取消不经过成功态。",
+      "默认动效计算为 500ms，reduceMotion 计算为 1ms；light/dark 下轨道与品牌色均可读。"
+    ],
+    "deviceRisks": [
+      "微信 iOS/Android 真机仍需确认高频 setData 时双轨动画帧率与安全区顶部裁切。",
+      "极短请求在不同基础库计时精度下的 delay 防闪烁仍需真机压力回归。",
+      "通用 _example 保持 touristappid，微信 CLI 返回 code 10；真实 miniprogram 已完成官方 build-npm。"
+    ]
+  },
+  "ai": {
+    "summary": "TopLoading 是受控顶部请求反馈；null 与 0 不同，只有显式 success 才能显示成功。",
+    "rules": [
+      "未知总量使用 progress=null，精确起点必须保留 progress=0。",
+      "失败和取消回写 idle，不得借 progress 或提示文字伪造 success。",
+      "delay、minimumVisible、successDuration 和 duration 不得混为一个时间字段。",
+      "H5 概览必须保留至少一个真实触发入口并复用 PUI Button。"
+    ],
+    "tags": ["top-loading", "progress-zero", "explicit-success", "loading-delay", "reduce-motion", "h5-parity"]
+  }
+}

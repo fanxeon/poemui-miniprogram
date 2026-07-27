@@ -15,6 +15,24 @@ const fontUnits = 1024;
 const sourceUnits = 24;
 const firstCodepoint = 0xe001;
 
+// User-owned PoemCoder calligraphic mark, optically simplified from the supplied
+// raster into five closed silhouettes. The final subpath runs in the opposite
+// direction so the central counter remains open at 20rpx.
+const poemcoderMarkPath = [
+  'M12.36 2.54 L13.25 3.25 L13.07 4.5 L14.68 4.86 L14.5 5.75 L12.71 7.18 L12.54 9.86 L15.04 10.39 L15.75 11.11 L15.93 12.71 L15.39 14.14 L13.79 15.57 L12.89 18.43 L11.29 20.75 L10.57 21.11 L12.36 16.64 L10.57 16.64 L9.68 15.93 L9.14 14.86 L10.93 13.96 L12 13.96 L13.43 14.68 L14.86 12.54 L14.68 11.29 L13.96 11.11 L12.36 11.64 L11.64 10.93 L11.64 7.54 L8.96 8.96 L6.82 11.46 L5.75 13.61 L5.57 16.29 L5.21 16.82 L4.5 16.64 L3.96 15.39 L4.5 11.29 L3.43 11.46 L2.89 12 L2.18 12 L2 11.64 L3.25 10.57 L4.32 10.21 L5.39 10.75 L5.75 12.36 L7.54 9.68 L12 5.57 L12 3.07Z',
+  'M16.82 13.25 L17.71 15.93 L17.71 18.25 L19.86 18.25 L20.57 17.89 L22 18.96 L21.82 19.68 L19.14 21.46 L18.61 21.46 L18.61 20.39 L19.14 19.5 L17.36 20.21 L16.82 20.21 L16.46 19.5 L16.29 18.07Z',
+  'M4.68 3.25 L7 3.96 L7.71 4.86 L7.89 6.11 L6.11 7.54 L5.57 7.18 L6.29 6.11 L4.32 3.79Z',
+  'M18.07 11.82 L20.04 12.54 L20.75 13.25 L21.11 15.04 L19.86 15.04 L19.14 14.5 L18.61 13.43 L18.79 12.89 L18.25 12.54Z',
+  'M11.55 14.55 L9.85 14.98 L9.55 15.42 L11.95 15.7 L12.55 15.02Z',
+].join(' ');
+
+const customIcons = {
+  'poemcoder-mark': {
+    source: 'user-owned:poemcoder-mark',
+    body: `<g fill="currentColor" fill-rule="nonzero" stroke="none"><path d="${poemcoderMarkPath}"/></g>`,
+  },
+};
+
 const categories = [
   {
     key: 'navigation',
@@ -68,7 +86,7 @@ const categories = [
     key: 'user',
     label: 'User 用户',
     desc: '账户、团队、身份、收藏',
-    icons: ['user', 'user-add', 'user-check', 'user-circle', 'users', 'team', 'id-card', 'profile', 'heart', 'star', 'bookmark', 'crown'],
+    icons: ['user', 'user-add', 'user-check', 'user-circle', 'users', 'team', 'id-card', 'profile', 'heart', 'star', 'bookmark', 'crown', 'premium'],
   },
   {
     key: 'commerce',
@@ -116,7 +134,7 @@ const categories = [
     key: 'abstract',
     label: 'Abstract 抽象',
     desc: '智能、灵感、玻璃、品牌氛围',
-    icons: ['ai', 'codex', 'sparkles', 'atom', 'orbit', 'cube', 'hexagon', 'crystal', 'glass', 'wave', 'moon', 'sun', 'focus'],
+    icons: ['ai', 'codex', 'sparkles', 'atom', 'orbit', 'cube', 'hexagon', 'crystal', 'glass', 'wave', 'moon', 'sun', 'focus', 'poemcoder-mark'],
   },
 ];
 
@@ -131,6 +149,7 @@ const sourceAliases = {
   add: 'plus',
   'add-circle': 'circle-plus',
   'minus-circle': 'circle-minus',
+  premium: 'crown',
   close: 'x',
   'close-circle': 'circle-x',
   'check-circle': 'circle-check',
@@ -252,6 +271,7 @@ const sourceAliases = {
 const opticalAdjustments = {
   'caret-left': { transform: 'translate(2.4 2.4) scale(.8)' },
   'caret-right': { transform: 'translate(2.4 2.4) scale(.8)' },
+  premium: { transform: 'translate(0 -1.5)' },
   'file-pdf': {
     take: 2,
     append: [
@@ -363,18 +383,23 @@ const opticalAdjustments = {
 };
 
 const catalogIcons = categories.flatMap((category) => category.icons);
-const sourceMap = Object.fromEntries(catalogIcons.map((name) => [name, sourceAliases[name] || name]));
+const sourceMap = Object.fromEntries(catalogIcons.map((name) => [
+  name,
+  customIcons[name]?.source || sourceAliases[name] || name,
+]));
 const duplicateNames = catalogIcons.filter((name, index) => catalogIcons.indexOf(name) !== index);
-const missingSources = [...new Set(Object.values(sourceMap))].filter((name) => !lucideNodes[name]);
+const missingSources = catalogIcons.filter((name) => !customIcons[name] && !lucideNodes[sourceMap[name]]);
 const staleAliases = Object.keys(sourceAliases).filter((name) => !catalogIcons.includes(name));
+const staleCustomIcons = Object.keys(customIcons).filter((name) => !catalogIcons.includes(name));
 
-if (categories.length !== 17 || catalogIcons.length !== 218 || duplicateNames.length || missingSources.length || staleAliases.length) {
+if (categories.length !== 17 || catalogIcons.length !== 220 || duplicateNames.length || missingSources.length || staleAliases.length || staleCustomIcons.length) {
   throw new Error([
     categories.length !== 17 ? `Expected 17 icon categories, received ${categories.length}` : '',
-    catalogIcons.length !== 218 ? `Expected 218 catalog icons, received ${catalogIcons.length}` : '',
+    catalogIcons.length !== 220 ? `Expected 220 catalog icons, received ${catalogIcons.length}` : '',
     duplicateNames.length ? `Duplicate PoemUI names: ${duplicateNames.join(', ')}` : '',
     missingSources.length ? `Missing Lucide sources: ${missingSources.join(', ')}` : '',
     staleAliases.length ? `Stale Lucide aliases: ${staleAliases.join(', ')}` : '',
+    staleCustomIcons.length ? `Stale custom icons: ${staleCustomIcons.join(', ')}` : '',
   ].filter(Boolean).join('\n'));
 }
 
@@ -393,6 +418,7 @@ function renderNode([tag, attributes], extraAttributes = {}) {
 }
 
 function createIconBody(name) {
+  if (customIcons[name]) return customIcons[name].body;
   const source = sourceMap[name];
   const adjustment = opticalAdjustments[name] || {};
   const nodeCount = typeof adjustment.take === 'number' ? adjustment.take : lucideNodes[source].length;
@@ -414,7 +440,10 @@ function createIconBody(name) {
 }
 
 function createSvg(name, source, body) {
-  return `<!-- Derived from Lucide ${source} (${lucidePackage.version}); see THIRD_PARTY_NOTICES.md -->
+  const notice = customIcons[name]
+    ? 'User-owned PoemCoder mark; generated by scripts/generate-icons.js.'
+    : `Derived from Lucide ${source} (${lucidePackage.version}); see THIRD_PARTY_NOTICES.md`;
+  return `<!-- ${notice} -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-label="${name}">
   ${body}
 </svg>
@@ -448,7 +477,7 @@ function writePreviewSvg(icons) {
   const content = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
   <rect width="${width}" height="${height}" fill="#fafafa"/>
   <text x="28" y="34" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#18181b">PoemUI Roundline Icons</text>
-  <text x="${width - 28}" y="34" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" fill="#52525b">${icons.length} icons · Lucide-derived</text>
+  <text x="${width - 28}" y="34" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" fill="#52525b">${icons.length} icons · Lucide-derived + user-owned mark</text>
   <g color="#18181b">${items}</g>
 </svg>
 `;
@@ -810,8 +839,8 @@ ${glyphs}
 </svg>
 `;
   const ttf = Buffer.from(svg2ttf(svgFont, {
-    copyright: `Lucide-derived PoemUI Roundline ${lucidePackage.version}; see THIRD_PARTY_NOTICES.md`,
-    description: 'PoemUI Roundline local icon font',
+    copyright: `Lucide-derived PoemUI Roundline ${lucidePackage.version} plus user-owned PoemCoder mark; see THIRD_PARTY_NOTICES.md`,
+    description: 'PoemUI Roundline local icon font with user-owned PoemCoder mark',
     ts: 946684800,
   }).buffer);
   const woff2 = Buffer.from(await wawoff2.compress(ttf));
@@ -853,7 +882,7 @@ async function main() {
     lineCap: 'round',
     lineJoin: 'round',
     color: 'currentColor',
-    notes: '以 Lucide 成熟构形为底稿，统一为 PoemUI 的圆线权重与光学微调。源图标保持单色、currentColor 和 24 x 24 画布。',
+    notes: 'Lucide 来源图标统一为 PoemUI 的圆线权重与光学微调；登记的用户自有品牌字标使用闭合 currentColor 填充轮廓。全部图标保持单色和 24 x 24 画布。',
   },
   upstream: {
     name: 'Lucide',
@@ -861,6 +890,10 @@ async function main() {
     version: lucidePackage.version,
     license: 'ISC / MIT for Feather-derived icons',
     url: 'https://lucide.dev',
+  },
+  custom: {
+    ownership: 'User-owned',
+    icons: Object.keys(customIcons),
   },
   categories: [],
   icons: [],
@@ -900,7 +933,7 @@ async function main() {
   writePreviewSvg(previewIcons);
   writeComponentIconPreview(previewIcons);
   writePreviewData(manifest);
-  console.log(`Generated ${manifest.icons.length} PoemUI Roundline icons in ${manifest.categories.length} categories and ${manifest.font.bytes} byte local WOFF2 from Lucide ${lucidePackage.version}.`);
+  console.log(`Generated ${manifest.icons.length} PoemUI Roundline icons in ${manifest.categories.length} categories and ${manifest.font.bytes} byte local WOFF2 from Lucide ${lucidePackage.version} plus registered custom sources.`);
 }
 
 module.exports = {

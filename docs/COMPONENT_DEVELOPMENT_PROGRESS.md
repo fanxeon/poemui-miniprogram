@@ -1,15 +1,40 @@
 # PoemUI 组件交付进度
 
+## 2026-07-27 · DynamicMessage 分阶段变形动效修正
+
+- **真实问题**：首版虽然具备 retained node、同 key update 和 FIFO 队列，但进退场只用一次 `translateY + scale` 同时作用整张 Surface，标题、正文与操作同段出现/消失，不符合“先弹出 Icon + 标题，再长出面板，退场反向”的灵动通知语义。
+- **双端状态机**：小程序与 H5 同步改为 `entering → compact → expanding → visible`；compact 为 `180ms` 顶部胶囊，只显示 PUI Loading/Icon 与标题，随后以 `320ms` 扩至完整面板并淡入正文、Action、Close 与 accent。退场严格反向为 `collapsing → leave-compact → hidden`，先用 `320ms` 收回面板，再用 `180ms` 让胶囊向上退出；完整进/退场仍各为 `500ms`，低动效直接压缩为 `1ms`。
+- **真实浏览器中间帧**：H5 页面记录到入场 `compact 39ms → expanding 221ms → visible 541ms`，compact 宽 `180px`、message opacity `0`；展开期间宽度从 `180px → 320px`、最小高度从 `48px → 56px`、message opacity 从 `0 → 1`。退场记录到 `collapsing 30ms → leave-compact 351ms → hidden 533ms`，宽度与 message opacity 完整反向回到 `180px / 0`。`390×844` 实测页面与 PreviewDevice 横向溢出均为 `0`，展开通知宽 `320px`，相对设备左右安全边界均为 `16px`。
+- **合同与风险**：专项测试锁定阶段、时长、反向退出、无 `height:auto` transition 和无 `display:none` 瞬移；API、H5 兼容合同与 `PUI-FB-0444` 同步更新，当前 acceptance 因本次新增动画反馈恢复为 `pending-user`。微信 iOS/Android 真机仍需确认状态栏安全区、连续 setData 下的帧率、系统字体回流和读屏播报。
+
+## 2026-07-27 · TopLoading 与 DynamicMessage 高级组件正式落地
+
+- **TopLoading API 与状态合同**：新增 `pui-top-loading`，只公开 `state / progress / delay / minimumVisible / successDuration / duration / ariaLabel / reduceMotion`。`progress=null` 是未知总量，合法 `0` 保持精确起点；只有显式 `state=success` 才进入绿色完成态，失败或取消回写 `idle`。默认动效 `500ms`、上限 `1000ms`、低动效 `1ms`；防闪烁、最短可见和成功停留分别由三个计时 Prop 承担，不用单一 duration 混淆。
+- **DynamicMessage API、事件与队列**：新增 `pui-dynamic-message`，公开十项 Props、`click/action/close` 三个事件，以及 `show(options) / update(key, patch) / hide(key?)` 三个实例方法。同 key 保留同一节点原位更新，不同 key FIFO 排队；loading 未显式传 duration 时持续显示，其余默认 `3000ms`。默认图标随主题真实刷新，Action 不自动关闭或伪造成功，close 在真实 `500ms/1ms` 退场完成后携带 `timeout/manual/programmatic` 原因触发。
+- **官网 H5 与真实浏览器**：高级目录新增 `#/components/top-loading`、`#/components/dynamic-message`，两页均进入统一 PreviewDevice、概览/API/属性和代码复制链。TopLoading 实点未知进度、精确 `0 → 25`、显式 success、取消与 reduceMotion；DynamicMessage 实点 loading→info→success/error、Action、手动关闭和 FIFO 队列，并在通知持续显示时用鼠标按住拖动下方列表，`scrollTop 0 → 248`。桌面与 `390×844` 的页面/PreviewDevice 横向溢出均为 0；light/dark 与阴影、毛玻璃、大圆角开关读取真实计算样式，关闭为 `none / none / 16px`，开启为真实 shadow / blur / `24px`。API 表完整展示 TopLoading 8 Props、DynamicMessage 10 Props / 3 Events / 3 Methods，无省略号或固定高度裁切。
+- **小程序真实页面与发布产物**：`miniprogram/pages/components/top-loading`、`miniprogram/pages/components/dynamic-message` 是独立详情页，首页高级目录与搜索已接入；`_example` 同时新增真实安装示例。`site:build` 生成 `71` 个发布组件目录；源码、`miniprogram_dist`、`_example/node_modules` 安装包和真实 `miniprogram/miniprogram_npm` 的两组件四件套 SHA256 逐文件唯一一致。合法 AppID 的真实 `miniprogram` 执行微信 `build-npm` 成功（`1187ms`，`warnings=[]`）；通用 `_example` 保持 `touristappid`，CLI 返回 code 10，未伪报为构建成功。
+- **合同、Ledger 与门禁**：专属合同为 `docs/components/TOP-LOADING.md`、`docs/components/DYNAMIC-MESSAGE.md`；API、H5 兼容、规则索引、外观矩阵、README 与小程序文档已同步。Ledger 新增 `PUI-FB-0443`、`PUI-FB-0444`；该轮依据 Goal 授权曾标记 accepted，`PUI-FB-0444` 已因后续分阶段动画反馈恢复为 `pending-user`。专项、`npm run feedback:check`、`npm run site:build`、完整 `npm run check`、`npm run pack:check`、`npm run example:install` 均通过；当时包预检为 `346.3 kB / 1.7 MB / 543 files`。
+- **遗留真机风险**：微信 iOS/Android 仍需验证 DynamicMessage 的胶囊/状态栏 safeArea、VoiceOver/TalkBack retained live region 连续播报与低端设备队列帧率；TopLoading 仍需验证高频 setData、极短请求计时和卡片顶部裁切。`_example` 的通用 `touristappid` 无法独立执行官方 npm 构建，但真实小程序工程与安装产物已经完成微信构建和哈希闭环。
+
+## 2026-07-27 · Picker 默认 Header 操作与 Classic API
+
+- **组件 API**：`pui-picker` 的默认 `type="default"` 通过真实 PUI Popup `header-left` 和 `close-btn` Slot 使用左侧 `primary/base/circle + check` 确认、右侧 `default/base/circle + close` 取消，固定复用 Popup 的三列 Header；显式 `type="classic"` 保留原有底部两列取消/确定。非法值安全回退默认模式，滚轮、草稿、受控显隐、确认/取消事件顺序不变。
+- **双端与依赖**：小程序独立页提供两个真实入口；H5 `pickerH5Panel` 以共享 `iconButtonSample` 同步 Header/Classic 结构、`36px / 1fr / 36px` 轨道和属性枚举。DateTimePicker 公开同一 `type` 并只透传给 Picker，独立页也提供默认/Classic 两个入口，不复制 Popup 皮肤。390px H5 已实点完成确认、取消、Classic 与深浅色果味检查；微信开发者工具已读取新 npm 产物的默认 Header 与 Classic Footer 截图。专项源码门禁覆盖默认、Classic、非法 type、Popup Slot、H5 与 DateTimePicker 组合边界；真机仍待验证。
+- **对照与待验收**：本次重新下载并读取 `tdesign-miniprogram@1.15.3` 的 Picker 包内 `props.js/picker.js/picker.wxml/template.wxml/picker.wxss`；TDesign toolbar 左取消/右确认只作为差异化参考，PoemUI 采用用户指定的反向默认。Ledger：`PUI-FB-0441`（resolved / pending-user）。H5 390px 与微信开发者工具运行态、构建及真机风险以本轮最终验收为准。
+
 ## 2026-07-27 · 第四 Tab“我的”账户与服务页
 
-- **真实账户资料**：`pages/me/index` 删除旧 `tabbar-placeholder` 空白壳，组合 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Avatar、Input、Button、Cell/CellGroup、Toast 与 Tabbar。昵称由 `common/utils/user-profile.js` 统一恢复和持久化；写昵称保留 OpenID，后续登录桥接写 OpenID 也保留昵称。
-- **身份与平台边界**：OpenID 只读取 `App.globalData.openid/openId` 或兼容存储，没有真实值时展示“尚未获取，请先完成登录”并禁用复制；存在时页面仅显示脱敏值，`wx.setClipboardData` 仍复制完整值。用户私隐协议调用 `wx.openPrivacyContract`；关于诗上调用 `wx.navigateToMiniProgram` 进入正式版 `wxa1b9a4d6549c6cd1`。
-- **无假业务**：购买高级版授权与我的订单目前没有支付、订单或后端合同，Cell 只以 PUI Toast 明确反馈“尚未开放”，不创建假支付、假订单、假路由或静态成功。该页是小程序应用目的地，不复制为 H5 组件页；H5 继续同步其消费的真实 PUI 组件合同。专项合同见 `docs/MINIPROGRAM_ME_PAGE.md`，Ledger：`PUI-FB-0421`（resolved / pending-user）。
-- **验证状态**：`scripts/test-miniprogram-me-page.js` 已覆盖 PUI 组合、昵称持久化、OpenID 保护、真实剪贴板/隐私/跨小程序 API 参数、未开放业务与 Tabbar 路由。复用现有微信开发者工具窗口执行标准 `build-npm`（996ms，`warnings=[]`）；iPhone 12/13 Pro 390×844 打开真实 `/pages/me/index`，页面/内容宽均为 390px，截图 `/tmp/poemui-me-page-final-390.png` 显示昵称区、无 OpenID 禁用态、四个 Cell 与第四 Tab，console 无 warning/error。运行态把昵称改为“诗上昵称”后回写成功，再恢复为原值并重新打开页面，确认 `PoemUI 用户` 持久化恢复。`site:build`、`example:install`、`pack:check`、专项测试、Feedback Ledger 与 `git diff --check` 通过；完整 `npm run check` 仍被本轮范围外的 Navbar H5 标题和首页返回锚点两项工作区基线断言阻断。真实软键盘输入、真实 OpenID 复制、隐私弹层、跨小程序跳转、深浅色/外观组合及 iOS/Android 真机仍未验证。
+- **真实账户资料**：`pages/me/index` 删除旧 `tabbar-placeholder` 空白壳，组合 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Avatar、Input、Button、Cell/CellGroup、Toast 与 Tabbar。昵称由 `common/utils/user-profile.js` 统一恢复和持久化；当前 Store 只读写 `nickname`，OpenID Cell、页面状态、复制方法、`App.globalData`/旧存储读取和 `setOpenId` 桥接均已按用户最新决策删除。
+- **平台边界**：用户私隐协议调用 `wx.openPrivacyContract`；关于诗上调用 `wx.navigateToMiniProgram` 进入正式版 `wxa1b9a4d6549c6cd1`。若以后引入登录，必须另建服务端身份合同，不能把身份字段重新塞回昵称资料 Store。
+- **无假业务**：高级版商业授权 Cell 使用“查阅详情”语义，当前点击明确提示“授权详情正在准备中”；我的订单仍在真实订单查询链完成前提示尚未开放。两者都不创建假支付、假订单、假路由或静态成功。该页是小程序应用目的地，不复制为 H5 组件页；H5 继续同步其消费的真实 PUI 组件合同。专项合同见 `docs/MINIPROGRAM_ME_PAGE.md`，Ledger：`PUI-FB-0421`（resolved / pending-user）。
+- **更新公告、客服与共享云边界**：“更新公告”作为第五个真实服务 Cell 打开受控 PUI Popup；Header 展示版本，Content 显式关闭 Popup 自滚动并由最大 `78vh` 的唯一 PUI ScrollArea 承担滚动，以 Tag + Icon 突出组件名、改动标题和说明，并由 Content 顶部的受控 TopLoading 表达真实同步状态，Footer 使用全宽 PUI Button。只有云端成功进入 success，缓存、本地回退或异常回到 idle。`common/services/update-announcements.js` 通过独立 `wx.cloud.Cloud` 连接资源 AppID `wxa1b9a4d6549c6cd1` 的共享生产环境 `poemcoder-1gkbkid139b08f45`，读取 `pui_updatelog`，成功缓存，失败回退缓存/包内同形公告并保留来源。所有 PUI 云集合使用 `pui_` 前缀；用户、授权和订单仍不因公告接入而默认共享。服务 CellGroup 相对资料卡增加标准内容间距；低频客服入口从正文彻底移入 Navbar 最左侧 `left` Slot，以 `text/transparent/small/circle/iconOnly` PUI Button 继续承载真实 `open-type="contact"` 与失败回调，不显示灰底、边框或外投影。`capsule=true` 下它使用左侧胶囊镜像轨，右 Slot 继续为空，也不以 `leftBtn` 普通点击冒充平台开放能力。方案见 `docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md`，Ledger：`PUI-FB-0421`、`PUI-FB-0440`、`PUI-FB-0447`、`PUI-FB-0454`（resolved / pending-user）。
+- **公告验收状态**：专项 Me/Popup/Cell/Tag/Icon/Loading 合同、Feedback Ledger、站点构建、示例安装、打包检查和微信 npm 构建通过。首条云文档 `_id=pui-v0-1-0-20260727` 已写入并由管理 API 回读唯一完整记录；现有开发者工具窗口在 390×844 通过 Shared Cloud 再次读取，`announcementSource=cloud` 且同步错误为空。截图 `/tmp/poemui-me-update-cloud-popup-390-final.png` 验证版本、日期、五组组件改动、自然换行、实测 Navbar/胶囊安全区、唯一内容滚动区和固定全宽 Footer。完整 `npm run check` 当前被范围外 `preview/styles.css` 未定义 `--blur-soft` Token 阻断，不能报告全绿。深浅色/全部外观组合、长内容真实滚动、草稿/写操作安全规则和 iOS/Android 真机仍未验证。
+- **验证状态**：`scripts/test-miniprogram-me-page.js` 已覆盖 PUI 组合、昵称单字段持久化、旧 OpenID 字段/存储键不再读取、隐私/跨小程序 API 参数、未开放业务与 Tabbar 路由。微信开发者工具 390×844 的 `.me-page__content` 运行树只有昵称资料和五个服务 Cell，截图 `/tmp/poemui-me-no-openid-390-final.png` 同时确认第四 Tab 图标完整；真机与全部外观组合仍待验收。
 
 ## 2026-07-27 · 第三 Tab Codex 快速开始页
 
-- **真实目的地**：第三项从语义过期的 `explore/orbit` 空白占位改为 `codex/codex/Codex`，路由固定为 `pages/codex/index`；旧 Explore 页面和 app.json 入口已删除。`codex` 不是假字符串，而是由唯一 Icon 生成链从锁定 Lucide `bot` 生成的第 218 个 PoemUI Roundline glyph，小程序与 H5 Icon 资源共用同一字体。
+- **真实目的地**：第三项从语义过期的 `explore/orbit` 空白占位改为真实 `pages/codex/index`；目的地 value/ariaLabel 保持 `codex/Codex`，Tabbar 图标按用户最新决策改为现有通用 `code`。页面内 SKILL 留白继续使用 `codex` 品牌 glyph，避免把目的地图标和页面品牌标记强绑为同一个资源。
+- **首页版本**：品牌名旁组合低干扰的默认浅色小尺寸 PUI Tag；`scripts/generate-miniprogram-dist.js` 从 `package.json.version` 生成轻量 `poemui-miniprogram/version` 子入口，页面读取后显示 `v0.1.0`。直接加载组件总入口会把全部组件拉入微信模块图，已由运行态失败证据否决。390×844 截图 `/tmp/poemui-home-version-code-tab-390.png` 同时确认版本 Tag 与第三 Tab `code` 图标。
 - **PUI 页面组合**：Codex 页使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Button、Icon、Tabbar 与共享 Section，固定分为“快速开始 / 让你的 AI 懂得用它”。快速开始展示 README 同源 npm 命令与最小页面引用；共享 `code-snippet` 组合 PUI Card + terminal Icon + 低存在感圆形复制 Button，只有代码横向阅读保留一个原生 scroll-view。复制结果由 `wx.setClipboardData` 的 success/fail 回写 check/error-circle 和 aria-live。
 - **Skill 边界**：Skill 尚未实现，当前只显示 PUI Card、codex Icon 与 `SKILL` 留白，不提供下载、复制、安装或成功状态。小程序应用页不伪造成 H5 标准组件页；H5 只同步 codex glyph 和既有代码块组合规则。Ledger：`PUI-FB-0420`（resolved / pending-user）。
 - **运行与门禁**：复用现有微信开发者工具窗口执行标准 `build-npm`（952ms，`warnings=[]`），iPhone 12/13 Pro 390×844 真实打开 `pages/codex/index`，截图 `/tmp/poemui-codex-page-390.png` 显示 Codex 第三 Tab、两个 PUI 代码区和 Skill 留白。安装代码片段调用真实剪贴板后回读准确 npm 命令，并回写 `check / 已复制 / 代码已复制`。H5 Icon 页 390×844 搜索 `codex` 唯一命中，glyph 计算字体为 `PoemUI Roundline`，页面无横向溢出、warning/error 为 0。`npm run check`、`example:install`、`pack:check`、Feedback Ledger 和 `git diff --check` 通过；iOS/Android 真机及小程序深色/外观组合仍未验证。
@@ -816,7 +841,7 @@
 ## 2026-07-23 · Popup 撤回拖拽手柄能力
 
 - **真实问题与修改**：用户确认拖拽手柄使 Popup Header 排版不够紧凑。现从 Popup 原生 JS/JSON/WXML/WXSS、H5 预览、Props Inspector、metadata、API、兼容说明、示例和专项测试中完整移除 `showHandle`、`draggable`、手柄节点、拖拽 Pointer/Touch 逻辑与 `trigger: "drag"`；Popup 仅保留关闭按钮和遮罩关闭，Sheet 继续承载拖拽关闭。
-- **API 与结构**：Popup 从 22 Props 收敛为 20 Props，`visible-change` detail 收敛为 `close-btn | overlay`；Header、Content、Footer 的三段结构和 390px 预览布局保持不变。
+- **API 与结构**：Popup 从 22 Props 收敛后现为 21 Props；新增 `contentScrollable` 只负责在默认 Content 滚动与消费者唯一 PUI ScrollArea 之间移交滚动所有权，不恢复业务状态或拖拽 API。`visible-change` detail 保持 `close-btn | overlay`；Header、Content、Footer 三段结构不变。
 - **验证与产物**：`node scripts/test-popup.js`、`npm run miniprogram:build`、`npm run feedback:generate`、`npm run feedback:check` 已通过；后续继续执行完整站点、检查、打包、示例安装和微信 CLI 门禁。Ledger：`PUI-FB-0255`（resolved / pending-user）。
 
 ## 2026-07-23 · 普通预览长内容底部安全间距修复
@@ -1000,6 +1025,13 @@
 - **真实问题与修改**：Input 原生 control 同时声明 `flex:1` 与 `width:100%`，在微信 Flex 字段中会与 Clear 竞争尾部空间。现在小程序与 H5 同步改为可收缩剩余轨道（`flex:1 1 0 / width:0 / max-width:100%`），Clear 保持 PUI Button 且固定不收缩，在没有 suffix 时通过 auto margin 贴齐最右边界。
 - **专项与 Ledger**：`scripts/test-input.js` 锁定主控件/尾部 Button 几何；Combobox/Search 继续消费同一 Input，无页面私有补丁。Ledger：`PUI-FB-0319`（resolved / pending-user）。仍需 iOS/Android 真机确认中文输入法、长文本和 prefix/suffix 同时存在时的触摸区。
 
+## 2026-07-27 · Input 尾部操作 Slot 与昵称保存组合
+
+- **组件级决定**：复用既有 `suffix="slot"` 作为 Input 的可选右侧操作 API，不增加重复的 `right/action/showAction` Prop。小程序与 H5 同步新增单一 Trailing 轨，依次承载 Clear、Loading、suffix 和 suffix-icon；可收缩输入主轨继续占据剩余宽度，尾部轨通过 auto margin 贴齐 Field 右边界。
+- **真实消费路径**：`pages/me/index` 删除 Input 下方的满宽“保存昵称”文案按钮，改为 suffix Slot 中的 `default/text/extra-small/square/check/icon-only` PUI Button。按钮禁用和 click 仍由页面业务状态控制，Input 不代理保存结果。
+- **运行态验收**：H5 实测 Field 313px、输入主轨 148.5px、Trailing 70px，Clear 与保存操作均为 32px、gap 6px；真实点击 Clear 后输入值清空，保存操作继续保留。微信开发者工具 390px 实测 Field 340px、输入主轨 214px、Trailing 72px，两个操作宿主均为 33px、gap 6px；实际通过 PUI Button `onTap → bind:click` 写入 `poemui-user-profile`，复核后恢复默认昵称。该实测同时暴露并修复了微信自定义组件宿主被拉伸的问题，Input 现在以显式 Host 轨约束 Clear、Loading 与业务 Slot。
+- **对照与边界**：2026-07-27 复核 TDesign 官方文档、官方仓库与固定 `tdesign-miniprogram@1.15.3` 的 `miniprogram_dist/input/{props.js,type.d.ts,input.wxml}`；其 Clear 后同样投影 suffix Slot，官方示例用其承载“发送验证码”。Ledger：`PUI-FB-0442`（resolved / pending-user）；真机触摸、中文键盘和 Slot 样式隔离仍保留设备风险。
+
 ## 2026-07-24 · Icon 独立页 Navbar 双操作与外观 Popup
 
 - **入口与胶囊边界**：Icon 页关闭 Navbar 默认返回箭头，在 `capsule=true` 的左侧镜像轨内等分组合返回与菜单两个 `pui-button + pui-icon`；返回继续调用共享页面壳的真实 `wx.navigateBack / reLaunch`，菜单打开外观设置。右侧轨道仍由微信系统胶囊占用，不渲染会重叠的自定义业务按钮。
@@ -1091,3 +1123,36 @@
 - **共享组件与页面**：修复首页返回的真实 scrollTop 恢复；Popup Footer 全宽操作轨与全局遮罩毛玻璃；Sticky Navbar 量测偏移；Navbar Slot/对称胶囊；Tabs 外观 Surface 边界；Steps 连线、Indexes 默认高度、Sidebar 选中图标、Field 透明 Input 变体、Checkbox 图标居中、Dialog Header/Footer/Overlay、SwipeCell 动作底板、CountDown 单位、Swiper 错误行和 Table 选择列一体化。
 - **示例与 H5**：Card、List、Swiper 重做为可理解的真实场景；上述组件的 H5 镜像同步了状态、动作、Token 与布局规则。
 - **Ledger**：新增 `PUI-FB-0422` 至 `PUI-FB-0438`，所有 acceptance 均为 `pending-user`；浏览器与真机交互证据将在本轮后续验收追加，未以构建或源码检查替代。
+
+## 2026-07-27 · Select 选中项圆角继承
+
+- **真实问题与修改**：H5 Select Option 复用透明 PUI Button，但透明 Surface 基线以高优先级将其圆角归零、背景强制透明；选中态因此既没有小程序同源的柔和背景，也不能跟随全局圆角。小程序 Option 原本经 Button 间接继承，现显式消费 `--pui-radius-medium`；H5 Option 恢复与 Trigger 同一 `--pui-site-radius-control`，选中态恢复品牌文字与 PUI 柔和 Surface，不再写死、归零或透明化。
+- **合同与验证**：更新 Select 合同、H5 兼容说明与专项测试，锁定两端 Token 链。H5 `390×844` 实测修复前果味 Trigger=`20px`、选中 Option=`0px` 且背景透明；修复后果味为 `20px/20px`、正常与深色均为 `6px/6px`，选中 Surface 可见、document `375/375` 且控制台 `0` warning/error；点击 Card 后 Trigger 真正回写并关闭菜单。真实微信 DevTools 在合法 AppID、iPhone 12/13 390px 下完成 `build-npm`（1327ms、`warnings=[]`）和首页表单目录展开，但当前工具会话未能继续滚到 Select 独立页，不能替代该页模拟器交互或 iOS/Android 真机的 Popup 层级、rpx 和触摸复核。Ledger：`PUI-FB-0445`（resolved / pending-user）。
+
+## 2026-07-27 · 独立选中 Surface 圆角语义审计
+
+- **审计与修复**：没有按 `.is-selected` 批量加圆角。Combobox 的 Option 是自身绘制、仅选中行有背景的独立 Surface，现小程序显式绑定 `--pui-radius-medium`、H5 绑定 `--pui-site-radius-control`。Sidebar 默认项是连续导航轨道，保持 `0px`；仅 `theme=card` 的独立条目在 H5 从固定 step-7 收敛至和小程序一致的 `--pui-preview-radius-medium`。DropdownMenu、NavigationMenu、Tabs、Tabbar、Table、Cell、VirtualList、Picker、Indexes 按各自 Button/连续轨道/焦点合同保留原有几何。
+- **H5 运行态**：390×844 果味浅色下实际选择 Combobox Nuxt，关闭并重新展开后选中 Option 为 `20px` 且背景 `rgb(244, 244, 245)`；深色为 `20px`、`rgb(24, 24, 27)` 和 `rgb(250, 250, 250)`。Sidebar 实点“表单输入与选择”后 active 真正回写且仍是连续的 `0px` 轨道；两页 document `scrollWidth=375`、viewport=390、控制台 warning/error=0。微信 iOS/Android 对 Combobox rpx 裁切、card 条目、毛玻璃与触摸命中仍须真机确认。Ledger：`PUI-FB-0446`（resolved / pending-user）。
+
+## 2026-07-27 · 首页高级分区 premium 图标
+
+- **真实问题与实现**：首页“高级”此前与普通分区一样只有文本标题，且 Icon Font 只公开 `crown`，无法按用户目标调用 `pui-icon name="premium"`。`premium` 现作为稳定公开语义名映射到同源 Lucide `crown` 码点，继续走 PUI Icon Font 的生成链；首页仅在高级分区通过 Collapsible 的真实 `trigger` Slot 组合标题与 30rpx 图标，其他分区继续使用默认 Trigger，不复制开合或 ARIA 行为。首轮循环内布尔比较没有稳定投射自定义 Slot，已改成高级项唯一的 `hasPremiumIcon` 数据标记并锁进专项测试。后续 390px 运行态确认 Flex 几何居中但 crown 可见轮廓在 em 方框内偏下，现由 `premium` 生成轮廓独立向上校正，通用 `crown` 不变；首页明确禁止用 margin、定位或 transform 打补丁。
+- **跨端与专项**：H5 图标目录、Woff2、码点表和兼容合同同步更新。H5 390×844 浅色与深色均实测 `premium` 从 `PoemUI Roundline` 渲染，搜索、复制反馈、主题字色和无横向溢出均正常；微信开发者工具 iPhone 12/13 Pro 390px 浅色、深色画面均确认“高级”右侧皇冠图形，切换后已恢复浅色，调试控制台为空且 IDE 问题数为 0。iOS/Android 真机仍待确认。Ledger：`PUI-FB-0449`（resolved / pending-user）。
+
+## 2026-07-27 · Popup Surface 顶边 TopLoading
+
+- **组件级修复**：更新公告的 TopLoading 原本放在 Content 内，只能贴住内容内距后的顶部，无法落在 Popup 面板顶边。Popup 新增 `surface-top` 具名 Slot，Surface 提供 `position:relative + overflow:hidden`，让不占布局的 TopLoading 直接贴住边框并随当前圆角裁切；页面删除 Content 定位补丁。
+- **双端与合同**：H5 `popupSample` 通过共享 `topLoadingPreviewMarkup` 镜像同一 Slot，metadata、组件 API、Popup/TopLoading 合同、兼容说明与我的页合同同步；专项测试锁定 Slot 顺序、定位/裁切边界及页面真实组合。Ledger：`PUI-FB-0450`（resolved / pending-user）。
+- **验收证据**：H5 390×844 实际打开 Bottom Popup 后，Surface 与 `surface-top`/TopLoading 的顶边坐标同为 `y=266.039px`，宽度同为 `323px`；Surface 计算为 `position:relative / overflow:hidden`，页面 `375/375` 无横向溢出，控制台 warning/error=0。微信 npm 构建返回 `warnings=[]` 且源码/dist/npm 的 Popup WXML/WXSS 哈希三路一致；当前开发者工具会话打开我的页出现既有 `wx://not-found` 与空页面节点，因此小程序 390px 顶边几何仍明确标记未验证，未重启工具或伪报成功。
+
+## 2026-07-27 · 安装 Tabbar 页云端内容与未来 Skill Schema
+
+- **实现与数据合同**：`pages/codex/index` 已删除本地安装与引用常量，新增独立 `common/services/codex-page`，只使用共享环境的 `pui-codepage` 查询 `product=poemui / pageKey=codex / status=published`。单集合区分 `kind=page`（快速开始两个分区和 snippets）与 `kind=skill`（稳定 skillId、名称、版本、摘要、图标、能力、安装代码和排序）；草稿、归档、不完整记录和包内回退均不进入页面。
+- **状态与页面组合**：正文使用 TopLoading、Loading、Empty、全宽重试 Button、Card、Tag、Icon 与共享 code-snippet；云端失败仅向用户显示恢复性文案。`pui-codepage-codex-v1` 已经管理端完整读回，且标题为“安装”；集合设为 READONLY 后调用方小程序同条件查询返回 1 条，390px 浅色/深色真实页面均展示两段云端代码、Skill 空态与 muted 代码阅读底。
+- **专项与门禁**：云服务、Tabbar 页面合同、WXML/WXSS 编译、Feedback 生成和校验、`npm run check`、`npm run pack:check` 与 `git diff --check` 通过。Ledger：`PUI-FB-0451`（resolved / pending-user）。iOS/Android 真机的共享环境、弱网、字体、读屏、Tabbar 触摸和外观组合仍待完成。
+
+## 2026-07-27 · 我的页资料行与服务集合投影间距
+
+- **资料版头**：`pages/me/index` 删除静态昵称和“PoemUI 用户”副标题，改为 Avatar 左侧、唯一 `label="昵称"` 的 PUI Input 右侧；保存仍通过 Input suffix 的 Check IconButton、页面事件和 `user-profile` Store。没有新增组件 API 或页面私有编辑器。
+- **Surface 间距**：服务 `pui-cell-group` 的额外上间距从内容组合 Token 升为 `--pui-section-gap`；它与正文 section gap 共同保留资料 Input/Surface 投影安全区，阴影关闭时几何不收缩，连续 CellGroup 也未拆为单行卡片。
+- **验收**：微信开发者工具 iPhone 12/13 390px 实图确认单行资料编辑和默认 `shadow=true` 下的投影空白；真实输入、suffix 保存、Toast 成功与恢复默认昵称已执行。专项 Me/Tabbar 测试、WXML/WXSS 编译、Feedback 生成与校验通过。Ledger：`PUI-FB-0452`、`PUI-FB-0453`（resolved / pending-user）；深色、毛玻璃、大圆角和 iOS/Android 真机仍待验收。

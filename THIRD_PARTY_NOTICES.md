@@ -15,6 +15,10 @@ PoemUI Roundline icons are derivative works based on selected icons from Lucide.
 The generated SVG files keep PoemUI's public names and apply a unified 2.15px
 round-line treatment plus targeted optical adjustments.
 
+The `poemcoder-mark` glyph is a user-owned company mark and is not derived from
+Lucide. Its registered vector contours are included in the same local font only
+to provide one cross-platform `pui-icon` runtime.
+
 Source: https://lucide.dev
 
 Package: `lucide-static`

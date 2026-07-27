@@ -3,6 +3,7 @@
   <view wx:elif="{{showOverlay}}" class="pui-popup__mask {{blurOverlay ? 'pui-popup__mask--blurred' : ''}}" style="{{overlayStyle}}" catchtap="onOverlayTap"></view>
   <view class="{{rootClass}} {{entered ? 'pui-popup--entered' : ''}} {{customClass}}" style="{{customStyle}}" role="dialog" aria-modal="{{showOverlay}}" aria-label="{{semanticLabel}}" catchtap="noop">
     <view class="pui-popup__surface">
+    <slot name="surface-top"></slot>
     <view wx:if="{{showHeader}}" class="pui-popup__header">
       <view class="pui-popup__header-side pui-popup__header-side--left"><slot name="header-left"></slot></view>
       <view class="pui-popup__title-area">
@@ -14,7 +15,7 @@
         <slot name="close-btn"></slot>
       </view>
     </view>
-    <scroll-view scroll-y class="pui-popup__content" enable-flex>
+    <scroll-view scroll-y="{{contentScrollable}}" class="pui-popup__content {{contentScrollable ? '' : 'pui-popup__content--static'}}" enable-flex>
       <slot name="content"></slot>
       <slot></slot>
       <text wx:if="{{content}}" class="pui-popup__fallback">{{content}}</text>

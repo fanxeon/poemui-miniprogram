@@ -108,6 +108,9 @@ Page({
     uploadMaxSize: 5242880,
     uploadStatus: '0 / 3 · 等待选择附件',
     toastStatus: '等待调用 show()',
+    topLoadingState: 'idle',
+    topLoadingProgress: null,
+    dynamicMessageStatus: '等待调用 show()',
     deliveryProgress: 64,
     deliveryProgressType: 'line',
     deliveryProgressStatus: '等待页面推进',
@@ -618,6 +621,27 @@ Page({
   },
   onToastClose: function onToastClose() {
     this.setData({ toastStatus: 'close：提示已收起，不表示业务提交成功' });
+  },
+  startExampleTopLoading: function startExampleTopLoading() {
+    this.setData({ topLoadingState: 'loading', topLoadingProgress: 0 });
+  },
+  advanceExampleTopLoading: function advanceExampleTopLoading() {
+    var next = Math.min(100, Number(this.data.topLoadingProgress || 0) + 25);
+    this.setData({ topLoadingState: next === 100 ? 'success' : 'loading', topLoadingProgress: next });
+  },
+  showExampleDynamicMessage: function showExampleDynamicMessage() {
+    var component = this.selectComponent('#delivery-dynamic-message');
+    if (!component) return;
+    component.show({ key: 'install-check', theme: 'loading', title: '正在检查安装产物', message: '同一条通知会原位更新。', duration: 0 });
+    this.setData({ dynamicMessageStatus: 'loading 已展示' });
+  },
+  completeExampleDynamicMessage: function completeExampleDynamicMessage() {
+    var component = this.selectComponent('#delivery-dynamic-message');
+    var updated = component && component.update('install-check', { theme: 'success', title: '安装产物可用', message: '真实 npm 组件已被示例项目调用。', duration: 1600 });
+    this.setData({ dynamicMessageStatus: updated ? '同 key 已原位更新' : '请先显示灵动通知' });
+  },
+  onDynamicMessageClose: function onDynamicMessageClose(event) {
+    this.setData({ dynamicMessageStatus: 'close：' + event.detail.reason });
   },
   advanceDeliveryProgress: function advanceDeliveryProgress() {
     var next = Math.min(100, this.data.deliveryProgress + 10);

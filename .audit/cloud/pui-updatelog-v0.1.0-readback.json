@@ -1,0 +1,50 @@
+{
+  "verifiedAt": "2026-07-27T17:11:00+08:00",
+  "requestId": "91caa405-0268-4121-9413-2f9cb34eacf5",
+  "resourceAppid": "wxa1b9a4d6549c6cd1",
+  "resourceEnv": "poemcoder-1gkbkid139b08f45",
+  "collection": "pui_updatelog",
+  "runtimeSource": "cloud",
+  "document": {
+    "_id": "pui-v0-1-0-20260727",
+    "product": "poemui",
+    "version": "v0.1.0",
+    "date": "2026-07-27",
+    "title": "PoemUI v0.1.0 更新",
+    "summary": "小程序入口、组件体验与快速样式完成一轮系统更新。",
+    "status": "published",
+    "schemaVersion": 1,
+    "highlights": [
+      {
+        "component": "我的",
+        "icon": "user",
+        "title": "账户与服务页",
+        "description": "支持昵称保存、OpenID 复制、更新公告与服务导航。"
+      },
+      {
+        "component": "Popup",
+        "icon": "popup",
+        "title": "三段式浮层",
+        "description": "统一 Header、唯一滚动 Content 与全宽 Footer，并支持全局或单独设置毛玻璃遮罩。"
+      },
+      {
+        "component": "Picker",
+        "icon": "calendar",
+        "title": "Picker / DateTimePicker",
+        "description": "恢复标题与确认、取消操作，完善滚轮面板、主题与弹层表现。"
+      },
+      {
+        "component": "快速样式",
+        "icon": "palette",
+        "title": "样式与精选颜色",
+        "description": "新增布局、尺寸、间距、字体、背景分类与精选颜色工具。"
+      },
+      {
+        "component": "Codex",
+        "icon": "codex",
+        "title": "快速开始",
+        "description": "新增安装代码、页面引用与真实剪贴板复制入口。"
+      }
+    ]
+  }
+}

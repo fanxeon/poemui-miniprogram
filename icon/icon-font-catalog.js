@@ -53,7 +53,7 @@ module.exports = {
       "key": "user",
       "label": "User 用户",
       "desc": "账户、团队、身份、收藏",
-      "count": 12
+      "count": 13
     },
     {
       "key": "commerce",
@@ -101,7 +101,7 @@ module.exports = {
       "key": "abstract",
       "label": "Abstract 抽象",
       "desc": "智能、灵感、玻璃、品牌氛围",
-      "count": 13
+      "count": 14
     }
   ],
   "icons": [
@@ -820,6 +820,12 @@ module.exports = {
       "codepoint": "E074"
     },
     {
+      "name": "premium",
+      "category": "user",
+      "source": "crown",
+      "codepoint": "E0DC"
+    },
+    {
       "name": "cart",
       "category": "commerce",
       "source": "shopping-cart",
@@ -1412,6 +1418,12 @@ module.exports = {
       "category": "abstract",
       "source": "focus",
       "codepoint": "E0D1"
+    },
+    {
+      "name": "poemcoder-mark",
+      "category": "abstract",
+      "source": "user-owned:poemcoder-mark",
+      "codepoint": "E0DB"
     }
   ]
 };

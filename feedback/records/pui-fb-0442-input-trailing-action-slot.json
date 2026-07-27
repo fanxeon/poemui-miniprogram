@@ -1,0 +1,105 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0442",
+  "title": "Input 尾部保存操作与清除按钮需要统一组件轨道",
+  "scope": "component",
+  "components": ["input", "button", "miniprogram-me", "preview-site"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "昵称保存应成为满宽 Input 内的单图标右侧操作，并与 Clear 同时稳定可用；该能力必须属于 Input 公共组件合同。",
+  "environment": {
+    "surfaces": ["miniprogram-source", "miniprogram-me-page", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开小程序第四个 Tab 的账户资料区。",
+    "旧页面在 PUI Input 下方另放一个满宽保存文案按钮，Input 的 Clear 与保存动作不在同一字段轨道。",
+    "Input 已有 suffix Slot，但 Clear、Loading、suffix 与 suffix-icon 没有显式共享尾部容器合同。"
+  ],
+  "expected": "Input 保持满宽，原生输入占可收缩剩余空间；Clear 在前、suffix 保存图标在后，共同贴齐字段右侧且不新增重复 API。",
+  "actual": "保存按钮位于 Input 外部，页面重复编排字段操作，无法直接复用 Input 的尾部组合合同。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户要求把昵称保存放进 Input，使用单图标按钮并作为组件级可选右侧 Slot。"
+    },
+    {
+      "kind": "file",
+      "ref": "input/input.wxml",
+      "note": "Clear、Loading、suffix 与 suffix-icon 已进入同一个 pui-input__trailing 轨道。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "昵称页通过 suffix=\"slot\" 组合 check 单图标 PUI Button。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-input.js",
+      "note": "专项测试锁定小程序与 H5 的可收缩主轨、贴右 Trailing 和 Clear + suffix 操作并存。"
+    }
+  ],
+  "rootCause": "页面没有消费 Input 已有的 suffix Slot，组件内部也只对 Clear 单独使用 auto margin，尚未把多种尾部内容建模为统一轨道。",
+  "decision": {
+    "outcome": "复用既有 suffix=\"slot\" 作为可选右侧操作 API；新增共享 Trailing 布局轨，昵称保存改为 Slot 内单图标 PUI Button，并同步 H5、文档、测试与发布产物。",
+    "rationale": "TDesign 1.15.3 的固定 WXML 同样在 Clear 后投影 suffix Slot，官方示例用其承载操作；复用现有语义能减少重复 API，同时由组件保证跨页面几何一致。",
+    "alternativesRejected": [
+      "新增 right/action/showAction Prop 与现有 suffix Slot 重叠，会扩大公共 API 和文档维护面。",
+      "继续在页面下方放满宽保存按钮，会让字段操作割裂并重复布局。",
+      "把保存写进 Input 内部业务逻辑，会使基础输入组件推断账户保存结果。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "input/input.wxml",
+      "input/input.wxss",
+      "miniprogram/pages/me/index.wxml",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/INPUT.md",
+      "scripts/test-input.js",
+      "scripts/test-miniprogram-me-page.js"
+    ],
+    "dependencies": ["pui-input", "pui-button", "pui-icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input.js", "scripts/test-miniprogram-me-page.js"],
+    "commands": [
+      "node scripts/test-input.js：通过",
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "npm run feedback:generate：通过，共生成 424 条记录",
+      "npm run feedback:check：通过",
+      "npm run site:build：通过",
+      "npm run example:install：通过，0 vulnerabilities",
+      "npm run pack:check：通过，346.2 kB / 1.7 MB / 543 files",
+      "微信开发者工具 build-npm：960ms，warnings=[]"
+    ],
+    "browser": [
+      "H5 Input 实测 Field 313px、原生输入 148.5px、Trailing 70px，Clear 与保存图标按钮均为 32px、间距 6px且没有越界；真实点击 Clear 后值由 PoemUI 清空，Clear 退出而保存操作保留。",
+      "微信开发者工具 390px 模拟器实测 Input/Field 340px、原生输入 214px、Trailing 72px，Clear 与保存宿主均为 33px、间距 6px；修复前自定义组件宿主会拉伸到 223px，组件级显式宿主尺寸修复后恢复稳定。",
+      "微信开发者工具通过真实 PUI Button onTap 事件链触发页面 bind:click，昵称与 poemui-user-profile 同步写入；复核后已恢复默认昵称，保存按钮重新进入禁用态。"
+    ],
+    "deviceRisks": [
+      "微信 iOS/Android 真机仍需确认中文输入法聚焦时点击 Slot Button 的键盘与 blur 顺序。",
+      "小程序自定义组件 Slot 样式隔离、Clear + 保存双触摸区和读屏顺序仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Input 的 suffix Slot 是公共右侧操作位；Clear、Loading、suffix 和 suffix-icon 必须共享组件内 Trailing 轨。",
+    "rules": [
+      "存在 suffix Slot 时不要再新增语义重叠的 right/action Prop。",
+      "输入主轨必须可收缩，尾部轨不越界并以 auto margin 贴右。",
+      "Clear 与 suffix 操作同时存在时固定 Clear 在前、业务操作在后。",
+      "Slot 内业务 Button 由消费者绑定事件和结果，Input 不代理业务成功。"
+    ],
+    "tags": ["input", "suffix-slot", "trailing-action", "clear", "icon-button", "h5-parity"]
+  }
+}

@@ -10,7 +10,7 @@
 .pui-picker__column { text-align: center; }
 .pui-picker__item { display: flex; align-items: center; justify-content: center; gap: var(--pui-tight-gap); box-sizing: border-box; min-width: 0; padding: 0 var(--pui-space-step-8); color: var(--pui-text-secondary); font-size: var(--pui-font-size-body-large); opacity: .56; }
 .pui-picker__item--selected { color: var(--pui-text-primary); font-weight: var(--pui-font-weight-semibold); opacity: 1; }
-.pui-picker__item text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pui-picker__item-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pui-picker__item--disabled { color: var(--pui-text-disabled); opacity: .32; }
 .pui-picker__body > .pui-loading,
 .pui-picker__body > .pui-empty { width: 100%; }

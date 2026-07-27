@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0451",
+  "title": "安装一级页需要由共享云驱动页面与未来 Skill 内容",
+  "scope": "component",
+  "components": ["miniprogram", "tabbar", "scroll-area", "card", "empty", "loading", "top-loading"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "让安装 Tabbar 页全部从云开发读取，建立可承载未来 Skill 的 pui-codepage 集合与字段合同；用户可见名称为“安装”，内部 route/data key 保持 codex。",
+  "environment": {
+    "surfaces": ["miniprogram 安装 tabbar page", "shared CloudBase database"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/codex/index。",
+    "管理端按 _id=pui-codepage-codex-v1 可读回已发布 page 文档，包含两个 quickStart snippets 与 Skill 空态字段。",
+    "调用方小程序用同一 resourceAppid/resourceEnv 和 published 条件查询 pui-codepage，仍返回 0 条；页面因此显示未发布空态。"
+  ],
+  "expected": "页面正文只读取 product=poemui、pageKey=codex、status=published 的云端 page/skill 文档；请求失败、空 Page 与未发布 Skill 具有真实 loading、error、empty 和 retry 闭环。",
+  "actual": "pui-codepage 与首条已发布 page 文档已创建，管理端写后按 _id 读回完整字段；用户可见名称已更新为“安装”，代码阅读区已使用 muted Token。集合设置为 READONLY 并完成权限传播后，调用方小程序同条件查询返回 1 条 title=安装，390px 真实页面展示两段云端代码和 Skill 空态。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确授权创建 pui-codepage 并要求 Code Tabbar 页全部云开发读取。"},
+    {"kind": "file", "ref": "miniprogram/common/services/codex-page.js", "note": "独立 Shared Cloud Service 只查询已发布 pageKey=codex 文档，不提供包内数据回退。"},
+    {"kind": "file", "ref": "miniprogram/pages/codex/index.wxml", "note": "正文以 PUI Loading、Empty、TopLoading、Button、Card、Tag、Icon 和 code-snippet 渲染云端 page/skill 状态。"},
+    {"kind": "test", "ref": "scripts/test-codex-page-cloud-service.js", "note": "锁定共享环境、published 查询、page/skill 字段、草稿过滤及云端失败不得回退包内内容。"},
+    {"kind": "build", "ref": "requestId=f9a50101-4ed9-415d-b11b-29883ca13a35", "note": "管理端以 _id 读回 pui-codepage-codex-v1 的完整 page 文档，title=安装。"},
+    {"kind": "browser", "ref": "微信开发者工具 automation_evaluate 2026-07-27", "note": "调用方共享 Cloud 同条件查询 pui-codepage 返回 0 条，同时 pui_updatelog 返回 1 条，表明该页尚未获得客户端可读证据。"},
+    {"kind": "build", "ref": "微信开发者工具 390x844 /tmp/poemui-install-page-grey-code-390.png", "note": "真实页面 Navbar 已显示安装；由于客户端查询为 0，页面仍显示未发布空态，尚不能验证云端代码阅读底。"}
+    ,{"kind": "browser", "ref": "微信开发者工具 390x844 /tmp/poemui-install-page-cloud-ready-grey-code-390.png", "note": "调用方查询返回 1 条后，浅色真实页面展示安装标题、两段云端代码与淡灰代码阅读底。"}
+    ,{"kind": "browser", "ref": "微信开发者工具 390x844 /tmp/poemui-install-page-cloud-ready-grey-code-dark-390.png", "note": "深色真实页面展示同一云端内容，代码阅读底自动变为深灰且无页面横向溢出。"}
+  ],
+  "rootCause": "原页面只为快速开始和未交付 Skill 留白而设计，没有云集合、published 过滤、可演进 Schema 或请求状态边界；新集合初始规则未向调用方公开读取，管理端读回也不能证明客户端可读。",
+  "decision": {
+    "outcome": "采用 pui-codepage 单集合的 kind=page 与 kind=skill 两类文档；客户端仅直连已授权共享环境并读取 published 内容。page 文档存放两个页面分区和 snippets，skill 文档预留 skillId、版本、能力、图标、安装代码与排序。用户可见名称固定为“安装”，内部 route/data key 继续使用 codex 以保持已有云端数据契约。共享 code-snippet 的代码阅读区使用 muted Token、语义小圆角和内容内距，避免正文与 Card 背景混在一起；浅色呈淡灰，深色自动跟随主题。集合使用 READONLY，管理端更新一律使用 $set 并写后读回，再由调用方小程序读取验收。",
+    "rationale": "页面正文与未来 Skill 可独立发布，仍由稳定的 pageKey/product/status 分区；不用本地 fallback 可避免把过期或假内容误报为云端同步。",
+    "alternativesRejected": [
+      "保留 INSTALL_CODE、USAGE_CODE 或 Skill 占位作为离线回退，会违背全部云开发读取并伪造来源。",
+      "把未来 Skill 直接写入 page 文档数组，会失去独立发布、排序、版本和安装能力。",
+      "让客户端写入或读取 draft/archived 文档，会破坏发布权限边界。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/common/services/codex-page.js", "miniprogram/pages/codex/index.js", "miniprogram/pages/codex/index.json", "miniprogram/pages/codex/index.wxml", "miniprogram/pages/codex/index.wxss", "scripts/test-codex-page-cloud-service.js", "scripts/test-miniprogram-tabbar-pages.js", "docs/MINIPROGRAM_CODEX_PAGE.md", "docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0451-codex-cloud-driven-page-content.json"],
+    "dependencies": ["WeChat Shared Cloud", "PUI Loading", "PUI Empty", "PUI TopLoading", "PUI Button", "PUI Card", "PUI Tag", "PUI Icon", "PUI ScrollArea"]
+  },
+  "verification": {
+    "tests": ["scripts/test-codex-page-cloud-service.js", "scripts/test-miniprogram-tabbar-pages.js"],
+    "commands": ["node scripts/test-codex-page-cloud-service.js：通过。", "node scripts/test-miniprogram-tabbar-pages.js：通过。", "npm run feedback:generate && npm run feedback:check：通过。", "npm run check：通过。", "npm run pack:check：通过。", "git diff --check：通过。", "微信开发者工具 compile_wxml / compile_wxss：通过。", "cloud_db_read_doc requestId=f9a50101-4ed9-415d-b11b-29883ca13a35：完整 page 文档读回。", "微信开发者工具 automation_evaluate：调用方 published 查询 pui-codepage 返回 1 条，title=安装。"],
+    "browser": ["微信开发者工具 iPhone 12/13 390x844：浅色与深色均展示安装标题、两段云端 snippets、Skill 空态和 muted 代码阅读底；页面未见横向溢出。"],
+    "deviceRisks": ["iOS/Android 真机的共享环境鉴权、弱网、字体、读屏、Tabbar 触摸和外观组合仍未验证。"]
+  },
+  "ai": {
+    "summary": "安装应用页内容以 pui-codepage 的已发布 page/skill 文档为唯一数据源；未读到云端不能回退为包内示例。",
+    "rules": [
+      "所有 PoemUI 专属集合使用 pui_ 前缀，并以 product、pageKey、status 分区。",
+      "用户可见页面名使用“安装”；不要因为名称改动而更改稳定的 codex 路由、pageKey、组件 ID 或云端查询条件。",
+      "客户端只读取 published；draft 和 archived 既不展示，也不得作为本地回退。",
+      "未来 Skill 使用独立 kind=skill 文档，必须有稳定 skillId、name、summary；安装代码缺失时不渲染复制入口。",
+      "云端失败必须有 PUI Loading/Empty/Button 的真实恢复路径，用户文案不得暴露集合名、数据库错误或内部链接。",
+      "代码阅读底使用 --pui-bg-muted、--pui-radius-small 与 --pui-content-gap；不得写死浅灰色或为深色另建页面私有配色。",
+      "云端已发布文档更新必须使用 $set；写后先按 _id 验证完整字段，再以调用方小程序同条件查询验证客户端可读。",
+      "没有集合写后回读和小程序运行态 source=cloud 证据前，不得标记 resolved 或声称页面已云端同步。"
+    ],
+    "tags": ["miniprogram", "codex", "tabbar", "cloudbase", "pui-codepage", "skill", "published-only", "no-fallback"]
+  }
+}

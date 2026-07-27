@@ -23,18 +23,18 @@
     "原目标为 explore/orbit，页面只组合空白 tabbar-placeholder，没有快速安装、代码复制或 AI Skill 信息结构。",
     "Icon manifest 中不存在 codex，直接只改 item.icon 会产生空白图标。"
   ],
-  "expected": "第三项使用真实生成的 codex Icon 并进入 pages/codex/index；页面以 PUI 组件组合快速开始与 Skill 留白，代码复制来自真实 wx.setClipboardData 回调。",
+  "expected": "第三项使用当前 Icon manifest 已发布的 code Icon 并进入 pages/codex/index；页面以 PUI 组件组合快速开始与 Skill 留白，代码复制来自真实 wx.setClipboardData 回调。",
   "actual": "旧 explore 页面没有内容，orbit 也不能表达 Codex；未建立代码阅读和复制路径，Skill 无明确但克制的占位边界。",
   "evidence": [
     {
       "kind": "user-report",
       "ref": "2026-07-27 当前任务对话",
-      "note": "用户要求第三 Tab 改为 codex，页面分为快速开始和 AI Skill，代码区具备样式与复制，Skill 暂时留白。"
+      "note": "用户先要求第三 Tab 进入 Codex 页面，随后明确将 Tabbar 图标从 codex 改为 code；页面内 Skill 仍暂时留白。"
     },
     {
       "kind": "file",
       "ref": "miniprogram/common/utils/tabbar-navigation.js",
-      "note": "第三项固定为 codex/codex/Codex 并路由到 /pages/codex/index。"
+      "note": "第三项固定为 codex/code/Codex 并路由到 /pages/codex/index；图标与目的地 value 解耦。"
     },
     {
       "kind": "file",
@@ -59,7 +59,7 @@
   ],
   "rootCause": "第三目的地最初只是为四项信息架构预留的 explore 空白路由；没有与后续 Codex 接入任务同步，也没有可复用的小程序代码阅读与真实复制组合。",
   "decision": {
-    "outcome": "删除 pages/explore/index，新增 pages/codex/index；第三 Tab value/icon/ariaLabel 改为 codex/codex/Codex。新增页面级共享 code-snippet，以 PUI Card、Button、Icon 组合代码 Surface，原生 scroll-view 只承担横向阅读，复制使用真实微信剪贴板。Skill 区只显示 PUI Card + codex Icon + SKILL。",
+    "outcome": "删除 pages/explore/index，新增 pages/codex/index；第三 Tab value/icon/ariaLabel 当前为 codex/code/Codex。新增页面级共享 code-snippet，以 PUI Card、Button、Icon 组合代码 Surface，原生 scroll-view 只承担横向阅读，复制使用真实微信剪贴板。Skill 区仍显示 PUI Card + codex Icon + SKILL。",
     "rationale": "目的地语义、图标资源和页面路由保持一致；复制结果由平台回调证明。Skill 未交付前明确留白，避免空白页面和假下载两种极端。小程序应用页面不伪造成 H5 组件页，但 codex glyph 通过同一生成字体同步 H5 Icon 资源。",
     "alternativesRejected": [
       "只把 orbit 字符串改成不存在的 codex：会重演 Tabbar 空白图标问题。",
@@ -108,20 +108,20 @@
       "微信 DevTools build-npm"
     ],
     "browser": [
-      "微信开发者工具现有会话在 iPhone 12/13 Pro 390x844 打开 pages/codex/index：activeTab=codex，第三项 value/icon/ariaLabel 为 codex/codex/Codex，截图 /tmp/poemui-codex-page-390.png 确认 Navbar、两个代码区、Skill 留白和 Tabbar 均可见。",
+      "微信开发者工具 390x844 首页运行态 #home-tabbar 的第三项实际 PUI Icon 为 name=code、ariaLabel=Codex；截图 /tmp/poemui-home-version-code-tab-390.png 可见通用代码括号图标。",
       "微信运行态通过 #codex-install-snippet 调用真实复制链后，wx.getClipboardData 返回 npm i poemui-miniprogram -S --production，组件回写 copyIcon=check、copyLabel=已复制、copyStatus=代码已复制。",
       "H5 Icon 资源页在 390x844 显示 218 个图标；搜索 codex 唯一命中，真实 glyph 节点计算字体为 PoemUI Roundline、字号 28px，document clientWidth/scrollWidth=375/375，控制台 warning/error 为 0。"
     ],
     "deviceRisks": [
-      "iOS/Android 真机仍需确认 codex glyph 的字体抗锯齿、Tabbar 基线、触摸命中、代码横向滚动、选择文本、剪贴板权限和读屏；本轮未把模拟器结论冒充真机。",
+      "iOS/Android 真机仍需确认 Tabbar code glyph 与页面 codex glyph 的字体抗锯齿、基线、触摸命中、代码横向滚动、选择文本、剪贴板权限和读屏；本轮未把模拟器结论冒充真机。",
       "小程序 Codex 页面深色及边框、阴影、毛玻璃、大圆角、等距组合的运行态视觉仍未逐项检查。",
       "SKILL 尚未实现；当前留白不是可安装或可复制能力。"
     ]
   },
   "ai": {
-    "summary": "第三 Tab 是真实 Codex 接入页：生成链提供 codex Icon，快速开始使用 PUI 代码组合和真实剪贴板，Skill 未完成时只留白。",
+    "summary": "第三 Tab 是真实 Codex 接入页：目的地图标使用已发布的 code，页面 Skill 留白仍可使用 codex 品牌图标。",
     "rules": [
-      "Tabbar 的 codex 图标必须来自当前 Icon manifest，不能手写字符、SVG、Canvas 或不存在的名称。",
+      "Codex 目的地 value 保持 codex，但 Tabbar 图标使用当前 Icon manifest 的 code；不要因名称不同而改错真实路由。",
       "一级目的地语义改变时同步 value、ariaLabel、真实路由、app.json、页面状态和专项测试，不保留旧空白别名。",
       "小程序代码区优先组合 PUI Card/Button/Icon；原生 scroll-view 只承担代码横向阅读。",
       "复制成功或失败必须来自 wx.setClipboardData 回调，不能在点击时直接显示成功。",

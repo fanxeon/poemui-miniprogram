@@ -2,12 +2,17 @@
 
 PoemUI 是面向微信小程序原生开发的 UI 组件库，目标是通过 npm 安装、按需引入组件，并内置深浅色主题能力。工程结构和使用方式对标 `tdesign-miniprogram`：开发者安装包后，在页面 JSON 的 `usingComponents` 中指向包内组件路径。
 
+> **受限 Beta / 发布状态（2026-07-27）**
+> 当前 `0.1.0` 仍在发布准备中，公共 npm 与公开 GitHub 尚未完成真实发布。下方 npm 命令只在 Registry 能实际读取 `poemui-miniprogram@0.1.0` 后可用；本地 tarball、构建成功或代码中的包名都不等于公共发布。完整稳定性与授权边界见 [受限 Beta 公告](docs/PUBLIC_BETA_NOTICE.md)。
+
 参与组件、预览或设计规范开发前，请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)；AI 代理还必须遵守根目录 [AGENTS.md](AGENTS.md)。布局、组件复用与交互规则由 `npm run check` 自动验证。
 
 ## 安装
 
+公共包发布后固定版本安装：
+
 ```bash
-npm i poemui-miniprogram -S --production
+npm i poemui-miniprogram@0.1.0 -S --production
 ```
 
 安装后在微信开发者工具中执行：
@@ -125,16 +130,16 @@ visualConfig.setEffectsEnabled(false); // 暂停装饰效果，不删除单项�
 
 ## 组件范围
 
-当前 npm 包内包含 `69` 个可按需引入的小程序组件目录，分为明确的发布层级：
+当前 npm 包内包含 `71` 个可按需引入的小程序组件目录，分为明确的发布层级：
 
 - `done`：API 与主要交互稳定，具有独立 WXML、WXSS、JS 实现、可传参数、事件与官网交互预览。
 - `beta`：具有真实原生实现与受控发布边界，升级时仍可能出现非破坏性调整。
 
 完整名单、当前状态和 Props 以自动生成的 [组件目录](./docs/COMPONENT_CATALOG.md) 为准。
 
-`PullRefresh`、`VirtualList`、`Sticky`、`Watermark` 已完成独立原生实现与官网调参预览，分别覆盖刷新状态机、固定行高窗口化渲染、WXSS 吸顶与按真实尺寸铺排的图文水印层。正式业务只应使用 `done` 和 `beta` 组件。PoemUI 参考 shadcn 的目录与组合思路，但不会承诺和 Web 实现逐项同构。
+`TopLoading`、`DynamicMessage`、`PullRefresh`、`VirtualList`、`Sticky`、`Watermark` 已完成独立原生实现与官网调参预览，分别覆盖卡片顶边请求进度、顶部非模态灵动通知、刷新状态机、固定行高窗口化渲染、WXSS 吸顶与按真实尺寸铺排的图文水印层。正式业务只应使用 `done` 和 `beta` 组件。PoemUI 参考 shadcn 的目录与组合思路，但不会承诺和 Web 实现逐项同构。
 
-Icon 内置 17 类、218 个 `PoemUI Roundline` 单色 SVG 设计真相源；`components / 组件` 分类收录 14 个确有辨识冲突、需要专属几何的图形，其余组件目录优先复用已有通用图标或锁定版 Lucide 直接来源。生成链路将 2.15px 圆线展开为封闭轮廓，产出稳定私有码点和本地嵌入 WOFF2；H5 与小程序全部 `pui-icon name` 都使用同一 Icon Font 和 `currentColor`，支持 PUI CSS Token，不依赖远程字体、inline SVG、SVG image、CSS mask 或 Canvas。业务图片统一使用 `pui-image`。许可与归属见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)，生成规则见 [docs/ICONS.md](./docs/ICONS.md)。
+Icon 内置 17 类、220 个 `PoemUI Roundline` 单色 SVG 设计真相源；其中 219 个以锁定版 Lucide 为构形来源，用户自有的 `poemcoder-mark` 以登记的闭合轮廓进入同一生成链。`premium` 是映射既有 Lucide `crown` 的稳定公开语义名；`components / 组件` 分类收录 14 个确有辨识冲突、需要专属几何的图形，其余组件目录优先复用已有通用图标或锁定版 Lucide 直接来源。生成链路将圆线或登记实心轮廓转换为稳定私有码点和本地嵌入 WOFF2；H5 与小程序全部 `pui-icon name` 都使用同一 Icon Font 和 `currentColor`，支持 PUI CSS Token，不依赖远程字体、inline SVG、SVG image、CSS mask 或 Canvas。业务图片统一使用 `pui-image`。许可与归属见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)，生成规则见 [docs/ICONS.md](./docs/ICONS.md)。
 
 `pui-alert` 支持受控/非受控显隐、关闭回写、主题图标、默认 slot、`input`/`change`/`open`/`close` 事件与 `0–500ms` 退场动画；关闭不会再直接移除节点。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
 

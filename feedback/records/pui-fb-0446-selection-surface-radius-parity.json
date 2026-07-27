@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0446",
+  "title": "独立选中 Surface 未完整跟随组件语义圆角",
+  "scope": "component",
+  "components": ["combobox", "sidebar"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "审计与 Select 相似的选中框，只有真实独立选中 Surface 才必须跟随全局圆角，并在组件源码与 H5 镜像一起修复。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Combobox 并观察有背景的已选 Option：原生与 H5 自有 option root 都没有圆角声明，在果味/大圆角时保持直角。",
+    "切换 Sidebar 的 theme=card：小程序 card 条目使用 medium，但 H5 将相同的独立条目写死为 preview step-7，无法跟随语义圆角。",
+    "对照 DropdownMenu、NavigationMenu、Tabs、Tabbar、Table、Cell、VirtualList、Picker 和 Indexes：它们分别由共享 Button、连续轨道/行、滚轮焦点或紧凑索引控件承担，不属于同一独立选中 Surface。"
+  ],
+  "expected": "Combobox 已选 Option 与 Sidebar card 已选条目应跟随语义控制圆角；连续导航与数据行不应被机械改成圆角卡片。",
+  "actual": "Combobox 选中背景没有圆角；Sidebar card 的 H5 圆角与小程序 medium Token 不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求将 Select 的选中框圆角约束审计到相似组件，且必须在组件级修复。"},
+    {"kind": "file", "ref": "combobox/combobox.wxss", "note": "Option 已选背景由组件自身绘制，修复后显式使用 --pui-radius-medium。"},
+    {"kind": "file", "ref": "sidebar/sidebar.wxss", "note": "card 条目已使用 --pui-radius-medium，默认连续轨道保持直角。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 Combobox 使用 --pui-site-radius-control，Sidebar card 使用 --pui-preview-radius-medium。"},
+    {"kind": "test", "ref": "scripts/test-combobox.js", "note": "专项断言锁定 Combobox 的双端 Token 边界。"},
+    {"kind": "test", "ref": "scripts/test-sidebar.js", "note": "专项断言锁定 Sidebar card 与默认连续轨道的 Token 边界。"}
+  ],
+  "rootCause": "Select 的透明 PUI Button 级联问题已单独修复，但组件自有 option root 与 Sidebar 的 H5 card 覆盖未纳入同一语义审计，导致一处缺失、一处使用旧固定 step。",
+  "decision": {
+    "outcome": "Combobox Option 在小程序显式使用 medium、H5 使用站点 control radius；Sidebar 只将 card 条目的 H5 圆角更正为 preview medium，默认连续轨道维持零圆角。",
+    "rationale": "选中背景只有在作为独立可见 Surface 时才需要随大圆角变化；以现有语义 Token 绑定可避免页面私有数值与跨端漂移。",
+    "alternativesRejected": [
+      "把所有 selected/active class 统一套控制圆角，会破坏 Tabs、Tabbar、Table、Cell、VirtualList 的连续几何。",
+      "让 Combobox 选项借用 shape=round 的 Panel 半径，会把列表行不必要地胶囊化。",
+      "只修改 H5 演示页会遗漏小程序组件源码并违反共享能力边界。"
+    ]
+  },
+  "impact": {
+    "files": ["combobox/combobox.wxss", "preview/styles.css", "scripts/test-combobox.js", "scripts/test-sidebar.js", "docs/components/COMBOBOX.md", "docs/components/SIDEBAR.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0446-selection-surface-radius-parity.json"],
+    "dependencies": ["ConfigProvider largeRadius", "PUI Button", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js", "scripts/test-sidebar.js"],
+    "commands": ["node scripts/test-combobox.js", "node scripts/test-sidebar.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run example:install", "npm run check", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": [
+      "H5 真实预览在 390x844：果味浅色下 Combobox 选中 Nuxt 的计算圆角为 20px、背景为 rgb(244, 244, 245)；实际点击选择后 Trigger 回写为 Nuxt 并关闭，再展开仍显示选中 Surface。",
+      "H5 真实预览在 390x844：深色果味下 Combobox 选中 Option 为 20px、背景 rgb(24, 24, 27)、前景 rgb(250, 250, 250)；浅深两态 document scrollWidth=375 且 viewport=390，无横向溢出。",
+      "H5 真实预览在 390x844：Sidebar 默认连续轨道实际点击“表单输入与选择”后 active 更新，计算圆角仍为 0px、背景透明；控制台 error/warn 为 0。card 变体的 H5 Token 与小程序 medium Token 由专项契约测试锁定。"
+    ],
+    "deviceRisks": ["微信 iOS/Android 真机仍需验证 card 条目和 Combobox Option 的 rpx 圆角裁切、ScrollView/触摸命中以及毛玻璃合成。"]
+  },
+  "ai": {
+    "summary": "只为真实独立选中 Surface 绑定语义圆角；连续轨道、数据行、指示器与滚轮焦点保持各自组件合同。",
+    "rules": [
+      "先从实际背景、DOM/WXML 根与 H5 镜像判断是否是独立 Surface，禁止按 selected class 机械批量改样式。",
+      "独立选择 Surface 使用组件既有 medium/control 圆角 Token，不写固定半径或页面私有补丁。",
+      "组件级视觉修复必须同步小程序、H5、组件合同、专项测试与 Feedback Ledger。"
+    ],
+    "tags": ["selection", "radius", "combobox", "sidebar", "h5-parity"]
+  }
+}

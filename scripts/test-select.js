@@ -6,8 +6,10 @@ const vm = require('vm');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'select/select.js'), 'utf8');
 const wxml = fs.readFileSync(path.join(root, 'select/select.wxml'), 'utf8');
+const wxss = fs.readFileSync(path.join(root, 'select/select.wxss'), 'utf8');
 const json = JSON.parse(fs.readFileSync(path.join(root, 'select/select.json'), 'utf8'));
 const preview = fs.readFileSync(path.join(root, 'preview/app.js'), 'utf8');
+const previewStyles = fs.readFileSync(path.join(root, 'preview/styles.css'), 'utf8');
 const contract = fs.readFileSync(path.join(root, 'docs/components/SELECT.md'), 'utf8');
 const generator = fs.readFileSync(path.join(root, 'scripts/generate-shadcn-components.js'), 'utf8');
 let definition;
@@ -19,6 +21,7 @@ assert(wxml.includes('<pui-button'), 'Select Trigger 和选项必须复用 PUI B
 assert(wxml.includes('<pui-popup'), 'Select 选项层必须复用 PUI Popup');
 assert(wxml.includes('bind:click="onOptionClick"'));
 assert(wxml.includes('bind:visible-change="onPopupVisibleChange"'));
+assert(wxss.includes('border-radius:var(--pui-radius-medium)'), '小程序 Option 必须显式继承 PUI Button 的 medium 圆角 Token');
 assert(json.usingComponents['pui-button']);
 assert(json.usingComponents['pui-icon']);
 assert(json.usingComponents['pui-popup']);
@@ -29,6 +32,8 @@ assert(contract.includes('PUI Popup'));
 assert(preview.includes('function selectShowcase(props, options)'));
 assert(preview.includes("updateCurrentProp('value', selected.value)"));
 assert(preview.includes("if (type === 'select-option')"));
+assert(previewStyles.includes('body .app-shell[data-page-mode] .preview-stage .pui-select-menu .pui-select-menu__option.pui-button {\n  border-radius: var(--pui-site-radius-control);\n}'), 'H5 选中 Option 必须恢复与 Trigger 相同的控制圆角，而不能被透明 Button 规则归零');
+assert(previewStyles.includes('body .app-shell[data-page-mode] .preview-stage .pui-select-menu .pui-select-menu__option.is-selected.pui-button {\n  color: var(--brand);\n  background: var(--pui-button-soft);\n  background-color: var(--pui-button-soft) !important;\n  border-color: transparent;\n}'), 'H5 选中 Option 必须恢复真实可见的 PUI Button 选中 Surface，不能被透明背景规则覆盖');
 assert(generator.includes("'select',"), 'Select 必须继续进入原生组件保护清单');
 assert(!generator.includes('wxml: `<picker class="{{rootClass}}'), '生成器不得保留已废弃的系统 picker Select 模板');
 

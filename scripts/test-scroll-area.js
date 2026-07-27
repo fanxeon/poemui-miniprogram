@@ -70,6 +70,7 @@ assert.strictEqual(controlled.data.targetId, 'build-log');
 assert.strictEqual(controlled.data.semanticLabel, '构建日志');
 assert.strictEqual(controlled.data.showGradientOverlay, false);
 assert.strictEqual(controlled.data.gradientOverlayStyle, '--pui-scroll-area-gradient-overlay-color:#fef3c7;--pui-scroll-area-gradient-overlay-size:var(--pui-scroll-area-gradient-overlay-size-lg);');
+assert.strictEqual(create({ height: '78vh' }).data.rootStyle, 'height:78vh;', 'viewport-relative height must support bounded Popup content');
 
 const boundaries = create({ height: 'invalid', scrollIntoView: 0, ariaLabel: '' });
 assert.strictEqual(boundaries.data.rootStyle, 'height:320rpx;', 'invalid height must use the documented fallback');
@@ -170,6 +171,7 @@ assert(showcase.includes('pui-scroll-area-preview__viewport'));
 assert(showcase.includes('unitless && Number(unitless[1]) > 0'), 'H5 must reject zero bare heights before converting rpx to px');
 assert(showcase.includes('rpx && Number(rpx[1]) > 0'), 'H5 must reject zero rpx heights before converting to px');
 assert(showcase.includes('px && Number(px[1]) > 0'), 'H5 must reject zero px heights before rendering');
+assert(showcase.includes('vh && Number(vh[1]) > 0'), 'H5 must preserve positive viewport-relative heights');
 assert(showcase.includes('data-scroll-area-anchor'));
 assert(showcase.includes("{ sm: '20px', md: '32px', lg: '44px' }[size] || '32px'"));
 assert(showcase.includes('function scrollAreaPreviewScroll(area, top)'));

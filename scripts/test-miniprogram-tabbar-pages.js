@@ -15,11 +15,11 @@ var navigation = require(path.join(ROOT, 'miniprogram/common/utils/tabbar-naviga
 var expectedItems = [
   { label: '', value: 'home', icon: 'home', ariaLabel: '首页' },
   { label: '', value: 'styles', icon: 'palette', ariaLabel: '快速样式' },
-  { label: '', value: 'codex', icon: 'codex', ariaLabel: 'Codex' },
+  { label: '', value: 'codex', icon: 'code', ariaLabel: '安装' },
   { label: '', value: 'me', icon: 'user', ariaLabel: '我的' }
 ];
 
-assert.deepStrictEqual(navigation.getItems(), expectedItems, 'Tabbar 目的地必须是首页、快速样式、Codex 和我的');
+assert.deepStrictEqual(navigation.getItems(), expectedItems, 'Tabbar 目的地必须是首页、快速样式、安装和我的');
 assert.notStrictEqual(navigation.getItems(), navigation.getItems(), 'Tabbar 条目每次读取必须返回新数组');
 ['pages/index/index', 'pages/styles/index', 'pages/codex/index', 'pages/me/index'].forEach(function (route) {
   assert.ok(appJson.pages.indexOf(route) !== -1, 'app.json 缺少真实 Tabbar 页面 ' + route);
@@ -33,7 +33,7 @@ global.wx = {
 assert.strictEqual(navigation.navigateToTab('home', 'home'), false, '当前页不能制造重复跳转');
 assert.strictEqual(navigation.navigateToTab('unknown', 'home'), false, '未知目的地不能制造跳转');
 assert.strictEqual(navigation.navigateToTab('styles', 'home'), true, '样式页面必须是真实目标');
-assert.strictEqual(navigation.navigateToTab('codex', 'styles'), true, 'Codex 页面必须是真实目标');
+assert.strictEqual(navigation.navigateToTab('codex', 'styles'), true, '安装页面必须是真实目标');
 assert.strictEqual(navigation.navigateToTab('me', 'codex'), true, '我的页面必须是真实目标');
 assert.deepStrictEqual(redirectCalls, [
   { url: '/pages/styles/index' },
@@ -53,25 +53,33 @@ var codexJs = read('miniprogram/pages/codex/index.js');
   ['pui-tabbar', 'poemui-miniprogram/tabbar/tabbar'],
   ['pui-card', 'poemui-miniprogram/card/card'],
   ['pui-icon', 'poemui-miniprogram/icon/icon'],
+  ['pui-tag', 'poemui-miniprogram/tag/tag'],
+  ['pui-empty', 'poemui-miniprogram/empty/empty'],
+  ['pui-loading', 'poemui-miniprogram/loading/loading'],
+  ['pui-top-loading', 'poemui-miniprogram/top-loading/top-loading'],
+  ['pui-button', 'poemui-miniprogram/button/button'],
   ['component-page-section', '/components/component-page-section/component-page-section'],
   ['code-snippet', '/components/code-snippet/code-snippet']
 ].forEach(function (entry) {
-  assert.strictEqual(codexJson.usingComponents[entry[0]], entry[1], 'Codex 页面必须组合 ' + entry[0]);
+  assert.strictEqual(codexJson.usingComponents[entry[0]], entry[1], '安装页面必须组合 ' + entry[0]);
 });
-assert.ok(codexWxml.indexOf('title="Codex"') !== -1, 'Codex 页必须提供唯一 Navbar 标题');
-assert.ok(codexWxml.indexOf('title="快速开始"') !== -1 && codexWxml.indexOf('title="让你的 AI 懂得用它"') !== -1, 'Codex 页必须分成快速开始和 AI Skill 两区');
-assert.strictEqual((codexWxml.match(/<code-snippet/g) || []).length, 2, '快速开始必须提供安装和页面引用两个可复制代码区');
-assert(codexWxml.includes('id="codex-install-snippet"'), '安装命令代码片段必须提供稳定运行态选择器');
-assert(codexWxml.includes('id="codex-usage-snippet"'), '页面引用代码片段必须提供稳定运行态选择器');
-assert.ok(codexWxml.indexOf('<pui-card') !== -1 && codexWxml.indexOf('<pui-icon name="codex"') !== -1 && codexWxml.indexOf('<text>SKILL</text>') !== -1, 'SKILL 留白区必须复用 PUI Card 与 Codex Icon');
+assert.ok(codexWxml.indexOf('title="安装"') !== -1, '安装页必须提供唯一 Navbar 标题');
+assert.ok(codexWxml.indexOf('title="{{codePage.quickStart.title}}"') !== -1 && codexWxml.indexOf('title="{{codePage.skillSection.title}}"') !== -1, 'Codex 页必须从云端 page 文档读取快速开始和 AI Skill 分区');
+assert.ok(codexWxml.indexOf('wx:for="{{codePage.quickStart.snippets}}"') !== -1 && codexWxml.indexOf('id="codex-snippet-{{item.id}}"') !== -1, '快速开始必须从云端 snippets 渲染稳定可复制代码区');
+assert.ok(codexWxml.indexOf('wx:for="{{skills}}"') !== -1 && codexWxml.indexOf('<pui-icon name="{{item.icon}}"') !== -1, '已发布 Skill 必须从云端数据渲染 PUI Card 与 PUI Icon');
+assert.ok(codexWxml.indexOf('codePageLoadState === \'loading\'') !== -1 && codexWxml.indexOf('codePageLoadState === \'error\'') !== -1 && codexWxml.indexOf('codePageLoadState === \'empty\'') !== -1, 'Codex 页必须完整区分云端 loading、error、empty 状态');
+assert.ok(codexWxml.indexOf('bind:click="onRetryCodePage"') !== -1 && codexWxml.indexOf('<pui-button slot="action"') !== -1, '云端失败和空状态必须由 PUI Button 发起真实重试');
+assert.ok(codexWxml.indexOf('state="{{codePageLoadingState}}"') !== -1, '云端读取必须用 PUI TopLoading 表达请求状态');
 assert.ok(codexWxml.indexOf('bind:change="onTabChange"') !== -1 && codexWxml.indexOf('value="{{activeTab}}"') !== -1, 'Codex 页面必须保留受控 PUI Tabbar 导航');
-assert.ok(codexJs.indexOf("npm i poemui-miniprogram -S --production") !== -1, '快速开始必须使用 README 的真实安装命令');
-assert.ok(codexJs.indexOf('"pui-button": "poemui-miniprogram/button/button"') !== -1, '快速开始必须提供真实按需引用路径');
-assert.ok(codexWxss.indexOf('var(--pui-font-family-mono)') !== -1 && codexWxss.indexOf('#') === -1, 'Codex 页面必须只使用 PUI Token 并让 SKILL 使用共享等宽字体');
+assert.ok(codexJs.indexOf("require('../../common/services/codex-page')") !== -1 && codexJs.indexOf('codexPage.load()') !== -1, 'Codex 页面必须通过独立云服务读取内容');
+assert.strictEqual(codexJs.indexOf('npm i poemui-miniprogram -S --production'), -1, 'Codex 页面不得保留包内安装代码回退');
+assert.ok(codexJs.indexOf("codePageError: '暂时无法读取云端 Code 内容，请稍后重试。'") !== -1, '云端失败必须向用户展示可理解的恢复提示，而不是原始平台错误');
+assert.ok(codexWxss.indexOf('var(--pui-') !== -1 && codexWxss.indexOf('#') === -1, 'Codex 页面必须只使用 PUI Token');
 
 var capturedCodexPage;
 var codexNavigationCalls = [];
 var backgroundListener;
+var codePageLoadCalls = 0;
 vm.runInNewContext(codexJs, {
   Page: function (definition) { capturedCodexPage = definition; },
   setTimeout: function () { return 1; },
@@ -100,6 +108,14 @@ vm.runInNewContext(codexJs, {
         }
       };
     }
+    if (request === '../../common/services/codex-page') {
+      return {
+        load: function () {
+          codePageLoadCalls += 1;
+          return Promise.resolve({ page: null, skills: [], source: 'cloud' });
+        }
+      };
+    }
     throw new Error('unexpected Codex page require ' + request);
   }
 }, { filename: 'miniprogram/pages/codex/index.js' });
@@ -108,6 +124,9 @@ assert.strictEqual(capturedCodexPage.data.activeTab, 'codex', 'Codex 页活动�
 capturedCodexPage.onLoad();
 backgroundListener(true);
 assert.strictEqual(capturedCodexPage.data.backgroundGradientEnabled, true, 'Codex 页必须跟随共享页面渐变偏好');
+assert.strictEqual(codePageLoadCalls, 1, 'Codex 页面首次载入必须真实请求云端内容');
+capturedCodexPage.onRetryCodePage();
+assert.strictEqual(codePageLoadCalls, 2, 'Codex 页面重试必须再次真实请求云端内容');
 capturedCodexPage.onTabChange({ detail: { value: 'home' } });
 assert.deepStrictEqual(codexNavigationCalls, [{ value: 'home', activeTab: 'codex' }], 'Codex 页必须发起真实返回首页路由');
 
@@ -123,6 +142,8 @@ assert.ok(snippetWxml.indexOf('variant="text"') !== -1 && snippetWxml.indexOf('s
 assert.strictEqual((snippetWxml.match(/<scroll-view/g) || []).length, 1, '代码区只允许一个原生横向阅读 scroll-view');
 assert.ok(snippetWxml.indexOf('<button') === -1, '代码区不得手写原生 Button');
 assert.ok(snippetWxss.indexOf('var(--pui-font-family-mono)') !== -1 && snippetWxss.indexOf('#') === -1, '代码区必须使用 PUI 等宽字体与 Token');
+assert.ok(snippetWxss.indexOf('background: var(--pui-bg-muted)') !== -1, '代码正文必须使用 PUI muted Token 形成浅色阅读底');
+assert.ok(snippetWxss.indexOf('border-radius: var(--pui-radius-small)') !== -1 && snippetWxss.indexOf('padding: var(--pui-content-gap)') !== -1, '代码阅读底必须使用语义圆角与标准内容内距');
 
 var capturedSnippet;
 var clipboardWrites = [];

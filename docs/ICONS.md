@@ -1,6 +1,6 @@
 # PoemUI Icons
 
-PoemUI 图标采用 `PoemUI Roundline` 风格。218 个图标以 Lucide 的成熟构形和语义为底稿，统一调整为 PoemUI 的圆线权重与光学细节，并保留稳定的 PoemUI 名称、私有码点和 17 类目录。它不是从零绘制的独占图标集，而是遵守 Lucide ISC / Feather MIT 许可的派生图标集。
+PoemUI 图标采用 `PoemUI Roundline` 风格。当前 220 个图标保留稳定的 PoemUI 名称、私有码点和 17 类目录：其中 219 个以 Lucide 的成熟构形和语义为底稿，统一调整圆线权重与光学细节；`poemcoder-mark` 是用户自有公司字标的登记轮廓，不属于 Lucide 派生资产。`premium` 是稳定公开语义名，映射既有 Lucide `crown` 的同一码点。
 
 ## 风格规则
 
@@ -11,7 +11,7 @@ PoemUI 图标采用 `PoemUI Roundline` 风格。218 个图标以 Lucide 的成�
 5. 图标优先保证 20rpx 到 56rpx 下清晰，不能依赖复杂细节。
 6. 视觉重心略向内收，避免贴边和小程序字体化后发虚。
 7. 状态图标使用外框形态，操作图标使用开放形态。
-8. 不再允许分类模板或通用图形兜底；每个 PoemUI 名称必须映射到明确的 Lucide 来源。
+8. 不再允许分类模板或通用图形兜底；每个 PoemUI 名称必须映射到明确的 Lucide 来源或经品牌合同登记的自有轮廓。
 9. 圆环、头像头部和轨道节点等闭口圆形默认镂空；只有省略号、Radio 中心点、锚点等几何上属于点的微小圆保持实心。
 
 ## 来源与派生
@@ -26,9 +26,11 @@ PoemUI 图标采用 `PoemUI Roundline` 风格。218 个图标以 Lucide 的成�
 
 PoemUI 的派生调整包括统一 2.15px 线宽、圆端点与圆连接、稳定的公开命名，以及 `caret`、`file-pdf` 等少量图标的光学或语义细化。
 
+`poemcoder-mark` 的 `source` 固定为 `user-owned:poemcoder-mark`。它由用户提供的公司 Logo 位图提炼为五段闭合矢量轮廓，只复用本项目的生成与字体工具链，不受 Lucide 许可覆盖。
+
 ## 分类目录
 
-源文件位于 `assets/icons-src/`，按照接近 TDesign 图标站的信息架构分成 17 类，共 218 个：
+源文件位于 `assets/icons-src/`，按照接近 TDesign 图标站的信息架构分成 17 类，共 220 个：
 
 - `navigation`：方向、返回、菜单、页面切换
 - `action`：新增、删除、复制、刷新、分享等高频命令
@@ -50,7 +52,7 @@ PoemUI 的派生调整包括统一 2.15px 线宽、圆端点与圆连接、稳�
 组件分类采用减线几何：每枚最多 3 个可见图元，只保留组件主轮廓和必要的语义锚点。首轮“视口 + 面板 + 多行内容”的说明图式方案已被用户否决，不属于当前合同。Popup 以竖向手机轮廓作为后层，并由右下方较小的方形卡片覆盖手机下部；被卡片遮挡的手机右边与底边主动中断，不画穿透线。Popover 以尖角连接真实锚点，Sheet/ActionSheet 通过同一底部面板内是否存在操作行区分，Overlay 只表达覆盖框与透明焦点区。Badge 只表达宿主与右上角标；Cell 与 SwipeCell 共享单行外壳，分别使用右 Chevron、动作分隔与左滑 Chevron；ScrollArea 只留内容线和滚动条；Dialog 只留视口、居中对话框和标题线。
 
 组件目录不等于专属图标待办清单。语义已清楚且不会和相邻目录冲突时直接复用现有图标：Avatar/Card/Image/List/Collapse/Collapsible/Bubble/CountDown/Table 使用 `user/panel-top/image/list-bullet/rows/chevron-down/message/clock/table`。缺少通用名称但 Lucide 已有成熟构形时只增加直接来源：Tag → `tag`、Swiper → `gallery-horizontal`、Direction → `arrow-left-right`。只有 Badge、Cell、SwipeCell、ScrollArea、Dialog 进入 `opticalAdjustments` 的专属几何。
-- `abstract`：智能、Codex、灵感、玻璃、品牌氛围；`codex` 使用清晰的小尺寸 Bot 构形表达 AI 编程入口
+- `abstract`：智能、Codex、灵感、玻璃、品牌氛围；`codex` 使用清晰的小尺寸 Bot 构形表达 AI 编程入口，`poemcoder-mark` 是用户自有公司字标
 
 完整清单由 `assets/icons-src/manifest.json` 维护，不在文档中手工重复。
 
@@ -63,16 +65,15 @@ PoemUI 的派生调整包括统一 2.15px 线宽、圆端点与圆连接、稳�
 
 ## 跨端组件
 
-`pui-icon` 将全部 218 个 `name` 映射为同一份本地 Icon Font 字形，不依赖远程字体或 CDN。小程序通过 `icon/icon-font-map.js` 解析字形，Icon 资源页读取 `icon/icon-font-catalog.js`；H5 从生成目录读取相同 `codepoint` 并加载与小程序逐字节一致的字体 CSS：
+`pui-icon` 将全部 220 个 `name` 映射为同一份本地 Icon Font 字形，不依赖远程字体或 CDN。小程序通过 `icon/icon-font-map.js` 解析字形，Icon 资源页读取 `icon/icon-font-catalog.js`；H5 从生成目录读取相同 `codepoint` 并加载与小程序逐字节一致的字体 CSS：
 
 ```xml
 <pui-icon name="check" size="36" />
 <pui-icon name="close" size="32" color="var(--pui-text-secondary)" />
+<pui-icon name="poemcoder-mark" size="56" aria-label="PoemCoder 公司标记" />
 ```
 
-公司书写字标不是第 219 个 `pui-icon`。它由 `npm run brand:generate` 生成到 `assets/company-mark/`，使用独立字体族 `PoemUI Company Mark` 和 `U+E001`，同时提供 `currentColor` SVG、WOFF2、CSS、WXSS、字符导出与 96/56/32/20px 对照稿。这样可以把单色 Logo 当作字体字形使用，又不会污染操作图标语义、Lucide 来源统计或主 Icon Font 的稳定码点。
-
-1. 运行 `npm run icons:generate` 会从锁定版本的 Lucide 节点同步生成 218 个 SVG、`manifest.json`、不含 SVG body/path 的官网字体目录、`icon/icon-font-map.js`、`icon/icon-font-catalog.js`、`icon/icon-font.wxss`、`preview/icon-font.css` 与 `assets/component-icons-preview.svg`。
+1. 运行 `npm run icons:generate` 会从锁定版本的 Lucide 节点与登记的 `poemcoder-mark` 自有轮廓同步生成 220 个 SVG、`manifest.json`、不含 SVG body/path 的官网字体目录、`icon/icon-font-map.js`、`icon/icon-font-catalog.js`、`icon/icon-font.wxss`、`preview/icon-font.css` 与 `assets/component-icons-preview.svg`。
 2. 生成器将 24×24 的 2.15/1.35 圆头描边纯矢量展开为封闭轮廓，再生成 1024 UPM 的本地 WOFF2；字体使用 nonzero 轮廓方向保留闭口圆形内腔，不会把小图栅格化后再描摹。
 3. `assets/icon-codepoints.json` 是稳定码点登记表：现有名称保持 Unicode Private Use Area 码点不变，新增名称只从 `nextCodepoint` 继续分配，禁止因排序改变既有字形。
 4. `name` 只解析字体字形。未传 `color` 时继承主题文字色，传入实体色或 `var(--pui-*)` 时通过 `currentColor` 生效。
@@ -84,4 +85,4 @@ PoemUI 的派生调整包括统一 2.15px 线宽、圆端点与圆连接、稳�
 
 ## 质量门禁
 
-`npm run check` 会验证数量、分类、磁盘文件、组件映射、稳定码点唯一性、WOFF2 头/字节数/SHA256、Lucide 来源、上游版本、SVG 来源注释、2.15px Roundline 样式，以及 59 个镂空圆和 25 个语义实心点的轮廓拓扑。升级 `lucide-static` 或轮廓工具后必须重新生成，并完成字体字形与 SVG 对照、H5、微信开发者工具桌面端与 390px 视觉验收。
+`npm run check` 会验证数量、分类、磁盘文件、组件映射、稳定码点唯一性、WOFF2 头/字节数/SHA256、Lucide 或自有来源、上游版本、SVG 来源注释、Roundline 样式、`poemcoder-mark` 五段闭合轮廓，以及 59 个镂空圆和 25 个语义实心点的轮廓拓扑。升级 `lucide-static` 或轮廓工具后必须重新生成，并完成字体字形与 SVG 对照、H5、微信开发者工具桌面端与 390px 视觉验收。

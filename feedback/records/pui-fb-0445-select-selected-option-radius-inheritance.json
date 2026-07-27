@@ -1,0 +1,114 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0445",
+  "title": "Select 选中 Option 未继承全局圆角",
+  "scope": "component",
+  "components": ["select", "button", "popup", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Select 的选中框必须跟随全局圆角外观，不能在大圆角或果味外观下保留直角。",
+  "environment": {
+    "surfaces": ["miniprogram-component", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 H5 `#/components/select` 展开 Select，并开启大圆角或一键果味外观。",
+    "观察带 Check 的选中 Option 背景，并读取其 `border-radius`。",
+    "修复前透明 PUI Button 的通用 Surface 规则将该 Option 圆角归零，即使 Trigger 已随外观改变。"
+  ],
+  "expected": "小程序与 H5 的普通/选中 Option 都使用与 Select Trigger 同一控制圆角语义；切换正常/大圆角、浅/深色或果味时，选中背景不产生独立私有半径或直角。",
+  "actual": "小程序端依赖 PUI Button 的隐式继承；H5 透明 PUI Button 的高优先级规则将 Option 设为 `border-radius: 0` 并强制透明背景，选中态既没有可见柔和 Surface，也和 Trigger 脱节。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户明确要求 Select 的选中框跟随圆角。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "透明 PUI Button 基线将 `pui-button--surface-transparent` 圆角归零；Select 专属规则现以 `--pui-site-radius-control` 恢复 Option 的控制圆角。"
+    },
+    {
+      "kind": "file",
+      "ref": "select/select.wxss",
+      "note": "Option 显式消费 `--pui-radius-medium`，与共享 PUI Button 的全局圆角配置同源。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-select.js",
+      "note": "专项测试锁定小程序和 H5 的 Option 圆角 Token，防止透明 Button 基线再次覆盖。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/select",
+      "note": "390x844 真实 H5：修复前果味 Trigger=20px、选中 Option=0px 且背景透明；修复后果味为20px/20px、正常与深色为6px/6px，选中 Surface 可见，document=375/375，控制台无 warning/error。"
+    },
+    {
+      "kind": "build",
+      "ref": "miniprogram/project.config.json",
+      "note": "真实微信 DevTools 使用 AppID wx23aa017375535746、iPhone 12/13 390px 模拟器，build-npm 耗时1327ms、warnings=[]；当前会话只实际到达首页表单目录展开，未到 Select 独立页。"
+    }
+  ],
+  "rootCause": "Select 的 H5 Option 正确复用透明 PUI Button，但通用透明 Surface 为无可见背景场景强制 `border-radius: 0` 和透明背景；选中态的低优先级样式同时被覆盖，未恢复 PUI Button 的控制圆角和柔和 Surface。",
+  "decision": {
+    "outcome": "小程序 Option 显式使用 `--pui-radius-medium`；H5 Select Option 以组件专属高优先级规则使用 `--pui-site-radius-control`，选中态同时恢复 `--pui-button-soft` 柔和 Surface 和品牌文字；该 Token 与 Trigger 的 PUI Button 控制圆角相同。",
+    "rationale": "选择项本身仍是 PUI Button，选中背景是其真实可见 Surface，应该继承同一全局圆角语义，而非菜单 Surface 半径或固定像素。",
+    "alternativesRejected": [
+      "只修改演示页面 CSS，无法约束真实 Select 小程序源码与 H5 镜像的同一语义。",
+      "给选中项写死 5px、9px 或 14px，外观切换后会再次失配。",
+      "移除透明 Button 规则，会改变其他确实不应出现圆角背景的 PUI 组合。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "select/select.wxss",
+      "preview/styles.css",
+      "scripts/test-select.js",
+      "docs/components/SELECT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0445-select-selected-option-radius-inheritance.json"
+    ],
+    "dependencies": ["pui-button", "pui-popup", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-select.js"],
+    "commands": [
+      "node scripts/test-select.js：通过",
+      "npm run feedback:generate：通过（427 records）",
+      "npm run feedback:check：通过（427 records）",
+      "npm run site:build：通过，生成71个组件目录",
+      "npm run example:install：通过，0 vulnerabilities",
+      "微信 DevTools CLI build-npm --project miniprogram：通过，1327ms，warnings=[]",
+      "npm run check：通过",
+      "npm run pack:check：通过，347.0 kB / 1.7 MB / 543 files",
+      "git diff --check：通过"
+    ],
+    "browser": [
+      "修复前390x844、果味外观实测 Trigger=20px、选中 Option=0px、背景透明，确认不是静态推断。",
+      "修复后果味下 Trigger/选中 Option=20px/20px，正常圆角=6px/6px，深色=6px/6px；选中背景分别为 rgb(244,244,245) 与 rgb(24,24,27)，页面宽度均为375/375。",
+      "实际展开菜单并点击 Card：Trigger 回写为 Card、菜单关闭；最终截图与浏览器日志均确认无 warning/error。"
+    ],
+    "deviceRisks": [
+      "微信 DevTools 已实际完成合法 AppID build-npm 和390px首页表单目录展开，但当前会话未到 Select 独立页，Select 的模拟器展开、选择、取消和运行日志仍待补。",
+      "微信 iOS/Android 真机仍需确认 Popup 内 PUI Button 的 WXSS 变量继承、rpx 圆角、触摸命中、样式隔离和读屏；H5 浏览器验收不能替代真机，当前状态为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "Select 选中背景是 PUI Button 的可见 Surface，必须继承 Trigger 的控制圆角；透明基础态不可以抹除选中态的形状语义。",
+    "rules": [
+      "修改 Select Option 的选中背景时，同时检查普通/选中、正常/大圆角和 Trigger 的计算圆角。",
+      "H5 不得以固定 px、`border-radius: 0` 或透明背景覆盖选中 Option；必须消费控制圆角 Token 与 PUI 柔和 Surface。",
+      "小程序 Option 必须使用 PUI Button 圆角 Token，不在页面或消费者样式中补丁。"
+    ],
+    "tags": ["select", "button", "radius", "visual-config", "h5-parity", "miniprogram"]
+  }
+}

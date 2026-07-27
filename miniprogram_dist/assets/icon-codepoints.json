@@ -1,7 +1,7 @@
 {
   "fontFamily": "PoemUI Roundline",
   "range": "Private Use Area",
-  "nextCodepoint": "E0DB",
+  "nextCodepoint": "E0DD",
   "glyphs": {
     "arrow-left": "E001",
     "arrow-right": "E002",
@@ -122,6 +122,7 @@
     "star": "E072",
     "bookmark": "E073",
     "crown": "E074",
+    "premium": "E0DC",
     "cart": "E075",
     "bag": "E076",
     "wallet": "E077",
@@ -220,6 +221,7 @@
     "wave": "E0CE",
     "moon": "E0CF",
     "sun": "E0D0",
-    "focus": "E0D1"
+    "focus": "E0D1",
+    "poemcoder-mark": "E0DB"
   }
 }

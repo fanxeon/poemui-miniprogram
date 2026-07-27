@@ -21,7 +21,7 @@
         aria-disabled="{{option.disabled}}"
       >
         <pui-icon wx:if="{{option.icon}}" name="{{option.icon}}" size="28" />
-        <text>{{option.label}}</text>
+        <text class="pui-picker__item-text">{{option.label}}</text>
       </view>
     </picker-view-column>
   </picker-view>

@@ -11,7 +11,7 @@ Stepper 独立页必须在微信 WebView 运行态确认 `minus / value / plus` 
 - 每页以一个明确填写或选择任务为视觉中心，并补充只读、禁用、错误、取消或本地文件状态中的至少一项关键边界；Checkbox/Radio 分别使用真实 Group 呈现多选与单选互斥。
 - Checkbox/Radio 的 options 文案必须在微信运行态真实显示，不能把 Prop 文本当成具名 Slot fallback；InputOTP 在全局边框关闭时仍须以 muted Surface 显示每个输入格。
 - Select 的 Trigger、Popup 和 Option 都复用 PUI Button/Popup/Icon；系统 `picker` 不再作为 Select 的可见界面。滚轮、多列与确认式任务继续使用 Picker。
-- Picker / DateTimePicker 的弹层必须复用 PUI Popup 的 Header / Content / Footer：标题位于 Header，滚轮位于 Content，取消和确认位于两列 Footer；Calendar 月份导航必须同时显示左右两个 IconButton。
+- Picker / DateTimePicker 的 `type=default` 弹层必须复用 PUI Popup 三列 Header：左侧 primary Check 圆形图标确认、标题居中、右侧 default Close 圆形图标取消，滚轮位于 Content；`type=classic` 才在 Footer 提供两列取消 / 确定。Calendar 月份导航必须同时显示左右两个 IconButton。
 
 ```sh
 npm run test:miniprogram:form-pages

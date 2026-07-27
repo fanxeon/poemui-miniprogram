@@ -137,7 +137,7 @@ assert.strictEqual(metadata.apiEvents.loading, undefined);
 assert.strictEqual(metadata.apiMethods.loading, undefined);
 assert.deepStrictEqual(metadata.apiSlots.loading.map((slot) => slot.name), ['default', 'indicator', 'text']);
 
-const previewSource = preview.slice(preview.indexOf('function loadingPreviewSize'), preview.indexOf('function browserInputType'));
+const previewSource = preview.slice(preview.indexOf('function loadingPreviewSize'), preview.indexOf('function topLoadingMotion'));
 ['<h3>基础用法</h3>', '<h3>图标与文字</h3>', '<h3>方向与进度</h3>', '<h3>全屏与低动效</h3>', 'buttonSample({', 'loadingPreviewMarkup', 'data-loading-preview-current', 'preserveLoadingPreviewExit', 'pui-spinner--ticks']
   .forEach((token) => assert(previewSource.includes(token), `Loading preview must contain ${token}`));
 ['showProgress', 'loadingEvent', 'cellSample({'].forEach((legacy) => assert(!previewSource.includes(legacy), `${legacy} must not remain in the Loading preview`));
@@ -150,7 +150,7 @@ assert(usageSource.includes('sourceDefaults'));
 assert(usageSource.includes('<pui-loading'));
 assert(!usageSource.includes('bind:'), 'Loading basic WXML does not bind nonexistent lifecycle events');
 
-const exampleSection = exampleWxml.slice(exampleWxml.indexOf('<view class="loading-example">'), exampleWxml.indexOf('<view class="toast-example-action">'));
+const exampleSection = exampleWxml.slice(exampleWxml.indexOf('<view class="loading-example">'), exampleWxml.indexOf('<pui-card custom-class="top-loading-example-card"'));
 assert(exampleSection.includes('<pui-loading text="同步组件产物" progress="68" aria-label="组件产物同步状态">'));
 assert(!exampleSection.includes('bind:'), 'Loading example basic usage contains no events');
 assert(!exampleSection.includes('show-progress'));

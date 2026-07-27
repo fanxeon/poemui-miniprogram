@@ -1,5 +1,7 @@
 .pui-input {
   --pui-input-field-radius: var(--pui-radius-medium);
+  --pui-input-action-size: var(--pui-space-step-32);
+  --pui-input-loading-size: var(--pui-space-step-14);
   box-sizing: border-box;
   display: inline-flex;
   flex-direction: column;
@@ -98,9 +100,33 @@
   color: var(--pui-text-secondary);
 }
 
-.pui-input__clear {
-  flex: 0 0 auto;
+.pui-input__trailing {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: var(--pui-space-sm);
+  min-width: 0;
   margin-left: auto;
+}
+
+.pui-input__clear-host,
+.pui-input__loading-host {
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.pui-input__clear-host {
+  width: var(--pui-input-action-size);
+  height: var(--pui-input-action-size);
+}
+
+.pui-input__loading-host {
+  width: var(--pui-input-loading-size);
+  height: var(--pui-input-loading-size);
 }
 
 .pui-input__tips {

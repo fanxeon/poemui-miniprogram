@@ -18,13 +18,13 @@ Props、事件和方法完整清单以 `docs/COMPONENT_API.md` 为准。DateTime
 ```text
 DateTimePicker
 └─ PUI Picker
-   ├─ usePopup=true → PUI Popup Header + wheel Content + two-column Footer
+   ├─ usePopup=true → Picker 默认 Popup Header（Check 图标左 / Close 图标右）或 Classic Footer + wheel Content
    └─ usePopup=false → Inline wheel Surface
       └─ picker-view columns: year/month/date/hour/minute/second
 ```
 
 - DateTimePicker 必须直接组合 PUI Picker，不得复制 Popup、Button、Loading、Empty 或 `picker-view` 结构。
-- DateTimePicker 的 Popup 视觉完全继承 Picker：标题进入 Popup Header，滚轮进入 Content，取消/确认进入两列 Footer；不得增加 DateTimePicker 私有弹层皮肤。
+- DateTimePicker 公开并仅透传 Picker 的 `type='default' | 'classic'`，不复制 Popup、Button 或 Header 结构。默认类型的标题进入 Popup Header，左侧为 primary Check 圆形图标确认、右侧为 default Close 圆形图标取消；`classic` 使用 Picker 的底部等宽取消 / 确定操作区。
 - 日期列只是一份传给 Picker 的数据模型；组件自身不增加第二层 Surface、标题栏、错误卡或清空按钮。
 - 允许 DateTimePicker 监听 Picker 的公开事件并转换 detail；不得穿透调用 Picker 私有字段。
 
@@ -77,7 +77,7 @@ DateTimePicker
 - 固定参考官方 DateTimePicker 文档和 npm 安装包 `date-time-picker/props.js`、类型、JS/WXML/WXSS。
 - 2026-07-27 再次访问官方 DateTimePicker 页面与仓库，并解包 `tdesign-miniprogram@1.15.3` 核对 `miniprogram_dist/date-time-picker/date-time-picker.wxml`；确认它只组合 Picker，PoemUI 同样只从 Picker 继承 Popup 修复，不复制第二份面板。
 - 借鉴 `mode/start/end/format/steps/showWeek` 的领域合同，以及基于 Picker 的 Popup、显隐受控和草稿确认。
-- `cancelBtn/confirmBtn/header` 收敛为 Picker 同名语义的 `cancelText/confirmText/showHeader`；拒绝任意节点和 `popupProps` 穿透。
+- `cancelBtn/confirmBtn/header` 收敛为 Picker 同名语义的 `type/cancelText/confirmText/showHeader`；拒绝任意节点和 `popupProps` 穿透。
 - 不公开函数型 `filter/formatter`：小程序 WXML 无法可靠序列化函数，常见步长与周几标签由 `steps/showWeek` 明确表达。
 - PoemUI 额外保留 `defaultVisible/readonly/closeOnOverlayClick/ariaLabel/reduceMotion`，但不恢复旧版两输入框的 placeholder、bordered、compact、showIcon、clearable、loading、invalid、私有 duration/easing 和 default Slot。
 

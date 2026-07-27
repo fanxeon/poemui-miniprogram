@@ -32,6 +32,7 @@ Component({
     title: { type: String, value: '' },
     subtitle: { type: String, value: '' },
     showFooter: { type: Boolean, value: false },
+    contentScrollable: { type: Boolean, value: true },
     closeOnOverlayClick: { type: Boolean, value: true },
     content: { type: String, value: '' },
     card: { type: Boolean, value: true },

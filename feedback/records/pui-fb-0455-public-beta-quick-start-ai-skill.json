@@ -1,0 +1,115 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0455",
+  "title": "公共发布准备需要真实快速开始、Beta 边界与 AI Skill",
+  "scope": "global",
+  "components": ["h5", "miniprogram", "npm", "skill", "documentation"],
+  "type": "ai-usability",
+  "severity": "high",
+  "status": "investigating",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "把 PoemUI 从本地完成态推进到可公开验证的受限 Beta：H5 提供真实快速开始与 AI Skill，公告不混淆 MIT Core、未来 Pro、本地构建和公共发布。",
+  "environment": {
+    "surfaces": ["H5 快速开始", "npm README", "PoemUI AI Skill", "受限 Beta 公告", "PoemCoder 落地页"],
+    "platforms": ["browser", "node", "wechat-miniprogram", "npm", "github", "docker"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 H5 #/guide，旧页面只显示安装、构建 npm、按需引用三步，没有真实公共发布状态、Skill、Beta 或许可证边界。",
+    "运行 npm whoami 返回 ENEEDAUTH，npm view poemui-miniprogram 返回 E404；本地仓库没有 Git remote。",
+    "README 和旧快速开始直接给出 npm 安装命令，容易把已填写包名或本地 tarball 误读为公共包已发布。"
+  ],
+  "expected": "快速开始只复制当前可执行的页面代码；npm/GitHub 未发布时明确显示尚未发布。仓库提供标准 poemui-miniprogram Skill、只读审计与安装验证脚本，并公开受限 Beta、MIT Core 与未来独立 Pro 的边界。",
+  "actual": "已建立 H5 快速开始、Beta 公告和标准 Skill；公共 npm、GitHub、PoemCoder 落地页与 H5 公网部署仍按各自真实证据推进，未完成项不显示假成功。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前 Goal 对话",
+      "note": "用户授权持续推进 H5/小程序同步、Skill、官网、npm、GitHub 与 Docker 到最终可交付版本。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "快速开始展示公共发布状态、首个页面、视觉配置、AI Skill 和许可边界，只给可用代码提供共享 PUI Copy IconButton。"
+    },
+    {
+      "kind": "file",
+      "ref": "skills/poemui-miniprogram/SKILL.md",
+      "note": "标准 Skill 固定 0.1.0 合同，要求真实事件、PUI 复用、微信构建和 pending-device 边界。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/PUBLIC_BETA_NOTICE.md",
+      "note": "公开文案区分 MIT Core、当前免费 Beta 与未来独立发行 Pro，不创建假购买能力。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-public-beta-launch.js",
+      "note": "专项合同锁定快速开始、公共发布状态、Skill 结构、Beta/许可证边界和 npm homepage。"
+    },
+    {
+      "kind": "build",
+      "ref": "npm run check && npm run pack:check (2026-07-27 baseline)",
+      "note": "修改前 436 条 Ledger、完整合同和 545 文件 pack 基线通过；后续仍需对当前改动重跑。"
+    }
+  ],
+  "rootCause": "项目此前专注逐组件实现与本地回归，公开安装、AI 使用、许可证、官网入口和远程交付没有形成同一可验证发布合同，导致本地完成状态可能被误报为公共可用。",
+  "decision": {
+    "outcome": "采用 MIT Core + 未来独立 Pro；H5 安装入口升级为快速开始；建立 poemui-miniprogram Skill 与两个只读验证脚本；npm/GitHub 未真实发布时禁用安装复制并显示尚未发布。",
+    "rationale": "将用户可执行动作绑定到 Registry、公开仓库、浏览器和微信运行态证据，既保留当前 Beta 的开放体验，也不追溯限制已经以 MIT 交付的代码。",
+    "alternativesRejected": [
+      "在 npm 登录前直接展示可复制安装命令，会把 E404 包伪装为可用。",
+      "只写一张 Skill 宣传卡而不提供标准 Skill 文件、脚本和验证，不构成 AI 能力。",
+      "把已进入 MIT 根包的高级组件改称付费 Pro，会与现有许可证冲突。",
+      "生成二维码占位图或假购买入口，会制造不可执行的用户路径。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "metadata/components.js",
+      "README.md",
+      "package.json",
+      "docs/PUBLIC_BETA_NOTICE.md",
+      "skills/poemui-miniprogram/",
+      "scripts/test-public-beta-launch.js",
+      "feedback/records/pui-fb-0455-public-beta-quick-start-ai-skill.json"
+    ],
+    "dependencies": ["PUI Button", "PUI Icon", "PUI Tag", "npm Registry", "GitHub", "WeChat DevTools", "PoemCoder"]
+  },
+  "verification": {
+    "tests": ["scripts/test-public-beta-launch.js", "skills/poemui-miniprogram/scripts/inspect-project.mjs", "skills/poemui-miniprogram/scripts/verify-install.mjs"],
+    "commands": [
+      "/tmp/poemui-skill-validator/bin/python /Users/fanx/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/poemui-miniprogram：通过。",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check",
+      "node skills/poemui-miniprogram/scripts/inspect-project.mjs .",
+      "node skills/poemui-miniprogram/scripts/verify-install.mjs ."
+    ],
+    "browser": ["待当前实现启动 H5 后验证桌面、390px、light/dark、复制结果和 console。"],
+    "deviceRisks": [
+      "公共 npm 尚未登录和发布，Registry 安装链未验证。",
+      "GitHub owner/repository 尚未确认，公开 clone、Tag、Release 和 Skill 网络安装未验证。",
+      "iOS/Android 真机的组件、Skill 指导产物和共享云安装页仍需发布版本复核。"
+    ]
+  },
+  "ai": {
+    "summary": "PoemUI 的 AI 和公开安装入口必须由真实版本与发布证据驱动；本地包名、tarball、页面卡片或构建不能替代公共可用性。",
+    "rules": [
+      "公共 npm 未能通过 npm view 读取目标版本时，不展示可复制的 npm 安装动作。",
+      "GitHub 未绑定远端和公开 clone 前，不展示 Skill 一键网络安装或声称源码已公开。",
+      "Skill 从固定版本的包入口和组件合同工作，不复制会漂移的完整 API。",
+      "已经进入 MIT 根包的代码继续属于 MIT Core；未来 Pro 只包含独立发行的新能力。",
+      "快速开始的复制结果必须来自真实剪贴板成功或失败，并复用 PUI Button/Icon。",
+      "H5、npm、GitHub、微信模拟器、真机和 Docker 公网发布分别验收，不能相互替代。"
+    ],
+    "tags": ["public-beta", "quick-start", "skill", "npm", "github", "license", "no-fake-success"]
+  }
+}

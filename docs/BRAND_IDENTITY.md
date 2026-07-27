@@ -2,32 +2,19 @@
 
 “月下成行”是 PoemUI 官网的唯一品牌标记，不是 `Icon` 组件的公开资源，也不替代任何操作图标。
 
-## 公司字标的独立字体资产
+## 公司字标的公开 Icon 资产
 
-用户提供的公司书写字标属于公司身份资产，不替代 PoemUI 产品标记“月下成行”。它可以作为单色 SVG 和独立 Icon Font 使用，但继续与 `pui-icon` 的公共操作图标目录隔离：
+用户提供的公司书写字标属于公司身份资产，不替代 PoemUI 产品标记“月下成行”。用户已明确把它以公开名称 `poemcoder-mark` 收录到 `pui-icon`：
 
-- 唯一生成入口是 `npm run brand:generate`，真相源位于 `scripts/generate-company-mark.js`；`npm run site:build` 必须先运行该入口，再构建发布镜像。
-- 源生成目录为 `assets/company-mark/`，发布镜像为 `miniprogram_dist/assets/company-mark/`；两者包含相同的 `company-mark.svg`、`company-mark.woff2`、H5 CSS、小程序 WXSS、稳定字形值和浅深色尺寸对照稿，并由专项测试逐字节校验。
+- 唯一生成入口是 `npm run icons:generate`，闭合轮廓真相源位于 `scripts/generate-icons.js` 的 `customIcons` 登记；禁止保留第二套品牌字体或页面私有字形。
+- 生成 SVG 为 `assets/icons-src/abstract/poemcoder-mark.svg`，并由同一脚本同步进入 manifest、稳定码点表、`icon-font-map.js`、`icon-font-catalog.js`、H5/小程序 WOFF2 和发布镜像。
 - 字形使用 `24×24` viewBox、五段闭合实心轮廓和一个反向内腔，删除原 PNG 的白色残边与扫描噪点；不把位图、Base64 图片或几千个自动描摹锚点塞入 SVG。
-- SVG 与字体都使用 `currentColor`。H5 字体族固定为 `PoemUI Company Mark`，稳定码点为 `U+E001`；96/56/32/20px 必须使用同一个字形，不维护小尺寸替代图。
-- `company-mark` 不进入 `assets/icons-src/manifest.json`，也不能写成 `<pui-icon name="company-mark" />`。产品功能操作仍使用 PUI Button + Icon；公司字标通过独立 SVG、CSS 字体类或小程序字体字符呈现。
-- 生成物的结构与 WOFF2 由 `scripts/test-company-mark.js` 验证；没有用户视觉确认前，字标适配的 acceptance 保持 `pending-user`。
-
-H5：
-
-```html
-<link rel="stylesheet" href="./assets/company-mark/company-mark.css">
-<span class="pui-company-mark" role="img" aria-label="公司标记"></span>
-```
-
-小程序：
-
-```js
-const companyMark = require('./assets/company-mark/company-mark');
-```
+- SVG 与字体都使用 `currentColor`，共享字体族 `PoemUI Roundline`；稳定码点为 `U+E0DB`。96/56/32/20px 使用同一个字形，不维护小尺寸替代图。
+- 旧名 `company-mark` 不保留为兼容别名；唯一公开调用名是 `poemcoder-mark`。
+- `scripts/test-icon.js` 锁定名称、分类、来源、五段闭合轮廓、码点、manifest/map/catalog 和字体产物；没有用户最终视觉确认前 acceptance 保持 `pending-user`。
 
 ```xml
-<text class="pui-company-mark" role="img" aria-label="公司标记">{{companyMark}}</text>
+<pui-icon name="poemcoder-mark" size="56" aria-label="PoemCoder 公司标记" />
 ```
 
 ## 构形与含义
@@ -47,7 +34,7 @@ const companyMark = require('./assets/company-mark/company-mark');
 ## 明确禁止
 
 - 禁止回退为无内容色块、四菱形拼图、羽毛笔、书本、纸张、引号或“文档应用”图形。
-- 禁止把“月下成行”或公司字标 SVG 加入 `assets/icons-src/manifest.json` 冒充可调用的 `pui-icon`；独立公司字标字体不改变组件操作继续由 PUI Button + Icon 完成的合同。
+- 禁止把“月下成行”加入 `pui-icon`；`poemcoder-mark` 是经用户明确登记的唯一公司字标例外，仍不得用作通用功能操作或替代 Button + Icon 的交互组合。
 - 禁止在品牌底或标记本体上使用渐变、外阴影、玻璃和 3D 质感；深浅色仅通过 `--brand` 与 `--page` 反转。
 
 ## 验收

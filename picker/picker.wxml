@@ -6,7 +6,7 @@
     card="{{true}}"
     show-header="{{showHeader}}"
     title="{{title}}"
-    show-footer="{{showHeader}}"
+    show-footer="{{showClassicFooter}}"
     close-btn="{{false}}"
     close-on-overlay-click="{{closeOnOverlayClick}}"
     aria-label="{{semanticLabel}}"
@@ -14,8 +14,36 @@
     reduce-motion="{{reduceMotion}}"
     bind:visible-change="onPopupVisibleChange"
   >
+  <pui-button
+    wx:if="{{showHeader && pickerType === 'default'}}"
+    slot="header-left"
+    theme="primary"
+    variant="base"
+    shape="circle"
+    size="small"
+    icon="check"
+    icon-only
+    disabled="{{confirmDisabled}}"
+    aria-label="确认选择"
+    reduce-motion="{{reduceMotion}}"
+    bind:click="onConfirmTap"
+  />
+  <pui-button
+    wx:if="{{showHeader && pickerType === 'default'}}"
+    slot="close-btn"
+    theme="default"
+    variant="base"
+    shape="circle"
+    size="small"
+    icon="close"
+    icon-only
+    disabled="{{disabled}}"
+    aria-label="取消选择"
+    reduce-motion="{{reduceMotion}}"
+    bind:click="onCancelTap"
+  />
     <include src="./template.wxml" />
-    <view wx:if="{{showHeader}}" slot="footer" class="pui-picker__actions">
+    <view wx:if="{{showClassicFooter}}" slot="footer" class="pui-picker__actions">
       <pui-button
         block
         variant="outline"
@@ -36,9 +64,11 @@
   </pui-popup>
   <view wx:else class="pui-picker__surface">
     <view wx:if="{{showHeader}}" class="pui-picker__header">
-      <pui-button variant="text" size="small" content="{{cancelText}}" disabled="{{disabled}}" aria-label="取消选择" bind:click="onCancelTap" />
+      <pui-button wx:if="{{pickerType === 'default'}}" theme="primary" variant="text" size="small" content="{{confirmText}}" disabled="{{confirmDisabled}}" aria-label="确认选择" bind:click="onConfirmTap" />
+      <pui-button wx:else variant="text" size="small" content="{{cancelText}}" disabled="{{disabled}}" aria-label="取消选择" bind:click="onCancelTap" />
       <view class="pui-picker__title">{{title}}</view>
-      <pui-button theme="primary" variant="text" size="small" content="{{confirmText}}" disabled="{{confirmDisabled}}" aria-label="确认选择" bind:click="onConfirmTap" />
+      <pui-button wx:if="{{pickerType === 'default'}}" variant="text" size="small" content="{{cancelText}}" disabled="{{disabled}}" aria-label="取消选择" bind:click="onCancelTap" />
+      <pui-button wx:else theme="primary" variant="text" size="small" content="{{confirmText}}" disabled="{{confirmDisabled}}" aria-label="确认选择" bind:click="onConfirmTap" />
     </view>
     <include src="./template.wxml" />
   </view>
