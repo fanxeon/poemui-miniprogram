@@ -85,6 +85,14 @@
   gap: var(--pui-space-xs);
 }
 
+.home-brand__name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--pui-space-step-12);
+  min-width: 0;
+}
+
 .home-brand__name {
   max-width: 100%;
   font-size: var(--pui-font-size-display);
@@ -125,6 +133,28 @@
 .home-components {
   width: 100%;
   min-width: 0;
+}
+
+.home-components__advanced-trigger {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--pui-space-xs);
+  color: var(--pui-text-primary);
+}
+
+.home-components__advanced-label {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--pui-font-size-medium);
+  font-weight: var(--pui-font-weight-semibold);
+  line-height: var(--pui-line-height-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-components__advanced-icon {
+  flex: 0 0 auto;
 }
 
 .home-component-list {

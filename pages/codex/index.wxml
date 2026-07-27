@@ -2,7 +2,7 @@
   <view class="codex-page {{backgroundGradientEnabled ? 'codex-page--gradient' : ''}}">
     <view id="codex-navbar" class="codex-page__navbar">
       <pui-navbar
-        title="Codex"
+        title="安装"
         left-arrow="{{false}}"
         fixed="{{false}}"
         capsule="{{true}}"
@@ -18,31 +18,90 @@
         height="{{contentHeight}}"
         gradient-overlay
         gradient-overlay-size="md"
-        aria-label="Codex 使用说明"
+        aria-label="安装使用说明"
       >
         <view class="codex-page__content">
-          <component-page-section
-            title="快速开始"
-            subtitle="安装与引用"
-            description="安装 npm 包，然后在页面中按需引入 PUI 组件。"
-          >
-            <view class="codex-page__stack">
-              <code-snippet id="codex-install-snippet" title="安装依赖" code="{{installCode}}" aria-label="复制 npm 安装命令" />
-              <code-snippet id="codex-usage-snippet" title="页面引用" code="{{usageCode}}" aria-label="复制页面引用代码" />
-            </view>
-          </component-page-section>
+          <pui-top-loading
+            id="codex-page-top-loading"
+            state="{{codePageLoadingState}}"
+            aria-label="{{codePageLoadingState === 'success' ? '云端 Code 内容已同步' : '正在读取云端 Code 内容'}}"
+          />
 
-          <component-page-section
-            title="让你的 AI 懂得用它"
-            subtitle="SKILL"
-          >
-            <pui-card padding="compact" bordered="{{false}}" shadow="{{false}}" aria-label="SKILL 尚未提供">
-              <view class="codex-page__skill-placeholder">
-                <pui-icon name="codex" size="48" aria-hidden="true" />
-                <text>SKILL</text>
+          <view wx:if="{{codePageLoadState === 'loading'}}" class="codex-page__load-state">
+            <pui-loading loading text="正在读取云端内容" layout="vertical" aria-label="正在读取云端 Code 内容" />
+          </view>
+
+          <view wx:elif="{{codePageLoadState === 'error'}}" class="codex-page__load-state">
+            <pui-empty icon="error-circle" description="{{codePageError}}" aria-label="云端 Code 内容读取失败">
+              <pui-button slot="action" theme="primary" block content="重新读取" aria-label="重新读取云端 Code 内容" bind:click="onRetryCodePage" />
+            </pui-empty>
+          </view>
+
+          <view wx:elif="{{codePageLoadState === 'empty'}}" class="codex-page__load-state">
+            <pui-empty icon="cloud" description="云端尚未发布 Code 页面内容。" aria-label="云端 Code 内容为空">
+              <pui-button slot="action" theme="primary" block content="重新读取" aria-label="重新读取云端 Code 内容" bind:click="onRetryCodePage" />
+            </pui-empty>
+          </view>
+
+          <block wx:elif="{{codePage}}">
+            <component-page-section
+              title="{{codePage.quickStart.title}}"
+              subtitle="{{codePage.quickStart.subtitle}}"
+              description="{{codePage.quickStart.description}}"
+            >
+              <view class="codex-page__stack">
+                <code-snippet
+                  wx:for="{{codePage.quickStart.snippets}}"
+                  wx:key="id"
+                  id="codex-snippet-{{item.id}}"
+                  title="{{item.title}}"
+                  code="{{item.code}}"
+                  aria-label="{{item.ariaLabel}}"
+                />
               </view>
-            </pui-card>
-          </component-page-section>
+            </component-page-section>
+
+            <component-page-section
+              title="{{codePage.skillSection.title}}"
+              subtitle="{{codePage.skillSection.subtitle}}"
+              description="{{codePage.skillSection.description}}"
+            >
+              <view wx:if="{{skills.length}}" class="codex-page__skills">
+                <view wx:for="{{skills}}" wx:key="id" class="codex-page__skill">
+                  <pui-card padding="compact" bordered="{{true}}" shadow="{{false}}" aria-label="{{item.name}}">
+                    <view class="codex-page__skill-card">
+                      <view class="codex-page__skill-icon" aria-hidden="true">
+                        <pui-icon name="{{item.icon}}" size="40" />
+                      </view>
+                      <view class="codex-page__skill-main">
+                        <view class="codex-page__skill-heading">
+                          <text class="codex-page__skill-name">{{item.name}}</text>
+                          <pui-tag wx:if="{{item.version}}" content="{{item.version}}" theme="primary" variant="light" size="small" shape="round" />
+                        </view>
+                        <text class="codex-page__skill-summary">{{item.summary}}</text>
+                        <view wx:if="{{item.capabilities.length}}" class="codex-page__skill-capabilities" aria-label="{{item.name + '能力'}}">
+                          <pui-tag wx:for="{{item.capabilities}}" wx:for-item="capability" wx:key="*this" content="{{capability}}" size="small" shape="round" />
+                        </view>
+                      </view>
+                    </view>
+                  </pui-card>
+                  <code-snippet
+                    wx:if="{{item.installCode}}"
+                    id="codex-skill-{{item.id}}-snippet"
+                    title="{{item.installTitle}}"
+                    code="{{item.installCode}}"
+                    aria-label="{{'复制 ' + item.name + ' 安装代码'}}"
+                  />
+                </view>
+              </view>
+              <pui-empty
+                wx:else
+                icon="codex"
+                description="{{codePage.skillSection.emptyDescription}}"
+                aria-label="Skill 暂无已发布内容"
+              />
+            </component-page-section>
+          </block>
         </view>
       </pui-scroll-area>
     </view>

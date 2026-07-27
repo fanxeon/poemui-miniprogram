@@ -1,18 +1,14 @@
 var tabbarNavigation = require('../../common/utils/tabbar-navigation');
 var backgroundPreference = require('../../common/utils/page-background-preference');
 var userProfile = require('../../common/utils/user-profile');
+var updateAnnouncements = require('../../common/services/update-announcements');
 
 var SHISHANG_APP_ID = 'wxa1b9a4d6549c6cd1';
+var ANNOUNCEMENTS = updateAnnouncements.initial();
+var LATEST_ANNOUNCEMENT = updateAnnouncements.latest(ANNOUNCEMENTS);
 
 function getWindowHeight() {
   return wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
-}
-
-function openIdDisplay(openid) {
-  var value = String(openid || '');
-  if (!value) return '尚未获取，请先完成登录';
-  if (value.length <= 14) return value;
-  return value.slice(0, 7) + '…' + value.slice(-5);
 }
 
 function avatarText(nickname) {
@@ -27,9 +23,14 @@ Page({
     nicknameDraft: userProfile.DEFAULT_NICKNAME,
     nicknameError: '',
     avatarText: 'P',
-    openid: '',
-    openIdDisplay: '尚未获取，请先完成登录',
-    hasOpenId: false,
+    announcements: ANNOUNCEMENTS,
+    latestAnnouncementVersion: LATEST_ANNOUNCEMENT ? LATEST_ANNOUNCEMENT.version : '',
+    announcementSource: 'local',
+    announcementSyncError: '',
+    announcementLoadingState: 'idle',
+    announcementPopupVisible: false,
+    announcementScrollTop: 0,
+    announcementPopupStyle: '',
     backgroundGradientEnabled: backgroundPreference.get(),
     contentHeight: '1px',
     layoutReady: false
@@ -44,6 +45,7 @@ Page({
     this._windowResizeHandler = this.onWindowResize.bind(this);
     if (wx.onWindowResize) wx.onWindowResize(this._windowResizeHandler);
     this.restoreProfile();
+    this.loadAnnouncements();
   },
 
   onShow: function onShow() {
@@ -64,15 +66,11 @@ Page({
   restoreProfile: function restoreProfile() {
     var profile = userProfile.restore();
     var nickname = profile.nickname || userProfile.DEFAULT_NICKNAME;
-    var openid = profile.openid || '';
     this.setData({
       nickname: nickname,
       nicknameDraft: nickname,
       nicknameError: '',
-      avatarText: avatarText(nickname),
-      openid: openid,
-      openIdDisplay: openIdDisplay(openid),
-      hasOpenId: Boolean(openid)
+      avatarText: avatarText(nickname)
     });
   },
 
@@ -106,31 +104,62 @@ Page({
     return true;
   },
 
-  onCopyOpenId: function onCopyOpenId() {
-    var self = this;
-    var openid = String(this.data.openid || '');
-    if (!openid) {
-      this.showToast('尚未获取 OpenID', 'warning');
-      return false;
-    }
-    wx.setClipboardData({
-      data: openid,
-      success: function success() {
-        self.showToast('OpenID 已复制', 'success');
-      },
-      fail: function fail() {
-        self.showToast('OpenID 复制失败', 'error');
-      }
-    });
-    return true;
-  },
-
   onPurchaseLicense: function onPurchaseLicense() {
-    this.showToast('高级版授权尚未开放', 'warning');
+    this.showToast('授权详情正在准备中', 'warning');
   },
 
   onOpenOrders: function onOpenOrders() {
     this.showToast('订单服务尚未开放', 'warning');
+  },
+
+  onOpenAnnouncements: function onOpenAnnouncements() {
+    this.setData({ announcementPopupVisible: true, announcementScrollTop: 0 });
+    this.loadAnnouncements();
+  },
+
+  loadAnnouncements: function loadAnnouncements() {
+    var self = this;
+    this.setData({
+      announcementLoadingState: 'loading'
+    });
+    return updateAnnouncements.load().then(function onLoaded(result) {
+      var announcements = result && Array.isArray(result.announcements)
+        ? result.announcements
+        : [];
+      var latest = updateAnnouncements.latest(announcements);
+      var error = result && result.error;
+      self.setData({
+        announcements: announcements,
+        latestAnnouncementVersion: latest ? latest.version : '',
+        announcementSource: result && result.source ? result.source : 'local',
+        announcementSyncError: error ? String(error.errMsg || error.message || error) : '',
+        announcementLoadingState: result && result.source === 'cloud' && !error ? 'success' : 'idle'
+      });
+      return result;
+    }).catch(function onLoadFailed(error) {
+      self.setData({
+        announcementSyncError: String(error && (error.errMsg || error.message || error) || ''),
+        announcementLoadingState: 'idle'
+      });
+      return {
+        announcements: self.data.announcements,
+        source: self.data.announcementSource,
+        error: error
+      };
+    });
+  },
+
+  onAnnouncementPopupVisibleChange: function onAnnouncementPopupVisibleChange(event) {
+    var visible = event && event.detail ? Boolean(event.detail.visible) : false;
+    this.setData({ announcementPopupVisible: visible });
+  },
+
+  onCloseAnnouncements: function onCloseAnnouncements() {
+    this.setData({ announcementPopupVisible: false });
+  },
+
+  onContactError: function onContactError() {
+    this.showToast('暂时无法打开客服会话', 'error');
   },
 
   onOpenPrivacy: function onOpenPrivacy() {
@@ -191,6 +220,7 @@ Page({
       if (!navbarHeight || !tabbarHeight) return;
       this.setData({
         contentHeight: Math.max(1, Math.floor(windowHeight - navbarHeight - tabbarHeight)) + 'px',
+        announcementPopupStyle: 'height:calc(100vh - ' + navbarHeight + 'px - 24rpx);',
         layoutReady: true
       });
     }.bind(this));

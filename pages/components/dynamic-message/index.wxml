@@ -1,0 +1,31 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="DynamicMessage 组件用法">
+        <view class="component-page__content dynamic-message-page__content">
+          <component-page-section title="生成任务通知" subtitle="同 key 原位更新" description="通知不使用遮罩，页面内容和滚动始终可用。">
+            <view class="dynamic-message-page__actions">
+              <pui-button content="开始生成" theme="primary" block bind:click="onStartTask" />
+              <pui-button content="更新进度" variant="outline" block bind:click="onUpdateTask" />
+              <pui-button content="真实成功" variant="outline" block bind:click="onCompleteTask" />
+              <pui-button content="真实失败" theme="danger" variant="outline" block bind:click="onFailTask" />
+              <pui-button content="加入队列" variant="outline" block bind:click="onQueueMessage" />
+              <pui-button content="关闭当前" variant="outline" block bind:click="onCloseCurrent" />
+            </view>
+            <text class="component-page__status" aria-live="polite">{{notificationStatus}}</text>
+          </component-page-section>
+          <component-page-section title="页面仍可操作" subtitle="非模态、不锁滚动" description="下面的 Cell 保持正常阅读，通知显示时仍可继续滚动。">
+            <block wx:for="{{feedRows}}" wx:key="*this">
+              <pui-cell title="发布检查 {{item}}" description="源码、合同、H5、小程序与安装产物" left-icon="component" />
+            </block>
+          </component-page-section>
+          <pui-button content="{{reduceMotion ? '恢复标准动效' : '开启低动效'}}" variant="outline" block bind:click="onToggleMotion" />
+        </view>
+      </pui-scroll-area>
+    </view>
+    <pui-dynamic-message id="dynamic-message" duration="3000" safe-area reduce-motion="{{reduceMotion}}" bind:click="onNotificationClick" bind:action="onNotificationAction" bind:close="onNotificationClose" />
+  </view>
+</pui-config-provider>

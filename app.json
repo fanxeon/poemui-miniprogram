@@ -36,6 +36,8 @@
     "pages/components/action-sheet/index",
     "pages/components/dropdown-menu/index",
     "pages/components/overlay/index"
+    ,"pages/components/top-loading/index"
+    ,"pages/components/dynamic-message/index"
     ,"pages/components/pull-refresh/index"
     ,"pages/components/virtual-list/index"
     ,"pages/components/watermark/index"

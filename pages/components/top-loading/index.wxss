@@ -1,0 +1,5 @@
+@import "../../../styles/component-page.wxss";
+@import "../../../styles/advanced-pages.wxss";
+.top-loading-page__card{position:relative;overflow:hidden}
+.top-loading-page__actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--pui-content-gap);width:100%;min-width:0}
+.top-loading-page__actions pui-button:last-child{grid-column:1/-1}

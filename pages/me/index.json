@@ -10,6 +10,10 @@
     "pui-button": "poemui-miniprogram/button/button",
     "pui-cell": "poemui-miniprogram/cell/cell",
     "pui-cell-group": "poemui-miniprogram/cell/cell-group",
+    "pui-popup": "poemui-miniprogram/popup/popup",
+    "pui-tag": "poemui-miniprogram/tag/tag",
+    "pui-icon": "poemui-miniprogram/icon/icon",
+    "pui-top-loading": "poemui-miniprogram/top-loading/top-loading",
     "pui-toast": "poemui-miniprogram/toast/toast"
   }
 }

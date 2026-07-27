@@ -5,6 +5,8 @@
     "pui-navbar": "poemui-miniprogram/navbar/navbar",
     "pui-button": "poemui-miniprogram/button/button",
     "pui-image": "poemui-miniprogram/image/image",
+    "pui-icon": "poemui-miniprogram/icon/icon",
+    "pui-tag": "poemui-miniprogram/tag/tag",
     "pui-scroll-area": "poemui-miniprogram/scroll-area/scroll-area",
     "pui-collapsible": "poemui-miniprogram/collapsible/collapsible",
     "pui-cell": "poemui-miniprogram/cell/cell",

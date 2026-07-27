@@ -76,6 +76,8 @@ var OVERLAY_COMPONENTS = [
 ];
 
 var ADVANCED_COMPONENTS = [
+  { key: 'top-loading', name: 'TopLoading', description: '在当前卡片顶边反馈任务进度。', icon: 'progress', url: '/pages/components/top-loading/index', keywords: 'top-loading 顶部 加载 卡片 进度' },
+  { key: 'dynamic-message', name: 'DynamicMessage', description: '在页面顶部展示可原位更新的实时通知。', icon: 'bell', url: '/pages/components/dynamic-message/index', keywords: 'dynamic-message 灵动岛 灵动通知 队列' },
   { key: 'pull-refresh', name: 'PullRefresh', description: '在列表顶部发出刷新请求。', icon: 'refresh', url: '/pages/components/pull-refresh/index', keywords: 'pull-refresh 下拉刷新' },
   { key: 'virtual-list', name: 'VirtualList', description: '窗口化渲染长列表内容。', icon: 'list-bullet', url: '/pages/components/virtual-list/index', keywords: 'virtual-list 虚拟列表 长列表' },
   { key: 'watermark', name: 'Watermark', description: '在内容区域添加可配置水印。', icon: 'layers', url: '/pages/components/watermark/index', keywords: 'watermark 水印 重复' }
@@ -129,7 +131,7 @@ var CATALOG_SECTIONS = [
   { key: 'form', label: '表单组件', ariaLabel: '表单组件列表', items: FORM_COMPONENTS },
   { key: 'data', label: '数据展示', ariaLabel: '数据展示组件列表', items: DATA_COMPONENTS },
   { key: 'feedback', label: '反馈', ariaLabel: '反馈组件列表', items: FEEDBACK_COMPONENTS },
-  { key: 'advanced', label: '高级', ariaLabel: '高级组件列表', items: ADVANCED_COMPONENTS }
+  { key: 'advanced', label: '高级', ariaLabel: '高级组件列表', hasPremiumIcon: true, items: ADVANCED_COMPONENTS }
 ];
 
 var SEARCH_OVERLAY_DURATION = 500;
@@ -139,6 +141,7 @@ var HOME_SHARE_TITLE = 'Poem UI · 原生小程序组件库';
 var HOME_SHARE_IMAGE_URL = '/assets/poemui-moon-lines-black.png';
 var HOME_BRAND_MARK_DARK_URL = '/assets/poemui-moon-lines-mark-dark.png';
 var HOME_BRAND_MARK_LIGHT_URL = '/assets/poemui-moon-lines-mark-light.png';
+var poemuiVersion = require('poemui-miniprogram/version');
 var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
 var backgroundPreference = require('../../common/utils/page-background-preference');
 var tabbarNavigation = require('../../common/utils/tabbar-navigation');
@@ -244,6 +247,7 @@ Page({
   data: {
     brandLogo: HOME_SHARE_IMAGE_URL,
     brandMark: brandMarkForTheme(currentVisualConfig().theme),
+    currentVersion: 'v' + poemuiVersion,
     catalogSummary: makeCatalogSummary(),
     navbarLeftBtn: { icon: 'search', ariaLabel: '搜索组件' },
     navbarRightBtn: { icon: 'menu', ariaLabel: '打开外观设置' },

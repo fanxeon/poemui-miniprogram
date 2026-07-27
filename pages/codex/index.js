@@ -1,18 +1,6 @@
 var tabbarNavigation = require('../../common/utils/tabbar-navigation');
 var backgroundPreference = require('../../common/utils/page-background-preference');
-
-var INSTALL_CODE = 'npm i poemui-miniprogram -S --production';
-var USAGE_CODE = [
-  '// page.json',
-  '{',
-  '  "usingComponents": {',
-  '    "pui-button": "poemui-miniprogram/button/button"',
-  '  }',
-  '}',
-  '',
-  '<!-- page.wxml -->',
-  '<pui-button theme="primary">开始</pui-button>'
-].join('\n');
+var codexPage = require('../../common/services/codex-page');
 
 function getWindowHeight() {
   return wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
@@ -22,8 +10,11 @@ Page({
   data: {
     activeTab: 'codex',
     tabbarItems: tabbarNavigation.getItems(),
-    installCode: INSTALL_CODE,
-    usageCode: USAGE_CODE,
+    codePage: null,
+    skills: [],
+    codePageLoadState: 'loading',
+    codePageLoadingState: 'idle',
+    codePageError: '',
     backgroundGradientEnabled: backgroundPreference.get(),
     contentHeight: '1px',
     layoutReady: false
@@ -37,6 +28,7 @@ Page({
     });
     this._windowResizeHandler = this.onWindowResize.bind(this);
     if (wx.onWindowResize) wx.onWindowResize(this._windowResizeHandler);
+    this.loadCodePage();
   },
 
   onShow: function onShow() {
@@ -48,6 +40,7 @@ Page({
   },
 
   onUnload: function onUnload() {
+    this._codePageRequestId = (this._codePageRequestId || 0) + 1;
     clearTimeout(this._measureTimer);
     if (this._unsubscribeBackgroundPreference) this._unsubscribeBackgroundPreference();
     if (wx.offWindowResize && this._windowResizeHandler) wx.offWindowResize(this._windowResizeHandler);
@@ -82,5 +75,42 @@ Page({
   onTabChange: function onTabChange(event) {
     var value = event && event.detail ? event.detail.value : '';
     tabbarNavigation.navigateToTab(value, this.data.activeTab);
+  },
+
+  loadCodePage: function loadCodePage() {
+    var self = this;
+    var requestId = (this._codePageRequestId || 0) + 1;
+    this._codePageRequestId = requestId;
+    this.setData({
+      codePageLoadState: 'loading',
+      codePageLoadingState: 'loading',
+      codePageError: ''
+    });
+    return codexPage.load().then(function onLoaded(result) {
+      if (self._codePageRequestId !== requestId) return result;
+      var page = result && result.page ? result.page : null;
+      self.setData({
+        codePage: page,
+        skills: result && Array.isArray(result.skills) ? result.skills : [],
+        codePageLoadState: page ? 'ready' : 'empty',
+        codePageLoadingState: 'success',
+        codePageError: ''
+      });
+      return result;
+    }).catch(function onLoadFailed(error) {
+      if (self._codePageRequestId !== requestId) return null;
+      self.setData({
+        codePage: null,
+        skills: [],
+        codePageLoadState: 'error',
+        codePageLoadingState: 'idle',
+        codePageError: '暂时无法读取云端 Code 内容，请稍后重试。'
+      });
+      return null;
+    });
+  },
+
+  onRetryCodePage: function onRetryCodePage() {
+    this.loadCodePage();
   }
 });

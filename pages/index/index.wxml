@@ -31,7 +31,17 @@
           <view class="home-brand">
             <view class="home-brand__headline">
               <view class="home-brand__identity">
-                <text class="home-brand__name">Poem UI</text>
+                <view class="home-brand__name-row">
+                  <text class="home-brand__name">Poem UI</text>
+                  <pui-tag
+                    content="{{currentVersion}}"
+                    theme="default"
+                    variant="light"
+                    size="small"
+                    shape="round"
+                    aria-label="{{'当前版本 ' + currentVersion}}"
+                  />
+                </view>
                 <text class="home-brand__stanza">月下成行</text>
               </view>
               <pui-image
@@ -56,10 +66,15 @@
               label="{{section.label}}"
               aria-label="{{section.ariaLabel}}"
               open="{{activeCatalogSection === section.key}}"
+              custom-trigger="{{section.hasPremiumIcon}}"
               data-section="{{section.key}}"
               custom-content="{{true}}"
               bind:change="onCatalogSectionChange"
             >
+              <view wx:if="{{section.hasPremiumIcon}}" slot="trigger" class="home-components__advanced-trigger">
+                <text class="home-components__advanced-label">{{section.label}}</text>
+                <pui-icon name="premium" size="30" custom-class="home-components__advanced-icon" />
+              </view>
               <view class="home-component-list">
                 <block wx:for="{{section.items}}" wx:for-item="component" wx:key="key">
                   <pui-cell

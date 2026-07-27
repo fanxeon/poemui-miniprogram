@@ -6,6 +6,11 @@
     "pui-tabbar": "poemui-miniprogram/tabbar/tabbar",
     "pui-card": "poemui-miniprogram/card/card",
     "pui-icon": "poemui-miniprogram/icon/icon",
+    "pui-tag": "poemui-miniprogram/tag/tag",
+    "pui-empty": "poemui-miniprogram/empty/empty",
+    "pui-loading": "poemui-miniprogram/loading/loading",
+    "pui-top-loading": "poemui-miniprogram/top-loading/top-loading",
+    "pui-button": "poemui-miniprogram/button/button",
     "component-page-section": "/components/component-page-section/component-page-section",
     "code-snippet": "/components/code-snippet/code-snippet"
   }

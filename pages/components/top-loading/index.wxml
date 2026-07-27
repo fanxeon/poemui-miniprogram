@@ -1,0 +1,29 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="TopLoading 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="当前卡片任务" subtitle="顶部轨道不占正文高度" description="未知总量、精确进度和显式完成都依附同一个 Card Surface。">
+            <pui-card custom-class="top-loading-page__card" title="组件发布检查" description="源码、H5、小程序与安装产物">
+              <pui-top-loading state="{{taskState}}" progress="{{taskProgress}}" delay="220" minimum-visible="500" success-duration="700" duration="500" aria-label="组件发布检查进度" reduce-motion="{{reduceMotion}}" />
+              <pui-cell title="npm 组件产物" description="失败或取消回到 idle，不推断成功。" value="{{taskProgress === null ? '未知总量' : taskProgress + '%'}}" left-icon="package" />
+            </pui-card>
+            <text class="component-page__status" aria-live="polite">{{taskStatus}}</text>
+          </component-page-section>
+          <component-page-section title="状态回写" subtitle="由调用方明确控制" description="开始、推进、完成与取消都会真实更新 TopLoading Props。">
+            <view class="top-loading-page__actions">
+              <pui-button content="未知进度" theme="primary" variant="outline" block bind:click="onStartUnknown" />
+              <pui-button content="精确进度" variant="outline" block bind:click="onStartExact" />
+              <pui-button content="显式完成" theme="primary" block bind:click="onComplete" />
+              <pui-button content="失败 / 取消" theme="danger" variant="outline" block bind:click="onCancel" />
+              <pui-button content="{{reduceMotion ? '恢复标准动效' : '开启低动效'}}" variant="outline" block bind:click="onToggleMotion" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

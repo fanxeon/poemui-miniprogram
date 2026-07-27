@@ -8,7 +8,22 @@
         capsule="{{true}}"
         safe-area-inset-top="{{true}}"
         bordered="{{false}}"
-      />
+      >
+        <pui-button
+          slot="left"
+          id="me-contact-service"
+          theme="default"
+          variant="text"
+          surface="transparent"
+          size="small"
+          shape="circle"
+          icon="comment"
+          icon-only
+          open-type="contact"
+          aria-label="联系 PoemUI 客服"
+          bind:error="onContactError"
+        />
+      </pui-navbar>
     </view>
 
     <view class="me-page__content-row" style="height: {{contentHeight}};">
@@ -21,15 +36,9 @@
         aria-label="我的账户与服务"
       >
         <view class="me-page__content">
-          <pui-card padding="compact" bordered="{{true}}" shadow="{{false}}" aria-label="账户资料">
+          <pui-card id="me-profile-card" padding="compact" bordered="{{true}}" shadow="{{false}}" aria-label="账户资料">
             <view class="me-profile">
-              <view class="me-profile__summary">
-                <pui-avatar text="{{avatarText}}" size="large" aria-label="{{nickname + '的头像'}}" />
-                <view class="me-profile__identity">
-                  <text class="me-profile__nickname">{{nickname}}</text>
-                  <text class="me-profile__caption">PoemUI 用户</text>
-                </view>
-              </view>
+              <pui-avatar text="{{avatarText}}" size="large" aria-label="{{nickname + '的头像'}}" />
               <view class="me-profile__editor">
                 <pui-input
                   id="me-nickname-input"
@@ -39,84 +48,184 @@
                   prefix-icon="edit"
                   maxlength="20"
                   clearable
+                  suffix="slot"
                   status="{{nicknameError ? 'error' : 'default'}}"
                   tips="{{nicknameError}}"
                   confirm-type="done"
-                  aria-label="昵称"
+                  aria-label="编辑昵称"
                   bind:change="onNicknameChange"
                   bind:enter="onSaveNickname"
-                />
-                <pui-button
-                  id="me-save-nickname"
-                  content="保存昵称"
-                  theme="primary"
-                  size="small"
-                  block
-                  disabled="{{!nicknameDraft || nicknameDraft === nickname}}"
-                  aria-label="保存昵称"
-                  bind:click="onSaveNickname"
-                />
+                >
+                  <pui-button
+                    slot="suffix"
+                    id="me-save-nickname"
+                    theme="default"
+                    variant="text"
+                    size="extra-small"
+                    shape="square"
+                    icon="check"
+                    icon-only
+                    disabled="{{!nicknameDraft || nicknameDraft === nickname}}"
+                    aria-label="保存昵称"
+                    bind:click="onSaveNickname"
+                  />
+                </pui-input>
               </view>
             </view>
           </pui-card>
 
-          <pui-cell-group card="{{true}}" bordered="{{true}}" aria-label="账户标识">
-            <pui-cell
-              id="me-openid-cell"
-              title="OpenID"
-              description="{{openIdDisplay}}"
-              value="{{hasOpenId ? '复制' : '未获取'}}"
-              right-icon="{{hasOpenId ? 'copy' : 'help-circle'}}"
-              clickable="{{hasOpenId}}"
-              disabled="{{!hasOpenId}}"
-              aria-label="{{hasOpenId ? '复制 OpenID' : 'OpenID 尚未获取'}}"
-              bind:click="onCopyOpenId"
-            />
-          </pui-cell-group>
-
-          <pui-cell-group card="{{true}}" bordered="{{true}}" aria-label="账户与服务">
-            <pui-cell
-              title="购买高级版授权"
-              description="解锁更多 PoemUI 使用权益"
-              value="尚未开放"
-              left-icon="crown"
-              clickable
-              arrow
-              aria-label="购买高级版授权，尚未开放"
-              bind:click="onPurchaseLicense"
-            />
-            <pui-cell
-              title="我的订单"
-              description="查看授权与订单记录"
-              value="暂无订单"
-              left-icon="receipt"
-              clickable
-              arrow
-              aria-label="我的订单"
-              bind:click="onOpenOrders"
-            />
-            <pui-cell
-              title="用户私隐协议"
-              description="查看微信小程序隐私保护指引"
-              left-icon="shield-check"
-              clickable
-              arrow
-              aria-label="查看用户私隐协议"
-              bind:click="onOpenPrivacy"
-            />
-            <pui-cell
-              title="关于诗上"
-              description="前往诗上科技小程序"
-              left-icon="app"
-              right-icon="external-link"
-              clickable
-              aria-label="打开诗上科技小程序"
-              bind:click="onOpenShishang"
-            />
-          </pui-cell-group>
+          <view id="me-services" class="me-page__services">
+            <pui-cell-group card="{{true}}" bordered="{{true}}" aria-label="账户与服务">
+              <pui-cell
+                title="高级版商业授权"
+                description="查看授权范围与版本权益"
+                value="查阅详情"
+                left-icon="crown"
+                clickable
+                arrow
+                aria-label="查阅高级版商业授权详情"
+                bind:click="onPurchaseLicense"
+              />
+              <pui-cell
+                title="我的订单"
+                description="查看授权与订单记录"
+                value="暂无订单"
+                left-icon="receipt"
+                clickable
+                arrow
+                aria-label="我的订单"
+                bind:click="onOpenOrders"
+              />
+              <pui-cell
+                id="me-update-announcement-cell"
+                title="更新公告"
+                description="查看最新版本与组件改动"
+                value="{{latestAnnouncementVersion}}"
+                left-icon="bell"
+                clickable
+                arrow
+                aria-label="查看更新公告"
+                bind:click="onOpenAnnouncements"
+              />
+              <pui-cell
+                title="用户私隐协议"
+                description="查看微信小程序隐私保护指引"
+                left-icon="shield-check"
+                clickable
+                arrow
+                aria-label="查看用户私隐协议"
+                bind:click="onOpenPrivacy"
+              />
+              <pui-cell
+                title="关于诗上"
+                description="前往诗上科技小程序"
+                left-icon="poemcoder-mark"
+                right-icon="external-link"
+                clickable
+                aria-label="打开诗上科技小程序"
+                bind:click="onOpenShishang"
+              />
+            </pui-cell-group>
+          </view>
         </view>
       </pui-scroll-area>
     </view>
+
+    <pui-popup
+      id="me-update-announcement-popup"
+      visible="{{announcementPopupVisible}}"
+      placement="bottom"
+      card="{{true}}"
+      show-header
+      title="更新公告"
+      subtitle="{{latestAnnouncementVersion}}"
+      show-footer
+      content-scrollable="{{false}}"
+      custom-style="{{announcementPopupStyle}}"
+      close-on-overlay-click
+      prevent-scroll-through
+      show-overlay
+      aria-label="PoemUI 更新公告"
+      bind:visible-change="onAnnouncementPopupVisibleChange"
+    >
+      <pui-top-loading
+        id="me-announcement-top-loading"
+        slot="surface-top"
+        state="{{announcementLoadingState}}"
+        aria-label="{{announcementLoadingState === 'success' ? '更新公告已同步' : '正在读取更新公告'}}"
+      />
+      <view id="me-announcement-content" slot="content" class="me-announcement-popup__content">
+        <pui-scroll-area
+          id="me-announcement-scroll-area"
+          height="78vh"
+          scroll-top="{{announcementScrollTop}}"
+          content-padding-bottom="0"
+          gradient-overlay-size="sm"
+          aria-label="PoemUI 更新公告内容"
+          custom-style="max-height:100%;"
+        >
+          <view class="me-announcements">
+            <view
+              wx:for="{{announcements}}"
+              wx:key="id"
+              wx:for-item="announcement"
+              class="me-announcement"
+            >
+              <view class="me-announcement__heading">
+                <view class="me-announcement__title-group">
+                  <text class="me-announcement__title">{{announcement.title}}</text>
+                  <text class="me-announcement__summary">{{announcement.summary}}</text>
+                </view>
+                <view class="me-announcement__meta">
+                  <pui-tag
+                    content="{{announcement.version}}"
+                    theme="primary"
+                    variant="light"
+                    size="small"
+                    shape="round"
+                  />
+                  <text class="me-announcement__date">{{announcement.date}}</text>
+                </view>
+              </view>
+              <view class="me-announcement__highlights" aria-label="{{announcement.title + '组件改动'}}">
+                <view
+                  wx:for="{{announcement.highlights}}"
+                  wx:key="component"
+                  wx:for-item="highlight"
+                  class="me-announcement__highlight"
+                >
+                  <view class="me-announcement__highlight-icon" aria-hidden="true">
+                    <pui-icon name="{{highlight.icon}}" size="36" />
+                  </view>
+                  <view class="me-announcement__highlight-main">
+                    <view class="me-announcement__highlight-heading">
+                      <pui-tag
+                        content="{{highlight.component}}"
+                        theme="primary"
+                        variant="light"
+                        size="small"
+                        shape="round"
+                      />
+                      <text class="me-announcement__highlight-title">{{highlight.title}}</text>
+                    </view>
+                    <text class="me-announcement__highlight-description">{{highlight.description}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </pui-scroll-area>
+      </view>
+      <pui-button
+        id="me-announcement-close"
+        slot="footer"
+        block
+        theme="primary"
+        content="知道了"
+        aria-label="关闭更新公告"
+        bind:click="onCloseAnnouncements"
+      />
+    </pui-popup>
 
     <view id="me-tabbar" class="me-page__tabbar">
       <pui-tabbar

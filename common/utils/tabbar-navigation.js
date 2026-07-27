@@ -1,7 +1,7 @@
 var TABBAR_ITEMS = [
   { label: '', value: 'home', icon: 'home', ariaLabel: '首页' },
   { label: '', value: 'styles', icon: 'palette', ariaLabel: '快速样式' },
-  { label: '', value: 'codex', icon: 'codex', ariaLabel: 'Codex' },
+  { label: '', value: 'codex', icon: 'code', ariaLabel: '安装' },
   { label: '', value: 'me', icon: 'user', ariaLabel: '我的' }
 ];
 
