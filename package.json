@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "description": "PoemUI for native WeChat Mini Program.",
   "homepage": "https://poemcoder.com/poem-ui",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fanxeon/poemui-miniprogram.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fanxeon/poemui-miniprogram/issues"
+  },
   "keywords": [
     "wechat",
     "miniprogram",

@@ -11923,7 +11923,7 @@ AI 必须遵守：
 - 范围：`global` / `h5`、`miniprogram`、`npm`、`skill`、`documentation`
 - 状态：`investigating`，用户验收：`accepted`，更新：2026-07-27
 - 用户目标：把 PoemUI 从本地完成态推进到可公开验证的受限 Beta：H5 提供真实快速开始与 AI Skill，公告不混淆 MIT Core、未来 Pro、本地构建和公共发布。
-- 实际问题：已建立 H5 快速开始、Beta 公告和标准 Skill；公共 npm、GitHub、PoemCoder 落地页与 H5 公网部署仍按各自真实证据推进，未完成项不显示假成功。
+- 实际问题：H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成并通过运行态验收；公共 npm、GitHub、云端 pui-codepage 写入、正式小程序码与真机仍保持明确未完成状态，页面不显示假成功。
 - 决策：采用 MIT Core + 未来独立 Pro；H5 安装入口升级为快速开始；建立 poemui-miniprogram Skill 与两个只读验证脚本；npm/GitHub 未真实发布时禁用安装复制并显示尚未发布。
 - 理由：将用户可执行动作绑定到 Registry、公开仓库、浏览器和微信运行态证据，既保留当前 Beta 的开放体验，也不追溯限制已经以 MIT 交付的代码。
 
@@ -11942,9 +11942,14 @@ AI 必须遵守：
 - 验证：`npm run site:build`
 - 验证：`npm run check`
 - 验证：`npm run pack:check`
+- 验证：`npm run example:install`
+- 验证：`/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project "/Users/fanx/Documents/poemUI 小程序组件库/miniprogram"：AppID wx23aa017375535746 通过，warnings=[]。`
+- 验证：`miniprogram_dist、_example/node_modules 安装目录与真实 miniprogram_npm：540 个文件逐文件 SHA-256 一致。`
 - 验证：`node skills/poemui-miniprogram/scripts/inspect-project.mjs .`
 - 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs .`
 - 真机/兼容风险：公共 npm 尚未登录和发布，Registry 安装链未验证。
 - 真机/兼容风险：GitHub owner/repository 尚未确认，公开 clone、Tag、Release 和 Skill 网络安装未验证。
-- 真机/兼容风险：iOS/Android 真机的组件、Skill 指导产物和共享云安装页仍需发布版本复核。
+- 真机/兼容风险：_example 使用 touristappid，微信 CLI 返回 code 10，不存在此 AppID；真实 AppID 工程已通过，但游客安装示例未生成 miniprogram_npm。
+- 真机/兼容风险：小程序 pui-codepage 云端更新仍等待数据库写操作确认，未把待确认任务报告成成功。
+- 真机/兼容风险：正式小程序码、微信审核/发布以及 iOS/Android 真机的组件、Skill 指导产物和共享云安装页仍需发布版本复核。
 

@@ -1,5 +1,13 @@
 .DS_Store
 *.tgz
+*.log
+.env
+.env.*
 node_modules/
+miniprogram/
+miniprogram_npm/
+project.private.config.json
+cloudbaserc.json
+.audit/
 _example/.poemui-cache/
 _example/miniprogram/miniprogram_npm/

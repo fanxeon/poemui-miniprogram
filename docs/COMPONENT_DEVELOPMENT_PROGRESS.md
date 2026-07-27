@@ -1,5 +1,34 @@
 # PoemUI 组件交付进度
 
+## 2026-07-27 · PoemUI 受限 Beta、AI Skill 与公网双入口
+
+- **H5 与落地页**：H5 “安装”升级为“快速开始”，只对真实可执行的页面、视觉配置和 AI
+  任务示例提供 PUI Copy IconButton；公共 npm/GitHub 未发布时明确禁用对应动作。PoemCoder
+  `/poem-ui` 已使用三张真实微信开发者工具截图、正式小程序码留白、MIT Core/未来独立
+  Pro 边界和 H5 CTA 发布；H5 独立静态容器发布于
+  `https://poemcoder.com/poem-ui/docs/`，落地页发布于
+  `https://poemcoder.com/poem-ui`。
+- **AI Skill**：新增 `skills/poemui-miniprogram/`，包含标准 `SKILL.md`、
+  `agents/openai.yaml`、六份渐进式 reference、只读工程审计和安装验证脚本。Skill 固定适配
+  PoemUI `0.1.0`，要求优先复用 PUI、真实父级回写、平台失败/取消闭环、390px、默认
+  500ms/上限 1000ms 和 `pending-device` 边界；已安装到当前 Codex Skill 目录并通过
+  `quick_validate.py` 与真实项目自用验证。
+- **发布与许可证**：`docs/PUBLIC_BETA_NOTICE.md` 作为公开事实源，明确当前 71 个组件、
+  562 个快速样式和 220 个图标属于 MIT Core；当前开放 Beta 能力无需购买，未来 Pro
+  只能独立发行未进入 MIT Core 的新能力。公共 npm 仍因 `ENEEDAUTH`、Registry `E404`
+  未发布；GitHub 因缺少明确 owner/repository 与 remote 未发布，页面没有制造可复制的假安装。
+- **构建与产物**：`site:build`、完整 `npm run check`、`pack:check`、
+  `example:install` 通过；真实 AppID `wx23aa017375535746` 工程执行微信
+  `build-npm` 成功且 `warnings=[]`。`miniprogram_dist`、示例
+  `node_modules/poemui-miniprogram/miniprogram_dist` 与真实
+  `miniprogram_npm/poemui-miniprogram` 的 540 个文件逐文件 SHA-256 一致。
+  `_example` 的 `touristappid` 仍返回 `code 10 / 不存在此 AppID`，未伪造其微信构建产物。
+- **公网实测与风险**：落地页桌面/390px、light/dark、真实 CTA、四张图片加载和 console
+  已通过；H5 在移动视口无横向溢出，light/dark、真实复制、资源与 console 已通过。
+  正式小程序码、云端 `pui-codepage` 写确认、公共 npm 干净安装、GitHub clone/Tag/Release、
+  微信正式审核和 iOS/Android 真机仍待外部权限或材料。Ledger：`PUI-FB-0455`
+  （investigating / accepted）。
+
 ## 2026-07-27 · DynamicMessage 分阶段变形动效修正
 
 - **真实问题**：首版虽然具备 retained node、同 key update 和 FIFO 队列，但进退场只用一次 `translateY + scale` 同时作用整张 Surface，标题、正文与操作同段出现/消失，不符合“先弹出 Icon + 标题，再长出面板，退场反向”的灵动通知语义。

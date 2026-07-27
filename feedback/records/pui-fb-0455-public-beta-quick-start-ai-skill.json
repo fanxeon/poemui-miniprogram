@@ -24,7 +24,7 @@
     "README 和旧快速开始直接给出 npm 安装命令，容易把已填写包名或本地 tarball 误读为公共包已发布。"
   ],
   "expected": "快速开始只复制当前可执行的页面代码；npm/GitHub 未发布时明确显示尚未发布。仓库提供标准 poemui-miniprogram Skill、只读审计与安装验证脚本，并公开受限 Beta、MIT Core 与未来独立 Pro 的边界。",
-  "actual": "已建立 H5 快速开始、Beta 公告和标准 Skill；公共 npm、GitHub、PoemCoder 落地页与 H5 公网部署仍按各自真实证据推进，未完成项不显示假成功。",
+  "actual": "H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成并通过运行态验收；公共 npm、GitHub、云端 pui-codepage 写入、正式小程序码与真机仍保持明确未完成状态，页面不显示假成功。",
   "evidence": [
     {
       "kind": "user-report",
@@ -53,8 +53,23 @@
     },
     {
       "kind": "build",
-      "ref": "npm run check && npm run pack:check (2026-07-27 baseline)",
-      "note": "修改前 436 条 Ledger、完整合同和 545 文件 pack 基线通过；后续仍需对当前改动重跑。"
+      "ref": "npm run site:build && npm run check && npm run pack:check && npm run example:install (2026-07-27)",
+      "note": "当前实现的完整合同、站点生成、545 文件 tarball 和示例安装通过；真实 AppID 工程 build-npm 为 warnings=[]。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://poemcoder.com/poem-ui",
+      "note": "生产落地页桌面与 390px、light/dark、真实 H5 CTA、图片加载和 console 通过。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://poemcoder.com/poem-ui/docs/",
+      "note": "生产 H5 使用独立 AMD64 容器，健康检查、移动无横向溢出、light/dark、真实复制和 console 通过。"
+    },
+    {
+      "kind": "file",
+      "ref": "deploy/h5/Dockerfile",
+      "note": "生产静态镜像与 OpenResty 子路径代理拥有独立部署和回滚边界。"
     }
   ],
   "rootCause": "项目此前专注逐组件实现与本地回归，公开安装、AI 使用、许可证、官网入口和远程交付没有形成同一可验证发布合同，导致本地完成状态可能被误报为公共可用。",
@@ -77,7 +92,10 @@
       "README.md",
       "package.json",
       "docs/PUBLIC_BETA_NOTICE.md",
+      "docs/POEMUI_PUBLIC_BETA_LAUNCH_GOAL.md",
+      "docs/PUBLISH_AND_DEPLOY.md",
       "skills/poemui-miniprogram/",
+      "deploy/h5/",
       "scripts/test-public-beta-launch.js",
       "feedback/records/pui-fb-0455-public-beta-quick-start-ai-skill.json"
     ],
@@ -90,14 +108,22 @@
       "npm run site:build",
       "npm run check",
       "npm run pack:check",
+      "npm run example:install",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project \"/Users/fanx/Documents/poemUI 小程序组件库/miniprogram\"：AppID wx23aa017375535746 通过，warnings=[]。",
+      "miniprogram_dist、_example/node_modules 安装目录与真实 miniprogram_npm：540 个文件逐文件 SHA-256 一致。",
       "node skills/poemui-miniprogram/scripts/inspect-project.mjs .",
       "node skills/poemui-miniprogram/scripts/verify-install.mjs ."
     ],
-    "browser": ["待当前实现启动 H5 后验证桌面、390px、light/dark、复制结果和 console。"],
+    "browser": [
+      "https://poemcoder.com/poem-ui：桌面与 390px 无横向溢出，light/dark、44px CTA、真实链接点击、四张图片加载和 console 通过。",
+      "https://poemcoder.com/poem-ui/docs/：390px 与更窄移动视口无横向溢出，light/dark、真实剪贴板结果、资源加载和 console 通过。"
+    ],
     "deviceRisks": [
       "公共 npm 尚未登录和发布，Registry 安装链未验证。",
       "GitHub owner/repository 尚未确认，公开 clone、Tag、Release 和 Skill 网络安装未验证。",
-      "iOS/Android 真机的组件、Skill 指导产物和共享云安装页仍需发布版本复核。"
+      "_example 使用 touristappid，微信 CLI 返回 code 10，不存在此 AppID；真实 AppID 工程已通过，但游客安装示例未生成 miniprogram_npm。",
+      "小程序 pui-codepage 云端更新仍等待数据库写操作确认，未把待确认任务报告成成功。",
+      "正式小程序码、微信审核/发布以及 iOS/Android 真机的组件、Skill 指导产物和共享云安装页仍需发布版本复核。"
     ]
   },
   "ai": {

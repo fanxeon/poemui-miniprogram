@@ -73,6 +73,13 @@ docker buildx build \
 
 生产容器只监听宿主机 `127.0.0.1:3102`，容器端口为 `8080`；OpenResty 的 `/poem-ui/docs/` location 负责去掉前缀后转发。`/healthz` 是容器级健康检查，公网发布仍须逐项验证 HTML、CSS、JS、字体、hash 路由、390px、light/dark 和真实组件交互。服务器内存有限，禁止在远端构建 Node/Next 镜像；必须在本机生成 `linux/amd64` 镜像后传输。
 
+2026-07-27 受限 Beta 当前生产基线为
+`poemui-h5:20260727-public-beta-final`。活动容器 `poemui-h5` 仅绑定
+`127.0.0.1:3102`，旧版保留为停止状态的
+`poemui-h5-rollback-20260727-initial`；OpenResty 配置测试通过后已热加载。
+公网 `/poem-ui/docs/` 与 `/healthz` 返回 200。以后发布不得复用这个状态描述代替
+当次远端只读审计和健康检查。
+
 ## 发布后验收
 
 1. 在一个干净目录执行 `npm pack`，检查 tarball 中存在 `miniprogram_dist/`，其内包含组件目录、`common/`、`theme/` 和 `assets/`，且不包含 `preview/`、`docs/`、`_example/` 与源码目录。
