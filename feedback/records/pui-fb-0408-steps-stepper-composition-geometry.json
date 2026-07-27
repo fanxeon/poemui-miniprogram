@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0408",
+  "title": "Steps 连线与 Stepper 三段控件未共享稳定组合坐标",
+  "scope": "component",
+  "components": ["steps", "stepper", "button", "input", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "修正 Steppper/Steps 的连接位置，让步骤连线穿过指示器中心，数值步进器保持 minus、value、plus 紧密连接。",
+  "environment": {
+    "surfaces": ["steps component page", "stepper component page"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "Steps 水平连接线高于 indicator，纵向连接线偏离 indicator 中心。",
+    "Stepper 的 PUI Input 自定义组件宿主参与流式宽度后，把加减按钮推散；仅定位子组件内部根时视觉顺序又会反转。"
+  ],
+  "expected": "Steps 横向和纵向连接线都穿过 indicator 中心；Stepper 在三种尺寸和状态下保持 minus/value/plus 的一个连续控件。",
+  "actual": "Steps 的 connector 与 indicator 使用不同坐标上下文；Stepper 的 Button/Input 宿主与内部根没有共享稳定轨道。",
+  "evidence": [
+    {"kind": "file", "ref": "steps/steps.wxml", "note": "PUI Button 改为覆盖整项的透明交互层，视觉 body 和 connector 回到 Steps 坐标系。"},
+    {"kind": "file", "ref": "steps/steps.wxss", "note": "默认连线使用 22rpx 中心，dot 使用 26rpx 中心。"},
+    {"kind": "file", "ref": "stepper/stepper.wxml", "note": "小程序固定坐标轨保持 minus/value/plus 视觉顺序。"},
+    {"kind": "test", "ref": "scripts/test-steps.js", "note": "锁定交互覆盖层、视觉 body 和连接中心。"},
+    {"kind": "test", "ref": "scripts/test-stepper.js", "note": "锁定三段总宽度、固定输入轨和微信宿主投影补偿。"},
+    {"kind": "browser", "ref": "/tmp/poemui-steps-final3.png", "note": "390x844 模拟器确认横向与纵向连线均穿过 indicator 中心。"},
+    {"kind": "browser", "ref": "/tmp/poemui-stepper-final5.png", "note": "390x844 模拟器确认三组 Stepper 都呈 minus/value/plus 连续顺序。"}
+  ],
+  "rootCause": "Steps 把视觉内容放入 Button 默认 Slot，Button 内部内容轨改变了 indicator 原点；Stepper 则把自定义组件宿主与内部根混用为布局坐标。",
+  "decision": {
+    "outcome": "Steps 的 PUI Button 只承担全项交互，视觉 body、indicator 和 connector 由组件自身布局；Stepper 继续复用 PUI Button/Input，但在小程序 WebView 使用实测后的固定坐标轨和有界裁切。",
+    "rationale": "交互语义继续复用 PUI，视觉几何回到父组件唯一坐标系，避免跨组件 Slot/宿主参与定位。",
+    "alternativesRejected": [
+      "继续微调 connector 魔法数无法消除 Button Slot 原点漂移。",
+      "手写原生 button/input 会破坏 PUI 组合合同。",
+      "允许 Stepper 普通 Flex 自动分配会再次被 Input 宿主扩张。"
+    ]
+  },
+  "impact": {
+    "files": ["steps/", "stepper/", "miniprogram/pages/components/steps/", "miniprogram/pages/components/stepper/", "scripts/test-steps.js", "scripts/test-stepper.js", "docs/components/STEPS.md", "docs/components/STEPPER.md"],
+    "dependencies": ["PUI Button", "PUI Icon", "PUI Input"]
+  },
+  "verification": {
+    "tests": ["scripts/test-steps.js", "scripts/test-stepper.js", "scripts/test-miniprogram-navigation-pages.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具 build-npm"],
+    "browser": [
+      "微信开发者工具 Steps 页面浅色 390x844 截图确认水平/纵向/完成态连线几何。",
+      "微信开发者工具 Stepper 页面浅色 390x844 截图确认 normal、disableInput、disabled 三组均保持 minus/value/plus。"
+    ],
+    "deviceRisks": ["iOS/Android 真机的自定义组件宿主投影、输入法、触摸和字体缩放仍需复核。"]
+  },
+  "ai": {
+    "summary": "复合组件的交互根与视觉几何可以分层，但 indicator、connector 和内容必须共享父组件坐标。",
+    "rules": [
+      "Steps 的 PUI Button 只承担整项交互，不把 connector 放进 Button 默认 Slot。",
+      "Steps 默认 indicator 的中心为 22rpx，dot 中心为 26rpx。",
+      "Stepper 必须在微信运行态验证 minus/value/plus 顺序，不能只看 WXML 源顺序。"
+    ],
+    "tags": ["steps", "stepper", "connector", "composition", "wechat-runtime"]
+  }
+}

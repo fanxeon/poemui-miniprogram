@@ -1,0 +1,128 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0364",
+  "title": "内置 Icon 需要真实 Icon Font 与 currentColor",
+  "scope": "component",
+  "components": ["icon", "alert"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "pui-icon 的内置名称采用真正的 Icon Font 方案，使实体颜色、PUI CSS Token、深浅色和组件继承色都能像主流小程序组件库一样直接生效。",
+  "environment": {
+    "surfaces": ["icon-component", "alert-component", "miniprogram-home", "miniprogram-icon-page", "h5-preview", "npm-package"],
+    "platforms": ["wechat-miniprogram-webview", "wechat-devtools", "browser", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "给内置 pui-icon 传入 var(--pui-alert-warning-tinted-fg) 时，旧实现仍先把 SVG 当作 image，再把 color 交给 Canvas fillStyle；Canvas 无法解析 WXSS 自定义属性，图标不会跟随 Token。",
+    "审计 TDesign MiniProgram 当前 icon.wxml/icon.ts/icon.wxss 与 Vant Weapp icon.wxml/index.wxss，确认主流实现把内置名称渲染为字体字形，图片 URL 才进入 image 分支。",
+    "审计 PoemUI 的 209 个 Roundline SVG，确认它们都是描边图形，不能直接塞入字体；必须先保持 2.15/1.35 圆线语义进行纯矢量描边展开。"
+  ],
+  "expected": "全部 209 个内置 name 都以 icon-font-map.js 作为小程序运行时唯一名称源，映射为稳定私有码点的本地字体字形；color 通过 currentColor 支持实体色与 var(--pui-*)，字体随 npm 离线交付且不访问 CDN。PUI-FB-0365 已取代本记录最初保留 src 的过渡决定：pui-icon 不再接收图片，业务图片统一使用 pui-image。",
+  "actual": "旧实现把内置 name 映射为 SVG 路径并统一走 image；传 color 后依赖 Canvas source-in，因此 CSS Token、继承色和部分组件语义色无法直接生效，并产生额外图片解码与画布节点。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-25 当前对话",
+      "note": "用户明确纠正目标为 Icon Font 方案，并指出其他主流组件库的颜色行为不同。"
+    },
+    {
+      "kind": "file",
+      "ref": "icon/icon.js",
+      "note": "旧内置 name 与 src 共用 iconSrc，并在 color 非空时进入 Canvas source-in。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/icon",
+      "note": "当前官方源码将内置名称渲染为字体 label，图片 URL 使用 image 分支。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/youzan/vant-weapp/tree/dev/packages/icon",
+      "note": "当前官方源码同样以字体类渲染内置图标，并以 image 处理图片来源。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-icon.js",
+      "note": "新增 WOFF2 头、SHA256、209 个码点唯一性、map parity、Token 颜色、小程序内置运行时禁止导入 icon-map 和 src Canvas 边界专项。"
+    },
+    {
+      "kind": "browser",
+      "ref": "2026-07-25 微信开发者工具 RC 2.02.2607161 / AppID wx23aa017375535746",
+      "note": "现有主 WebView 会话通过自动化端口实测 iPhone 12/13 Pro 390×844：Icon 页三列网格、组件分类九枚字形、首页小尺寸目录图标及 Alert 深浅色 Token 着色均正常，无 exception 或 console error。"
+    }
+  ],
+  "rootCause": "PoemUI 早期为保证本地 SVG 离线交付，把内置名称和自定义图片合并到同一 image 资源通道；后续补 color 时又以 Canvas 弥补 image 不继承 currentColor，却没有重新拆分内置 glyph 与业务图片的渲染职责。",
+  "decision": {
+    "outcome": "全部 209 个内置 name 只从生成的 icon-font-map.js 解析为本地 WOFF2 字形并使用 currentColor，pui-icon 小程序运行时不再导入 icon-map，也不存在 SVG/image/Canvas 回退。PUI-FB-0365 进一步将公共 API 收敛为 name/size/color/ariaLabel，删除本记录初版曾保留的 src/load/error 图片通道；生成器维护稳定 PUA 码点、字体映射、字体 WXSS、H5 同源字体数据与 manifest。",
+    "rationale": "字体字形是微信 WebView 中让内置单色图标继承 CSS Token 的直接方案；本地 data URI 同时满足离线、无 CDN 和标准 npm 交付。跨端纯 Icon Font 合同已经由 PUI-FB-0365 固化，图片职责只属于 pui-image。",
+    "alternativesRejected": [
+      "继续为每个内置 SVG 使用 Canvas，会保留 CSS 变量不可解析、额外解码和节点开销。",
+      "CSS mask 不是稳定的微信小程序内置图标合同，且不能作为当前 WebView 全基础库假设。",
+      "远程字体 URL 会引入首屏网络、域名白名单和弱网失败，不满足 PoemUI 离线交付要求。",
+      "把描边 SVG 直接写进字体会丢失 stroke、linecap 和 linejoin；位图描摹又会损伤 20rpx 细节。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scripts/generate-icons.js",
+      "assets/icon-codepoints.json",
+      "assets/icons-src/manifest.json",
+      "icon/icon-font-map.js",
+      "icon/icon-font.wxss",
+      "icon/icon.js",
+      "icon/icon.wxml",
+      "icon/icon.wxss",
+      "alert/alert.js",
+      "miniprogram_dist/icon",
+      "miniprogram/miniprogram_npm/poemui-miniprogram/icon",
+      "metadata/components.js",
+      "docs/components/ICON.md",
+      "docs/ICONS.md",
+      "docs/COMPONENT_API.md",
+      "scripts/test-icon.js",
+      "scripts/test-alert.js"
+    ],
+    "dependencies": ["makerjs", "svg-path-commander", "svg2ttf", "wawoff2", "lucide-static"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-alert.js", "scripts/test-miniprogram-component-pages.js"],
+    "commands": [
+      "npm run icons:generate",
+      "node scripts/test-icon.js",
+      "node scripts/test-alert.js",
+      "node scripts/test-miniprogram-component-pages.js",
+      "npm run miniprogram:build",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project '/Users/fanx/Documents/poemUI 小程序组件库/miniprogram'"
+    ],
+    "browser": [
+      "2026-07-25 微信开发者工具 RC 2.02.2607161 现有主 WebView 热重载：AppID wx23aa017375535746，iPhone 12/13 Pro 390×844。Icon 页面实际数据为 209 个图标、17 个分类；搜索 components 后显示 9 个专属字形，三列网格宽 362px、搜索行宽 362px，无横向溢出。",
+      "同一会话的 Alert 独立页在 light/dark 下实测：内置 info/success/warning 字形随 --pui-alert-*-tinted-fg 呈现对应语义色；字体、映射在源码、miniprogram_dist、示例安装包和真实 miniprogram_npm 的 SHA256 一致；运行期无 exception 或 console error。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机仍需确认内嵌 WOFF2 data URI 的首次解析、字体基线、20rpx 小尺寸抗锯齿、样式隔离和低端设备内存表现。",
+      "移除 src 是有意的 API 收敛；旧消费者必须迁移到 pui-image，不能依赖静默兼容。"
+    ]
+  },
+  "ai": {
+    "summary": "小程序全部内置 name 的唯一运行时来源是 icon-font-map.js 和本地 Icon Font；PUI-FB-0365 已废止 src 过渡能力，业务图片必须使用 pui-image。",
+    "rules": [
+      "新增图标必须进入 scripts/generate-icons.js、稳定码点登记和唯一生成链路，禁止手改字体 map 或 WXSS。",
+      "pui-icon 小程序运行时不得导入 icon-map、SVG 路径表或为内置 name 增加 image/Canvas 回退；icon-map 只服务 H5、资源目录和审计。",
+      "内置 name 的 color 优先使用 PUI Token 或安全实体色，直接依赖 currentColor，不为每个消费组件复制颜色表。",
+      "禁止给 pui-icon 恢复 src；业务图片和品牌图必须使用 pui-image。",
+      "字体生成必须先把 Roundline 描边纯矢量展开为封闭轮廓，并视觉检查 20rpx、32rpx、56rpx。",
+      "Icon 仍是展示叶子；可点击操作继续使用 PUI Button + Icon。"
+    ],
+    "tags": ["icon", "icon-font", "currentcolor", "woff2", "codepoint", "wechat", "offline", "alert"]
+  }
+}

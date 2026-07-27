@@ -1,0 +1,173 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0034",
+  "title": "官网共享下拉菜单与浮层缺少完整深浅色合同",
+  "scope": "global",
+  "components": [
+    "preview-site",
+    "select",
+    "config-provider"
+  ],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "机型切换菜单及所有组件菜单、浮层必须完整兼容深浅色，不能只修当前页面；共性问题应在共享 PUI 层一次收口。",
+  "environment": {
+    "surfaces": [
+      "h5-preview",
+      "site-infrastructure",
+      "component-prop"
+    ],
+    "platforms": [
+      "browser"
+    ],
+    "viewports": [
+      "390x844",
+      "1280x720"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开任意标准组件概览，在深色模式展开机型选择。",
+    "旧 selectControlSample 的可见控件仍是原生 select，展开菜单由浏览器或操作系统绘制；option 计算背景为 transparent，PUI 无法稳定控制其 Surface、边界和动效。",
+    "进入属性页展开任一枚举字段；所有属性枚举与上下文 Inspector 共用同一原生下拉风险。",
+    "只检查关闭态触发器或 App Shell 的 data-theme 会漏掉真实展开层、系统表单 chrome 与焦点回写。"
+  ],
+  "expected": "机型、完整属性与上下文属性共用真正可主题化的 PUI Select；Trigger、Option、Icon 和 Menu 全部消费 PUI Token，原生 select 仅作为隐藏值桥接。所有自定义 Menu/Dialog/Popover/Dropdown/Combobox/NavigationMenu 与站点菜单在 light/dark 展开态保持可读 Surface、文字和边界；原生桥接节点继承正确 color-scheme。",
+  "actual": "旧机型与属性枚举虽有 PUI 外壳和 Chevron Icon，但点击后打开的是浏览器原生选项层；该层无法由现有 PUI Surface 合同稳定控制。其他自定义浮层已大多使用主题 Token，但没有统一的全站扫描约束与原生表单 color-scheme fallback。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户指出机型菜单未兼容深浅色，并明确要求全部组件一起检查。"
+    },
+    {
+      "kind": "browser",
+      "ref": "#/components/shadcn-select",
+      "note": "修复前深色 native option 计算 background 为 transparent；修复后共享机型 Menu 展开态为 #18181b/#fafafa/#27272a，浅色为 #fff/#09090b/#e4e4e7，且 color-scheme 分别为 dark/light。"
+    },
+    {
+      "kind": "browser",
+      "ref": "#/components/shadcn-select 属性",
+      "note": "共享属性 easing 菜单在浅色展开后位于 Top Layer，选择 ease 与键盘 End→Enter 选择 ease-in-out 均真实回写隐藏 select 和当前 Props。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "selectControlSample 组合 PUI Button Trigger/Option 与 Chevron/Check Icon；原生 select 改为 sr-only/aria-hidden 桥接，菜单支持定位、外部关闭、键盘和 input/change。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "共享 Select Menu 使用 surface-solid/text/border/radius/shadow/blur Token；App Shell 与原生表单节点声明 light/dark color-scheme。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-theme-coverage.js",
+      "note": "专项合同锁定共享 Select 组合、键盘/焦点回写、原生桥接边界，以及九类站点/组件浮层的主题 Surface。"
+    },
+    {
+      "kind": "build",
+      "ref": "npm run check && npm run site:build && npm run example:install && npm run pack:check",
+      "note": "34 条 Feedback、83 组件设计/布局合同、主题专项、示例 tarball 安装和 npm dry-run 全部通过；包 327.7kB、解包 1.8MB、549 files，shasum c8f766a6df9aaffda8bdba9e2fc6b7e29970396b。"
+    }
+  ],
+  "rootCause": "共享 selectControlSample 只给原生 select 套了 PUI 外壳；折叠态看似统一，但展开层仍归浏览器/操作系统所有，无法稳定继承 PUI 深浅色 Token。项目此前按组件验证自定义浮层，没有同时建立站点基础设施、原生表单 color-scheme 和展开态计算样式的横向门禁。",
+  "decision": {
+    "outcome": "保留原生 select 作为 sr-only、aria-hidden、tabindex=-1 的值和事件桥接；可见 UI 改为共享 PUI Button combobox Trigger、PUI Button option、PUI Chevron/Check Icon 与 manual Popover Menu。Menu 进入 Top Layer并按触发器和视口定位，支持外部点击、滚动/resize 关闭、Enter/Space、ArrowUp/Down、Home/End、Esc、Tab 和焦点恢复。属性回写重绘后把焦点恢复到新 Trigger，禁止聚焦隐藏 select。App Shell 与 input/select/textarea/option 同步 color-scheme；新增全站自定义浮层 Surface 扫描。",
+    "rationale": "共享实现一次覆盖机型和所有枚举属性，避免逐页补色；隐藏原生 select 继续复用现有 data-prop、解析和事件路径，不建立第二套状态。Top Layer 解决属性面板 overflow 裁切，Token Menu 让两种主题、外观开关和低动效均可预测。",
+    "alternativesRejected": [
+      "只给原生 option 设置 background/color 仍受浏览器、操作系统和弹层进程限制，无法统一圆角、边界、动效与定位。",
+      "只修机型选择会让完整属性与上下文 Inspector 继续复现同一问题。",
+      "为机型和属性各写一套菜单会造成键盘、ARIA、主题和回写规则漂移。",
+      "移除原生 select 并另写属性状态会破坏现有 data-prop 解析、校验和 input/change 单一回写路径。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-theme-coverage.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-design-contracts.js",
+      "package.json",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0034-preview-menu-theme-coverage.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": [
+      "button",
+      "icon",
+      "select",
+      "config-provider"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-preview-theme-coverage.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-preview-native-control-boundaries.js",
+      "scripts/test-preview-css-token-contract.js",
+      "scripts/test-design-contracts.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check"
+    ],
+    "browser": [
+      "1280px 深色机型 Menu：background rgb(24,24,27)、color rgb(250,250,250)、border rgb(39,39,42)、color-scheme dark，3 个 Option，aria-expanded=true。",
+      "1280px 浅色机型 Menu：background rgb(255,255,255)、color rgb(9,9,11)、border rgb(228,228,231)、color-scheme light。",
+      "选择 iPhone SE 后隐藏 select value=compact、Trigger 文案同步、PreviewDevice 计算宽度 375px，Menu 正常关闭。",
+      "属性 easing Menu 使用同一 Surface；点击 ease 与键盘 End→Enter 选择 ease-in-out 均真实回写，关闭后焦点恢复可见 Trigger。",
+      "横向实测 Combobox、DropdownMenu、NavigationMenu、Popover：浅色 Surface 为 #fff、文字 #09090b、边界 #e4e4e7/#d4d4d8；深色 Surface 为 #0f0f11/#18181b、文字 #fafafa、边界 #27272a/#3f3f46，真实展开 Tooltip opacity=1。"
+    ],
+    "deviceRisks": [
+      "本次重构属于 H5 官网基础设施，不改变小程序原生 Select/Picker 的 WXML、WXSS 或 API。",
+      "390px 由 Menu 最大宽高、视口 padding、Top Layer 与既有无横向溢出合同约束；当前内置浏览器无视口缩放接口，真实移动浏览器触摸、屏幕键盘和辅助技术仍需目标设备复核。",
+      "Popover API 不支持的旧浏览器会退回 aria-hidden 定位层；目标现代浏览器已验证 Top Layer，兼容基线需随官网浏览器策略持续复核。"
+    ]
+  },
+  "ai": {
+    "summary": "官网所有枚举选择必须复用 Token 化 PUI Select；原生 select 仅做隐藏值桥接，菜单和浮层必须在真实展开态验证 light/dark。",
+    "rules": [
+      "机型、完整属性和上下文属性只能调用共享 selectControlSample，不得恢复页面私有 select 皮肤。",
+      "可见 Select 必须组合 PUI Button Trigger/Option 与 PUI Chevron/Check Icon；原生 select 必须 sr-only、aria-hidden、tabindex=-1。",
+      "选择后必须写回隐藏 select 并派发 bubbling input/change，继续走同一个 Props 解析和校验路径。",
+      "属性重绘后的焦点必须恢复到新生成的可见 combobox Trigger，禁止聚焦 aria-hidden 原生 select。",
+      "所有 Menu、Dialog、Popover、Dropdown、Combobox、NavigationMenu 与站点菜单必须使用主题 Surface/文字/边界 Token。",
+      "深浅色验收必须真实展开菜单或浮层并读取计算样式，不能只检查根 data-theme 或折叠态触发器。",
+      "App Shell 与原生 input/select/textarea/option 必须同步 light/dark color-scheme，并为原生 option 提供 Token fallback。",
+      "菜单键盘合同至少覆盖 Enter/Space、ArrowUp/Down、Home/End、Esc、Tab、外部关闭和焦点恢复；低动效压缩至 1ms。"
+    ],
+    "tags": [
+      "preview-site",
+      "select",
+      "menu",
+      "overlay",
+      "dark-mode",
+      "light-mode",
+      "color-scheme",
+      "pui-composition",
+      "keyboard",
+      "focus",
+      "theme-audit"
+    ]
+  }
+}

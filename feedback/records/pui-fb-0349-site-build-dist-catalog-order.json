@@ -1,0 +1,109 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0349",
+  "title": "site:build 在目录生成前未刷新 miniprogram_dist",
+  "scope": "global",
+  "components": [
+    "build-pipeline",
+    "miniprogram-dist",
+    "preview-site"
+  ],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "共享组件 API 变更后，site:build 必须一次生成可被 check 验证的 miniprogram_dist、官网目录与预览属性数据，不能让用户额外猜测生成顺序。",
+  "environment": {
+    "surfaces": [
+      "build-pipeline",
+      "miniprogram-dist",
+      "preview-site"
+    ],
+    "platforms": [
+      "node"
+    ],
+    "viewports": [
+      "not-applicable"
+    ],
+    "themes": [
+      "not-applicable"
+    ]
+  },
+  "reproduction": [
+    "旧顺序先执行 catalog:generate，后执行 miniprogram:build；catalog-utils 读取前一轮 dist properties，随后 check-package 报 preview/components-data.js stale。"
+  ],
+  "expected": "site:build 必须先刷新 miniprogram_dist，再生成依赖其公开 Props 的 catalog/preview 产物；后续 npm run check 不应要求开发者手工重复生成。",
+  "actual": "旧 site:build 成功退出但留下已过期的 preview/components-data.js，完整 check 在 metadata stale 报错。",
+  "evidence": [
+    {
+      "kind": "build",
+      "ref": "npm run site:build && npm run check",
+      "note": "2026-07-25 首次复现：site:build 成功，check-package 报 preview/components-data.js stale。"
+    },
+    {
+      "kind": "file",
+      "ref": "scripts/catalog-utils.js",
+      "note": "目录生成读取发布组件公开 Props，因此必须发生在 dist 生成之后。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-site-build-order.js",
+      "note": "专项断言 package site:build 中 miniprogram:build 位于 catalog:generate 之前。"
+    }
+  ],
+  "rootCause": "site:build 将 catalog:generate 排在 miniprogram:build 之前，忽略目录生成对 dist 中真实 properties 的读取依赖。",
+  "decision": {
+    "outcome": "site:build 固定为 feedback:generate → miniprogram:build → catalog:generate；新增顺序门禁并纳入 npm run check。",
+    "rationale": "目录与预览属性必须以本次构建的真实发布产物为准，构建命令自身应保持闭环而不是依赖人为重跑。",
+    "alternativesRejected": [
+      "只在修改 Props 后人工额外执行一次 catalog:generate，不能保证发布链可重复。",
+      "让 catalog 直接绕开 dist 读取 source，会改变既有以发布产物为真相源的验证边界。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "package.json",
+      "scripts/test-site-build-order.js",
+      "scripts/test-feedback-ledger.js",
+      "docs/ARCHITECTURE.md"
+    ],
+    "dependencies": [
+      "scripts/generate-miniprogram-dist.js",
+      "scripts/generate-catalog.js",
+      "scripts/catalog-utils.js",
+      "scripts/check-package.js"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-site-build-order.js",
+      "scripts/check-package.js"
+    ],
+    "commands": [
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check"
+    ],
+    "browser": [],
+    "deviceRisks": []
+  },
+  "ai": {
+    "summary": "若官网目录依赖 miniprogram_dist 的公开 Props，构建顺序必须先更新 dist 再生成目录；成功退出但留下 stale artifact 不算成功。",
+    "rules": [
+      "不要让 site:build 依赖修改后人工重复运行生成器。",
+      "每次改 properties 后，以 check-package 验证 preview/components-data.js 与当前 dist 同步。",
+      "发布目录是目录/API 生成的真实输入时，任何生成顺序调整都要有自动化门禁。"
+    ],
+    "tags": [
+      "build",
+      "catalog",
+      "miniprogram-dist",
+      "stale-artifact",
+      "release"
+    ]
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0416",
+  "title": "Picker 与 DateTimePicker 弹层丢失标题和确认操作区",
+  "scope": "component",
+  "components": ["picker", "date-time-picker", "popup", "button", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Picker 和 DateTimePicker 的底部弹层使用 Popup 的统一风格，并完整显示标题、滚轮、取消和确认。",
+  "environment": {
+    "surfaces": ["picker component page", "date-time-picker component page", "h5 component preview"],
+    "platforms": ["wechat-miniprogram", "h5-preview"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "进入 Picker 或 DateTimePicker 独立页并打开底部选择器。",
+    "旧弹层只显示大块空白与滚轮，没有标题、取消或确认。",
+    "检查 WXML 可见 Picker 把整条 Toolbar 标为 slot=header，但当前 PUI Popup 不存在该 Slot。"
+  ],
+  "expected": "Popup card Surface 使用真实 Header/Content/Footer：Header 显示标题，Content 承载滚轮，Footer 两列显示取消和确认。",
+  "actual": "无效 header Slot 使 Toolbar 未进入 Popup 渲染树，用户无法在可见界面确认或取消草稿。",
+  "evidence": [
+    {"kind": "file", "ref": "picker/picker.wxml", "note": "Picker 透传 Popup title/showFooter，并把两列 PUI Button 放入 footer Slot。"},
+    {"kind": "file", "ref": "picker/template.wxml", "note": "共享模板只保留滚轮与状态 Content，不再投递不存在的 header Slot。"},
+    {"kind": "file", "ref": "picker/picker.wxss", "note": "深色模式透明化平台固定浅色 mask，并用主题选项态表达当前值。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 镜像同步 Popup 标题 Header、滚轮 Content 和两列 Footer。"},
+    {"kind": "test", "ref": "scripts/test-picker.js", "note": "锁定 Popup 三分区、500ms/1ms 与无失效 header Slot。"},
+    {"kind": "browser", "ref": "/tmp/poemui-picker-after-1.png", "note": "390x844 微信模拟器显示发布渠道标题、完整滚轮和两列取消/确定。"},
+    {"kind": "browser", "ref": "/tmp/poemui-date-time-picker-after-1.png", "note": "390x844 微信模拟器显示日期时间标题、五列滚轮和两列取消/确定。"},
+    {"kind": "browser", "ref": "/tmp/poemui-picker-dark-after-4.png", "note": "390x844 深色模式确认平台白色 mask 已消失，标题、选项态与 Footer 对比清晰。"},
+    {"kind": "browser", "ref": "/tmp/poemui-date-time-picker-dark-after-4.png", "note": "390x844 深色模式确认五列滚轮与 Popup 三分区完整可读。"}
+  ],
+  "rootCause": "Popup 三分区合同演进后 Picker 仍使用已删除的 header Slot，且把 Popup 动效私自固定为 180ms；DateTimePicker 组合 Picker 因而同源失效。",
+  "decision": {
+    "outcome": "Popup 模式使用 PUI Popup title Header、默认 Content 与两列 Footer，动效统一为 500ms/1ms；内联模式继续保留 Picker 自身单行 Toolbar。",
+    "rationale": "直接复用 Popup 的 Surface、间距、滚动与操作区合同，同时保留 Picker 草稿确认和 DateTimePicker 单一组合边界。",
+    "alternativesRejected": [
+      "恢复 Popup 的任意 header Slot 会扩大 Popup 结构并允许消费者破坏三列 Header。",
+      "把取消和确认塞进 Popup 两侧 72rpx Header 轨会造成文字按钮拥挤。",
+      "只在两个示例页补操作按钮无法修复安装端组件。"
+    ]
+  },
+  "impact": {
+    "files": ["picker/", "date-time-picker/", "preview/app.js", "preview/styles.css", "scripts/test-picker.js", "docs/components/PICKER.md", "docs/components/DATE-TIME-PICKER.md"],
+    "dependencies": ["PUI Popup", "PUI Button", "picker-view"]
+  },
+  "verification": {
+    "tests": ["scripts/test-picker.js", "scripts/test-date-time-picker.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具 build-npm"],
+    "browser": [
+      "微信开发者工具 390x844 分别打开 Picker 与 DateTimePicker，确认 Header、滚轮和两列 Footer 同时可见。",
+      "浅色与深色分别复核，深色平台 mask 无固定白块；验收后恢复浅色标准配置。",
+      "微信开发者工具 build-npm 成功且 warnings=[]。"
+    ],
+    "deviceRisks": ["iOS/Android 真机的 picker-view 透明 mask、惯性、Footer 触摸、遮罩关闭、底部安全区和读屏顺序仍需复核。"]
+  },
+  "ai": {
+    "summary": "Picker 类弹层必须真实消费 Popup Header/Content/Footer，不能依赖不存在的 Slot。",
+    "rules": [
+      "Picker Popup 标题必须通过 Popup title 传入。",
+      "滚轮只进入 Popup Content，取消和确认固定进入两列 Footer。",
+      "DateTimePicker 只继承 Picker 修复，不复制第二份 Popup。"
+    ],
+    "tags": ["picker", "date-time-picker", "popup", "footer", "wechat-runtime"]
+  }
+}

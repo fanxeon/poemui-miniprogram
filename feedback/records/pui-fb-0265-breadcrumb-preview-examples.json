@@ -1,0 +1,114 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0265",
+  "title": "Breadcrumb 概览只有一个过载示例且缺少关键路径场景",
+  "scope": "component",
+  "components": ["breadcrumb", "preview-site", "button", "icon", "tag"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "说明第 17 号 Breadcrumb 当前预览表达的能力，并增加足够清楚、可以真实操作的典型示例。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-device"],
+    "platforms": ["browser"],
+    "viewports": ["desktop", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网第 17 号 Breadcrumb 概览。",
+    "观察 PreviewDevice 内只有一条路径，同时塞入前置内容、四级图标路径、自定义分隔图标和后置操作。",
+    "页面没有分别说明最小路径、长路径横向滚动、换行和标签截断。"
+  ],
+  "expected": "概览用明确分区分别展示基础路径、图标与扩展、长路径内部横滚、换行与标签截断；每组路径均可真实点击并维护独立选中状态，分区使用统一 18px 间距。",
+  "actual": "旧概览只有一个信息过载的组合示例，既不能快速看懂基础调用，也无法直接筛选长路径和窄屏策略。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户询问第 17 号现有预览的含义，并要求增加更多示例。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "Breadcrumb 概览现分为四组，并通过 breadcrumb-sample 复用同一个真实选择合同。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "四个示例分区使用共享 18px section gap，标题与组件之间使用 8px content gap。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/navigation/breadcrumb",
+      "note": "四组分别点击后活动项真实变为组件、首页、交互规范、组件开发与验收；长路径 scroller 为 275/404px。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-breadcrumb.js",
+      "note": "专项测试锁定四组标题、独立 sample 标识和共享选择回写路径。"
+    },
+    {
+      "kind": "build",
+      "ref": "npm run site:build && npm run check && npm run pack:check",
+      "note": "官网构建、257 条 Ledger、完整组件与设计合同、npm dry-run 均通过。"
+    }
+  ],
+  "rootCause": "旧预览把多个高级能力组合成一条路径，却没有按用户学习顺序拆分场景，也没有为多示例建立独立运行态。",
+  "decision": {
+    "outcome": "新增四个清晰分区；基础、横滚和换行示例使用受约束教学数据，图标与扩展示例继续承接属性面板当前 Props；所有路径按钮仍复用 PUI Button 和同一个 Breadcrumb 选择函数。",
+    "rationale": "Breadcrumb 的关键差异集中在路径复杂度、横向策略和扩展位，拆分后更容易比较，同时真实独立状态避免静态假交互。",
+    "alternativesRejected": [
+      "继续把更多能力塞进原有单条路径会进一步降低可读性。",
+      "只增加静态截图或无回写按钮无法验证 Breadcrumb 的选择合同。",
+      "把所有状态和 Props 枚举都放进概览会重新制造重复与诊断噪音。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-breadcrumb.js",
+      "scripts/test-design-contracts.js",
+      "scripts/test-shared-subcomponent-geometry.js",
+      "docs/components/BREADCRUMB.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["PUI Button H5 helper", "PUI Icon H5 helper", "PUI Tag H5 helper", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-breadcrumb.js", "scripts/test-design-contracts.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": [
+      "node --check preview/app.js",
+      "node scripts/test-breadcrumb.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check"
+    ],
+    "browser": [
+      "桌面真实路由显示四个分区且没有工程诊断 Cell；四组点击后分别独立更新 aria-current。",
+      "390px 下四个 Breadcrumb 均为 293px 宽，document 无页面级横向溢出。",
+      "长路径 nowrap 的内部 scroller clientWidth=275px、scrollWidth=404px，横滚发生在组件内部。",
+      "四个分区的计算 gap 与相邻几何间距均为 18px。",
+      "浅色 Surface 为 rgb(255,255,255)、文字为 rgb(9,9,11)；深色 Surface 为 rgb(24,24,27)、文字为 rgb(250,250,250)。"
+    ],
+    "deviceRisks": [
+      "本轮只修改官网 H5 概览；微信真机仍需验证 scroll-view 惯性、rpx、Slot 投影、PUI Button tap、读屏与系统低动效。"
+    ]
+  },
+  "ai": {
+    "summary": "Breadcrumb 概览应按路径复杂度和布局策略分组，且每个示例都必须拥有独立真实选择状态。",
+    "rules": [
+      "基础示例只说明最小路径，不得混入前后扩展和所有图标能力。",
+      "长路径必须用真实 nowrap 内部横滚证明窄屏策略，不能依赖页面横向滚动。",
+      "多个同组件示例必须共享真实交互合同并隔离运行态，禁止用无动作按钮充当演示。",
+      "示例分区之间固定消费 18px section gap，不能被全局 8px shell gap 覆盖。"
+    ],
+    "tags": ["breadcrumb", "preview", "examples", "interaction", "390px"]
+  }
+}

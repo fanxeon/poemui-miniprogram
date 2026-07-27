@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0302",
+  "title": "Combobox round Trigger 与 Panel 使用不一致圆角 Token",
+  "scope": "global",
+  "components": ["combobox", "miniprogram-home", "preview-site", "theme"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Combobox 的 Trigger 与下方展开 Panel 必须使用一个统一的圆角 Token，不能显著不一致。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在首页搜索 Overlay 中打开 shape=round 的 Combobox。",
+    "Trigger 使用 --pui-radius-round，而 Panel 使用 --pui-radius-medium，两个相邻 Surface 的圆角语义显著不一致。"
+  ],
+  "expected": "同一 Combobox 的 Trigger 与 Panel inner 始终消费同一个组件圆角 Token；默认与 round 形态在小程序、H5 和 largeRadius 外观中保持一致。",
+  "actual": "round 仅影响 Trigger，Panel 固定 medium，造成视觉断裂。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户指出首页 Combobox Trigger 与下方 Panel 圆角显著不一致，要求统一为一个 Token。"},
+    {"kind": "file", "ref": "combobox/combobox.wxss", "note": "修复前 Trigger 的 round 覆盖与 Panel 的 medium 分别声明。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 镜像同步使用同名组件圆角变量。"},
+    {"kind": "test", "ref": "scripts/test-combobox.js", "note": "专项测试锁定小程序与 H5 的统一圆角 Token 映射。"}
+  ],
+  "rootCause": "shape=round 的覆盖规则只作用于 Trigger，而 Panel 沿用默认 medium，组件没有一个能同时提供给两处 Surface 的语义圆角变量。",
+  "decision": {
+    "outcome": "Combobox 根新增 --pui-combobox-radius：默认映射 --pui-radius-medium，shape=round 映射 --pui-radius-xxlarge；Trigger 与 Panel inner 都只消费该变量。H5 使用等价 --pui-combobox-preview-radius。",
+    "rationale": "xxlarge 对标准高度 Trigger 仍近似满圆，同时让更高的 Panel 保持可读的圆角矩形；单一映射也会自动跟随 largeRadius Token。",
+    "alternativesRejected": [
+      "让 Panel 使用 --pui-radius-round 会在较高列表上形成过度胶囊化的不可读 Surface。",
+      "只将 Trigger 降为 medium 虽可消除差异，但会违背 round 入口的视觉意图。",
+      "首页穿透覆盖 Panel 圆角会绕过共享组件合同和 H5 镜像。"
+    ]
+  },
+  "impact": {
+    "files": ["combobox/combobox.wxss", "preview/styles.css", "docs/components/COMBOBOX.md", "scripts/test-combobox.js"],
+    "dependencies": ["--pui-radius-medium", "--pui-radius-xxlarge", "largeRadius visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js"],
+    "commands": ["node scripts/test-combobox.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": ["待本次变更完成后，在已打开的微信开发者工具 390px 热重载中确认 Trigger 与 Panel 的圆角映射一致，并检查 largeRadius。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认不同字体、基础库和 largeRadius 外观下的圆角裁切与模糊 Surface。"]
+  },
+  "ai": {
+    "summary": "Combobox 任何 shape 的 Trigger 与 Panel 都必须由同一个组件圆角 Token 驱动；不要用页面样式补偿。",
+    "rules": [
+      "Trigger 与 Panel inner 的 border-radius 必须共同消费 --pui-combobox-radius 或 H5 等价变量。",
+      "round 形态使用 xxlarge 而非 round，保证 Trigger 近似满圆、Panel 仍可读。",
+      "圆角 Token 修改必须同步小程序、H5、专属合同、专项测试、Ledger 和分发产物。"
+    ],
+    "tags": ["combobox", "radius", "token", "h5-parity", "miniprogram-home"]
+  }
+}

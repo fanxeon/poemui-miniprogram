@@ -1,0 +1,6 @@
+@import "../common/style/utilities.wxss";
+
+.pui-radio-group{display:block;box-sizing:border-box;width:100%;color:var(--pui-text-primary);font-family:var(--pui-font-family-sans)}
+.pui-radio-group__options{display:flex;flex-direction:column;gap:var(--pui-space-sm);min-width:0}
+.pui-radio-group--disabled{opacity:.8}
+.pui-radio-group--readonly{opacity:.9}

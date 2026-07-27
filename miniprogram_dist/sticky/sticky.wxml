@@ -1,0 +1,5 @@
+<view class="pui-sticky pui-class" style="z-index:{{zIndex}};{{containerStyle}}">
+  <view class="pui-sticky__content pui-class-content" style="z-index:{{zIndex}};{{contentStyle}}">
+    <slot></slot>
+  </view>
+</view>

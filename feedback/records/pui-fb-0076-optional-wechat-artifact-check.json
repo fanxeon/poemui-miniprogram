@@ -1,0 +1,119 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0076",
+  "title": "全库检查被缺失的可选微信安装产物无条件阻断",
+  "scope": "global",
+  "components": [
+    "dialog",
+    "build-tooling",
+    "example"
+  ],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "组件逐项 battle 时应完成所有可自动执行的合同检查，同时把必须依赖微信开发者工具安全设置的产物明确保留为独立风险。",
+  "environment": {
+    "surfaces": [
+      "test-suite",
+      "example-install",
+      "wechat-build"
+    ],
+    "platforms": [
+      "node",
+      "wechat-miniprogram"
+    ],
+    "viewports": [
+      "not-applicable"
+    ],
+    "themes": [
+      "not-applicable"
+    ]
+  },
+  "reproduction": [
+    "运行 npm run example:install，安装脚本按设计清理旧的 _example/miniprogram/miniprogram_npm/poemui-miniprogram。",
+    "在微信开发者工具 Service Port 关闭时运行 CLI build-npm，命令以 exit 246 退出且不会生成 miniprogram_npm。",
+    "运行 npm run check，scripts/test-dialog.js 无条件 readFileSync 缺失的 dialog.wxml，导致其余与微信 CLI 无关的合同测试无法继续。"
+  ],
+  "expected": "全库检查始终校验源码、miniprogram_dist 和示例 npm 安装产物；微信 miniprogram_npm 存在时追加校验，不存在时由发布状态明确保留 pending-cli，而不是让整个本地合同门禁崩溃。",
+  "actual": "Dialog 专项把外部工具生成目录视为必然存在，Service Port 关闭会把环境约束错误放大为全库源码失败。",
+  "evidence": [
+    {
+      "kind": "build",
+      "ref": "npm run check",
+      "note": "修复前在 scripts/test-dialog.js:162 因 ENOENT 中断；此前 41 个测试已通过。"
+    },
+    {
+      "kind": "build",
+      "ref": "wechat-cli build-npm",
+      "note": "微信 CLI 明确报告 IDE service port disabled 并以 exit 246 退出。"
+    },
+    {
+      "kind": "file",
+      "ref": "scripts/test-dialog.js",
+      "note": "测试现在固定校验 dist 和示例 node_modules，仅在微信生成文件真实存在时追加第四路检查。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dialog.js",
+      "note": "缺失微信生成目录时测试继续验证可自动产物；目录存在时仍逐字检查默认 Cancel 合同。"
+    }
+  ],
+  "rootCause": "专项测试把需要外部 GUI 安全设置和 CLI 的派生产物与可重复的 Node 合同门禁耦合，未区分产物缺失和产物内容错误。",
+  "decision": {
+    "outcome": "保留源码、dist、示例 node_modules 三路强制检查；微信 miniprogram_npm 改为存在即强制校验，不存在时通过文档、Ledger 和组件状态保留 pending-cli。",
+    "rationale": "缺失外部产物不能被伪造成成功，也不应阻断所有不依赖微信 GUI 的真实检查；条件校验同时保留了产物一旦生成后的回归能力。",
+    "alternativesRejected": [
+      "手工复制 miniprogram_dist 冒充微信 build-npm 会制造 fake success。",
+      "完全删除 miniprogram_npm 检查会让真实微信产物存在时失去回归保护。",
+      "自动开启开发者工具 Service Port 会越过安全设置确认边界。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scripts/test-dialog.js",
+      "feedback/records/pui-fb-0076-optional-wechat-artifact-check.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": [
+      "npm run check",
+      "npm run example:install",
+      "WeChat DevTools CLI"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-dialog.js",
+      "scripts/test-feedback-ledger.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run check",
+      "npm run example:install",
+      "wechat-cli build-npm"
+    ],
+    "browser": [],
+    "deviceRisks": [
+      "微信 miniprogram_npm 尚未由官方 CLI 重建，所有组件安装端状态继续保留 pending-cli；需要用户明确开启 Service Port 后再补齐第四路一致性。"
+    ]
+  },
+  "ai": {
+    "summary": "区分可自动生成的 npm 产物与依赖微信 GUI 安全设置的 miniprogram_npm；缺失时保留 pending-cli，存在时严格校验。",
+    "rules": [
+      "Node 合同测试必须强制校验源码、dist 和示例 node_modules，不得依赖微信 GUI 才能运行。",
+      "miniprogram_npm 存在时必须加入一致性检查；缺失时不得手工镜像冒充 CLI 成功，发布状态保持 pending-cli。",
+      "不得自动开启微信开发者工具 Service Port 等安全设置。"
+    ],
+    "tags": [
+      "build",
+      "wechat-cli",
+      "miniprogram-npm",
+      "test-harness",
+      "pending-cli"
+    ]
+  }
+}

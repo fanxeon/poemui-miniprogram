@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0250",
+  "title": "边框关闭偏好错误隐藏 Divider 内容层级",
+  "scope": "global",
+  "components": ["divider", "config-provider", "preview-site", "theme", "documentation", "miniprogram-dist"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "无论是否关闭卡片和表单的中性边框，Divider 都必须继续承担可见的内容分区作用。",
+  "environment": {"surfaces": ["native-source", "h5-preview", "global-appearance", "documentation"], "platforms": ["browser", "wechat-miniprogram"], "viewports": ["390px browser"], "themes": ["light", "dark"]},
+  "reproduction": ["在官网外观菜单关闭“边框”，或开启包含 border=off 的一键果味预设。", "打开 #/components/divider；基础横线、文字两侧线、虚线和纵线均不可见。"],
+  "expected": "bordered=false 只移除中性 Surface 边界，不得移除 Divider 这类表达内容层级的展示原语。",
+  "actual": "全局 border-off 重映射和原生 pui-border--off 曾把 --pui-divider-color 写为 transparent，使 DOM 中真实的 1px Divider 完全透明。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话截图 · 2026-07-23", "note": "浅色概览中所有 Divider 均不可见，Tag 与 PreviewDevice 仍可见，符合仅 Divider Token 被透明化的表现。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "全局 data-border=off 曾把 --pui-divider-color 重映射为 transparent。"},
+    {"kind": "file", "ref": "common/style/theme.wxss", "note": "原生 pui-border--off 曾把 --pui-divider-color 重映射为 transparent。"}
+  ],
+  "rootCause": "将 Divider 误归类为可由 bordered=false 关闭的 Surface 边界，忽略它在内容流中的独立层级语义。",
+  "decision": {"outcome": "border-off 继续透明化 --border、--border-strong、--glass-border、--preview-border 与 --pui-border-color，但不再覆写 --pui-divider-color。", "rationale": "卡片边界和内容分隔线承担不同的信息职责；关闭前者不能让后者消失。", "alternativesRejected": ["要求用户手动重新开启边框，不能修复预设下的真实错误。", "给 Divider 单独加开关，会把全局外观偏好变成组件私有配置。"]},
+  "impact": {"files": ["common/style/theme.wxss", "preview/styles.css", "scripts/test-divider.js", "scripts/test-global-border-preference.js", "AGENTS.md", "docs/UI_DESIGN_CONTRACT.md", "docs/components/DIVIDER.md"], "dependencies": ["ConfigProvider bordered", "PreviewDevice appearance preferences", "Divider theme token"]},
+  "verification": {"tests": ["scripts/test-divider.js", "scripts/test-global-border-preference.js"], "commands": ["node scripts/test-divider.js", "node scripts/test-global-border-preference.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"], "browser": ["2026-07-23 在 390x844 真实浏览器关闭边框：light 下 PreviewDevice 为 rgb(250,250,250)，Divider Token/实线为 #a1a1aa / rgb(161,161,170)，首线 146.5px x 1px；横向虚线 border-top、纵向实线 background、纵向虚线 border-left 均为 rgb(161,161,170)。同时 --border 仍为 transparent，document 375/375 无横向溢出。", "dark + border-off 同样实测 Divider Token/实线为 #a1a1aa / rgb(161,161,170)，--border=transparent；命中点落在真实 line 元素。"], "deviceRisks": ["待合法 AppID 真机确认 pui-border--off 下 1rpx Divider 与 Surface 边界的样式隔离。"]},
+  "ai": {"summary": "全局 bordered=false 只作用于 Surface 中性边界，不能隐藏 Divider 等内容层级原语。", "rules": ["为全局 Token 增加 border-off 覆写前，先区分 Surface 边界与内容层级。", "Divider 的专属 Token 不得被全局 border-off 重写为 transparent。", "必须同时验证 H5 data-border=off 与小程序 pui-border--off。"], "tags": ["divider", "border-off", "appearance", "content-hierarchy", "h5-parity"]}
+}

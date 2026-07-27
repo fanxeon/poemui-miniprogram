@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PoemUI · 月下成行</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="./favicon.ico" sizes="any" type="image/x-icon" />
+    <link rel="preload" href="./assets/fonts/JetBrainsMono-Regular-v2.304.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="./icon-font.css?v=0.1.0-20260725-1" />
+  <link rel="stylesheet" href="./styles.css?v=0.1.0-20260724-200" />
+  <link rel="stylesheet" href="./style-utilities.css?v=0.1.0-20260726-2" />
+  </head>
+  <body>
+    <div class="app-shell" data-theme="light" data-frost="off" data-shadow="on" data-radius="large" data-gradient="off" data-gradient-preset="neutral" data-border="off" data-spacing="normal" data-device="iphone">
+      <header class="topbar">
+        <a class="brand" href="#/foundation/button" aria-label="PoemUI 月下成行首页">
+          <span class="brand__mark" aria-hidden="true">
+            <svg class="brand__glyph" viewBox="0 0 24 24" fill="none" focusable="false">
+              <path class="brand__moon" fill="currentColor" d="M18.05 2.85a5.35 5.35 0 1 0 2.78 10.08 6.08 6.08 0 0 1-2.78-10.08Z" />
+              <path class="brand__lines" d="M4.7 14.15h9.6M7.1 17.35h6M4.7 20.55h8.35" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" />
+            </svg>
+          </span>
+          <span class="brand__text">
+            <span class="brand__title">
+              <span class="brand__name">PoemUI</span>
+              <span class="brand__version">0.1.0</span>
+            </span>
+            <span class="brand__sub">月下成行 · 原生小程序组件库</span>
+          </span>
+        </a>
+        <nav class="topbar__nav" aria-label="顶部导航">
+          <a class="topbar__link is-active" data-site-nav="components" href="#/foundation/button">组件</a>
+          <a class="topbar__link" data-site-nav="icons" href="#/icons">图标</a>
+          <a class="topbar__link" data-site-nav="tokens" href="#/foundation/theme-tokens">Token</a>
+          <a class="topbar__link" data-site-nav="utilities" href="#/foundation/style-utilities">样式集</a>
+          <a class="topbar__link" data-site-nav="guide" href="#/guide">安装</a>
+        </nav>
+        <div id="previewPreferenceControls" class="topbar__controls" aria-label="外观设置"></div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar">
+          <div id="componentSearchMount" class="component-search-mount"></div>
+          <nav id="componentGroups" class="component-groups" aria-label="组件分区目录"></nav>
+        </aside>
+        <main id="preview" class="main">
+          <section class="preview-toolbar" aria-label="预览控制">
+            <div class="preview-toolbar__intro">
+              <h1 id="stageTitle">Button 按钮</h1>
+              <p id="stageDescription" class="preview-description">用于触发一个即时操作。</p>
+            </div>
+            <div class="component-page-navigation">
+              <div id="componentPageTabs" class="component-page-tabs" aria-label="组件页面分类"></div>
+            </div>
+          </section>
+
+          <div id="previewExperience" class="preview-experience">
+            <div id="previewUtilityToolbar" class="preview-utility-toolbar" aria-label="预览工具栏">
+              <div id="previewModeMount" class="preview-mode-mount" aria-label="预览操作模式"></div>
+              <div class="preview-utility-toolbar__right" aria-label="预览设备与操作">
+                <span id="deviceSelectMount" class="component-device-select-mount"></span>
+                <span id="componentViewActionMount" class="component-view-action-mount"></span>
+                <span id="previewCopyStatus" class="pui-sr-only" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+            <section id="previewStage" class="preview-stage" aria-live="polite"></section>
+            <aside id="elementInspectorMount" class="element-inspector-mount" aria-label="组件用法与元素属性工具" hidden></aside>
+          </div>
+        </main>
+      </div>
+      <div id="globalSearchMount" class="global-search-mount"></div>
+    </div>
+    <script src="./icons-data.js?v=0.1.0-20260716-5"></script>
+    <script src="./components-data.js?v=0.1.0-20260719-55"></script>
+    <script src="./style-utilities-data.js?v=0.1.0-20260726-1"></script>
+    <script src="./app.js?v=0.1.0-20260722-216"></script>
+  </body>
+</html>

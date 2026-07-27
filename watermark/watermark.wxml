@@ -1,0 +1,24 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}}{{customStyle}}"
+  role="group"
+  aria-label="{{semanticLabel}}"
+>
+  <text wx:if="{{content}}" class="pui-watermark__content">{{content}}</text>
+  <slot name="content"></slot>
+  <slot></slot>
+  <view wx:if="{{marks.length}}" class="pui-watermark__layer pui-class-layer" style="{{layerStyle}}" aria-hidden="true">
+    <view wx:for="{{marks}}" wx:key="key" wx:for-item="mark" class="pui-watermark__mark pui-class-mark" style="{{mark.style}}">
+      <block wx:for="{{mark.items}}" wx:key="key" wx:for-item="segment">
+        <image
+          wx:if="{{segment.kind === 'image'}}"
+          class="pui-watermark__image {{segment.grayscale ? 'pui-watermark__image--grayscale' : ''}}"
+          src="{{segment.url}}"
+          mode="widthFix"
+          style="{{segment.style}}"
+        />
+        <text wx:else class="pui-watermark__text" style="{{segment.style}}">{{segment.text}}</text>
+      </block>
+    </view>
+  </view>
+</view>

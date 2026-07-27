@@ -1,0 +1,36 @@
+.pui-divider {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: var(--pui-text-placeholder);
+  font-size: var(--pui-font-size-small);
+  line-height: 1;
+}
+
+.pui-divider__line {
+  flex: 1;
+  min-width: 0;
+  height: 1rpx;
+  background: var(--pui-divider-color);
+}
+
+.pui-divider--dashed .pui-divider__line {
+  height: 0;
+  background: transparent;
+  border-top: 1rpx dashed var(--pui-divider-color);
+}
+
+.pui-divider__content { flex: 0 1 auto; min-width: 0; margin: 0 var(--pui-space-normal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pui-divider--left .pui-divider__line--before { flex: 0 0 32rpx; }
+.pui-divider--right .pui-divider__line--after { flex: 0 0 32rpx; }
+
+.pui-divider--vertical {
+  display: inline-flex;
+  width: 1rpx;
+  height: 32rpx;
+  vertical-align: middle;
+}
+
+.pui-divider--vertical .pui-divider__line { width: 1rpx; height: 100%; }
+.pui-divider--vertical.pui-divider--dashed .pui-divider__line { width: 0; height: 100%; border-top: 0; border-left: 1rpx dashed var(--pui-divider-color); }

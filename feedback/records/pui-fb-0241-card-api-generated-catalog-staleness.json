@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0241",
+  "title": "Card API 生成目录未刷新，Events 与 Slots 未出现在官网",
+  "scope": "component",
+  "components": ["card", "preview-site", "metadata"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "按 Popup battle 的真实空间、状态和 Props 回写规则自主验收全库官网组件预览。",
+  "environment": {
+    "surfaces": ["metadata", "generated-catalog", "h5-preview", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 metadata/components.js 为 Card 补齐 click Event 与 default/header/footer Slots 后，直接打开正在运行的 H5 `#/components/card` 的 API Tab。",
+    "浏览器仍从旧的 preview/components-data.js 读取目录数据，API 页面只渲染 15 Props，缺少 Events 与 Slots。"
+  ],
+  "expected": "生成目录刷新后，Card API 必须完整显示 15 Props、1 个 click Event、3 个实际公开 Slots 和 0 Methods，且说明与 WXML 结构一致。",
+  "actual": "已通过 site:build 重新生成 H5 catalog；Card API 从 metadata 真相源读取完整事件与 Slots，专项合同防止元数据再次缺失。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "metadata/components.js",
+      "note": "Card 已声明 click Event 与 default/header/footer 三个 Slots。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/card",
+      "note": "刷新生成前 API Tab 的实际 DOM 只包含 15 Props 表，未出现 Events 或 Slots；重新生成后复验完整 API。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-card.js",
+      "note": "专项测试锁定 Card metadata 的 Events、Slots、WXML 与 H5 合同。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前 Goal 范围化授权",
+      "note": "用户明确授权：后面的组件你都不需要我确认你直接跑完把能做的都做了, 决定你自己做。"
+    }
+  ],
+  "rootCause": "官网预览使用生成的 components-data.js，而 metadata 修改尚未执行 site:build；运行中的开发服务不会自动重建该目录文件。",
+  "decision": {
+    "outcome": "以 metadata 为唯一 API 真相源，所有 API/Slots 修改后先重建 catalog，再用真实浏览器 API Tab 复验生成结果。",
+    "rationale": "直接在 preview/components-data.js 手工补数据会造成下一次构建覆盖和双真相源；生成链路才能同时同步官网和安装产物。",
+    "alternativesRejected": [
+      "手工编辑生成的 components-data.js。",
+      "只依赖 Node 元数据断言而不检查运行中 API 页面。"
+    ]
+  },
+  "impact": {
+    "files": ["metadata/components.js", "preview/components-data.js", "scripts/test-card.js", "feedback/records/pui-fb-0241-card-api-generated-catalog-staleness.json"],
+    "dependencies": ["scripts/generate-catalog.js", "preview/app.js"]
+  },
+  "verification": {
+    "tests": ["scripts/test-card.js", "scripts/test-feedback-ledger.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["390x844 API Tab 实测 15 Props、click Event 和 default/header/footer Slots 完整显示，窄屏无省略或横向页面溢出。"],
+    "deviceRisks": ["原生小程序端仍需以合法 AppID 核验 Slot 投影、catchtap 与读屏边界。"]
+  },
+  "ai": {
+    "summary": "官网 API 是生成目录的运行产物；metadata 修改未经过构建不能当作浏览器交付完成。",
+    "rules": [
+      "新增或收敛 Props、Events、Slots、Methods 后，必须重建 catalog 并在真实 API Tab 检查生成结果。",
+      "不得手改 preview/components-data.js 逃避生成流程或制造第二 API 真相源。",
+      "API 事件和 Slots 的存在必须同时被 metadata 专项测试与浏览器可见表格证明。"
+    ],
+    "tags": ["card", "api-contract", "catalog", "generated-artifact", "h5", "browser-battle"]
+  }
+}

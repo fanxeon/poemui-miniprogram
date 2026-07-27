@@ -1,0 +1,20 @@
+<view wx:if="{{normalizedItems.length}}">
+  <view class="{{rootClass}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="navigation" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}">
+    <view class="pui-tabbar__items" role="tablist">
+      <view wx:for="{{normalizedItems}}" wx:key="id" class="pui-tabbar__item-wrap {{item.active ? 'pui-tabbar__item-wrap--active' : ''}} {{!item.label ? 'pui-tabbar__item-wrap--icon-only' : ''}}" role="tab" aria-selected="{{item.active}}" aria-disabled="{{disabled || item.disabled}}">
+          <pui-button class="pui-tabbar__button-host" block="{{true}}" custom-class="pui-tabbar__item" theme="default" variant="transparent" surface="transparent" size="small" icon-only="{{!item.label}}" disabled="{{disabled || item.disabled}}" aria-label="{{item.semanticLabel}}" color-scheme="{{colorScheme}}" data-index="{{index}}" bind:click="onSelect">
+            <view wx:if="{{item.resolvedIcon}}" slot="icon" class="pui-tabbar__icon">
+              <pui-badge wx:if="{{item.hasBadge}}" count="{{item.badge}}" dot="{{item.badgeDot}}" max-count="{{item.badgeMaxCount}}" color="{{item.badgeColor}}" show-zero size="small" aria-label="{{item.semanticLabel}}" color-scheme="{{colorScheme}}">
+                <pui-icon wx:if="{{item.resolvedIcon}}" name="{{item.resolvedIcon}}" size="36" color-scheme="{{colorScheme}}" />
+                <view wx:else class="pui-tabbar__badge-anchor"></view>
+              </pui-badge>
+              <pui-icon wx:else name="{{item.resolvedIcon}}" size="36" color-scheme="{{colorScheme}}" />
+            </view>
+            <text wx:if="{{item.label}}" class="pui-tabbar__label">{{item.label}}</text>
+          </pui-button>
+      </view>
+    </view>
+    <view wx:if="{{safeAreaInsetBottom}}" class="pui-tabbar__safe"></view>
+  </view>
+  <view wx:if="{{fixed && placeholder}}" class="{{placeholderClass}}"></view>
+</view>

@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0164",
+  "title": "Popup 精简后 H5 与上层组合仍依赖旧私有边界",
+  "scope": "component",
+  "components": ["popup", "dialog", "picker", "sheet", "preview-site", "responsive-layout", "animation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须以真实 Popup WXML/WXSS 镜像完整遮罩、位置、关闭、可控回写、低动效和视觉 Token；Dialog、Picker、Sheet 不得继续调用已删除的 Popup 私有 Header、状态或生命周期。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-styles", "dialog", "picker", "sheet", "property-panel", "api-reference"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 391px", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 Popup 展示私有 Header/Footer、提交/重试和 Loading/Empty 状态，而原生基础浮层不应拥有这些区域。",
+    "Dialog、Picker、Sheet 的旧 WXML/JS 仍传入或监听旧 Popup 私有 Props、Slots、事件与 after-* 生命周期，精简 Popup 后会造成上层组件语义漂移。"
+  ],
+  "expected": "H5 只显示真实打开入口、完整 PreviewDevice 遮罩、内容 Surface、可选 close-btn 和退场保留；上层组件只把 Popup 当可见性/遮罩/位置底座，并自己掌管内容与业务生命周期。",
+  "actual": "旧镜像与依赖耦合会把已删除能力继续暴露在浏览器中，或使上层组件依赖不存在的 Popup 根级内容和事件。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已明确授权后续组件范围化自主验收，仍要求逐项真实浏览器、Ledger 与构建证据。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "popupSample 使用同一 mounted/entering/entered/leaving 状态、真实 PUI Button 入口和 visible-change 父级回写，不重画业务状态。"},
+    {"kind": "file", "ref": "dialog/dialog.wxml", "note": "Dialog、Picker、Sheet 三者统一只绑定 visible-change，并由各自 JS 接管关闭决策与生命周期。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/popup", "note": "2026-07-20 实点遮罩、closeBtn、受控/非受控、closeOnOverlayClick=false、bottom、reduceMotion、深色与三项视觉开关。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "锁定 edge-to-edge H5、PUI close Button、无 loading/empty/header/footer、依赖绑定和 1ms/500ms 动效合同。"},
+    {"kind": "test", "ref": "scripts/test-dialog.js", "note": "锁定 Dialog 对新 Popup visible-change 的组合边界。"}
+  ],
+  "rootCause": "Popup 曾同时充当基础浮层和业务展示容器，H5/上层组件因此对其私有结构形成了反向依赖。",
+  "decision": {
+    "outcome": "H5 收敛为 bare Popup Surface；Dialog/Picker/Sheet 通过 visible-change 和自身状态机完成关闭与生命周期，Popup 不再传递业务状态或 after-*。",
+    "rationale": "这使 H5 和 WXML 的能力边界一致，同时保留上层组件真实内容、确认、滚动与事件顺序。",
+    "alternativesRejected": [
+      "在 Popup 内保留不可见的旧 Header/Footer 状态区会继续制造双重 Surface 和假能力。",
+      "让 Dialog/Picker/Sheet 继续依赖 Popup after-* 会使它们在 API 收敛后静默失效。",
+      "用静态事件提示替代可点击遮罩、closeBtn 和真实父级回写无法证明交互。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "dialog/dialog.js", "dialog/dialog.wxml", "picker/picker.js", "picker/picker.wxml", "sheet/sheet.js", "sheet/sheet.wxml", "scripts/test-popup.js", "scripts/test-dialog.js", "scripts/test-core-state-composition.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "dependencies": ["PreviewDevice edge-to-edge layout", "PUI Button", "appearance preferences", "Dialog/Picker/Sheet Popup composition"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js", "scripts/test-dialog.js", "scripts/test-core-state-composition.js", "scripts/test-shared-subcomponent-geometry.js", "scripts/test-overlay-state-composition.js"],
+    "commands": ["2026-07-20 npm run check：通过；最终 build、pack、example-install 与微信 CLI 结果记录在本组件进度项。"],
+    "browser": ["closeBtn=true 实际出现 PUI 圆形关闭按钮并关闭；closeOnOverlayClick=false 的遮罩点击仍保持 Surface。", "reduceMotion=true 的计算 transitionDuration 为 0.001s；深色+阴影+毛玻璃+大圆角的 Popup 计算为 rgba(39,39,42,.74)、blur(18px) saturate(1.35)、24px 圆角和双层阴影。", "393px PreviewDevice 外框宽 393px、内部 viewport clientWidth/scrollWidth 都是 391px；API 单元格完整自然换行。"],
+    "deviceRisks": ["当前窄宽验证基于 391px PreviewDevice；合法 AppID 真机仍需补录真实 390px 窗口、fixed 层合成、触摸穿透、rpx 动画中间帧、系统低动效和辅助技术。"]
+  },
+  "ai": {
+    "summary": "精简基础浮层 API 后，必须同步审计所有组合消费者和 H5 镜像，不能只让单组件测试通过。",
+    "rules": [
+      "Popup 的 Loading、Empty、Header、Footer 和业务动作必须由消费者组合，不可在 H5 复制一份根级状态壳。",
+      "删除 Popup 公开事件或 Slot 时，先搜索 Dialog、Picker、Sheet 等依赖，改为其自身的真实生命周期。",
+      "浏览器验收同时点击遮罩、closeBtn、Props 和外观菜单；用计算样式与实际几何证明开关真的作用于 Surface。"
+    ],
+    "tags": ["popup", "preview-parity", "dialog", "picker", "sheet", "motion", "390px"]
+  }
+}

@@ -1,0 +1,22 @@
+/* Internal field-row primitive: Field is editable, Cell is its read-only presentation. */
+.pui-field-row {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 104rpx;
+  padding: var(--pui-space-xs) var(--pui-space-normal);
+  color: var(--pui-text-primary);
+  background: var(--pui-glass-surface);
+  border: 1rpx solid transparent;
+  border-radius: var(--pui-radius-medium);
+  box-shadow: none;
+  -webkit-backdrop-filter: var(--pui-frosted-filter);
+  backdrop-filter: var(--pui-frosted-filter);
+  transition: color var(--pui-field-row-duration) var(--pui-field-row-ease), background-color var(--pui-field-row-duration) var(--pui-field-row-ease), border-color var(--pui-field-row-duration) var(--pui-field-row-ease), box-shadow var(--pui-field-row-duration) var(--pui-field-row-ease), opacity var(--pui-field-row-duration) var(--pui-field-row-ease), transform var(--pui-field-row-duration) var(--pui-field-row-ease);
+}
+
+.pui-field-row--editable,
+.pui-field-row--readonly {
+  box-shadow: none;
+}

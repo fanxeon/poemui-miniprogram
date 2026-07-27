@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0158",
+  "title": "Result 公开面混入动作、过程状态与伪事件",
+  "scope": "component",
+  "components": ["result", "preview-site", "usage-code", "example", "metadata"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "以联网 TDesign 对照和真实源码为依据收敛 Result；基础 WXML 只展示结果，不把页面业务动作、加载或成功伪装成组件能力。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "api-reference", "usage-code", "example", "miniprogram-dist"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Result 公开约 30 个 Props、primary/secondary/load/error 四类事件及双操作、loading、retry、私有动效和状态壳；基础示例会把这些工程与页面业务能力一起暴露。",
+    "2026-07-20 已联网访问 TDesign Result 页面、官方源码，并读取固定 tdesign-miniprogram@1.15.3 的 miniprogram_dist/result/{props.js,type.d.ts,result.js,result.wxml,result.wxss}。固定包公开 description/icon/image/theme/title、image/title/description 三个具名 Slot，且无 Events、Methods。"
+  ],
+  "expected": "PoemUI 只保留 description/icon/image/theme/title 与全库横向 ariaLabel/reduceMotion，共 7 Props、3 个具名 Slot、0 Events、0 Methods；基础 WXML 零 bind:*。",
+  "actual": "历史合同把 Result 误建模为页面反馈流程和双操作入口，H5、API、示例与安装包会诱导调用者依赖不存在的业务完成、重试和事件结果。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续 battle 在完整审计、浏览器、专项测试、文档、Ledger 与构建门禁后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/result", "note": "2026-07-20 在线访问，作为结果页用法分区与公开语义对照。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/result", "note": "2026-07-20 在线核验官方 Result 源码位置；固定 npm 包用于可复现公开面判断。"},
+    {"kind": "file", "ref": "result/result.js", "note": "当前精确声明 7 Props；不含 triggerEvent，四个 theme 映射为真实 aria role/live，icon 支持 Boolean/String/Object。"},
+    {"kind": "test", "ref": "scripts/test-result.js", "note": "专项合同锁定 Props、无 Events/Methods、Slots、false/空字符串、对象 icon、180ms/1ms、文档、示例和 dist 同源。"}
+  ],
+  "rootCause": "历史实现把演示页的操作状态、Loading/Retry 和 H5 诊断扩张为 Result 公共接口，未以真实 WXML、固定 TDesign 包和页面父级责任重新审计。",
+  "decision": {
+    "outcome": "收敛为 7 Props、image/title/description 三个具名 Slot、0 Events、0 Methods；图形优先级固定 image → icon → image Slot，根结果语义仅由 theme/title/description 组成。",
+    "rationale": "Result 负责结果内容与可访问语义，后续提交、重试、跳转和成功确认必须由父级使用同级 PUI Button 等组件组合并自行回写。",
+    "alternativesRejected": [
+      "保留 primary/secondary 事件会把父级业务动作伪装成 Result 自动完成。",
+      "保留 loading/error/retry 会把状态容器与结果展示混为同一组件。",
+      "在基础 WXML 展示全部 bind:* 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["result/result.js", "result/result.json", "result/result.wxml", "result/result.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/RESULT.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-result.js"],
+    "dependencies": ["PUI Icon", "PUI Image", "shared usage-code generator", "TDesign Result reference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-result.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-code-copy.js"],
+    "commands": ["2026-07-20 npm run site:build：通过", "2026-07-20 npm run check：通过（Result 专项与全库门禁均通过）", "2026-07-20 npm run pack:check、npm run example:install：通过", "2026-07-20 微信 CLI build-npm：touristappid 不存在，code 10，未生成 Result miniprogram_npm。"],
+    "browser": ["真实属性操作验证 error 为 role=alert/aria-live=assertive、对象 icon 的 200rpx 转为 100px 和 #123456、image 成功时优先于 icon、icon=false 与空 title/description 真正移除 H5 内容。", "API 实测 7 Props 和 3 Slots，滚动宽度 client/scroll=955/955，所有表格单元格为 normal/clip/visible；基础代码复制真实得到 <pui-result></pui-result>，零 bind。"],
+    "deviceRisks": ["微信真机仍需以合法 AppID 验证 image 解码与域名、rpx 图标尺寸、具名 Slot 投影、样式隔离、读屏与系统低动效。"]
+  },
+  "ai": {
+    "summary": "Result 是展示型结果节点，不是提交、重试、加载或业务成功系统。",
+    "rules": [
+      "先用在线 TDesign 页面、固定 npm 包和真实 WXML 三者交叉确定公开面。",
+      "基础 WXML 只给最小调用；没有真实公共事件时不得机械展示 bind:*。",
+      "后续操作必须由父级组合 PUI Button 并自己处理状态回写，Result 不得伪造成功或重试。"
+    ],
+    "tags": ["result", "tdesign", "api-contract", "slots", "usage-code", "no-fake-success"]
+  }
+}

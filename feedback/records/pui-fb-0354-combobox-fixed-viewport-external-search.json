@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0354",
+  "title": "Combobox 将搜索输入误纳入基础选择组件",
+  "scope": "component",
+  "components": ["combobox", "search", "miniprogram-home", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Combobox 只提供默认固定高度的可滚动选项内容；Search 是独立组件，不应成为 Combobox 内部结构。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开原有 Combobox，Panel 内部始终渲染 pui-input，并由 query/filterable/allowCreate 处理搜索与创建。",
+    "候选数量或搜索结果会影响 Panel 的测量与首开高度，导致选择器职责和几何不稳定。",
+    "首页搜索与 Combobox 内部搜索重复，无法把 Search 作为独立组件复用。"
+  ],
+  "expected": "Combobox 使用 listHeight 固定唯一选项滚动视口，默认 480rpx；页面以独立圆形居中的 pui-search 搜索并将过滤后的 options 传入 Combobox，二者必须共享相同的左右边界。",
+  "actual": "原组件公开 query、filterable、allowCreate 等搜索 API，并内嵌 Input、首开测量和创建项；拆分后首页又给 Search 私自设置 640rpx 最大宽度，而 Combobox 占满 Overlay 轨道，造成左右间距不等。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求删除 Combobox 中的 Input，并将 Search 改为圆形居中版本。"},
+    {"kind": "file", "ref": "combobox/combobox.wxml", "note": "当前 Panel 不再含 pui-input，内部只保留固定高度状态区或唯一 scroll-view。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "首页 Overlay 在 Combobox 外组合圆形、center 的 pui-search，并以 Search change 回写筛选。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxss", "note": "Search 与 Combobox 共享 Overlay 的同一条全宽轨道，不再只缩窄 Search。"},
+    {"kind": "test", "ref": "scripts/test-combobox.js", "note": "专项测试锁定无搜索 Props、默认 480rpx 固定视口、唯一滚动区以及 value/visible 选择合同。"},
+    {"kind": "build", "ref": "npm run miniprogram:build", "note": "2026-07-25 已重新生成 69 个组件的 miniprogram_dist。"}
+  ],
+  "rootCause": "原设计把搜索、业务筛选和可创建选项混入基础选择器，使 Panel 高度依赖内部内容及测量，而不是稳定的选择视口。",
+  "decision": {
+    "outcome": "删除 Combobox 的内部 Input、query/defaultQuery/searchPlaceholder/filterable/allowCreate/createText/showPanelClose/maxHeight API；新增 listHeight，默认 480rpx，范围 160–800rpx。首页用独立 pui-search 的 change 过滤 options，并以 round + center 展示；Search 与 Combobox 共同占满同一条 Overlay 宽度轨道。",
+    "rationale": "选择、搜索和业务创建分别由清晰组件或页面组合承担，固定视口使小程序与 H5 的滚动边界和开合几何可预测。",
+    "alternativesRejected": [
+      "保留内部 Input 并仅隐藏它会继续泄露重复 API 和错误职责。",
+      "继续用测量高度或首开 160px 兜底会让内容数量影响选择器几何。",
+      "在首页私有样式中伪造搜索框会绕过 Search 的焦点、清除和无障碍合同。",
+      "仅缩窄圆形 Search 会破坏它与 Combobox 共享的左右边界。"
+    ]
+  },
+  "impact": {
+    "files": ["combobox/combobox.js", "combobox/combobox.json", "combobox/combobox.wxml", "combobox/combobox.wxss", "miniprogram/pages/index/index.js", "miniprogram/pages/index/index.wxml", "miniprogram/pages/index/index.json", "miniprogram/pages/index/index.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/COMBOBOX.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-combobox.js", "scripts/test-miniprogram-home.js"],
+    "dependencies": ["pui-combobox", "pui-search", "scroll-view", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["npm run miniprogram:build", "npm run pack:check", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run site:build", "npm run example:install"],
+    "browser": [],
+    "deviceRisks": ["尚需在合法 AppID 的 iOS 和 Android 真机确认圆形 Search 的软键盘、Overlay 居中、固定 scroll-view 惯性滚动与触摸关闭边界。"]
+  },
+  "ai": {
+    "summary": "Combobox 只管理选择与固定选项滚动视口；任何搜索都应由独立 Search 在组件外组合。",
+    "rules": [
+      "Combobox 不得重新公开或内嵌 query、filterable、Search Input、create 或首开高度测量。",
+      "固定 listHeight 只定义 Panel 和唯一列表滚动区；内容数量、空态和加载态不得改变它。",
+      "需要搜索时用 pui-search 真实回写 query，过滤后的 options 再传给 Combobox。",
+      "页面组合不得用私有 input 替代 pui-search。",
+      "round + center 的 Search 仍须消费父级完整可用宽度；与 Combobox 相邻时两者必须共享同一左右 inset。"
+    ],
+    "tags": ["combobox", "search", "fixed-viewport", "scroll-view", "h5-parity", "miniprogram-home"]
+  }
+}

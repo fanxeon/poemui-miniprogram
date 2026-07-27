@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0360",
+  "title": "小程序缺少反馈分区的真实组件独立页与可搜索路由",
+  "scope": "global",
+  "components": ["miniprogram-home", "alert", "empty", "loading", "notice-bar", "progress", "result", "skeleton", "toast", "preview-site"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "将完整的反馈组件分区迁移到真实微信小程序首页和独立页面，并保持 H5 与小程序的组件合同同步。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "miniprogram-component-pages", "h5-preview", "documentation", "feedback-ledger"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390px", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "首页目录仅包含基础与浮层共九个组件路由，反馈组件虽已发布且有 H5 镜像，却没有小程序独立页、首页入口或搜索候选。",
+    "缺少页面级合同时，容易把 Alert/NoticeBar 的父级回写、Empty/Result 的组合操作，或 Toast 的命令式实例边界错误地改成静态说明或伪业务完成。"
+  ],
+  "expected": "首页可浏览和搜索八个反馈组件；每个路由在共享 Navbar、外观设置与唯一 ScrollArea 内组合真实 npm 组件，并保留各组件的受控、事件和业务边界；H5 保持同源组件镜像而非被复制。",
+  "actual": "迁移前反馈组件只能在 H5 预览或包级示例中查看，小程序用户无法从首页进入，也没有页面级交互和验收门禁。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal", "note": "用户明确要求迁移反馈分区并完成小程序与 H5 同步验收。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "反馈分区、八条真实 URL 与从统一目录数据生成的搜索候选。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/alert/index.wxml", "note": "八个独立页沿用该页面壳结构，使用共享页面基础设施与真实 PUI 组件。"},
+    {"kind": "file", "ref": "docs/MINIPROGRAM_FEEDBACK_PAGES.md", "note": "记录页面编排、H5 同步边界和逐组件交互约束。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-feedback-pages.js", "note": "锁定共享页面壳、无原生 Button、父级回写和 Toast 实例调用。"}
+  ],
+  "rootCause": "此前小程序只完成基础与浮层的页面迁移，反馈组件缺少统一的页面级路由、目录、搜索和真实交互编排。",
+  "decision": {
+    "outcome": "新增反馈分区和八个独立页，复用现有组件页面基础设施；小程序页面只承担父级状态与导航，H5 保持现有组件镜像作为并行验证面。",
+    "rationale": "复用统一页面壳能维持 Navbar、外观、唯一滚动区和 390px 边界，同时不污染八个组件已经确定的公开 API。",
+    "alternativesRejected": [
+      "只增加首页静态目录或跳转到 H5，不能提供真实微信组件交互。",
+      "在每个页面复制 Navbar、外观设置或组件私有 DOM，会产生视觉和事件漂移。",
+      "用自动定时器模拟 Loading、Skeleton、Progress 或 Toast 业务成功，会违反反馈组件的语义边界。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/app.json", "miniprogram/pages/index/index.js", "miniprogram/pages/components/", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-miniprogram-feedback-pages.js", "docs/MINIPROGRAM_HOME.md", "docs/MINIPROGRAM_FEEDBACK_PAGES.md", "docs/H5_PREVIEW_COMPATIBILITY.md"],
+    "dependencies": ["component-page", "component-page-navbar", "component-page-section", "visualConfig", "H5 component previews"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-miniprogram-feedback-pages.js"],
+    "commands": ["node scripts/test-miniprogram-feedback-pages.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["H5 八个同名组件已有独立镜像与既有专项合同；本次不复制 H5 DOM，后续完整 check 继续运行各组件专项测试。"],
+    "deviceRisks": ["合法 AppID 真机仍需验证 390px 长页滚动、NoticeBar 和 Toast 触摸、rpx、读屏、系统低动效、深浅色与全部全局外观组合。"]
+  },
+  "ai": {
+    "summary": "小程序组件分区迁移必须提供真实路由、父级回写与页面级验收，不得把 H5 演示或静态目录冒充微信端交付。",
+    "rules": [
+      "新增独立页必须复用 ConfigProvider、共享 Navbar、单一 ScrollArea 和 component-page-section。",
+      "页面只组合组件的公开 API；组件没有业务完成、重试或 action 事件时不得在页面把视觉变化叙述为业务结果。",
+      "首页目录、搜索候选、app.json 路由和页面专项测试必须同批更新；H5 镜像继续检查而不复制其 DOM。"
+    ],
+    "tags": ["miniprogram", "feedback", "routing", "h5-parity", "no-fake-success"]
+  }
+}

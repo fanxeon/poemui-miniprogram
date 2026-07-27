@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0134",
+  "title": "TDesign 对照缺少每项在线来源与固定源码版本双重证据",
+  "scope": "global",
+  "components": ["preview-site", "documentation", "build-tooling"],
+  "type": "ai-usability",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "PoemUI 不能在不联网、不核对成熟组件最新资料的前提下闭门设计；之后所有 agent 都必须以在线资料和可复现源码共同约束 TDesign 对照。",
+  "environment": {
+    "surfaces": ["tdesign-online-docs", "official-repository", "npm-package", "component-contract", "feedback-ledger"],
+    "platforms": ["web", "wechat-miniprogram"],
+    "viewports": ["documentation"],
+    "themes": ["not-applicable"]
+  },
+  "reproduction": [
+    "仅固定本地安装包版本时，agent 可能遗漏在线文档的结构、用法分区、维护状态和产品语义。",
+    "仅读取在线动态页面时，API 表格可能无法稳定抓取，或与已固定 npm 包版本漂移，导致不可复现。",
+    "若两类来源未写入组件合同与 Ledger，后续 agent 无法区分在线参考、固定版本和 PoemUI 的自主取舍。"
+  ],
+  "expected": "每个共有组件在审计开始时都同时记录 TDesign 官方在线页面、官方仓库或发布页、查询日期、固定 npm 版本和实际读取的包内源码文件；冲突时明确说明以何者作为产品信息或可复现 API 证据。",
+  "actual": "既有清单固定了 npm 版本与源码路径，但没有把每个组件的在线查询作为不可跳过的结构化证据，容易被误解为仅按本地快照设计。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确确认以后所有agent都要采用在线资料与固定源码双证据规则，并授权继续按该规则推进。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/side-bar", "note": "2026-07-20 访问TDesign SideBar官方页面；该页面为动态渲染，仍保留为产品信息来源。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "官方仓库确认TDesign Miniprogram为微信小程序组件库，并提供npm安装和开发者工具构建路径。"},
+    {"kind": "file", "ref": "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "note": "全局清单现要求每项同时记录在线来源、查询日期、固定版本和安装包源码文件。"},
+    {"kind": "file", "ref": "docs/components/SIDEBAR.md", "note": "Sidebar作为首个补录实例，明确了在线页面、查询日期和八个固定源码证据文件。"}
+  ],
+  "rootCause": "原有流程强调固定npm包的可复现性，却没有把在线资料检索写成每个组件的显式证据字段，导致产品参考与源码事实可能被误认为同一层。",
+  "decision": {
+    "outcome": "所有后续TDesign battle强制双来源：先在线核对官方页面与仓库/NPM，再固定到安装包版本和具体源码文件；在线页面用于产品信息，包内源码用于可复现API，差异必须写入组件合同、Ledger和对照摘要。",
+    "rationale": "同时保留新鲜产品语义与可重复的源码证据，避免闭门设计，也避免在线文档漂移破坏可验证性。",
+    "alternativesRejected": [
+      "只使用本地安装包会遗漏在线文档与最新维护语境。",
+      "只使用在线文档会在动态页面、版本漂移或抓取失败时失去可复现性。",
+      "只在最终报告临时附链接无法约束后续agent的审计路径。"
+    ]
+  },
+  "impact": {
+    "files": ["AGENTS.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "docs/components/SIDEBAR.md", "feedback/records/pui-fb-0134-tdesign-online-reference-protocol.json"],
+    "dependencies": ["TDesign official documentation", "TDesign official repository", "fixed npm package source"]
+  },
+  "verification": {
+    "tests": ["scripts/test-feedback-ledger.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check"],
+    "browser": ["Sidebar battle已在在线页面、官方仓库、固定1.15.3安装源码与本地H5之间完成交叉核验；动态官网页面内容不可稳定抓取时，没有把页面空响应误称为API事实。"],
+    "deviceRisks": ["该记录只约束研究与证据流程，不替代任何微信真机、网络权限、域名白名单或真实业务接口验收。"]
+  },
+  "ai": {
+    "summary": "TDesign对照必须先联网核对官方资料，再以固定npm包源码复现；两类来源和差异都必须可追溯。",
+    "rules": [
+      "开始每个共有组件battle前，访问TDesign官方组件页面和官方仓库或NPM页，并记录URL与查询日期。",
+      "同时固定npm版本，读取props、类型、WXML和实现；在线页面与包版本不一致时必须写明差异。",
+      "在线页面用于产品信息，安装包源码用于可复现API；不得只凭任一侧或模型记忆设计。",
+      "在线来源、固定版本和源码路径必须进入组件合同、Ledger和对照摘要。"
+    ],
+    "tags": ["tdesign", "online-reference", "evidence", "ai-usability", "workflow"]
+  }
+}

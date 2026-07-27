@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0353",
+  "title": "Overlay 独立页将展示文案误做成内容面板",
+  "scope": "component",
+  "components": ["overlay", "miniprogram-component-page", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Overlay 独立页打开后只展示居中的大号 Hi PoemCoder，不应出现内容面板。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview", "component-page"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 Overlay 独立详情页并点击打开遮罩。",
+    "旧页面在默认 Slot 中组合 CellGroup、Cell 和关闭 Button。",
+    "遮罩演示因此出现第二层内容面板，而非直接展示遮罩内容。"
+  ],
+  "expected": "遮罩层只承载居中的展示级 Hi PoemCoder；文案使用 display 字体 Token，不创建 Card、CellGroup、Cell 或按钮面板。",
+  "actual": "旧独立页与 H5 概览均把默认 Slot 组织为带 Cell 和 Button 的内容面板，干扰 Overlay 作为纯遮罩原语的展示。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求 Overlay 独立页只展示居中的大号 Hi PoemCoder。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/overlay/index.wxml", "note": "修复前默认 Slot 包含 pui-cell-group、pui-cell 和关闭 Button。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "修复前 overlayShowcase 用 cellSample 构建 H5 默认 Slot 面板。"},
+    {"kind": "test", "ref": "scripts/test-overlay.js", "note": "专项断言小程序与 H5 均使用无面板的 Hi PoemCoder 展示内容。"}
+  ],
+  "rootCause": "独立页示例将“Overlay 可承载任意默认 Slot”误实现为固定的内容 Card，混淆了原语遮罩与业务浮层的职责。",
+  "decision": {
+    "outcome": "小程序独立页和 H5 概览统一以居中的 display 级 Hi PoemCoder 作为默认 Slot 展示；不改 Overlay 的 Props、click 回写、滚动阻断或局部/全局 blur 规则。",
+    "rationale": "纯文本能直接验证遮罩覆盖与 Slot 投影，同时避免给 Overlay 演示新增第二个可见 Surface。",
+    "alternativesRejected": [
+      "保留 CellGroup 并去掉按钮仍会把展示文案包装成面板。",
+      "将文案放到遮罩外会失去默认 Slot 投影的真实验证。",
+      "为页面新增私有内容容器会再次制造 Overlay 不拥有的布局 API。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/components/overlay/index.wxml", "miniprogram/pages/components/overlay/index.wxss", "miniprogram/pages/components/overlay/index.json", "preview/app.js", "preview/styles.css", "scripts/test-overlay.js", "docs/components/OVERLAY.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_RULES_INDEX.md", "feedback/records/pui-fb-0353-overlay-greeting-without-panel.json"],
+    "dependencies": ["pui-overlay", "pui-text-display", "PreviewDevice", "Overlay default Slot"]
+  },
+  "verification": {
+    "tests": ["scripts/test-overlay.js"],
+    "commands": ["node scripts/test-overlay.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["2026-07-25 Chrome 本地 H5 预览 http://127.0.0.1:4179/#/components/overlay：391px PreviewDevice 内打开后，Hi PoemCoder 为 32px/800/白色，遮罩与文字几何中心一致，未发现 Cell、CellGroup、Card 或 PUI Button 面板；点击文案区域按 Overlay 根 click 路径完成 visible=false 回写并卸载遮罩。"],
+    "deviceRisks": ["仍需在合法 AppID 的 iOS 和 Android 真机确认 fixed 遮罩内 display 文案的垂直居中、深浅色对比、Slot 投影与点击穿透边界。"]
+  },
+  "ai": {
+    "summary": "Overlay 独立页若只需验证遮罩内容，应使用无 Surface 的居中文案，而不是默认拼装业务 Card。",
+    "rules": [
+      "Overlay 示例 Slot 的展示文本不得被 Cell、Card、Popup 或 Button 面板包裹。",
+      "展示级文字使用 pui-text-display 与同名字体 Token，小程序和 H5 同步。",
+      "页面示例变更不得改变 Overlay 的受控 click、blur 或滚动阻断公开合同。"
+    ],
+    "tags": ["overlay", "component-page", "slot", "surface", "h5-parity", "typography"]
+  }
+}

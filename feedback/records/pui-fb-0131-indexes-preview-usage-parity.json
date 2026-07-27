@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0131",
+  "title": "Indexes H5 分区、拖动运行时与复制代码未保持同源",
+  "scope": "component",
+  "components": ["indexes", "preview-site", "cell", "badge", "button", "loading", "empty"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Indexes 官网应像成熟组件文档一样按真实用法分区，让侧栏点击、连续拖动、滚动、状态、Props、复制、深浅色和视觉开关都作用于同一个真实组件镜像。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "property-panel", "appearance-menu"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 把页面 Header/Footer、诊断状态和方法面板堆进单一示例，用户无法按基础、索引显示、状态和边界筛选用法。",
+    "真实 battle 发现分组查询使用了不存在的 data 属性，索引 Button 又复制了 sample 标识，导致滚动活动组和根选择不可靠。",
+    "连续拖动监听器引用未定义 signal 并在现代浏览器同时注册 Pointer 与 mouse 回退，运行时抛错且拖动无法完成。",
+    "基础代码生成依赖不存在的 componentPropDefaults.indexes，既可能抛错，也会漏掉 items/current/aria-label。"
+  ],
+  "expected": "官网固定四个真实用法分区；点击、拖动、滚动和 retry 全部真实执行；属性、WXML、工具栏和两段代码块同源，基础代码零 bind；API 全文和六项外观在 390px 可用。",
+  "actual": "旧演示混入页面框架与工程诊断，且运行时选择器、监听器生命周期和复制默认源彼此分裂，画面变化不能证明原生合同真实成立。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求按 TDesign 演示结构分区、基础示例保持基础，并授权本 Goal 后续组件在完整证据后自主验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区共用 indexesPreviewMarkup、严格值助手、真实父级回写和独立 AbortController；Pointer 与 mouse 回退互斥。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "分区使用 26px 语义间距，状态层以 opacity/transform 过渡，嵌入式 Empty 撑满唯一状态 Surface。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "API 最终只显示 20 Props 和 4 Events，基础 WXML 零 bind，不伪造 Slot/Methods。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "锁定四分区、监听器生命周期、基础代码必需属性、共享 PUI 组合和三层安装一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/indexes", "note": "390px 实点侧栏、条目、retry、Props、连续拖动、滚动、复制、API 与所有外观开关；修复后 cache-busted 页面无新增错误。"}
+  ],
+  "rootCause": "旧预览维护了独立于原生 WXML 的页面壳、值选择器、监听器和代码拼装路径，没有把真实组件状态、父级回写和生命周期收敛到共享 helper。",
+  "decision": {
+    "outcome": "删除 Header/Footer/方法诊断壳，改为基础用法、索引显示、条目与状态、受控与边界四区；运行时使用独立可中止监听器；复制始终输出 items/current 或 default-current/aria-label 与非默认 Props。",
+    "rationale": "概览应帮助用户筛选真实可用形态；同源状态助手、事件路径和代码生成器能证明 H5 与原生调用合同一致。",
+    "alternativesRejected": [
+      "只修 CSS 或提示文字不能证明连续拖动、滚动联动和父级回写。",
+      "同时注册 Pointer 与 mouse 会让同一鼠标手势覆盖 drag 身份。",
+      "在基础 WXML 展示全部 bind 会淹没最小调用。",
+      "用省略号压缩 API 会让长 items 和事件 detail 不可见。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/INDEXES.md", "scripts/test-indexes.js", "scripts/test-core-state-composition.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0131-indexes-preview-usage-parity.json"],
+    "dependencies": ["PreviewDevice", "PUI Cell/Badge/Button/Loading/Empty H5 helpers", "shared usage-code generator", "appearance menu"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js", "scripts/test-preview-code-copy.js", "scripts/test-preview-normal-code-card.js", "scripts/test-core-state-composition.js", "scripts/test-preview-theme-coverage.js"],
+    "commands": ["node scripts/test-indexes.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "390px document 为 375/375px、PreviewDevice 为 349/349px，后续分区间距均为 26px；连续物理拖动从 ★ 到 C 后 current=\"C\"、source=touch、scrollTop=429。",
+      "属性页共 20 控件；readonly 保留侧栏并把条目降为 listitem，disabled 后 5 个侧栏 Button 全禁用，reduceMotion 计算过渡为 0.001s。",
+      "error Retry 保持错误态且明确等待父级；数字 0→字符串 0 保留严格身份；基础代码与工具栏复制都进入真实已复制状态且基础代码 bind 数为 0。",
+      "API 为 3 个 Props 表和 1 个 Events 表，完整显示 20/4、130 个单元格，最小字号 14px，ellipsis/nowrap/clipped 均为 0，页面无横向溢出。",
+      "light/dark、border、shadow、frost、large-radius、gradient 全部实点；深色设备为 rgb(9,9,11)，阴影、blur(14px) saturate(1.2)、24px 圆角和透明边界均真实生效，重置 Props 后外观保持，验收后恢复浅色标准组合。"
+    ],
+    "deviceRisks": ["微信 scroll-view 惯性、scroll-into-view、SelectorQuery、touchmove 连续命中、sticky、rpx、样式隔离、系统低动效和读屏需合法 AppID 真机复核。"]
+  },
+  "ai": {
+    "summary": "Indexes 概览固定四个真实用法分区；点击、拖动、滚动、状态、复制和 Props 必须与原生合同同源，基础代码零 bind。",
+    "rules": [
+      "Indexes 官网必须保留基础用法、索引显示、条目与状态、受控与边界四区。",
+      "H5 侧栏必须使用可中止的 Pointer 监听器，旧鼠标回退只在无 PointerEvent 时注册。",
+      "受控实例必须真实更新 current Prop；滚动中间帧不得发布伪 change。",
+      "API 和属性文字必须完整自然换行，禁止 ellipsis、nowrap、line-clamp 或固定高度裁切。"
+    ],
+    "tags": ["indexes", "preview-parity", "pointer-drag", "code-copy", "api-readability"]
+  }
+}

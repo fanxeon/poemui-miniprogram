@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0328",
+  "title": "Button 缺少明确的 transparent 视觉变体",
+  "scope": "component",
+  "components": ["button", "fab", "dialog", "miniprogram"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "为 pui-button 新增 transparent 版，使它无边框、无底色且可作为真实通用 Button 使用。",
+  "environment": {
+    "surfaces": ["miniprogram-component", "miniprogram-detail-page", "h5-preview", "composite-button-consumer"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "web", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "调用 <pui-button variant=\"transparent\">透明按钮</pui-button>。",
+    "旧 Button 仅规整 base/outline/text/ghost；使用 transparent 时会回退为 base。",
+    "改用 surface=\"transparent\" 虽可移除视觉，但会同时移除 Button 自身圆角，语义只适合 Tabbar 等组合容器。"
+  ],
+  "expected": "transparent 是公开的 Button 视觉变体：无底色、无边界、无外投影，同时保持常规 Button 尺寸、圆角、命中区、禁用和原生能力；surface=transparent 继续只作复合容器边界。",
+  "actual": "没有明确 transparent variant；surface=transparent 被误认为可替代的透明 Button，导致通用视觉与复合容器边界的职责混淆。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务对话", "note": "用户明确要求为 pui-button 新增无边框、无底色的 transparent 版。"},
+    {"kind": "file", "ref": "button/button.js", "note": "修复前 variant 仅允许 base、outline、text、ghost，而 surface=transparent 是独立枚举。"},
+    {"kind": "file", "ref": "button/button.wxss", "note": "surface=transparent 还移除 border-radius，证明其不等同于常规透明视觉。"},
+    {"kind": "test", "ref": "scripts/test-button.js", "note": "专项测试锁定第五个 variant、无底色无边界无外投影级联及 surface 职责分离。"}
+  ],
+  "rootCause": "历史 API 用 ghost 覆盖弱化视觉、用 surface=transparent 覆盖复合容器边界，缺少能直接表达用户所说透明 Button 的公开名称。",
+  "decision": {
+    "outcome": "新增 variant=transparent；Button、H5 buttonSample、属性枚举、Dialog 动作配置、FAB 与组件详情示例接受该值。transparent 复用 Token 化无底色、无边界、无外投影级联，保留常规 Button 几何。",
+    "rationale": "把通用视觉意图和复合结构边界拆开，消费者无需为透明 Button 改用 Tabbar 专用 surface 或写页面私有 CSS。",
+    "alternativesRejected": [
+      "把 surface=transparent 改名或扩展为常规视觉：会破坏 Tabbar 的唯一 Surface 与零圆角边界合同。",
+      "只建议使用 ghost：用户意图无法从 API 直接表达，且 ghost 的历史兼容语义不能替代明确入口。",
+      "新增 type=transparent：type 属于微信表单动作语义，PoemUI 保持 formType 避免 API 歧义。"
+    ]
+  },
+  "impact": {
+    "files": ["button/button.js", "button/button.wxss", "preview/app.js", "preview/styles.css", "miniprogram/pages/components/button/index.wxml", "button/fab/fab.js", "dialog/dialog.js", "docs/components/BUTTON.md", "scripts/test-button.js"],
+    "dependencies": ["pui-button", "pui-icon", "pui-loading", "pui-fab", "pui-dialog", "buttonSample"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-dialog.js", "scripts/test-fab.js"],
+    "commands": ["node scripts/test-button.js", "node scripts/test-miniprogram-component-pages.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": [],
+    "deviceRisks": ["仍需在合法 AppID 的 iOS 与 Android 真机确认 transparent 在深浅色、border/shadow/frostedGlass/largeRadius 开关下的对比、触摸命中、禁用态、Slot 样式隔离与系统低动效。"]
+  },
+  "ai": {
+    "summary": "用户说透明 Button 时，优先新增或使用 variant=transparent；不要复用只服务复合容器的 surface=transparent。",
+    "rules": [
+      "variant=transparent 必须保留常规 Button 几何与交互，只移除背景、边界和外投影。",
+      "surface=transparent 继续仅用于父级承载唯一 Surface 的 Tabbar 等组合边界，并移除 Button 自身圆角。",
+      "Button 的视觉枚举不得滥用 type；微信表单动作继续使用 formType。",
+      "所有接收 Button 配置对象的共享组件和 H5 helper 必须显式接受 transparent，不得静默回退为 base。"
+    ],
+    "tags": ["button", "transparent", "variant", "surface", "api-contract", "miniprogram", "h5"]
+  }
+}

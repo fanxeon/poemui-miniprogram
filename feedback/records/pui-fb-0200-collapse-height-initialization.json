@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0200",
+  "title": "Collapse 初始渲染时展开面板高度为 0 导致内容不可见",
+  "scope": "component",
+  "components": ["collapse", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-21",
+  "updatedAt": "2026-07-21",
+  "userGoal": "Collapse 官网预览中，初始展开的面板应显示内容，而不是空白。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["393px PreviewDevice", "1280x720", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 Collapse 组件页面。",
+    "默认展开面板（如数字 0）应显示内容，但实际显示为空白，因为 max-height 为 0。",
+    "点击面板触发展开/收起动画后，高度正常。",
+    "问题仅存在于初始渲染阶段。"
+  ],
+  "expected": "初始渲染时，展开的面板 max-height 应设置为内容高度（inner.scrollHeight），使内容可见。",
+  "actual": "初始渲染时，展开的面板 max-height 为 0，导致内容不可见，但 opacity 为 1。",
+  "evidence": [
+    {"kind": "file", "ref": "preview/app.js", "note": "collapseShowcase 函数中，展开面板的 max-height 硬编码为 0px。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "syncCollapsePreviewHeights 函数存在但未被调用。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "bindPreviewRuntime 缺少 collapse 的初始化调用。"}
+  ],
+  "rootCause": "collapseShowcase 生成的 HTML 中，展开面板的 max-height 设置为 0px，而 syncCollapsePreviewHeights 函数（负责设置正确高度）未被调用。bindPreviewRuntime 函数中缺少对 collapse 的初始化。",
+  "decision": {
+    "outcome": "在 bindPreviewRuntime 中添加 collapse 分支，调用 syncCollapsePreviewHeights(true, props) 设置初始高度。",
+    "rationale": "syncCollapsePreviewHeights 已实现正确的高度计算逻辑，只需在组件挂载后调用即可。",
+    "alternativesRejected": [
+      "修改 collapseShowcase 直接计算高度不可行，因为 inner.scrollHeight 在 HTML 生成时不可用。",
+      "依赖用户点击触发动画来修正高度会导致初始状态不正确。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "docs/components/COLLAPSE.md"],
+    "dependencies": ["syncCollapsePreviewHeights"]
+  },
+  "verification": {
+    "tests": ["scripts/test-collapse.js"],
+    "commands": ["npm run precheck", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "初始渲染时，展开面板（如数字 0）应显示内容。",
+      "点击面板触发展开/收起动画正常。",
+      "切换主题、Generic、互斥等状态后，高度仍正确。"
+    ],
+    "deviceRisks": [
+      "H5 scrollHeight/px 与微信 SelectorQuery/rpx 的差异仍需真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Collapse 初始渲染时需调用 syncCollapsePreviewHeights 设置展开面板高度。",
+    "rules": [
+      "bindPreviewRuntime 必须为 collapse 调用 syncCollapsePreviewHeights(true, props)。",
+      "syncCollapsePreviewHeights 使用 inner.scrollHeight 设置 max-height，initial 模式下禁用过渡。",
+      "高度设置必须在 DOM 挂载后执行，确保 scrollHeight 计算正确。"
+    ],
+    "tags": ["collapse", "preview", "height", "initialization"]
+  }
+}

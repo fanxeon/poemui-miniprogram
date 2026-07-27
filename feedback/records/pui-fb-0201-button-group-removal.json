@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0201",
+  "title": "删除 ButtonGroup 组件",
+  "scope": "component",
+  "components": ["button-group"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-21",
+  "updatedAt": "2026-07-21",
+  "userGoal": "移除无独立语义价值的 ButtonGroup，简化组件库。",
+  "environment": {
+    "surfaces": ["miniprogram-dist", "preview-site", "documentation"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["393px PreviewDevice", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "ButtonGroup 只是一个布局容器，不提供独立交互逻辑。",
+    "子按钮通过 slot 传入，ButtonGroup 不复用 PUI Button 组件。",
+    "组件库已有 Button 和布局工具，ButtonGroup 增加维护成本但无独特价值。"
+  ],
+  "expected": "移除 ButtonGroup 组件及其所有引用，简化代码库。",
+  "actual": "ButtonGroup 存在于源码、预览、文档和测试中，占用维护资源。",
+  "evidence": [
+    {"kind": "user-report", "ref": "用户反馈", "note": "用户认为 ButtonGroup 无意义，建议删除。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "buttonGroupShowcase 使用 buttonSample 生成子按钮，表明 ButtonGroup 可被 Button 直接替代。"}
+  ],
+  "rootCause": "ButtonGroup 是早期为布局便利创建的组件，但随着 PUI Button 自身布局能力的增强，其存在价值降低，反而增加维护负担。",
+  "decision": {
+    "outcome": "彻底删除 ButtonGroup 组件，包括源码、预览、文档、测试和所有引用。",
+    "rationale": "ButtonGroup 不提供独立语义或交互，其布局功能可通过 Button 组合或 CSS 实现。删除简化组件库，减少维护成本。",
+    "alternativesRejected": [
+      "保留 ButtonGroup 但标记为废弃：仍需维护，且可能误导用户。",
+      "将 ButtonGroup 改为纯 CSS 类：改变组件使用方式，破坏向后兼容。"
+    ]
+  },
+  "impact": {
+    "files": ["index.js", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/COMPONENT_MATRIX.md", "docs/COMPONENT_CATALOG.md", "docs/SHADCN_COMPATIBILITY.md", "package.json"],
+    "dependencies": ["pui-button"]
+  },
+  "verification": {
+    "tests": [],
+    "commands": ["npm run precheck", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "官网左侧导航不再显示 ButtonGroup 入口。",
+      "Button 组件页面正常，无 ButtonGroup 相关错误。",
+      "390px 下页面无横向溢出。"
+    ],
+    "deviceRisks": [
+      "删除组件可能影响已有使用 ButtonGroup 的小程序代码，需在更新日志中说明。"
+    ]
+  },
+  "ai": {
+    "summary": "ButtonGroup 是无独立价值的布局容器，可安全删除。",
+    "rules": [
+      "删除组件前确认无其他组件依赖。",
+      "同步移除所有引用：源码、预览、文档、测试、构建脚本。",
+      "更新反馈记录和进度文档。",
+      "运行完整构建和测试确保无破坏。"
+    ],
+    "tags": ["button-group", "deletion", "simplification"]
+  }
+}

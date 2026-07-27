@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0389",
+  "title": "小程序缺少表单区十九个组件页及受控输入边界",
+  "scope": "global",
+  "components": ["miniprogram-home", "form", "field", "label", "input", "input-otp", "textarea", "search", "checkbox", "radio", "switch", "select", "picker", "combobox", "slider", "stepper", "rate", "calendar", "date-time-picker", "upload"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "将全部稳定表单组件迁入微信小程序，保留受控值、确认取消、校验与文件选择的真实边界。",
+  "environment": {"surfaces": ["miniprogram-home", "miniprogram-form-pages"], "platforms": ["wechat-miniprogram", "node"], "viewports": ["390px"], "themes": ["light", "dark"]},
+  "reproduction": ["迁移前十九个表单组件均没有小程序独立页和首页搜索入口。", "若页面直接手写原生 input 或把本地选择描述为服务端完成，会绕过 PUI 合同并产生假成功。"],
+  "expected": "每页通过真实 PUI 组件接收事件并回写父级数据；Form 仅报告本地校验，Upload 仅报告文件选择结果。",
+  "actual": "此前没有独立路由、受控示例或专项页面验证，用户无法在微信端探索表单组件。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/form/", "note": "Form 与 Field、Input 组合后只报告本地校验。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/upload/", "note": "本地文件选择回写 files，明确没有服务器上传。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-form-pages.js", "note": "覆盖十九页结构、禁用原生表单控件和关键回写。"}
+  ],
+  "rootCause": "表单组件只存在包级能力，缺少微信页面层的统一壳、显式入口和受控交互示例。",
+  "decision": {"outcome": "新增十九条路由与表单分区；输入、选择、日期、数值和上传事件统一由页面 data 接收并回写。", "rationale": "小程序示例可以真实操作且不扩张组件 API 或伪造业务网络状态。", "alternativesRejected": ["直接手写原生表单控件冒充 PUI 示例。", "把 Form submit 宣称为发布或保存成功。", "将 Upload 的本地文件选择说成服务端上传完成。"]},
+  "impact": {"files": ["miniprogram/app.json", "miniprogram/pages/index/index.js", "miniprogram/pages/components/form/", "miniprogram/pages/components/upload/", "scripts/test-miniprogram-form-pages.js", "docs/MINIPROGRAM_FORM_PAGES.md"], "dependencies": ["component-page", "pui-form", "pui-picker", "pui-calendar", "pui-upload"]},
+  "verification": {"tests": ["scripts/test-miniprogram-form-pages.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js"], "commands": ["node scripts/test-miniprogram-form-pages.js：通过", "node scripts/test-miniprogram-home.js：通过", "npm run check：通过", "微信开发者工具 build-npm：通过，warnings=[]"], "browser": ["2026-07-26 微信开发者工具 Stable 2.01.2510290 的 iPhone 12/13 (Pro) 模拟器：从首页展开表单组件并进入 Switch，页面路由与受控状态文案可见；这是代表页检查。"], "deviceRisks": ["其余十八页尚未完成 390px 逐页实测；iOS/Android 真机仍未验证键盘、遮罩、组合框、滑块评分触摸、文件权限、取消和预览。"]},
+  "ai": {"summary": "表单页必须复用 PUI 控件并由父级回写，不能把本地交互伪装成业务完成。", "rules": ["页面层不得手写原生 input、textarea、select 或 button。", "Form submit 只代表校验事件，业务提交需要调用方另行实现。", "Picker 与 DateTimePicker 分清草稿、确认、取消和 visible 回写。", "Upload 只处理微信文件选择与 files，未经业务实现不得声明上传成功。"], "tags": ["miniprogram", "form", "controlled", "upload", "no-fake-success"]}
+}

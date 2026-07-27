@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0183",
+  "title": "SwipeCell 旧合同膨胀且 H5 opened 受控态在归一化后被错误收起",
+  "scope": "component",
+  "components": ["swipe-cell", "preview-site", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "联网参考 TDesign 后逐组件收敛真实可交付能力；SwipeCell 只能保留列表横向操作原语，H5 必须真实响应 Props 和手势，不能用旧的状态机、方法或提示文字伪造交互。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example", "miniprogram-dist"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["In-app Browser 390x844", "PreviewDevice 393px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 SwipeCell 四件套、metadata、H5、API、示例和历史产物：旧公开面有 22 个 Props、6 个 Events 和 3 个 Methods，混入 Cell 文案、默认展开、动作宽度/速度/关闭策略、loading、业务状态和实例命令。",
+    "联网打开 https://tdesign.tencent.com/miniprogram/components/swipe-cell 与 https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/swipe-cell，并读取固定 tdesign-miniprogram@1.15.3 的 miniprogram_dist/swipe-cell/{props.js,type.d.ts,swipe-cell.js,swipe-cell.wxml,swipe-cell.wxs}。",
+    "TDesign 固定包公开 disabled、left、opened、right，click/dragstart/dragend 与 default/left/right Slot；源码以 10px 起拖阈值、0.3 打开阈值及右侧优先解析 opened，不把内部 open/close 暴露进 API 文档。",
+    "第一次真实 H5 battle 还发现构建站点沿用旧生成 catalog，属性面板显示 22 个 Props；重新执行 site build 后显示真实 6 Props。随后发现 opened=true 已写入属性面板却在 H5 重新渲染时收起，因为已归一化的 right/left 字符串被再次按 Boolean/Array 解析。"
+  ],
+  "expected": "PoemUI SwipeCell 应只负责左右滑动、展开、收起和数组动作意图；Props 与手势都能真实更新同一展示态，数组操作与 Slot 不伪造业务成功、加载/空态/错误态或实例方法。",
+  "actual": "旧合同把列表容器、手势参数和业务状态一起暴露；H5 的 opened Props 在面板中看似有效，切回概览却变为闭合，形成源码、属性面板和预览不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户要求以联网 TDesign 对照和真实浏览器 battle 为准，并授权本 Goal 按完整证据自主连续验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/swipe-cell", "note": "2026-07-20 联网核对 SwipeCell 的操作分区、Props、Events 和 Slots。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/swipe-cell", "note": "2026-07-20 在线核对源码目录，再由固定 1.15.3 包复核手势阈值和 opened 优先级。"},
+    {"kind": "file", "ref": "swipe-cell/swipe-cell.js", "note": "修复后只公开 6 Props；按实际 action 宽度计算 rpx 位移和 30% 阈值，内部 close 不是公开 Method。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "修复 H5 已归一化 left/right 位置二次解析、窗口级 Pointer 移动/结束接续和 rpx style 宽度映射。"},
+    {"kind": "test", "ref": "scripts/test-swipe-cell.js", "note": "覆盖 6 Props、3 Events、3 Slots、Boolean/数组 opened、custom width、手势、disabled、low motion、H5/API/WXML/示例和 dist 一致性。"}
+  ],
+  "rootCause": "历史 metadata 的 done 状态掩盖了将 Cell/业务状态机扩展为 SwipeCell API 的问题；H5 又把归一化后的内部位置字符串送回只接受 Boolean/数组的解析器，导致受控 Props 不能回显。",
+  "decision": {
+    "outcome": "收敛为 disabled、left、opened、right、ariaLabel、reduceMotion 六项 Props；click({ action, source })、dragstart、dragend 三个 Events；default/left/right 三个 Slots；零公开 Methods。固定 10px 起拖、对应动作实际宽度的 30% 打开和 500ms transform 吸附，low motion 为 1ms。",
+    "rationale": "保留 TDesign 的横向操作主语义和 Slot 组合，PoemUI 仅补可验证的 ariaLabel/reduceMotion；把加载、空态、错误、重试、业务结果、Cell 文案、动作策略和内部命令留给调用方或上层组件。",
+    "alternativesRejected": [
+      "保留 title/description/leftActions/rightActions/defaultOpened/actionWidth/threshold/velocityThreshold/closeOnAction/loading，会继续把调用方内容与私有手势调参伪装成组件能力。",
+      "保留 input/change/open/close/action 与 open/close/toggle()，会把自身展开或数组意图误报为父级业务状态与可依赖实例 API。",
+      "只在 H5 文案或事件输出里显示 opened，而不真实移动内容层，会造成 Props 面板成功、预览失败的假交互。"
+    ]
+  },
+  "impact": {
+    "files": ["swipe-cell/swipe-cell.js", "swipe-cell/swipe-cell.wxml", "swipe-cell/swipe-cell.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/SWIPE-CELL.md", "docs/components/README.md", "scripts/test-swipe-cell.js", "scripts/test-design-contracts.js"],
+    "dependencies": ["theme behavior", "PUI Button", "PUI Cell", "buttonSample", "cellSample", "PreviewDevice shadow-safe layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-swipe-cell.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "PUI_VERIFY_DIST=1 node scripts/test-swipe-cell.js", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project /Users/fanx/Documents/poemUI 小程序组件库/_example（touristappid 权限失败时记录 code 10，绝不手工生成 miniprogram_npm）"],
+    "browser": ["390x844 真实 CUA 左滑打开 right（transform -68px）、右滑打开 left（transform 68px）；轻点前景与数组操作均真实收起。", "属性面板真实输入 opened=true 后预览打开 right；输入 [true,false] 后预览打开 left；disabled=true 后真实拖拽保持 transform 0。", "普通动效为 0.18s；真实 CUA 点击收起时并行读取 45ms 中间帧 transform -35.3216px，结束为 0px；reduceMotion=true 为 0.001s。", "真实打开外观菜单并逐项切换 dark、shadow、frost、large-radius；暗色 Cell 读取 rgba(39,39,42,.74)、blur(18px) saturate(1.35)、双层 shadow、14px radius，之后恢复标准浅色。", "390px document/body 横向溢出均为 0；API 显示 6 Props、3 Events、3 Slots、0 Methods，未检测到 nowrap、ellipsis 或溢出裁切。"],
+    "deviceRisks": ["微信 CLI 若 touristappid 不存在会返回 code 10 且不会生成 miniprogram_npm；H5 或 tarball 一致不替代该产物。", "合法 AppID 真机仍需核验 touch 惯性与系统手势竞争、rpx 宽度回流、Slot 投影、样式隔离、读屏和系统低动效。"]
+  },
+  "ai": {
+    "summary": "SwipeCell 是横向操作原语，不是带业务状态的 Cell、动作状态机或实例命令面板。",
+    "rules": [
+      "处理 SwipeCell 前必须联网阅读 TDesign 官方页、官方仓库与固定 npm 包，再核对真实 WXML 触摸路径和 H5 Pointer 路径。",
+      "只保留 disabled、left、opened、right 及可验证的 ariaLabel/reduceMotion；不要恢复 title、动作宽度/阈值、loading/error/empty/retry、关闭策略、业务事件或公开 Methods。",
+      "H5 opened 需要与手势共享同一个归一化位置状态；不要把已归一化的 left/right 字符串再次按 Boolean/Array 解析。",
+      "数组操作必须调用 PUI Button 并只上抛意图后收起；default/left/right Slot 的业务点击和成功状态始终由调用方管理。"
+    ],
+    "tags": ["swipe-cell", "tdesign", "api-contract", "pointer-events", "controlled-state", "no-fake-state"]
+  }
+}

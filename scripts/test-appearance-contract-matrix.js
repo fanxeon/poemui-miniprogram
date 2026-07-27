@@ -29,7 +29,7 @@ const renderedRoots = [...wxml.matchAll(/<pui-([a-z0-9-]+)/g)]
 const matrixRoots = Object.keys(appearanceContracts).sort();
 
 assert.deepStrictEqual(renderedRoots, matrixRoots, 'appearance matrix must match all direct PUI roots rendered by the real miniprogram');
-assert.strictEqual(matrixRoots.length, 31, 'the current miniprogram appearance matrix must contain 31 direct PUI roots');
+assert.strictEqual(matrixRoots.length, 72, 'the current miniprogram appearance matrix must contain 72 direct PUI roots');
 assert(!matrixRoots.includes('drawer'), 'deleted Drawer must not return to the appearance contract');
 assert.deepStrictEqual(directionalShadowTokens.slice(0, 1), ['none']);
 
@@ -46,6 +46,12 @@ const inputContract = composedAppearanceContracts.input;
 assert.deepStrictEqual(inputContract.consumedBy, ['search', 'combobox']);
 assert.strictEqual(inputContract.shadow, 'card');
 assert.strictEqual(inputContract.gradient, false);
+
+const tabbarContract = appearanceContracts.tabbar;
+assert.deepStrictEqual(tabbarContract, {
+  surface: 'screen-attached-layout', shadow: 'none', frostedGlass: false, largeRadius: false,
+  bordered: true, equalSpacing: false, gradient: false,
+}, 'appearance matrix must describe normal Tabbar as a transparent screen-attached layout; round is governed by the dedicated variant contract');
 
 const theme = read('common/style/theme.wxss');
 const miniInput = read('input/input.wxss');

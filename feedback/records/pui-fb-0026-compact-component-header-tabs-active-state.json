@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0026",
+  "title": "组件页 Header 信息冗余且 Tabs 选中态过弱",
+  "scope": "global",
+  "components": ["preview-site", "tabs"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "压缩页面 Header，尽量删除不必要内容，同时让右上角概览/API/PROP Tabs 的当前项清晰可辨。",
+  "environment": {"surfaces": ["h5-preview"], "platforms": ["browser"], "viewports": ["390x844", "desktop"], "themes": ["light", "dark"]},
+  "reproduction": ["打开任意标准组件页。", "Header 同时显示分类 Kicker、标题和从技术说明复用的长描述，占用较多竖向空间。", "切换概览、API 与 PROP，选中项主要依靠字重和弱对比底色，深色下不够明确。"],
+  "expected": "Header 只保留唯一标题、一句面向用途的短摘要和必要 Tabs；技术细节留在 API/属性。Tabs 当前项在深浅色下都有明确的高对比选中态，且键盘焦点独立可见。",
+  "actual": "旧 Header 有重复分类信息和冗长描述，上下内距为 24px/17px；Tabs 选中项与非选中项的视觉差异不足。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求压缩描述、尽量删除不要的内容，并指出右上 Tabs 缺乏有效高亮选中样式。"},
+    {"kind": "file", "ref": "preview/index.html", "note": "Header 已删除 componentKicker，只保留 stageTitle、stageDescription 与 componentPageTabs Mount。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "90 个实际预览 ID 都有单独的 componentSummaries 用户用途短摘要。"},
+    {"kind": "test", "ref": "scripts/test-preview-compact-header.js", "note": "专项合同锁定 Kicker 删除、摘要全量覆盖、28 字符上限、Header Token 与 Tabs 高对比/焦点态。"}
+  ],
+  "rootCause": "Header 早期同时承担分类、标题与技术概述，后续引入三分类 Tabs 后没有删除重复层级；Tabs 直接复用通用弱指示样式，未按页面一级导航强化当前态。",
+  "decision": {
+    "outcome": "删除 Header 分类 Kicker DOM 及运行时写入；新增 componentSummaries 作为全量用户用途摘要源，保留 detail.desc 供 API/属性使用。Header 上下内距收为 12px，标题/摘要使用 PUI title-medium/body-small。Tabs 指示 Surface 使用 text/page 反色对比，focus-visible 保持独立；按用户最终决定不提供视觉 Hover。",
+    "rationale": "删除重复层级直接为预览释放空间；单独摘要源避免用视觉裁切掩盖冗长文案；中性反色选中态符合 PoemUI 黑白视觉并兼容深浅色。",
+    "alternativesRejected": ["保留 Kicker 只缩小字号仍会占用一层重复信息。", "对长描述使用 text-cut 会掩盖文案问题，390px 下还会丢失关键信息。", "只增加选中字重在深色和低对比显示器上仍不足以识别当前视图。"]
+  },
+  "impact": {"files": ["metadata/components.js", "scripts/catalog-utils.js", "preview/components-data.js", "preview/index.html", "preview/app.js", "preview/styles.css", "scripts/test-preview-compact-header.js", "scripts/test-spacing-token-contract.js", "scripts/test-style-utilities.js", "package.json", "AGENTS.md", "CONTRIBUTING.md", "CHANGELOG.md", "docs/UI_DESIGN_CONTRACT.md", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0026-compact-component-header-tabs-active-state.json", "docs/COMPONENT_FEEDBACK_LEDGER.md"], "dependencies": ["tabs", "button", "preview-site"]},
+  "verification": {"tests": ["scripts/test-preview-compact-header.js", "scripts/test-spacing-token-contract.js", "scripts/test-design-contracts.js"], "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"], "browser": ["1280×720 桌面实测 Header 为 1021×71px，标题 18/25px、摘要 13/19px，Tabs 为 270×40px；切到 API 后 Tabs 仍为 x=963、y=69，几何未移动。", "浅色当前项为 rgb(250,250,250) 文字 + rgb(9,9,11) Surface；深色自动反转为 rgb(9,9,11) 文字 + rgb(250,250,250) Surface，aria-selected 随概览/API 真实切换。", "390×844 覆盖下实际 clientWidth=scrollWidth=375px，Header 为 375×115px，Tabs 为 351×40px，摘要无裁切、无溢出。", "验收结束已恢复 light + overview 与默认视口，浏览器警告/错误日志为空。"], "deviceRisks": ["本次只调整 H5 官网 Header 与页面级 Tabs，不改变小程序组件 API、WXML 或 WXSS。", "390px 真实移动浏览器字体回流、触摸与辅助技术仍需目标设备复核。"]},
+  "ai": {"summary": "组件页 Header 只留标题、用户用途短摘要和 Tabs；删除分类 Kicker，Tabs 当前项使用高对比选中态。", "rules": ["标准组件 Header 不得恢复分类 Kicker 或重复页面标题。", "Header 摘要必须从 componentSummaries 读取，单条不超过 28 字符，不含工程词汇。", "不得用 text-cut、ellipsis 或 overflow hidden 代替摘要文案压缩。", "Props、WXML、状态和兼容细节必须留在 API/属性。", "页面 Tabs 活动项必须有主题感知的高对比 Surface，focus-visible 必须独立可辨；不得增加视觉 Hover。"], "tags": ["preview-site", "compact-header", "tabs", "active-state", "content-hierarchy", "responsive"]}
+}

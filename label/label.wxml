@@ -1,0 +1,1 @@
+<view class="pui-label {{disabled ? 'pui-label--disabled' : ''}} {{customClass}}" style="{{customStyle}}"><text>{{content}}</text><text wx:if="{{colon && content}}" class="pui-label__colon">：</text><text wx:if="{{required}}" class="pui-label__required">*</text><slot></slot></view>

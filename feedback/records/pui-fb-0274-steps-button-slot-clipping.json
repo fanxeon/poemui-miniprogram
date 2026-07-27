@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0274",
+  "title": "Steps 的 PUI Button Slot 继承固定 36px 高度而裁切指标和文案",
+  "scope": "component",
+  "components": ["steps", "button", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Steps 的数字徽标、图标、标题和说明必须完整展示，不能因预览容器或通用 Button 尺寸被截断。",
+  "environment": {
+    "surfaces": ["h5-preview", "wechat-component", "component-contract"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "iPhone 15 393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 390px 浏览器打开 #/components/steps。",
+    "基础水平 Steps 的 PUI Button 被通用 small Button 规则固定为 height/min-height=36px 且 overflow=hidden。",
+    "指标之后的标题与说明越出 List 44px 高度，视觉上出现数字、文字和状态被截断。"
+  ],
+  "expected": "H5 的 Steps Button Slot 应按步骤自身内容高度完整容纳指标、标题、content 与 extra；窄屏不通过裁切或缩小字号伪适配。",
+  "actual": "修复前 390px 实测首项 Button 为 36px 高、List 为 44px 高，但标题 bottom=744.48px 超过 List bottom=737.48px。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户指出徽标等内容被截断，要求完整展示。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/steps", "note": "390px 实测 Button 36px/overflow hidden，标题越出父级 7.48px。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Steps 专属选择器现覆盖通用 Button 的固定高度与 overflow，保留 PUI Button 组合。"},
+    {"kind": "test", "ref": "scripts/test-steps.js", "note": "专项测试锁定 Steps Slot 的 PUI Button 专属高度覆盖。"}
+  ],
+  "rootCause": "Steps H5 组合了正确的 PUI Button，但低特异性组件样式未覆盖官网通用 small Button 的固定尺寸和隐藏溢出。",
+  "decision": {
+    "outcome": "用 Steps 作用域的高特异性 PUI Button 样式改为内容高度、完整可见溢出和 86px 水平最小高度；纵向布局保留紧凑 48px 起点。",
+    "rationale": "由 Steps 父级承担排列和内容高度，Button 仍保留既有语义、禁用、ARIA、主题与变体合同。",
+    "alternativesRejected": [
+      "用 text-overflow 或更小字号掩盖内容，会违反完整可读性。",
+      "移除 PUI Button 改为原生节点，会破坏跨端组合合同。",
+      "让内容绝对定位逃离 Button，会导致点击区与视觉脱节。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-steps.js", "docs/components/STEPS.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0274-steps-button-slot-clipping.json"],
+    "dependencies": ["PUI Button preview contract", "Steps Slot layout", "PreviewDevice shadow-safe inset"]
+  },
+  "verification": {
+    "tests": ["scripts/test-steps.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["scripts/test-steps.js、feedback:generate/check（265 records）、site:build、check、pack:check 和 example:install 均通过；Steps 源码、miniprogram_dist 与示例安装产物四件套逐字节一致；微信 CLI 在 touristappid 权限查询 code 10 阻断。"],
+    "browser": ["390px 修复后基础四项 PUI Button 均为 86px，四组指标、标题与说明均位于所属 Button 内；PreviewDevice viewport=327/327px、页面 overflow=0。边界场景内部 scroller=191/500px，横向内容未外溢页面。"],
+    "deviceRisks": ["合法 AppID 真机仍需验证 rpx 行高、Button Slot 样式隔离、横向滚动与读屏顺序。"]
+  },
+  "ai": {
+    "summary": "当 PUI Button 作为 Steps 的内容宿主时，必须由 Steps 作用域显式接管内容高度，不能继承通用固定控件高度。",
+    "rules": [
+      "先读取 Button 和 Steps 的计算高度与 overflow，确认裁切根因后再修复。",
+      "保持 buttonSample 组合，父级只覆盖排列、可读高度和内容溢出。",
+      "验收必须量测指标、标题、List 和根容器边界，不能只看页面没有横向滚动。"
+    ],
+    "tags": ["steps", "button-slot", "clipping", "preview-parity", "390px"]
+  }
+}

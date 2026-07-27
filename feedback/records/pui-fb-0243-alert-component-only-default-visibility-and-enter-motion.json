@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0243",
+  "title": "Alert 概览泄露工程元信息且默认误成受控，首次进入无中间帧",
+  "scope": "component",
+  "components": ["alert", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "基于 Popup battle 的状态预览、空间语义与真实交互规则，自主修复全库官网组件预览。",
+  "environment": {"surfaces": ["h5-preview", "props-panel", "component-contract"], "platforms": ["browser", "node", "wechat-miniprogram"], "viewports": ["390x844 browser"], "themes": ["light", "dark"]},
+  "reproduction": ["打开 Alert 概览，旧实现显示 Alert feedback、visible/icon/center 与 input/change/open 诊断；预览默认 visible=true，绕过原生 visible=null 的非受控默认；挂载节点初始没有 is-visible，首次进入没有500ms中间帧。"],
+  "expected": "概览只呈现提示和必要恢复入口；默认遵循 visible=null + defaultVisible=true；首次挂载下一帧进入，关闭保留同一节点至完整退场。",
+  "actual": "已移除工程文字，Props 默认改为 nullable visible=null，新增 retained-node 进入运行时；受控和非受控关闭均由真实状态路径完成。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 范围化授权", "note": "用户明确授权：后面的组件你都不需要我确认你直接跑完把能做的都做了, 决定你自己做。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?alert-battle=20260722-216#/components/alert", "note": "390x844 默认进入实际 opacity=0.750323、duration=0.5s、无诊断、scrollWidth=375；非受控关闭后恢复入口出现；属性页真实选择 visible=true 后受控关闭140ms仍保留节点，opacity=0.0214119。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Alert 使用 nullable visible、bindAlertPreviewRuntime、同一节点 is-visible 进入与延后卸载。"},
+    {"kind": "test", "ref": "scripts/test-alert.js", "note": "专项测试锁定13 Props、受控/非受控、事件顺序、动效边界、无概览诊断与 retained enter。"}
+  ],
+  "rootCause": "H5 用页面演示默认值替代原生 nullable visible，并把调试反馈和实现标签混入概要，且没有把进入阶段接入共享运行时。",
+  "decision": {"outcome": "默认恢复原生非受控语义，概览移除工程内容，进入/离开都在同一 Alert 节点完成。", "rationale": "受控与非受控必须能被用户真实区分；组件概要不能以调试文本替代交互结果。", "alternativesRejected": ["保留 visible=true 并只在文档说明非受控。", "用 CSS 隐藏诊断节点。", "用整段 renderStage 制造进入动画。"]},
+  "impact": {"files": ["preview/app.js", "preview/styles.css", "preview/index.html", "scripts/test-alert.js", "scripts/test-preview-runtime-dispatch.js", "docs/components/ALERT.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0243-alert-component-only-default-visibility-and-enter-motion.json"], "dependencies": ["componentPropDefaults.alert", "bindPreviewRuntime", "PUI Button", "PUI Icon"]},
+  "verification": {"tests": ["scripts/test-alert.js", "scripts/test-preview-runtime-dispatch.js"], "commands": ["node scripts/test-alert.js", "node scripts/test-preview-runtime-dispatch.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"], "browser": ["390x844 实测默认非受控进入/关闭/恢复、属性页受控 visible=true 关闭中间帧、无工程诊断与无页面横向溢出。"], "deviceRisks": ["合法 AppID 真机仍需验证 rpx、PUI Button catchtap、Slot、读屏和系统低动效。"]},
+  "ai": {"summary": "nullable visible 的默认态、事件诊断和进入节点都必须按真实组件合同验证。", "rules": ["具有 visible/defaultVisible 的组件，Props 面板默认必须保留 nullable 未传入态，并分别实测受控与非受控。", "概览不展示事件日志、Prop 标签或 Slot 术语；可感知结果与恢复入口即可。", "已有进入/离开动效的 H5 必须由运行时在同一节点上驱动并验证中间帧。"], "tags": ["alert", "component-only", "controlled", "uncontrolled", "motion", "h5"]}
+}

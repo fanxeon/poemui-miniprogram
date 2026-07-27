@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0003",
+  "title": "官网左右导航栏滚动时没有稳定撑满可视高度",
+  "scope": "global",
+  "components": ["preview-site", "style-utilities"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-17",
+  "updatedAt": "2026-07-17",
+  "userGoal": "官网左右导航栏在长文档滚动时持续占满顶栏以下的可视区域，主页面保持唯一纵向滚动上下文。",
+  "environment": {
+    "surfaces": ["h5-preview", "site-shell"],
+    "platforms": ["browser"],
+    "viewports": ["1280x720", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在桌面宽度打开长内容组件页并向下滚动。",
+    "检查左右 rail 的 getBoundingClientRect 与页面滚动容器，旧布局无法稳定维持顶栏下满高。"
+  ],
+  "expected": "桌面左右 rail 应固定在 57px 顶栏下方并撑到 viewport 底部；移动端不应产生页面级横向滚动。",
+  "actual": "旧布局的高度和 overflow 上下文分散，长页滚动后左右 rail 不能可靠保持相同的可视高度。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "统一 --pui-site-topbar-height，并为桌面 rail 使用 calc(100dvh - token) 与 sticky。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/foundation/style-utilities",
+      "note": "1280x720 深滚动后左右栏均为 top=57、bottom=720、height=663。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-style-utilities.js",
+      "note": "合同锁定顶栏 Token、dvh 高度和 viewport 滚动上下文。"
+    }
+  ],
+  "rootCause": "站点 shell 的顶栏高度、rail 高度和 overflow 上下文没有收敛为同一 Token 与 viewport sticky 合同。",
+  "decision": {
+    "outcome": "以 57px 顶栏 Token 统一左右 rail 的 sticky top 和 100dvh 剩余高度，并保持 viewport 负责页面纵向滚动。",
+    "rationale": "左右 rail 的几何关系可直接验证，避免父级 overflow 意外成为 sticky 容器，同时移动端维持单列布局。",
+    "alternativesRejected": [
+      "使用固定像素页面高度，不能适配不同 viewport。",
+      "给 app shell 设置独立纵向滚动，会破坏 sticky 参照和页面滚动体验。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-style-utilities.js"],
+    "dependencies": []
+  },
+  "verification": {
+    "tests": ["scripts/test-style-utilities.js", "scripts/test-layout-contracts.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "1280x720、scrollY=4054 时左右栏都是 top=57、bottom=720、height=663。",
+      "390px 时 body 和 documentElement 的 clientWidth 等于 scrollWidth，无页面级横向溢出。"
+    ],
+    "deviceRisks": [
+      "100dvh 在旧版移动 WebView 的动态工具栏行为仍需目标设备复核。"
+    ]
+  },
+  "ai": {
+    "summary": "PoemUI 官网桌面 rail 使用统一顶栏 Token 和 viewport sticky 满高，页面纵向滚动应留在 viewport。",
+    "rules": [
+      "不要在 sticky rail 的祖先上建立意外的纵向 overflow 滚动容器。",
+      "修改顶栏高度时同步更新 --pui-site-topbar-height，并实测左右 rail 的 top、bottom、height。",
+      "桌面布局改动后必须复核 390px 页面级 scrollWidth。"
+    ],
+    "tags": ["preview-site", "sticky", "full-height", "viewport", "390px"]
+  }
+}

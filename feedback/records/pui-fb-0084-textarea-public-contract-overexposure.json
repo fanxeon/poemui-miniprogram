@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0084",
+  "title": "Textarea 旧 44 Props 与重复事件方法扩张公开合同",
+  "scope": "component",
+  "components": ["textarea", "documentation", "example", "npm-dist"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Textarea 应参考 TDesign 的常用多行输入主干，基础用法保持基础，公开合同只保留能真实执行且不重复的值、字符、布局、状态、键盘、事件和方法。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390px page", "393px PreviewDevice", "375px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Textarea 的 44 Props、9 Events、7 Methods，发现 autoHeight/minRows/maxRows 与 autosize 重复，showCount/indicator、error/invalid/status、customLabel/customExtra/customFooter 与 Slot 也存在重复入口。",
+    "旧输入同时发布 input/change，确认与行高事件使用 confirm/linechange，清空还混入 reset；setValue/reset/getState 又绕过声明式父级状态，基础用法和 API 难以判断唯一写入路径。",
+    "对照 TDesign Miniprogram 1.15.3 官方 textarea/props.js、type.d.ts、textarea.js、textarea.wxml 与官方分区，确认共有主干是 value/defaultValue、双字符上限、autosize、indicator、状态门禁、键盘桥接和 change/enter/line-change 等事件。"
+  ],
+  "expected": "Textarea 有唯一受控写入路径、唯一自动增高与计数入口、清晰的事件顺序和克制的方法集合；平台长尾能力按真实需求取舍，不追求 Props 数量。",
+  "actual": "旧合同把兼容别名、内部调试方法、重复事件和视觉参数全部公开，且 maxcharacter 与 maxlength 的优先级、受控切回非受控的连续性与 Input 不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求逐组件参考 TDesign 收敛 API、分区 demo、基础 WXML 不堆 bind，并授权后续队列由 agent 自主验收。"},
+    {"kind": "file", "ref": "textarea/textarea.js", "note": "最终固定30 Props、7 Events、4 Methods，maxcharacter 优先，退控保留最后受控值，动效固定180/1ms。"},
+    {"kind": "file", "ref": "textarea/textarea.wxml", "note": "最终只组合 label/tips/extra 三类 Slot、PUI Button/Icon/Loading 与一个原生 textarea 平台根。"},
+    {"kind": "test", "ref": "scripts/test-textarea.js", "note": "专项锁定30/7/3/4、受控边界、字符算法、事件顺序、方法集合、原生平台根和旧 API 禁入。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/textarea", "note": "0、false、空字符串均作为合法受控值，parent 输入真实回写为中文值，退控继续 parent；maxcharacter=8 将 ab中😀xyz 截为 ab中😀xy 并显示8/8。"}
+  ],
+  "rootCause": "旧设计先按能力枚举扩张字段，再用别名和调试方法补兼容，没有先定义多行输入的唯一所有权、事件主线和平台边界。",
+  "decision": {
+    "outcome": "公开合同收敛为30 Props、7 Events、3 Slots、4 Methods；删除18个重复/视觉/布尔 Slot Props、input/confirm/linechange/reset 重复事件和 setValue/reset/getState；统一 change、clear → change、enter、line-change 与声明式父级回写。",
+    "rationale": "基础输入应让消费者快速找到值、上限、布局、状态和平台参数；只保留当前真实可执行且不能由现有主干表达的 PoemUI 能力。",
+    "alternativesRejected": [
+      "继续保留44 Props 只在文档里标记高级，会让 AI 和用户仍把重复入口当等价推荐。",
+      "机械复制 TDesign allowInputOverMax/cursor/fixed/placeholderStyle 等长尾参数会再次以数量代替当前常用路径。",
+      "保留 input/change 双事件和 setValue/reset 会制造重复请求与声明式、命令式两套真相源。"
+    ]
+  },
+  "impact": {
+    "files": ["textarea/textarea.js", "textarea/textarea.wxml", "textarea/textarea.wxss", "metadata/components.js", "metadata/shadcn.js", "docs/COMPONENT_API.md", "docs/components/TEXTAREA.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-textarea.js"],
+    "dependencies": ["pui-button", "pui-icon", "pui-loading", "parent controlled writeback", "wechat native textarea"]
+  },
+  "verification": {
+    "tests": ["scripts/test-textarea.js", "scripts/test-shared-subcomponent-geometry.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "全部30个 Props 均通过属性面板真实输入、选择、开关或拖动；平台参数全部进入同源 WXML，基础 WXML 为零 bind。",
+      "API 按6/6/6/12四组完整显示30 Props，并显示7 Events、3 Slots、4 Methods；单元格 ellipsis、nowrap、内容裁切均为0。",
+      "disabled、readonly、loading、default/success/warning/error、三档尺寸和 label/tips/extra Slot 均按真实合同呈现，不伪造 active/selected/empty/retry。"
+    ],
+    "deviceRisks": [
+      "微信原生 textarea 没有独立 readonly 属性，当前按合同映射为 native disabled 阻断编辑；选择复制与读屏差异需真机确认。",
+      "confirmType、确认栏、选区、键盘抬升、line-change 和 keyboardheightchange 只可由合法 AppID 真机输入法真实验证。"
+    ]
+  },
+  "ai": {
+    "summary": "Textarea 使用30/7/3/4克制合同，唯一值事件是 change，清空固定 clear → change。",
+    "rules": [
+      "基础 Textarea WXML 禁止 bind；事件只在 API Events 或事件专项示例按需绑定。",
+      "value 的0、false和空字符串都是受控值；退控必须保留最后受控值，defaultValue 不重置用户输入。",
+      "maxcharacter 非负时优先于 maxlength，ASCII=1、非 ASCII 与 emoji=2，禁止同时执行两轮截断。",
+      "禁止恢复 autoHeight/minRows/maxRows/showCount/error/invalid 布尔别名或 setValue/reset/getState 调试方法。"
+    ],
+    "tags": ["textarea", "api", "tdesign", "controlled", "events", "character-limit"]
+  }
+}

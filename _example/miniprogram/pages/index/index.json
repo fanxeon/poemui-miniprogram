@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
+    "pui-button": "poemui-miniprogram/button/button",
+    "pui-cell": "poemui-miniprogram/cell/cell",
+    "pui-tag": "poemui-miniprogram/tag/tag",
+    "pui-loading": "poemui-miniprogram/loading/loading",
+    "pui-popup": "poemui-miniprogram/popup/popup"
+  }
+}

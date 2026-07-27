@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0375",
+  "title": "快速样式两列目录必须真实应用并按类型互斥",
+  "scope": "component",
+  "components": ["style-utilities", "cell"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式目录使用两列，不显示查看示例或箭头；被应用到预览的样式需要可见选中态，同类样式单选互斥且可取消。",
+  "environment": {
+    "surfaces": ["miniprogram styles page"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/styles/index，观察旧目录为单列 Cell，右侧含查看示例和箭头。",
+    "点击非背景 utility，旧实现没有把 class 写入当前预览，也没有选中态或同类互斥。"
+  ],
+  "expected": "目录两列展示；点击的 class 真实作用于当前分类预览中的适格语义目标；同一 group:previewKind 只能选一项、再次点击可取消，Cell 明确显示选中。",
+  "actual": "旧目录占用单列和尾部动作空间，只有背景渐变有预览回写，其它选择没有统一状态合同。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务对话", "note": "用户明确要求两列、移除查看示例与箭头，并要求真实应用、选中和互斥。"},
+    {"kind": "file", "ref": "scripts/style-utilities-preview-schema.js", "note": "生成器为每个 utility 提供 previewKind、previewTarget、previewSafety 与脚手架语义。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "activeSelections 以 group:previewKind 保存单选状态，并将当前选择分发到 layout/item/target/media/measure/outer/surface/items/text 目标。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "单一当前效果按语义目标消费 class；目录使用 selected 的 pui-cell，恢复按钮只清空当前分类。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "覆盖两列、无尾部动作、530 类语义完整性、目标路由、同类替换与取消。"},
+    {"kind": "browser", "ref": "微信开发者工具 Stable 2.01.2510290", "note": "390px 模拟器显示两列目录，点击 pui-absolute 后有 Cell 选中边界和勾选。"}
+  ],
+  "rootCause": "样式目录沿用通用导航 Cell 形态，选择状态只为背景渐变单独实现，没有可复用的类型键与预览 class 真相源。",
+  "decision": {
+    "outcome": "目录改为两列 selectable pui-cell；移除 description、value 和 arrow。以 group:previewKind 键存储选择，同键替换、同项再次点击删除；选择结果由生成语义分发到单一当前效果中的适格目标，恢复只清空当前分类，禁止把 utility 挂到页面或预览基础设施根。",
+    "rationale": "两列降低长目录浏览成本；按类型而非整组互斥，允许用户叠加不同维度的样式，同时避免同一 CSS 属性的冲突。",
+    "alternativesRejected": [
+      "只给目录添加视觉勾选但不把 class 应用于预览属于假交互。",
+      "整组只能选一个会阻止用户组合不同类型的样式。",
+      "保留查看示例和箭头会占用两列目录的必要空间。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/style-utilities-preview-schema.js", "scripts/generate-miniprogram-style-utilities-catalog.js", "miniprogram/common/data/style-utilities-catalog.js", "miniprogram/pages/styles/index.js", "miniprogram/pages/styles/index.wxml", "miniprogram/pages/styles/index.wxss", "preview/style-utilities-data.js", "scripts/test-miniprogram-style-utilities-page.js", "docs/MINIPROGRAM_HOME.md"],
+    "dependencies": ["pui-cell", "pui-tabs", "pui-scroll-area"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js"],
+    "commands": ["npm run styles:catalog:generate", "node scripts/test-miniprogram-style-utilities-page.js", "node scripts/test-style-utilities.js", "npm run site:build", "npm run example:install", "微信开发者工具 cli build-npm"],
+    "browser": ["390px 模拟器中目录为两列，无查看示例和箭头；点击 pui-absolute 出现选中态。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认长类名在两列中的自然换行与点击命中区。"]
+  },
+  "ai": {
+    "summary": "快速样式选择必须共享生成语义真相源；同类用 group:previewKind 单选，可再次点击取消。",
+    "rules": [
+      "两列样式目录使用 selectable PUI Cell，不要恢复查看示例、箭头或无消费的说明文本。",
+      "任何 selected 状态都必须对应适格语义目标已应用的 class，禁止把所有 class 拼到预览或页面基础设施根。",
+      "同类 utility 的互斥键必须包含 group 与 previewKind，避免跨分类意外替换或不同 CSS 语义互相覆盖。"
+      ,"恢复按钮只清空 activeGroup 对应的 group:previewKind 键，不得清空其他分类组合。"
+    ],
+    "tags": ["style-utilities", "selection", "preview", "miniprogram", "cell"]
+  }
+}

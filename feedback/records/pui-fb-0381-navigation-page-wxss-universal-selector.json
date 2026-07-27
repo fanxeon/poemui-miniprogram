@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0381",
+  "title": "导航组件页面共享 WXSS 通配选择器阻断全小程序渲染",
+  "scope": "component",
+  "components": ["sidebar", "miniprogram", "navigation-pages"],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "regression",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式 BackTop 验收时，当前合法 AppID 小程序必须能继续使用热重载并真实渲染，而不能被无关共享页面 WXSS 编译错误阻断。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "sidebar component page"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["iPhone 12/13 Pro simulator"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "在已打开的微信开发者工具中加载 pages/styles/index。",
+    "渲染层编译全局引入的 miniprogram/styles/navigation-pages.wxss。",
+    "开发者工具在旧第 69 行 `.navigation-page__columns > *` 报 `error at token '*'`，模拟器整页空白。"
+  ],
+  "expected": "共享页面 WXSS 只使用微信组件样式允许的 class 选择器；Sidebar 与右侧消费者面板继续保持两栏宽度，其他页面可正常渲染。",
+  "actual": "通配子选择器使所有引用该共享样式的页面在当前微信编译器中失败，BackTop 真实验收也被空白页阻断。",
+  "evidence": [
+    {"kind": "browser", "ref": "微信开发者工具 Stable 2.01.2510290 Console", "note": "2026-07-26 11:42 实际报告 `./styles/navigation-pages.wxss(69:29): error at token '*'`，模拟器空白。"},
+    {"kind": "file", "ref": "miniprogram/styles/navigation-pages.wxss", "note": "将 `.navigation-page__columns > *` 与标签后代选择器收敛为 `.navigation-page__sidebar`、`.navigation-page__panel` 类选择器。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/sidebar/index.wxml", "note": "为 pui-sidebar 宿主显式增加 navigation-page__sidebar class，保持原有 280rpx 两栏几何。"},
+    {"kind": "test", "ref": "scripts/test-wxss-universal-selector-compatibility.js", "note": "全仓 WXSS 兼容扫描禁止通配选择器重新进入微信编译产物。"}
+  ],
+  "rootCause": "共享导航页面样式直接沿用 Web CSS 的 `> *` 与标签选择器，没有遵守微信组件 WXSS 禁止通配符和标签选择器的编译约束。",
+  "decision": {
+    "outcome": "为 Sidebar 宿主补充明确语义 class，并将通配/标签规则替换成两个 class-only 规则；不改变 Sidebar 公共 API、H5 镜像或页面结构。",
+    "rationale": "类选择器既满足微信编译器，也让共享页面只控制自己明确拥有的两个布局节点，不穿透未知后代。",
+    "alternativesRejected": [
+      "清缓存但保留非法选择器只能暂时重复失败。",
+      "在快速样式页绕过共享样式会留下其他页面的全局编译阻断。",
+      "删除两栏最小宽度规则会让 Sidebar 示例在窄屏重新溢出。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/styles/navigation-pages.wxss",
+      "miniprogram/pages/components/sidebar/index.wxml",
+      "scripts/test-wxss-universal-selector-compatibility.js",
+      "feedback/records/pui-fb-0381-navigation-page-wxss-universal-selector.json"
+    ],
+    "dependencies": ["pui-sidebar", "shared component pages"]
+  },
+  "verification": {
+    "tests": ["scripts/test-wxss-universal-selector-compatibility.js"],
+    "commands": ["node scripts/test-wxss-universal-selector-compatibility.js", "微信开发者工具普通编译"],
+    "browser": ["同一已打开的开发者工具执行一次正常编译后，Console 从 1 error 变为 No errors，pages/index/index 与 pages/styles/index 恢复真实渲染；未重启开发者工具。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 Sidebar 两栏在 rpx、样式隔离和触摸滚动下保持原几何。"]
+  },
+  "ai": {
+    "summary": "共享小程序 WXSS 只能控制显式 class 节点；通配与标签选择器会阻断当前微信编译器。",
+    "rules": [
+      "小程序共享和组件 WXSS 禁止 `*`、`> *`、标签、ID 与属性选择器。",
+      "需要控制组件宿主布局时给宿主显式语义 class，不得依赖 pui-* 标签选择器。",
+      "编译阻断修复后必须在当前已打开的开发者工具中确认真实页面恢复，不能只跑静态扫描。"
+    ],
+    "tags": ["wxss", "wechat-devtools", "sidebar", "compatibility", "class-selector"]
+  }
+}

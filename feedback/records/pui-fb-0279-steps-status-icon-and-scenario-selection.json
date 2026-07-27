@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0279",
+  "title": "Steps 状态预览隐藏 PUI Icon，场景导航选中态不清晰",
+  "scope": "component",
+  "components": ["steps", "button", "icon", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Steps 的状态演示要使用 PoemUI Icon，并让左侧场景导航清楚表明当前选中项。",
+  "environment": {
+    "surfaces": ["mini-program-source", "h5-preview", "component-contract"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 #/components/steps，选择左侧的状态场景。",
+    "旧实现把状态场景设为 dot，完成与错误的 PUI Icon 被 dot 指示器隐藏；左侧场景入口只有很弱的浅色背景，当前视图难以识别。"
+  ],
+  "expected": "完成与错误状态应清楚使用 PUI check/error-circle Icon；状态场景不应以 dot 隐藏状态图形。场景导航应保持 PUI Icon，并通过 tab 语义和高对比选中态明确当前视图。",
+  "actual": "状态示例只显示黑点、红点和空圈，左侧方向/状态/边界入口没有足够清晰的选中反馈。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话及截图",
+      "note": "用户明确指出状态预览应使用 pui-icon，并指出左侧 Sidebar 场景导航没有正确选中态。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/steps",
+      "note": "修复前当前基础场景的完成项含 PUI palette Icon，但状态场景配置为 theme=dot，会将错误与完成状态图形隐藏。"
+    },
+    {
+      "kind": "file",
+      "ref": "steps/steps.wxml",
+      "note": "两端错误状态统一改用 error-circle；H5 状态场景改为 default indicator，场景入口使用 role=tab、aria-selected、aria-current 和高对比 Button 选中态。"
+    }
+  ],
+  "rootCause": "状态示例错误地把 dot 主题当成状态说明的默认展示，dot 合同会省略图形；场景入口的 is-active 只覆盖弱 Surface 背景，且窄屏规则隐藏了 PUI Icon。修复第一轮后又实测发现共享 text Button 的透明背景规则在样式表后部覆盖了场景导航背景，造成 aria 已选中但视觉仍透明。",
+  "decision": {
+    "outcome": "保留 dot 作为 Steps 的公开主题能力，但状态场景使用 default indicator：完成显示 PUI check，错误显示 PUI error-circle，未开始保留序号。场景入口统一为 PUI Button + Icon 的 tablist/tab/tabpanel，并以 aria-selected、aria-current 和反色高对比选中态表达当前场景；390px 不隐藏 Icon。",
+    "rationale": "状态演示必须把状态语义看清，不能让主题简化掩盖 PUI Icon；导航的可见状态和读屏状态必须同步。",
+    "alternativesRejected": [
+      "继续使用 dot 后只在下方写状态说明，用户仍看不到图形状态。",
+      "用文字叉号或 CSS 伪元素补错误图标，会绕过 PUI Icon。",
+      "只加深左侧背景而不补 tab 语义与移动端 Icon，会留下交互和可访问性缺口。"
+    ]
+  },
+  "impact": {
+    "files": ["steps/steps.wxml", "preview/app.js", "preview/styles.css", "scripts/test-steps.js", "docs/components/STEPS.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "feedback/records/pui-fb-0279-steps-status-icon-and-scenario-selection.json"],
+    "dependencies": ["PUI Button", "PUI Icon", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-steps.js"],
+    "commands": ["node scripts/test-steps.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["390×844 实点“状态”：active tab 为 role=tab / aria-selected=true / aria-current=page / aria-controls=pui-steps-scenario-view，tabpanel 已切换；完成项渲染 PUI check SVG、错误项渲染 PUI error-circle SVG、未开始项为序号 3。深色 active 为 rgb(250,250,250) 背景 / rgb(24,24,27) 文字，切至浅色后为 rgb(9,9,11) 背景 / rgb(255,255,255) 文字；两种主题页面横向 overflow 均为 0。"],
+    "deviceRisks": ["需要合法 AppID 真机复核 pui-icon 样式隔离、rpx 指示器大小、触摸选择、横向滚动与读屏。"]
+  },
+  "ai": {
+    "summary": "状态示例不能用 dot 隐藏 PUI 状态图形；场景选择也必须具备可见和语义一致的选中态。",
+    "rules": [
+      "完成与错误状态优先调用 PUI check/error-circle Icon，禁止用字符或私有伪元素代替。",
+      "凡是 PUI Icon 能表达的可见图形，包括 Steps 场景入口，必须经 pui-icon 或共享 iconComponent；数字序号、dot 与连接线是组件进度语义，保留其原生表达。",
+      "dot 可作为组件主题，但状态说明场景必须保留可见的 PUI 状态图形。",
+      "场景导航使用 PUI Button + Icon 时，选中项必须同步 aria-selected、aria-current 与高对比视觉状态；390px 不得把全部 Icon 隐藏。"
+    ],
+    "tags": ["steps", "pui-icon", "scenario-navigation", "selected-state", "accessibility"]
+  }
+}

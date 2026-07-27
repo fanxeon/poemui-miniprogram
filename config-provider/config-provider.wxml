@@ -1,0 +1,3 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}}">
+  <slot></slot>
+</view>

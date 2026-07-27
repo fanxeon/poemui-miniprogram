@@ -1,0 +1,97 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0010",
+  "title": "H5 全局大圆角未传递到组件语义圆角",
+  "scope": "global",
+  "components": ["preview-site", "tag", "config-provider"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "官网全局“大圆角”必须作用于 Tag 等 PUI 组件的语义圆角，而不只是改变页面和面板容器；显式 round/circle 形状仍保持满圆。",
+  "environment": {
+    "surfaces": ["h5-preview", "miniprogram"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Dialog 官网预览，记录默认 Slot 中 Tag 的圆角。",
+    "开启顶部“大圆角”开关，观察 Tag 仍保持 6px 圆角。",
+    "检查 H5 Token 链，data-radius=large 只重写 pui-site-radius-control/surface/popup，没有重写 pui-preview-radius-small 等组件语义 Token。"
+  ],
+  "expected": "H5 与小程序 pui-radius--large 同步重映射 small/medium/large/xlarge/xxlarge；Tag 默认 small 从 6px/12rpx 变为 9px/18rpx，round/circle 保持满圆。",
+  "actual": "H5 大圆角开关只改变站点外壳和部分容器，Tag 继续读取未变化的 --pui-preview-radius-small=6px，用户无法从组件本身看到全局设置生效。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "codex-clipboard-a2c0c237-cebb-40e5-9007-1394f704b880.png",
+      "note": "用户截图指出开启全局大圆角后 Dialog default slot Tag 仍呈现普通小圆角。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "小程序 pui-radius--large 已将 small/medium/large/xlarge/xxlarge 映射为 18/28/40/48/56rpx。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 data-radius=large 现在同步映射为 9/14/20/24/28px，Tag mark 的语义圆角端也改用 small Token。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "全局设计合同锁定五档 H5 大圆角映射以及 Tag round/mark 形状边界。"
+    }
+  ],
+  "rootCause": "官网把站点外壳圆角 --pui-site-radius-* 与 PUI 组件镜像圆角 --pui-preview-radius-* 分成两套变量，但大圆角开关只覆盖了前者，造成开关状态与组件视觉效果脱节。",
+  "decision": {
+    "outcome": "在 H5 data-radius=large 根节点整体重映射五档组件语义圆角，数值按 1px≈2rpx 对齐小程序；Tag 默认 small 跟随模式，round/circle 保持 999px，mark 仅语义小圆角端跟随。",
+    "rationale": "全局模式必须改变语义 Token，而不是逐组件追加选择器；这样所有正确消费 Token 的组件会自动同步，同时保留显式几何形状。",
+    "alternativesRejected": [
+      "只给 Dialog 内 Tag 写大圆角选择器，会让同一个 Tag 在其他组件中继续漂移。",
+      "把所有 Tag 强制改成胶囊圆角，会抹掉 small 与 round 两种公开形状语义。",
+      "让 round/circle 也按比例变化，会把圆形图标按钮和胶囊组件改成圆角方块。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/styles.css",
+      "preview/index.html",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/DESIGN_TOKENS.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "scripts/test-design-contracts.js",
+      "scripts/test-style-utilities.js",
+      "feedback/records/pui-fb-0010-global-large-radius-semantic-tokens.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["tag", "config-provider", "switch"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-style-utilities.js", "scripts/test-dialog.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "390x844 Dialog Tag 普通模式实测 radius=6px、small Token=6px；开启大圆角后 radius=9px、五档 Token=9/14/20/24/28px、round Token=999px。",
+      "开启大圆角后刷新，Switch 继续 checked，Dialog Tag 与 small Token 均保持 9px；document scrollWidth=clientWidth=375px，无横向溢出；控制台无 warning/error。",
+      "验收结束后恢复大圆角关闭状态。"
+    ],
+    "deviceRisks": [
+      "小程序源码 Token 映射已存在且通过静态合同；不同基础库下 ConfigProvider 类名继承与自定义组件样式隔离仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "全局大圆角必须重映射整套组件语义圆角，Tag small 跟随模式，round/circle 保持满圆。",
+    "rules": [
+      "实现全局大圆角时必须修改语义 Token 根值，禁止逐组件堆叠 data-radius 选择器。",
+      "验收 Tag 时同时测量普通与大圆角模式；small 应为 6px→9px，round/circle 始终为满圆。",
+      "H5 五档圆角必须与小程序 18/28/40/48/56rpx 保持 1px≈2rpx 镜像。"
+    ],
+    "tags": ["global", "large-radius", "tag", "design-token", "config-provider", "preview-parity", "shape"]
+  }
+}

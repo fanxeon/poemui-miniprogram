@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0257",
+  "title": "普通预览长内容缺失底部安全间距",
+  "scope": "global",
+  "components": ["preview-site", "preview-device", "grid"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "普通组件预览滚动到最后一项后，内容与设备底部之间仍应保留清晰、可读且稳定的间距。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice shadow-safe viewport", "Grid showcase"],
+    "platforms": ["browser", "wechat-miniprogram-source"],
+    "viewports": ["390x844 browser", "desktop browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/grid，并在 390px 预览中向下滚动到最后一项。",
+    "观察普通 shadow-safe 预览：组件根固定为 height: 100%，内容超过设备高度后溢出到滚动上下文，父级底部 padding 没有随溢出内容延伸。",
+    "修复前最后一个 Grid 分区的底部与滚动内容底端重合，未保留预览安全间距。"
+  ],
+  "expected": "短内容仍撑满 PreviewDevice 可视高度；长内容应自然增长，并在最后一项之后保留一次共享的底部安全内距，不改变设备固定高度或引入页面级横向溢出。",
+  "actual": "shadow-safe 父级和直接演示根都固定为 height: 100%，长内容溢出固定高度后绕过父级底部 padding，最后一项贴近滚动内容底部。",
+  "evidence": [
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/grid · 2026-07-23 · 390x844", "note": "修复前 viewport clientHeight=620、scrollHeight=1579；修复后 scrollHeight=1607，组件布局 paddingBottom=28px，最后分区 bottom 与布局 bottom 差值为 28px，document/body clientWidth 与 scrollWidth 均为 375px。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "shadow-safe 共享布局改为 height:auto、min-height:100%、auto 行和 align-content:start；直接演示根改为 height:auto、min-height:100%，底部内距只由父级提供。"},
+    {"kind": "test", "ref": "scripts/test-preview-overview-hierarchy.js", "note": "专项契约锁定长内容自然增长、短内容最小满高以及父级唯一底部 safety padding，防止组件私有重复 padding。"}
+  ],
+  "rootCause": "普通预览的固定高度策略只适合短内容；当组件内容超过设备高度时，溢出内容不再参与父级盒模型，导致父级底部安全内距无法落在最后一项之后。",
+  "decision": {
+    "outcome": "共享 shadow-safe 布局改为自然高度并保留 min-height:100%，直接演示根同步使用 height:auto 与 min-height:100%；继续由父级统一消费 28px 四向安全内距。",
+    "rationale": "这样短内容仍填满固定 PreviewDevice viewport，长内容可以随唯一滚动上下文增长，且最后一项始终获得一次一致的底部留白，不需要给每个组件重复补私有 margin/padding。",
+    "alternativesRejected": [
+      "只给 Grid 根追加 padding-bottom：无法修复所有普通预览，也会形成组件私有间距口径。",
+      "把 PreviewDevice 高度改为 auto：破坏固定设备边界和同页组件对齐。",
+      "继续保持 height:100% 并允许溢出：最后一项仍会贴底，且安全区开关会产生不一致布局。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-preview-overview-hierarchy.js", "feedback/records/pui-fb-0257-preview-bottom-inset-overflow.json", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["PreviewDevice", "shared shadow-safe layout", "Grid overview", "390px overflow contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["390x844 真实 Grid 路由修复后 clientHeight=620、scrollHeight=1607，最后分区与共享布局底部差值为 28px；短内容仍由 min-height 填满，document/body 375/375 无页面级横向溢出。", "共享普通预览根只保留父级底部安全内距，避免阴影开关或组件私有 padding 改变布局。"],
+    "deviceRisks": ["本轮仅修改官网共享预览 CSS 与契约测试，未改小程序组件产物；合法 AppID 真机仍需复核组件内容在微信 scroll-view 中的 rpx 高度、字体回流和触摸滚动边界。"]
+  },
+  "ai": {
+    "summary": "普通预览必须同时满足短内容满高与长内容底部留白，不能用固定 height:100% 让溢出内容绕过共享安全内距。",
+    "rules": [
+      "shadow-safe 父级负责唯一四向安全 padding，直接组件根不得重复补 padding-bottom。",
+      "可滚动预览根使用 height:auto + min-height:100%，让短内容填满、长内容自然增长。",
+      "浏览器验收必须同时读取 clientHeight/scrollHeight、最后内容与布局底部差值，以及 390px document/body scrollWidth。"
+    ],
+    "tags": ["preview-site", "preview-device", "shadow-safe", "bottom-padding", "overflow", "390px", "spacing"]
+  }
+}

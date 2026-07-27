@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0123",
+  "title": "Tabs 公开合同混入状态容器、动画调参和重复选择事件",
+  "scope": "component",
+  "components": ["tabs", "button", "badge", "icon", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Tabs 应参考成熟小程序选项卡保留选择、样式、吸顶与滑动主干，基础调用克制，严格区分原始值，并把业务内容状态留给面板消费者。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349x620 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Tabs 公开 30 Props、5 Events、4 Methods、3 Slots，把 loading/error/empty/retry、prefix/extra、动画参数、循环和工程控制能力塞进选择导航。",
+    "旧 value 比较通过 String(value) 归一化，数字 0 与字符串 \"0\" 会被误判为同一项，false 与空字符串等边界也缺少严格身份合同。",
+    "旧 click/input/change、select/next/prev/scrollToActive 同时表达选择，消费者需要处理重复意图和可绕过父级受控回写的方法。",
+    "TDesign MiniProgram 1.15.3 Tabs/TabPanel 以 value/defaultValue、底线、等分、分隔、吸顶和 swipe 为主干；部分动画与 sticky 对象参数不适合直接扩大 PoemUI 公共面。"
+  ],
+  "expected": "Tabs 只公开跨微信与 H5 可真实一致的 12 Props、2 Events、1 default Slot、0 Methods；严格保留 0、\"0\"、false、空字符串；基础 WXML 零 bind。",
+  "actual": "旧公开面把选择导航、内容业务状态、布局调试和动画调参混在一起，值身份、事件顺序和父级所有权不够可靠。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API、按用法分区、基础示例不展示全部 bind，并授权完整证据后自主验收。"},
+    {"kind": "file", "ref": "tabs/tabs.js", "note": "最终 12 Props、严格 Object.is 语义、click 后 change、固定 72rpx swipe 阈值和 180/1ms。"},
+    {"kind": "file", "ref": "tabs/tabs.wxml", "note": "组合 PUI Button/Badge/Icon，保留唯一指示器与 default 内容 Slot，不再组合根级状态容器。"},
+    {"kind": "file", "ref": "docs/components/TABS.md", "note": "记录 TDesign 1.15.3 的保留、拒绝、选择所有权、手势、内容状态边界与真机风险。"},
+    {"kind": "test", "ref": "scripts/test-tabs.js", "note": "VM 与静态合同覆盖 12/2/1/0、严格原始值、受控/非受控、事件顺序、禁用、滑动不循环、PUI 组合和三层产物。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabs", "note": "390px 真实点击、受控父级回写和 CUA 拖动，验证 0、字符串 0、false、空字符串、禁用、样式、低动效、API 与主题外观。"}
+  ],
+  "rootCause": "旧实现按演示与调试需求不断扩张 Tabs 顶层能力，没有先限定 Tabs 只负责同层内容选择，也没有把原始值身份、受控所有权和内容业务状态分开。",
+  "decision": {
+    "outcome": "收敛为 items/value/defaultValue/variant/showBottomLine/spaceEvenly/split/sticky/stickyOffset/swipeable/ariaLabel/reduceMotion；只保留 click/change；default Slot；0 Methods。",
+    "rationale": "选择导航只需要稳定的数据、所有权、视觉排列、吸顶和手势；内容的 loading/empty/error/retry 应由 Slot 内真实业务组件处理。",
+    "alternativesRejected": [
+      "保留 loading/error/empty/retry 会让 Tabs 冒充内容请求容器，并与 Slot 内业务真相源冲突。",
+      "保留 input 与 select/next/prev 会重复 change 并允许绕过受控父级。",
+      "公开 duration/easing/swipeThreshold/loop 会把稳定交互常量变成难以跨端验收的调参面。",
+      "照搬 stickyProps/bottomLineMode 对象会扩大平台差异，当前 stickyOffset 与固定指示器已覆盖真实任务。"
+    ]
+  },
+  "impact": {
+    "files": ["tabs/tabs.js", "tabs/tabs.json", "tabs/tabs.wxml", "tabs/tabs.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/TABS.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-tabs.js", "scripts/test-design-contracts.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0123-tabs-api-and-selection-contract.json"],
+    "dependencies": ["pui-button", "pui-badge", "pui-icon", "TDesign MiniProgram 1.15.3 Tabs/TabPanel"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabs.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node scripts/test-tabs.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "同项点击只显示 click；切换固定 click → change；disabled 项不触发选择。",
+      "受控 items 下数字 0、字符串 0、false、空字符串分别回写为 0、\"0\"、false、\"\"，没有字符串化碰撞。",
+      "真实 CUA 横向拖动把基础切到表单并标记 source=swipe；swipeable=false 后同样拖动不再切换。",
+      "边界样例局部 scroller 为 282/408px，页面 document 为 375/375px，横向溢出只发生在 Tabs 自身。",
+      "normal 动效为 500ms，reduceMotion 计算样式为 1ms；关闭底线时节点保留且 opacity=0。"
+    ],
+    "deviceRisks": [
+      "微信 touchmove 采样、scroll-view 惯性、sticky/rpx 偏移、SelectorQuery 指示器、连续快点、样式隔离、系统低动效和读屏仍需合法 AppID 真机复核。",
+      "微信 CLI 使用 touristappid，内部 code 10 阻止 build-npm；现有 miniprogram_npm 无 Tabs，状态保留 pending-cli。"
+    ]
+  },
+  "ai": {
+    "summary": "Tabs 只负责同层内容选择、排列、吸顶和手势；内容状态归 default Slot 消费者，原始值身份和父级所有权必须严格保留。",
+    "rules": [
+      "Tabs 不得恢复根级 loading/error/empty/retry；业务状态在 default Slot 内组合 PUI Loading/Empty/Button。",
+      "value 比较不得 String 化，必须区分 0、\"0\"、false 和空字符串。",
+      "同项点击只发 click，真实变化固定 click 后 change；swipe 只发 change 且 source=swipe。",
+      "不得恢复 input、select/next/prev/scrollToActive 或公开动画与 swipe 阈值调参。"
+    ],
+    "tags": ["tabs", "tdesign", "api-contract", "controlled", "swipe"]
+  }
+}

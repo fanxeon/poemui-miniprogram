@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0187",
+  "title": "Watermark H5 把零偏移回退为默认值且遗留 Surface 改变 Slot 几何",
+  "scope": "component",
+  "components": ["watermark", "preview-site", "test-contract"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "Watermark 的 H5 必须真实映射 WXML/WXSS 能力，Props 的 0 值、Slot 几何和透明覆盖层不能被演示层悄悄改变。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "test-contract"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "PreviewDevice 393px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "原生 Watermark 将 offset [0,0] 视为有效零偏移；旧 H5 使用 Number(offset[n]) / 2 || fallback，把 0 错误替换为 x/y 的默认半间距。",
+    "旧共享 Watermark 预览规则仍给根节点添加背景、边框、阴影、毛玻璃和圆角，使本应透明的水印覆盖层再形成一张 Surface。",
+    "在 H5 属性面板输入 watermarkContent 与 offset [0,0]，切换 isRepeat=false 后需要以真实 root 尺寸检验水印是否恰在中心。"
+  ],
+  "expected": "0、false 和空值按组件合同分别保留；Watermark 根透明，只有 Slot 内 PUI 组件承担可见 Surface，外观开关不能改变水印布局或 Slot 几何。",
+  "actual": "H5 用 truthy 回退丢失零偏移，同时遗留通用 Surface 样式给覆盖层增加视觉与几何负担，导致跨端预览漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户授权本 Goal 后续组件按完整联网、浏览器与门禁证据自主连续验收。"},
+    {"kind": "file", "ref": "watermark/watermark.js", "note": "原生 toNumber 路径保留 offset 0，并以 measured root、rpx 位置重绘 marks。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 改用 Number.isFinite 的 halfValue，0 不再触发 fallback；ResizeObserver 与 movable 重绘保持同一铺排算法。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Watermark 根明确 transparent/0 border/none shadow/none backdrop-filter，Slot 内 PUI Cell 保持自己的主题 Surface。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/watermark", "note": "2026-07-20 真实输入图案和 [0,0] 后，282x188 根在单枚模式得到 left=141px/top=94px、marks=1；重复模式为 81 枚。"},
+    {"kind": "test", "ref": "scripts/test-watermark.js", "note": "覆盖原生零偏移、H5 halfValue 保护、透明层、重绘与低动效合同。"}
+  ],
+  "rootCause": "H5 映射沿用了 truthy 默认值写法和旧的高级组件通用 Surface 分组，没有逐项对照 Watermark 的透明覆盖层语义。",
+  "decision": {
+    "outcome": "H5 的 offset 使用有限数值判断而不是 || 回退；Watermark 根统一为透明、无边框、无阴影、无毛玻璃、无圆角，保留 Slot 内 PUI 组件与全局外观 Token。",
+    "rationale": "使 0 边界与原生一致，并避免演示容器覆盖组件本体或用视觉开关改变布局真相。",
+    "alternativesRejected": [
+      "为零偏移新增特殊布尔 Prop 或在文档中把 0 说成默认值。",
+      "保留根 Surface 并仅在深色模式修颜色，继续让 Watermark 成为面板套面板。",
+      "用静态背景图代替真实 DOM 重绘，绕开 ResizeObserver、Props 和动画验证。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-watermark.js", "feedback/records/pui-fb-0187-watermark-h5-zero-offset-and-surface-parity.json"],
+    "dependencies": ["PreviewDevice shadow-safe layout", "PUI Cell Slot Surface", "global appearance preferences"]
+  },
+  "verification": {
+    "tests": ["scripts/test-watermark.js"],
+    "commands": ["node --check preview/app.js", "npm run site:build", "PUI_VERIFY_DIST=1 node scripts/test-watermark.js", "npm run check"],
+    "browser": ["390x844 的 document/body 横向溢出均为 0；当前 Slot Button 从单枚真实切回重复后 marks 由 1 变为 81。", "根计算样式为 transparent/0px/none/none；深色、边框关闭、阴影、毛玻璃和大圆角只作用于 Slot 内 PUI Cell。", "movable 在 moveInterval 后位置改变，reduceMotion 后 transitionDuration=0.001s 且位置不再变化。"],
+    "deviceRisks": ["合法 AppID 真机仍需检查 SelectorQuery 测量、rpx 取整、图片字体回流、Slot 动态高度和系统低动效。"]
+  },
+  "ai": {
+    "summary": "跨端映射必须保留 0/false/空字符串的合同，并确保透明覆盖组件不继承展示容器的第二层 Surface。",
+    "rules": [
+      "数值 Props 的默认回退必须用有限数值判断，不能用 || 吞掉 0。",
+      "先检查通用预览 CSS 是否把透明根误并入卡片 Surface；视觉外观应由真实 Slot 子组件承担。",
+      "H5 需要用真实尺寸、Props 和 DOM 重绘验证单枚/重复/移动，不能用静态图或提示文本代替。"
+    ],
+    "tags": ["watermark", "h5-parity", "zero-value", "surface", "resize-observer"]
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0240",
+  "title": "Card H5 通用 Surface 覆盖阴影、动效、间距与 Footer 合同",
+  "scope": "component",
+  "components": ["card", "preview-site", "documentation", "miniprogram-dist"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "按 Popup battle 的真实空间、状态和 Props 回写规则自主验收全库官网组件预览。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example", "miniprogram-dist"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 390px H5 Card 概览保持 shadow=false，并打开全局阴影视觉开关。",
+    "旧预览的通用 `.preview-stage .pui-card-showcase` 选择器仍写入 `--preview-shadow-card`，所以默认 Card 获得外阴影；切换 Card shadow Props 不能区分几何。",
+    "旧 H5 normal/compact padding 分别为 16px/12px，源 WXSS 是 28rpx/20rpx（14px/10px）；showFooter=false 时 H5 还显示原生不存在的关闭占位。",
+    "同一通用选择器的 transition shorthand 还覆盖 Card 的 --pui-card-duration；reduceMotion=true 后浏览器仍计算为 500ms，而不是原生 1ms。"
+  ],
+  "expected": "Card 仅在 shadow=true 时消费当前视觉环境的卡片阴影，normal/compact 三段 padding 分别映射为 14px/10px，reduceMotion=true 固定为 1ms，且 Header/Footer 的条件结构与 WXML 完全一致。",
+  "actual": "H5 已以 Card 专属规则覆盖通用 Surface：shadow=false 为 none，shadow=true 才读取 --preview-shadow-card；normal/compact 改为语义面板 Token，Card transition 恢复其公开 duration/easing/reduceMotion，Footer 关闭时不再渲染额外节点。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "card/card.wxml",
+      "note": "原生 WXML 仅在 showFooter=true 时渲染 footer，WXSS 的 normal/compact 三段内距为 panel-padding/panel-padding-compact，阴影只来自 pui-card--shadow。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/card",
+      "note": "390x844 实测默认 shadow=false 为 none、normal padding 为14px；shadow=true+compact 为 10px 和 12px/26px 外阴影；reduceMotion=true 为0.001s；深色+毛玻璃+大圆角为 rgba(39,39,42,.74)、blur(18px) saturate(1.35)、9px，页面与文档 scrollWidth 均为375px。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-card.js",
+      "note": "专项合同锁定 15 Props、唯一 click、Footer catchtap、原生/H5 14px/10px Token、无假 Footer 占位、Card shadow 专属选择器、运动规整和 dist 四件套。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前 Goal 范围化授权",
+      "note": "用户明确授权：后面的组件你都不需要我确认你直接跑完把能做的都做了, 决定你自己做。"
+    }
+  ],
+  "rootCause": "H5 后置的通用预览 Surface 选择器以相同或更高层级覆盖 Card 私有 shadow 与 transition longhand 规则，同时早期 Card 镜像沿用了 16px/12px 的非语义尺寸，并添加了 WXML 没有的 Footer 诊断节点。",
+  "decision": {
+    "outcome": "保留 Card 作为独立 Surface，但用更具体的 H5 选择器单独管理其材质、外投影与 motion longhand：全局配置继续提供 Theme/Border/Frost/Radius Token，只有 has-shadow 才读取 preview-shadow-card；Footer 直接按 WXML 条件省略。",
+    "rationale": "Card 的 shadow 是真实公开 Prop，不能被站点演示环境吞掉。使用现有 panel padding Token 同时修复 1px≈2rpx 映射，且不会新建私有间距或改变小程序 API。",
+    "alternativesRejected": [
+      "让全局阴影一直覆盖 Card 会使公开 shadow Prop 无实际作用。",
+      "仅在 Props 面板隐藏 shadow 字段会掩盖跨端差异而非修复实现。",
+      "保留 Footer 关闭占位会把工程诊断混入 component-only 概览。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-card.js", "package.json", "docs/components/CARD.md", "docs/components/README.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0240-card-preview-shadow-padding-and-footer-parity.json"],
+    "dependencies": ["button", "cell", "tag", "config-provider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-card.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-shadow-boundaries.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["390x844 真实验证 Card 的 Props、Card/Footer 点击边界、normal/compact、shadow false/true、light/dark、全局阴影/毛玻璃/大圆角与无页面横向溢出。"],
+    "deviceRisks": ["合法 AppID 真机仍需确认 Footer catchtap 与嵌套 Button 的真实触摸边界。", "WXSS rpx、Hover、Slot 投影、样式隔离、读屏与系统低动效仍需真机确认。"]
+  },
+  "ai": {
+    "summary": "独立 Surface 的站点外观 Token不能吞掉组件自己的公开 elevation Prop；H5 条件节点与内距必须以真实 WXML/WXSS 为唯一事实源。",
+    "rules": [
+      "Card 的 shadow=false 必须在 H5 计算为无外投影；只在 shadow=true 时读取当前主题的卡片阴影 Token。",
+      "通用外观 transition 不得覆盖 Card 的 duration/easing/reduceMotion；低动效在浏览器计算样式必须为 1ms。",
+      "条件 Footer 在 WXML 不存在时，H5 不得用已关闭说明、事件日志或静态占位补结构。",
+      "Card 三段内距固定使用 normal 28rpx/14px 与 compact 20rpx/10px 的语义 Token。",
+      "Card click 与 Footer Slot 内 Button click 必须是不同边界；不要用 H5 业务成功文案冒充 Card 行为。"
+    ],
+    "tags": ["card", "preview-parity", "shadow", "spacing", "slots", "component-only", "h5", "browser-battle"]
+  }
+}

@@ -1,0 +1,19 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="group"
+  aria-label="{{semanticLabel}}"
+>
+  <view wx:if="{{hasHeader || title || description}}" class="pui-cell-group__header">
+    <view class="pui-cell-group__title">
+      <text wx:if="{{displayTitle}}">{{displayTitle}}</text>
+      <slot name="title"></slot>
+    </view>
+    <view class="pui-cell-group__description">
+      <text wx:if="{{displayDescription}}">{{displayDescription}}</text>
+      <slot name="description"></slot>
+    </view>
+    <slot name="header"></slot>
+  </view>
+  <view class="pui-cell-group__content"><slot></slot></view>
+</view>

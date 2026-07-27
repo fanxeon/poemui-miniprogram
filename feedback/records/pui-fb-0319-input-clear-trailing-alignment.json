@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0319",
+  "title": "Input 清除按钮未固定在尾部操作位",
+  "scope": "global",
+  "components": ["input", "combobox", "search", "miniprogram-home", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Combobox 搜索框中的清除按钮必须位于输入框最右侧。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页 Combobox 搜索框并输入关键词，使 PUI Input 显示清除按钮。",
+    "原生 input 同时使用 flex:1 与 width:100%，在微信自定义组件的 Flex 容器中会竞争尾部空间，清除按钮无法稳定占据最右轨道。"
+  ],
+  "expected": "PUI Input 的原生输入控件占据可收缩的剩余空间；Clear 是不可收缩的尾部操作，且在没有 suffix 时贴齐 Field 最右边界。",
+  "actual": "native input 的 width:100% 与 flex:1 叠加，尾部 Button 的空间在微信布局中不稳定。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户指出 Combobox 搜索框清除按钮不在最右边。"},
+    {"kind": "file", "ref": "input/input.wxss", "note": "修复前原生 control 同时声明 flex:1 与 width:100%，但无专属尾部轨道约束。"},
+    {"kind": "file", "ref": "combobox/combobox.wxml", "note": "首页 Combobox 复用 PUI Input，不存在页面私有搜索框。"},
+    {"kind": "test", "ref": "scripts/test-input.js", "note": "专项测试锁定可收缩 input 轨道和 Clear 的 trailing margin。"}
+  ],
+  "rootCause": "Input 的主控件声明了与尾部操作竞争的 100% 宽度，微信 Flex 布局不能稳定将剩余空间交给 Clear。",
+  "decision": {
+    "outcome": "Input 原生 control 与 H5 镜像均使用 flex:1 1 0、width:0、max-width:100% 作为剩余轨道；Clear 保持 flex:0 0 auto 并以 margin-left:auto 固定到尾部。",
+    "rationale": "由 Input 组件维护统一字段几何，Combobox/Search 等消费者无需复制或穿透样式。",
+    "alternativesRejected": [
+      "在首页 Combobox 写绝对定位或 margin 补丁会绕过共享 Input。",
+      "把 Clear 改成字符或原生 button 会破坏 PUI Button 组合合同。"
+    ]
+  },
+  "impact": {
+    "files": ["input/input.wxss", "preview/styles.css", "docs/components/INPUT.md", "scripts/test-input.js", "feedback/records/pui-fb-0319-input-clear-trailing-alignment.json"],
+    "dependencies": ["pui-input", "pui-button", "pui-combobox", "pui-search"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input.js", "scripts/test-combobox.js", "scripts/test-search.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-input.js", "node scripts/test-combobox.js", "node scripts/test-search.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": [],
+    "deviceRisks": ["iOS/Android 真机仍需确认中文输入法、长文本、prefix/suffix 同时存在与不同基础库下的尾部触摸区。"]
+  },
+  "ai": {
+    "summary": "PUI Input 的 native control 只占可收缩剩余轨道，Clear 必须作为不收缩的尾部 PUI Button。",
+    "rules": [
+      "不要让 flex:1 的原生 input 同时持有 width:100%。",
+      "没有 suffix 时 Clear 必须贴齐 Field 最右侧；有 suffix 时 suffix 仍可占最右语义轨。",
+      "Combobox/Search 等消费者不得为 Clear 写页面私有定位补丁。"
+    ],
+    "tags": ["input", "clear", "flex", "combobox", "search", "h5-parity"]
+  }
+}

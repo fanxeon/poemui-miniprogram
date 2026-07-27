@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0305",
+  "title": "Block Button 未清除默认最小宽度导致等分导航横向溢出",
+  "scope": "component",
+  "components": ["button", "tabbar", "preview-site", "miniprogram-home"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "四项纯图标 Tabbar 在 390px 内等分且完整可见，不能被内部 Button 最小宽度撑出屏幕。",
+  "environment": {
+    "surfaces": ["button", "tabbar", "miniprogram-home", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390px", "wechat simulator"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 390px 首页渲染四项纯图标 Tabbar。",
+    "Tabbar 的活动轨道已等分，但内部 block Button 保留默认最小宽度，四个 Button 的总宽超过可用宽度，最右设置被裁切。"
+  ],
+  "expected": "block Button 填满父级可用轨道，并在父级更窄时允许收缩；四项 Tabbar 不产生横向溢出。",
+  "actual": "block 仅写入 width:100%，没有 min-width:0，继承 Button 基础最小宽度并撑开窄等分布局。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务截图", "note": "四项纯图标导航右侧设置图标被裁切，视觉总宽超过设备边界。"},
+    {"kind": "file", "ref": "button/button.wxss", "note": "修复前 pui-button--block 缺少 min-width:0；修复后 block 真实可收缩。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 Button 镜像的所有 block 规则同步 min-width:0。"},
+    {"kind": "test", "ref": "scripts/test-button.js", "note": "专项测试锁定 block Button 的可收缩语义。"}
+  ],
+  "rootCause": "Button 的基础最小宽度适合常规操作，但 block 变体未显式解除该下限；作为 Tabbar 等分子项时会放大宽度约束冲突。首页裁切的最终根因还包括 Tabbar 的 Button 外部宿主没有直接参与等分 Flex 和纯图标保留空内容轨道，见 PUI-FB-0304。",
+  "decision": {
+    "outcome": "pui-button--block 在小程序与 H5 同步使用 width:100% + min-width:0；Tabbar 不使用偏移、缩放、私有 padding 或减少目的地来掩盖问题。",
+    "rationale": "block 的语义就是占满当前父级而非强制保留常规按钮宽度；这一修复同时改善所有 Grid/Flex 窄轨道中的 PUI Button。",
+    "alternativesRejected": [
+      "Tabbar 私有 translateX 或不对称 padding 只会修当前截图并破坏通用等分。",
+      "缩小图标或删除设置项会掩盖真实宽度约束。",
+      "取消 Button 基础最小宽度会影响普通操作按钮的可用性。"
+    ]
+  },
+  "impact": {
+    "files": ["button/button.wxss", "preview/styles.css", "docs/components/BUTTON.md", "scripts/test-button.js"],
+    "dependencies": ["PUI Button block", "Tabbar flex layout", "H5 Button mirror"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-tabbar.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-button.js", "node scripts/test-tabbar.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": ["保持已打开的微信开发者工具，在普通编译后的 390px 首页检查四项图标和活动短指示器分别落在等分中心，最右设置不裁切。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认实际安全区、字体回流、Button 触摸热区、Slot 样式隔离与读屏。"]
+  },
+  "ai": {
+    "summary": "block Button 必须可收缩；当 Button 放进 Tabbar/Grid/Flex 等分轨道时，不能让默认最小宽度溢出父级。",
+    "rules": [
+      "pui-button--block 必须同时声明 width:100% 与 min-width:0。",
+      "等分导航溢出先检查子组件最小宽度，不用页面偏移或缩放补偿。",
+      "共享 Button 几何变更必须同步小程序、H5、合同、专项测试、Ledger 和安装产物。"
+    ],
+    "tags": ["button", "block", "min-width", "tabbar", "flex", "h5-parity"]
+  }
+}

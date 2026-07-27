@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0202",
+  "title": "官网目录遗漏布局分区并把用户任务分类退化为旧源码分组",
+  "scope": "global",
+  "components": ["preview-site", "sidebar", "metadata", "documentation"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-21",
+  "updatedAt": "2026-07-22",
+  "userGoal": "官网组件目录应按清晰的用户任务重新分组，避免把布局能力混在开始页或数据展示里；高密度的输入相关能力应以“表单组件”呈现，并让用户按建表单时的自然任务找到组件。近义基础能力要相邻，Input 的组合形态要明确是变体而非另一个输入范式。",
+  "environment": {
+    "surfaces": ["h5-preview", "site-shell", "component-catalog", "global-search"],
+    "platforms": ["browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "读取 metadata/components.js 的 navigationTaxonomy：旧代码只有开始与规范、基础、导航、输入、数据展示、反馈、浮层、高级八组，缺少全局合同要求的布局分区。",
+    "旧 navigationGroupKey 虽声明 layoutTaxonomyIds，却没有使用；Direction 仍通过开始与规范的直接注入留在起始组，AspectRatio、ScrollArea、Grid 与 Sticky 分散在数据展示或高级。",
+    "布局修复后，数据录入仍把 Form、Field、输入、选择、日期与上传等 20 个能力按英文名平铺，用户无法从目录判断组件在表单中的职责。",
+    "基础组件继续按英文名稳定排序时，Divider 的位置会随来源变化；旧输入组合层虽复用 Input 合同，但目录没有展示其父级关系。"
+  ],
+  "expected": "官网固定显示开始与规范、基础组件、布局、导航、表单组件、数据展示、反馈、浮层、高级九个非空分区。表单组件按结构与校验、文本与搜索、选择与数值整理；每个规范公开入口只属于一个分区、只显示一次。搜索同时索引顶层和表单子分区及变体父级；基础组件顺序稳定，旧输入组合层明示为 Input 变体，反馈编号只从完整重组后的目录派生。",
+  "actual": "旧分类遗漏布局、使用含混的基础和输入标题，并混用旧目录的直接注入与不完整的覆盖映射；同一用户任务的组件被拆到多个分区。布局修复后，输入相关的目录项仍仅按英文名平铺，Form、字段、文本、选择、日期和上传的职责边界不可见。基础组件的英文排序也会让原语顺序随来源漂移，旧输入组合层没有可见的父级关系。390px 的横向分区带只露出每组前几项，用户无法完整浏览分区。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-21 当前任务对话", "note": "用户明确指出当前组件分组十分混乱，并要求重新分组。"},
+    {"kind": "user-report", "ref": "2026-07-22 当前任务对话", "note": "用户当时要求 Spacing 归入布局；该历史归属已由 2026-07-23 的 PUI-FB-0263 更新为开始与规范。"},
+    {"kind": "user-report", "ref": "2026-07-22 当前任务对话", "note": "用户要求将数据录入改为表单组件，并归纳更适合的内部任务分区。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "旧 navigationTaxonomy 缺 layout，layoutTaxonomyIds 未参与归属；修复后由 navigationGroupByTaxonomyId 作为唯一九分区真相源。"},
+    {"kind": "test", "ref": "scripts/test-preview-navigation-search.js", "note": "专项合同锁定九个中文分区、表单三个子分区、唯一归属与关键边界。"},
+    {"kind": "test", "ref": "scripts/test-preview-overview-hierarchy.js", "note": "预览层级合同锁定当前规范目录入口与标准 PreviewDevice 路由，防止通过新增第二入口破坏组件页面覆盖。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/form", "note": "2026-07-22 实测：桌面侧栏展示五个表单子分区；侧栏输入“日期与时间”后仅显示 Calendar 与 Date Picker；Ctrl/⌘+K 输入同一查询后实际渲染这两项。390×844 下 document clientWidth/scrollWidth 均为 375，五个分区计数为 3/5/9/2/1，无页面级横向溢出。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "基础组件以 foundation 专属原语/同族排序生成；旧输入组合层 声明 variantOf=input，保留独立 route/packageId/previewId。"},
+    {"kind": "test", "ref": "scripts/test-preview-navigation-search.js", "note": "专项合同锁定 Button→Divider→Icon→Typography 的基础顺序、旧输入组合层的父级元数据和父级关键词搜索。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/form", "note": "2026-07-22 实测：桌面目录按稳定基础顺序显示；输入“Input 变体”只显示 Input，并完整显示变体关系标签。390×844 下 document/sidebar clientWidth/scrollWidth 均为 375/375，变体标签位于条目边界内。"}
+  ],
+  "rootCause": "官网曾从旧目录逐步叠加映射；导航标题已经迁到用户任务语言，但实际组装仍依赖旧分区、直接注入和零散 override，导致布局分类从最终数据流中丢失。随后“非开始分区一律英文排序”的简化规则忽略了基础原语的同族关系；目录项也缺少表达保留组件父级/变体关系的元数据。窄屏继续沿用横向组带且禁止纵向浏览，放大了这一混乱。",
+  "decision": {
+    "outcome": "建立 navigationGroupByTaxonomyId 的完整映射，所有规范目录项先合并为单一 catalogNavigationItems 再按九个稳定分区过滤；基础和输入分别更名为基础组件、表单组件，布局作为独立分区。表单组件内由 metadata 的 sections 唯一派生结构与校验、文本与搜索、选择与数值三类可见子分区，不复制路由。当前 sourceGroups 是目录、发布清单和生成物的唯一源，不保留第二份历史目录；进度文档中混入已删能力的旧战报一并移除。2026-07-22 阶段 Spacing、Direction、AspectRatio、Grid、ScrollArea、Sticky 归布局；Spacing 的当前归属已由 PUI-FB-0263 更新为开始与规范，其余布局能力不变。目录、全局搜索与源码/产物清单收敛为当前规范入口与可安装组件。开始与规范按用户完成安装的顺序排列，基础组件采用显式原语顺序；表单条目按自然任务顺序排序。旧输入组合层以 variantOf=input 投影为 Input 变体，保留独立 route/packageId/previewId；侧栏、全局搜索和读屏名称均索引该父级关系。390px 目录改为单列纵向滚动，而非截断的横向组带。",
+    "rationale": "以组件职责而不是目录来源分组，用户可按“我要排版、导航、构建表单、展示或反馈”直接定位。表单不是单一输入控件：结构、文本、选择、日期与上传是用户完成一次填写任务的真实路径。单一映射也让侧栏、全局搜索、路由与反馈编号共享同一事实源。",
+    "alternativesRejected": [
+      "只将数据录入改名为表单组件但继续平铺 20 个条目，会保留查找路径不清的问题。",
+      "继续使用多个例外 Set/Map 会让新增组件再次遗漏布局分区。",
+      "为同一能力建立第二个分类入口会重复用户入口并违反每个公开路由只属于一个任务分区的合同。",
+      "在 390px 继续把九个分区横向排成固定高度列，会让长分区只显示前三项，不能作为可用目录。"
+    ]
+  },
+  "impact": {
+    "files": ["metadata/components.js", "preview/components-data.js", "preview/app.js", "preview/index.html", "preview/styles.css", "scripts/test-preview-navigation-search.js", "scripts/test-component-catalog-pruning.js", "scripts/test-preview-overview-hierarchy.js", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0202-preview-catalog-task-taxonomy.json"],
+    "dependencies": ["PUI Button sidebar entries", "global search", "route selection", "feedback ordinal" ]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-navigation-search.js", "scripts/test-component-catalog-pruning.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-design-contracts.js", "scripts/test-preview-infrastructure-composition.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "node scripts/test-preview-navigation-search.js", "node scripts/test-component-catalog-pruning.js", "node scripts/test-preview-overview-hierarchy.js", "node scripts/test-design-contracts.js", "node scripts/test-preview-infrastructure-composition.js"],
+    "browser": ["2026-07-22 桌面：`#/components/form` 侧栏实显三类任务分区，日期、时间和附件已并入选择与数值。", "2026-07-22 390×844：document clientWidth/scrollWidth 为 375/375，无页面级横向溢出。", "2026-07-22：访问已移除组件的旧 hash 并重载后，地址规范化为 `#/foundation/button`；页面无已移除组件的目录链接，console warn/error 均为 0。", "2026-07-22 桌面：目录以稳定基础顺序显示；输入“Input 变体”后只显示 Input，变体文字和读屏名称均完整呈现。", "2026-07-22 390×844：目录筛选后 document/sidebar clientWidth/scrollWidth 均为 375/375，变体标签完整落在条目边界内。"],
+    "deviceRisks": ["本次只变更官网目录信息架构，不修改保留小程序组件的 API。", "微信 CLI 已实启，但示例 `touristappid` 被平台以 code 10 拒绝，未生成也未伪造 miniprogram_npm；目标微信基础库的目录展示与示例解析仍需合法 AppID 真机复核。"]
+  },
+  "ai": {
+    "summary": "组件目录只能按用户任务的九分区和 taxonomyId 归属生成，不能回退到源码目录、状态或临时例外。",
+    "rules": [
+      "新增目录入口前先在 navigationGroupByTaxonomyId 写入唯一任务分区；不得再建立第二份目录源或依赖隐式默认落点。",
+      "每个规范公开入口只能保留一条目录行，不得为同一能力再建立第二个名称或入口。",
+      "Spacing 的当前归属以 PUI-FB-0263 为准：属于开始与规范；Direction、AspectRatio、Grid、ScrollArea、Sticky 继续属于布局。",
+      "开始与规范只放安装、Provider、Token 和规范文档；表单组件只放输入、选择、筛选、提交与上传，并按结构与校验、文本与搜索、选择与数值展示。",
+      "每次目录重组后必须验证九组都非空、规范路由唯一、搜索含分区名、反馈序号对筛选稳定，以及 390px 的目录可以纵向浏览且无页面级横向溢出。",
+      "基础组件可用显式原语顺序替代纯英文排序；顺序变更必须同步侧栏、全局搜索与专项测试。",
+      "组件保留独立路由和 API 但属于另一组件的扩展时，用 metadata.variantOf 表达关系；侧栏、全局搜索与读屏名称要一起呈现和索引该关系，不能再建第二条公开入口。"
+    ],
+    "tags": ["preview-site", "catalog", "taxonomy", "sidebar", "search", "information-architecture", "layout", "390px"]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0251",
+  "title": "Tag 官网演示挤压标签并截断 success 文本",
+  "scope": "component",
+  "components": ["tag", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Tag 演示中的多组标签应按自身内容自然排列，行间有清楚的上下间距，success 等完整文字不能被预览布局截断。",
+  "environment": {
+    "surfaces": ["h5-preview", "Tag showcase"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "desktop browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/tag，进入 Tag 的主题与变体分区。",
+    "旧演示用 grid-template-columns: repeat(auto-fit, minmax(64px, 1fr))，success 标签所在轨道只有约 64px；带 check-circle Icon 后，标签盒为 78px，但内容盒只有 44px、scrollWidth 为 53px，实际可见文字被截断。",
+    "在 390px 预览中观察多行主题、变体和形状标签，旧规则的固定轨道与 8px 统一 gap 让换行上下节奏过紧。",
+    "修复后主题矩阵与形状矩阵仍分别由两个兄弟行容器组成，行内 row-gap 生效但兄弟容器之间没有 margin，导致第一排和第二排几乎贴合。"
+  ],
+  "expected": "标签保持内容宽度并自然换行；主题矩阵按内容宽度布局，水平间距与垂直行距分离且使用 Token；同一分区的兄弟行之间也保持清晰的垂直间距；light 变体显示 PoemUI 语义浅底色，outline/dark 保持对比变体；长文本专项保留足够可读宽度，只有明确 maxWidth 场景才省略。",
+  "actual": "固定 64px 最小轨道会压缩带图标的 success 标签，造成 content clientWidth 小于 scrollWidth；主题矩阵上下间距均使用单一 8px gap，长文本示例还使用过窄的 180rpx；修复固定轨道后，两个兄弟行容器之间仍没有独立垂直间距；官网 light 变体的语义浅底色不够明确，用户难以快速区分 Tag 与普通文本。",
+  "evidence": [
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tag · 2026-07-23 · desktop", "note": "修复前 success 标签 width=78px、contentWidth=44px、contentScrollWidth=53px；修复后 contentWidth=53px，文本完整可见。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tag · 2026-07-23 · 390x844", "note": "修复后 success 标签 width=87px、contentWidth=53px、contentScrollWidth=53px；主题矩阵自然换行，document/body scrollWidth=375px。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Tag 展示区改为内容宽度 flex-wrap，并以 column-gap 与 row-gap 分别承接水平、垂直节奏，移除 64px 固定轨道。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "长文本示例 maxWidth 从 180rpx 调整为 240rpx，保留安全省略合同但避免演示区过窄。"},
+    {"kind": "test", "ref": "scripts/test-tag.js", "note": "专项测试锁定宽度 Token、自然布局、兄弟行间距和禁止 64px 固定轨道。"}
+  ],
+  "rootCause": "Tag 主题演示错误地把内容型展示叶子放入 64px 最小网格轨道；Tag 自身为可收缩内容盒时，Icon 与 success 文本超出轨道后被 ellipsis 截断。多组演示还未区分横向 gap 与换行后的纵向 gap。",
+  "decision": {
+    "outcome": "保留 Tag 组件本身的安全 maxWidth 语义，只修正官网演示容器与预览语义：用内容宽度 flex-wrap 承载标签，水平继续使用 content gap，行内换行与兄弟行之间都使用独立 10px Token；light 变体明确使用 PoemUI 语义浅底色，outline/dark 保持对比变体；长文本示例扩大到 240rpx。",
+    "rationale": "展示区不应通过固定小轨道改变 Tag 的真实尺寸；自然换行既能保留完整 success 文本，也能在 390px 下稳定使用，兄弟行间距则避免分区内的多排标签贴合；light 填充让 Tag 的展示语义可被快速识别。",
+    "alternativesRejected": [
+      "把 success 单独设置更小字号或强制换行：会改变 Tag 组件语义和真实尺寸。",
+      "继续扩大 grid 的 minmax 固定值：不同文字和 Icon 组合仍可能再次被挤压。",
+      "删除 maxWidth 演示：会丢失公开安全宽度能力的真实预览。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-tag.js", "docs/components/TAG.md", "feedback/records/pui-fb-0251-tag-preview-spacing-and-label-width.json"],
+    "dependencies": ["Tag H5 mirror", "PreviewDevice responsive layout", "PUI spacing tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tag.js"],
+    "commands": ["node scripts/test-tag.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["桌面真实 Tag 路由：success contentWidth 与 contentScrollWidth 均为 53px，完整文本可见。", "390x844 真实 Tag 路由：主题标签自然换行，success 完整可见，document/body scrollWidth=375px，无页面级横向溢出。", "Tag 主题与形状分区的兄弟行通过独立 10px margin 保持可见上下间距。"],
+    "deviceRisks": ["微信真机仍需复核 rpx 到实际字体回流后的标签宽度、连续换行和样式隔离；本轮未改变 Tag 小程序公开 API。"]
+  },
+  "ai": {
+    "summary": "Tag 这种内容型展示叶子不能被固定窄网格轨道压缩；多组标签应按内容宽度自然换行，并同时定义行内换行间距与兄弟行容器间距。",
+    "rules": [
+      "Tag 展示矩阵使用内容宽度 flex-wrap 或等价的 intrinsic layout，禁止用 64px 等固定窄轨道压缩文本和 Icon。",
+      "标签组必须分别定义 column-gap 与 row-gap；不同排列行的兄弟容器也要使用同一语义垂直 Token，不要让多行上下贴合。",
+      "只有明确 maxWidth 的 Tag 才允许省略；普通主题/变体 Tag 必须保持内容宽度和完整可读文本。"
+    ],
+    "tags": ["tag", "preview-site", "spacing", "intrinsic-width", "390px", "text-overflow"]
+  }
+}

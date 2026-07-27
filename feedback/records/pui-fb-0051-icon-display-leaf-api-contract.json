@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0051",
+  "title": "Icon 作为展示叶子却暴露 click 与 disabled 伪交互",
+  "scope": "component",
+  "components": ["icon", "button"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Icon 只承担稳定的本地矢量展示，交互入口通过 Button + Icon 组合，基础 API 与示例保持克制且跨端一致。",
+  "environment": {
+    "surfaces": ["component-source", "h5-preview", "api-documentation", "example-miniprogram", "npm-package"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Icon 四件套、metadata、API 和示例，发现展示根绑定 tap，并公开 disabled/click，但根节点不是可聚焦控件，也没有等价键盘操作。",
+    "搜索内部和示例调用，发现 PullRefresh 与示例传入 size=small，而 Icon 真实 size 是 Number+rpx，非法字符串会回退默认尺寸。",
+    "对照 TDesign 1.15.3 Icon 的 name/color/prefix/size 与 click，逐项判断 PoemUI 是否存在独立用户任务；未知 name、空 ariaLabel、8/256 边界和资源事件必须由真实实现证明。"
+  ],
+  "expected": "Icon 公开 name/size/color/src/ariaLabel 与真实 load/error；没有不可聚焦的 click/disabled，尺寸只接受 8–256rpx 数字，未知名称报告 error 并显示回退，装饰图标不重复朗读。",
+  "actual": "旧合同把展示 Icon 伪装成不完整操作控件，示例还传入真实 API 不支持的字符串尺寸，API、WXML 和行为边界不清晰。",
+  "evidence": [
+    { "kind": "user-report", "ref": "当前任务对话", "note": "用户授权 Button 后续共有组件由 agent 在完整证据和门禁后自主连续验收。" },
+    { "kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/icon", "note": "固定参考 tdesign-miniprogram@1.15.3 官方 Icon 文档和安装包源码；参考其核心展示入口，但不按数量照搬字体前缀与 click。" },
+    { "kind": "file", "ref": "icon/icon.js", "note": "公开合同移除 disabled/onTap/click，未知名称按名称去重触发 unknown-icon，Canvas 仍报告真实 load/error。" },
+    { "kind": "file", "ref": "icon/icon.wxml", "note": "展示根不再绑定 tap；ariaLabel 为空时 aria-hidden，非空时提供 img 名称。" },
+    { "kind": "test", "ref": "scripts/test-icon.js", "note": "专项静态与 VM 合同覆盖 5 Props、2 Events、200 资源、未知名去重、8/256、Canvas 错误、零 click/disabled 和全仓非法字符串尺寸。" },
+    { "kind": "browser", "ref": "http://127.0.0.1:4179/#/icons", "note": "真实属性回写验证 missing-icon 显示 M、空 ariaLabel 为 aria-hidden、8rpx 映射 4px、256rpx 映射 128px；API 只显示 5 Props 与 load/error。" },
+    { "kind": "build", "ref": "npm run pack:check", "note": "npm dry-run 通过：324.6kB、解包 1.8MB、545 files、shasum 2eee8c2669a654f63f731a3c76634d5b38d6bc8e。" }
+  ],
+  "rootCause": "早期 Icon 把触摸事件和视觉禁用当作通用便利能力，却没有建立 Button 等价的焦点、键盘、loading 和状态合同；示例也没有专项扫描验证 Number+rpx 边界。",
+  "decision": {
+    "outcome": "Icon 收敛为 5 Props、2 资源事件和零 Slot；移除 click/disabled，交互统一组合 Button；size 固定 Number+rpx 8–256，src 独立于 name，unknown name 与 Canvas 失败均真实报错。",
+    "rationale": "展示叶子与操作控件职责分离可以避免重复禁用态、无键盘伪按钮和事件歧义；独立 src 与数字尺寸更适合小程序离线 SVG/Canvas 实现。",
+    "alternativesRejected": [
+      "照搬 TDesign click 会继续产生不可聚焦的伪操作根，违背 PUI Button 优先合同。",
+      "照搬 prefix 和远程字体会引入第二套图标命名与运行时资源依赖。",
+      "让 name 同时接受 URL 会把内置名称错误和网络资源错误混成同一入口。",
+      "继续接受 small/medium/large 字符串会与原生 rpx API 和已有 Number 文档冲突。"
+    ]
+  },
+  "impact": {
+    "files": ["icon/icon.js", "icon/icon.wxml", "icon/icon.wxss", "avatar/avatar.wxml", "pull-refresh/pull-refresh.wxml", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/ICON.md", "scripts/test-icon.js", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js"],
+    "dependencies": ["button", "avatar", "pull-refresh", "icon assets", "Canvas"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js", "scripts/test-preview-infrastructure-composition.js"],
+    "commands": ["node scripts/test-icon.js", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 CLI build-npm"],
+    "browser": [
+      "搜索 action 得到 16 项并保留焦点，键盘清空恢复空字符串；status 分类得到 12 项，选择 error-circle 真实回写 name 与当前 WXML。",
+      "未知 name + 空 ariaLabel + size=8 + color=#dc2626 得到 4px 红色 M 回退、aria-hidden=true；最大 size=256 得到 128px。",
+      "API 桌面和 390px 均为 5 Props、2 Events、0 Slots；全部单元格无内容溢出、ellipsis 或页面横向溢出。"
+    ],
+    "deviceRisks": [
+      "微信 image 与 Canvas source-in 的真实解码、颜色合成、DPR、同名 observer 时序和辅助技术朗读仍需合法 AppID 真机复核。",
+      "删除 click/disabled 是有意 API 收敛；旧消费者需把事件和禁用态迁移到外层 pui-button。"
+    ]
+  },
+  "ai": {
+    "summary": "Icon 是展示叶子，只公开图形与资源状态；所有操作通过 Button + Icon 组合。",
+    "rules": [
+      "生成可点击图标时必须使用 pui-button 包裹 pui-icon，不得给 Icon 绑定 click 或 disabled。",
+      "Icon size 只生成 8–256 的数字 rpx，不生成 small/medium/large 或任意 CSS 单位。",
+      "业务图片必须使用 src，name 只使用 PoemUI manifest 稳定名称。",
+      "ariaLabel 为空表示装饰图标；父 Button/Cell 的可访问名称是唯一朗读来源。",
+      "基础 WXML 显式包含 name 且零 bind，资源事件只在 Events 或专项示例中绑定。"
+    ],
+    "tags": ["icon", "tdesign", "api-contract", "display-leaf", "button-composition", "accessibility", "size-rpx"]
+  }
+}

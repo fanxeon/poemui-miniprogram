@@ -1,0 +1,125 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0439",
+  "title": "公司书写 Logo 缺少可缩放 SVG 与独立 Icon Font",
+  "scope": "global",
+  "components": ["brand-identity", "icon"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "把公司现有书写 Logo 转为能够继承颜色、在小尺寸仍可辨的 SVG 和 Icon Font，而不是继续依赖高分辨率 PNG。",
+  "environment": {
+    "surfaces": ["company-brand-assets", "local-font-preview"],
+    "platforms": ["browser", "node", "wechat-miniprogram"],
+    "viewports": ["96px", "56px", "32px", "20px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "读取用户提供的 LGOGO.png；原文件为 1573×1427 RGBA 位图，主体是黑色书写轮廓，但透明边缘混有浅色残边和扫描噪点。",
+    "直接缩放位图会在 20–32px 下发虚；直接自动描摹又会保留大量无意义锚点和白色残边。",
+    "现有 docs/BRAND_IDENTITY.md 与 Icon 合同明确要求产品品牌标记和公共操作图标分离，不能把公司 Logo 静默塞进 pui-icon manifest。"
+  ],
+  "expected": "提供 24×24、currentColor、闭合且轻量的 SVG，同时生成真实 WOFF2、H5 CSS、小程序 WXSS、稳定字形字符和浅深色尺寸对照稿；公司字标不改变 pui-icon 的 218 个公共名称。",
+  "actual": "修改前只有用户提供的高分辨率 PNG，没有可复现的矢量真相源、字体文件、稳定码点或小尺寸验收。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前对话及用户提供的 LGOGO.png",
+      "note": "用户明确要求将公司 Logo 画成 SVG 和 Icon Font。"
+    },
+    {
+      "kind": "file",
+      "ref": "scripts/generate-company-mark.js",
+      "note": "以五段闭合轮廓和反向中央内腔维护 24×24 矢量真相源，并统一生成 SVG、WOFF2、CSS、WXSS、字符、预览和元数据。"
+    },
+    {
+      "kind": "file",
+      "ref": "assets/company-mark/company-mark.svg",
+      "note": "运行时 SVG 使用一个 currentColor path、五个闭合子路径，不含 image、位图或扫描噪点。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-company-mark.js",
+      "note": "锁定 viewBox、currentColor、五段闭合轮廓、U+E001、WOFF2 头、CSS/WXSS 和不进入 pui-icon manifest 的边界。"
+    },
+    {
+      "kind": "browser",
+      "ref": ".audit/brand-mark-2026-07-27/company-mark-font-browser.jpg",
+      "note": "真实浏览器加载 WOFF2 后在浅深色分别展示 96/56/32/20px，中央留白和主要笔势在 20px 仍可见。"
+    }
+  ],
+  "rootCause": "公司 Logo 只有带扫描残边的透明 PNG，且此前没有区分产品品牌图、公司身份字标和公共操作图标三种资产边界。",
+  "decision": {
+    "outcome": "新增独立 `company-mark` 品牌资产生成链：将原图提炼为 24×24 的五段实心轮廓，生成 872-byte WOFF2、currentColor SVG、H5 CSS、小程序内联字体 WXSS、U+E001 字符导出和浅深色尺寸预览；继续保持 pui-icon manifest 为 218 项。",
+    "rationale": "独立品牌字体既满足 Logo 作为单色字形缩放和继承颜色的需求，也保留 pui-icon 只表达通用功能图标的语义与 Lucide 来源合同。",
+    "alternativesRejected": [
+      "直接把 PNG 放进 Icon：会恢复已删除的图片运行时，并在小尺寸发虚。",
+      "自动描摹全部像素噪点：会制造数千锚点、体积膨胀和不稳定的字体轮廓。",
+      "把 company-mark 加入 pui-icon manifest：会让公司身份资产冒充通用操作图标，并污染 Lucide 来源与主字体码点。",
+      "用通用汉字字体替代原书写 Logo：会丢失用户提供标记的笔势、重心与识别性。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scripts/generate-company-mark.js",
+      "scripts/test-company-mark.js",
+      "scripts/test-site-build-order.js",
+      "assets/company-mark/company-mark.svg",
+      "assets/company-mark/company-mark.woff2",
+      "assets/company-mark/company-mark.css",
+      "assets/company-mark/company-mark.wxss",
+      "assets/company-mark/company-mark.js",
+      "assets/company-mark/company-mark.json",
+      "assets/company-mark/company-mark-preview.svg",
+      "miniprogram_dist/assets/company-mark/company-mark.svg",
+      "miniprogram_dist/assets/company-mark/company-mark.woff2",
+      "miniprogram_dist/assets/company-mark/company-mark.css",
+      "miniprogram_dist/assets/company-mark/company-mark.wxss",
+      "miniprogram_dist/assets/company-mark/company-mark.js",
+      "miniprogram_dist/assets/company-mark/company-mark.json",
+      "miniprogram_dist/assets/company-mark/company-mark-preview.svg",
+      "package.json",
+      "docs/BRAND_IDENTITY.md",
+      "docs/components/ICON.md",
+      "docs/ICONS.md",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["svg-path-commander", "svg2ttf", "wawoff2"]
+  },
+  "verification": {
+    "tests": ["scripts/test-company-mark.js"],
+    "commands": [
+      "npm run brand:generate：通过，生成 company-mark SVG 与 872-byte WOFF2",
+      "npm run test:company-mark：通过",
+      "npm run site:build：通过；先生成公司字标，再同步 miniprogram_dist 和站点目录产物。",
+      "npm run pack:check：通过；npm 包包含 miniprogram_dist/assets/company-mark 的 SVG、WOFF2、CSS、WXSS、字符、元数据与预览。",
+      "npm run example:install：通过；poemui-miniprogram@0.1.0 tarball 安装到 _example，0 vulnerabilities。",
+      "微信开发者工具 cli build-npm --project miniprogram：通过；识别 AppID wx23aa017375535746，cost 1233ms，warnings 为空。",
+      "SHA-256 镜像核对：SVG 在源目录、miniprogram_dist、_example 和 miniprogram_npm 均为 5e1db6b99979a7d9ef854ef39e1209db4548c617ec3e3acf32fb64d24ad92ab2；WOFF2 均为 0f7ceafa49bbad7d66b1bd7c00766dd667d2801072c9d31687cb8ee1ae845a63。",
+      "npm run check：公司字标、Ledger、构建顺序、样式、目录、语义合同、外观矩阵、打包、首页和页面背景门禁通过；随后被并行 dirty worktree 中 Card 页面新增私有 WXSS 与既有页面合同断言不一致阻断，本记录未修改该无关文件。"
+    ],
+    "browser": [
+      "本地字体测试页 document.fonts.status=loaded，20px 字体检查返回 true；八个浅深色样本均使用 PoemUI Company Mark、U+E001 和准确的 96/56/32/20px 正方形几何。",
+      "浏览器截图确认浅深色 currentColor、书写重心和中央留白，页面无横向溢出，控制台 0 error / 0 warning。"
+    ],
+    "deviceRisks": [
+      "公司字标的最终轮廓仍需用户视觉确认，因此 acceptance 保持 pending-user。",
+      "微信标准 npm 构建已经生成逐字节一致的 miniprogram_npm 字体资产，但本轮没有新增业务页面消费公司字标，因此尚未在微信 WebView 与 iOS/Android 真机实际渲染；不同平台的字体抗锯齿仍未验证。"
+    ]
+  },
+  "ai": {
+    "summary": "公司身份字标可以生成单色 SVG 与独立 Icon Font，但不应污染 pui-icon 的公共操作图标目录。",
+    "rules": [
+      "将带透明残边的 Logo 位图转为字体前，先组合 alpha 与黑色主体并删除浅色扫描噪点。",
+      "Logo 字形使用少量闭合轮廓和稳定内腔，不把自动描摹的全部像素锚点写入发布资产。",
+      "公司字标与产品品牌标记、公共功能图标分别治理；没有明确决策不得加入 pui-icon manifest。",
+      "品牌字体必须同时提供 currentColor SVG、WOFF2、CSS/WXSS、稳定码点和 96/56/32/20px 浅深色对照。",
+      "没有用户最终视觉确认前 acceptance 保持 pending-user；未经过微信或真机验证时必须保留平台字体风险。"
+    ],
+    "tags": ["brand", "logo", "svg", "icon-font", "woff2", "currentColor", "company-mark"]
+  }
+}

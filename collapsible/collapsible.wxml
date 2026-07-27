@@ -1,0 +1,68 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}} {{customStyle}}"
+  role="group"
+  aria-label="{{semanticLabel}}"
+  aria-expanded="{{innerOpen}}"
+  aria-disabled="{{disabled}}"
+  aria-readonly="{{readonly}}"
+  aria-busy="{{loading}}"
+>
+  <view
+    class="pui-collapsible__trigger"
+    role="button"
+    aria-label="{{semanticLabel}}"
+    aria-expanded="{{innerOpen}}"
+    aria-disabled="{{disabled}}"
+    aria-readonly="{{readonly}}"
+    catchtap="onTriggerTap"
+  >
+    <view class="pui-collapsible__heading">
+      <slot wx:if="{{customTrigger}}" name="trigger"></slot>
+      <block wx:else>
+        <pui-icon wx:if="{{icon}}" name="{{icon}}" size="30" custom-class="pui-collapsible__leading-icon" />
+        <text class="pui-collapsible__label">{{label || '展开详情'}}</text>
+      </block>
+    </view>
+    <pui-icon
+      wx:if="{{expandIcon}}"
+      name="chevron-down"
+      size="30"
+      custom-class="pui-collapsible__expand-icon"
+      custom-style="transition-duration: {{motionDuration}}ms; transition-timing-function: {{motionEasing}};"
+    />
+  </view>
+
+  <view
+    class="pui-collapsible__content"
+    role="region"
+    aria-hidden="{{!innerOpen}}"
+    style="max-height: {{innerOpen ? contentHeight : 0}}px; opacity: {{innerOpen ? 1 : 0}}; transform: translateY({{innerOpen ? 0 : -8}}rpx);"
+    bindtransitionend="onTransitionEnd"
+  >
+    <view class="pui-collapsible__content-inner">
+      <view wx:if="{{contentState === 'error'}}" class="pui-collapsible__state pui-collapsible__state--error">
+        <pui-empty custom-class="pui-collapsible__empty" description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
+        <pui-button wx:if="{{retryText}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" bind:click="onRetry">{{retryText}}</pui-button>
+      </view>
+      <view wx:elif="{{contentState === 'loading'}}" class="pui-collapsible__state pui-collapsible__state--loading">
+        <pui-loading
+          loading
+          text="{{loadingText}}"
+          size="small"
+          duration="{{motionDuration}}"
+          easing="{{easing}}"
+          reduce-motion="{{reduceMotion}}"
+          aria-label="{{loadingText}}"
+        />
+      </view>
+      <view wx:elif="{{contentState === 'empty'}}" class="pui-collapsible__state pui-collapsible__state--empty">
+        <pui-empty custom-class="pui-collapsible__empty" description="{{emptyText}}" icon="inbox" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" />
+      </view>
+      <view wx:else class="pui-collapsible__body">
+        <slot wx:if="{{customContent}}"></slot>
+        <text wx:else>{{content}}</text>
+      </view>
+    </view>
+  </view>
+</view>

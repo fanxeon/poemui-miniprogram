@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0100",
+  "title": "Form H5 演示与复制代码沿用固定字段和诊断式反馈",
+  "scope": "component",
+  "components": ["form", "preview-site", "documentation", "example"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "官网 Form 必须像真实小程序一样组合 PUI Field/Input/Switch/Radio/Button，按用法分区，复制代码可直接使用且不能只改提示文字伪造事件。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-panel", "code-copy"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 formShowcase 发现单张固定字段卡和事件摘要，输入、提交与重置依赖旧 items/formValues/formErrors 运行态。",
+    "Form 改为 Slot 容器后，旧组合测试和设计测试仍强制 Form 本体包含 pui-input/pui-button，可能把实现拉回固定生成器。",
+    "浏览器检查复制区发现 usingComponents 和基础 WXML 漏掉消费者提交/重置所需的 pui-button；静态邮箱示例还继承了组件名称 placeholder 与旧 help。"
+  ],
+  "expected": "H5 以真实 form 和共享 PUI helper 镜像受控数据、原生 submit/reset 与组合字段；分区清晰，复制代码完整且基础零 bind。",
+  "actual": "旧 H5 与新原生合同不同源，固定字段运行态和不完整复制代码不能证明消费者组合路径。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确授权后续共有组件无需逐项确认，由 agent 自主连续验收并完成整个队列。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Form 概览改为基础用法、校验与反馈、组合字段；真实HTML form组合共享Field/Input/Switch/Radio/Button helper。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Form根保持透明且只使用语义gap，动作双栏、结果换行和180ms/1ms反馈均不覆盖子组件几何。"},
+    {"kind": "test", "ref": "scripts/test-form-field-composition.js", "note": "锁定Form本体只含原生form+Slot，H5字段和动作继续调用共享PUI helper。"},
+    {"kind": "test", "ref": "scripts/test-preview-native-control-boundaries.js", "note": "Form H5 的平台控件只存在于共享helper或真实组件交互根。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/form", "note": "390px实测页面和338px PreviewDevice scrollWidth等于clientWidth；Form/Field根透明，低动效1ms，深色与全部外观开关无溢出。"}
+  ],
+  "rootCause": "H5 演示曾按旧固定生成器独立维护字段、事件文案和代码片段，没有把原生 Slot 组合与共享 helper 作为同一事实源。",
+  "decision": {
+    "outcome": "重建 Form H5 运行态与三分区概览，删除旧 items/formValues 分支；复制代码补齐 PUI Button，静态状态示例使用正确 placeholder/help。",
+    "rationale": "共享子组件镜像和真实 DOM form 可同时证明跨端能力、事件顺序、视觉开关与可复制安装路径。",
+    "alternativesRejected": [
+      "保留旧诊断卡会继续展示原生组件不存在的固定字段 API。",
+      "只更新结果文字不处理真实 submit/reset 会形成伪交互。",
+      "让复制代码省略 Button 会让基础示例无法触发表单动作。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-form-field-composition.js", "scripts/test-design-contracts.js", "scripts/test-form.js", "docs/H5_PREVIEW_COMPATIBILITY.md"],
+    "dependencies": ["fieldPreviewMarkup", "inputControlSample", "switchPreviewMarkup", "radioGroupPreviewMarkup", "buttonSample"]
+  },
+  "verification": {
+    "tests": ["scripts/test-form.js", "scripts/test-form-field-composition.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "真实输入与重绘后焦点回写正常，失败/通过/warning/重置结果来自DOM事件而非静态提示。",
+      "Form和Field根计算样式均为透明、0边框、0圆角、无阴影和毛玻璃；reduceMotion时duration为1ms。",
+      "390px深色、阴影、毛玻璃、大圆角、渐变开启且边框关闭时页面溢出为0，Form根仍无第二层Surface。"
+    ],
+    "deviceRisks": [
+      "H5 HTML form 与微信原生 form 的键盘提交、焦点滚动和辅助技术朗读仍存在平台差异。",
+      "小程序端 Field 消息过渡的中间帧需目标设备录屏确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Form H5使用真实form和共享PUI组合；三分区、复制代码、Props与原生Slot合同同源。",
+    "rules": [
+      "Form H5不得恢复items/formValues固定字段运行态或只更新提示文字的提交。",
+      "基础复制代码必须包含Form/Field/Input/Button usingComponents且零bind。",
+      "Form和Field根在所有外观模式下必须透明，唯一Surface属于真实子控件。"
+    ],
+    "tags": ["form", "h5", "preview", "composition", "code-copy", "responsive"]
+  }
+}

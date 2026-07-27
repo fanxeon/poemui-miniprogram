@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0210",
+  "title": "Popup 三段结构与主要动作 Slot",
+  "scope": "component",
+  "components": ["popup", "button", "cell", "preview-site"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "Popup 需要有清晰的 Header、Content、Footer 结构，Header 左右是圆形图标按钮，中间标题居中，Footer 承载主要动作按钮，用户能够直接理解并组合真实业务内容。",
+  "environment": {"surfaces": ["miniprogram-component", "h5-preview", "component-api"], "platforms": ["browser", "node"], "viewports": ["390x844", "desktop"], "themes": ["light", "dark"]},
+  "reproduction": [
+    "popup/popup.wxml 只有 scroll-view 内容区和右上绝对关闭轨道，没有 Header、Footer 或左右等宽标题结构。",
+    "官网 popupSample 只能镜像内容与关闭按钮，无法让用户真实验证三段结构和 Footer 主要动作。",
+    "既有 Popup 合同禁止 title/header/footer，导致组件源码、预览和用户目标不一致。"
+  ],
+  "expected": "Popup 公开 showHeader、title、subtitle、showFooter 结构 Props，提供 header-left、content、close-btn、footer Slot；Header 三列几何稳定，左右圆形按钮顶部对齐且分别使用主要色与灰色底，默认 placement 为 bottom。官网关闭态按真实设备空间提供顶部、左侧、居中、右侧、底部五个入口，点击入口写入对应 placement 后打开同一 Popup，并以一个含卡片、毛玻璃遮罩两项 PUI Cell + Switch 的 CellGroup 真实回写 `card`、`blurOverlay`；打开后五入口仍作为 PreviewDevice 底层内容保留，遮罩与 Surface 仅在其上方叠加，不能用打开态替换整个预览区；`center` 固定在几何中心缩放/淡入，左右侧栏的 Footer 紧贴底部；Content 唯一滚动，Footer 由真实 PUI Button 承担主要动作，业务结果仍由父级处理。",
+  "actual": "Popup 只提供 default/content/close-btn 三个 Slot，关闭按钮绝对定位，预览中的 Header/Footer 选择器没有对应真实结构；关闭态只有底部单入口，无法从同一预览直接验证其他 placement 的实际弹出结果。",
+  "evidence": [
+    {"kind": "file", "ref": "popup/popup.wxml", "note": "修复前仅有 scroll-view 与 pui-popup__close。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "popupSample 修复为真实 Header、Content、Footer 三段镜像，并使用 buttonSample 组合左右圆形按钮与主要动作按钮。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项测试锁定新 Props、Slot、WXML 三段结构、H5 结构镜像与生成产物一致性。"},
+    {"kind": "file", "ref": "https://tdesign.tencent.com/qq-miniprogram/components/popup", "note": "2026-07-22 读取 TDesign QQ Popup 文档，确认其基础能力仍聚焦显隐、位置、遮罩和内容 Slot。"},
+    {"kind": "file", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/popup", "note": "固定读取 tdesign-miniprogram@1.15.3 包内 miniprogram_dist/popup/props.js、type.d.ts、popup.wxml、popup.js、popup.wxss；PoemUI 仅参考基础显隐边界，不照搬业务结构。"}
+  ],
+  "rootCause": "Popup 的原始合同沿用了基础浮层最小能力，但用户实际需要的是一个可组合的操作面板结构；官网曾有历史样式选择器，却没有同步到真实 WXML。五向入口初版又将关闭态与挂载态做成互斥 DOM 分支，打开时替换了入口根，造成用户感知为预览区被清空。居中态复用了位移进入的通用 Motion，左右侧栏的 Content 又保留 360px max-height，导致中心不具备独立几何动效、Footer 与侧栏底部出现空白。",
+  "decision": {"outcome": "保留 Popup 的基础显隐、遮罩、位置和滚动职责，新增可选 Header/Content/Footer 结构。标题由 title/subtitle 提供，左侧动作由 header-left Slot 提供，右侧继续沿用 closeBtn/close-btn，主要动作仅由 footer Slot 内的真实 PUI Button 提供；统一采用 Surface 单层、三列 Header、唯一 Content 滚动区、Footer 主动作和 PUI spacing Token 的 UI 逻辑。H5 五向入口改为同一 showcase 内的持久底层，Popup host 以 absolute inset 覆盖该层，不再用互斥页面分支替换入口。", "rationale": "结构能力能解决用户的布局与可读性问题，同时不把提交、加载、错误或业务成功伪装成 Popup 根级状态；footer action 的业务闭环仍归消费者。Header/Content/Footer 的内距和 gap 直接消费现有 PUI Token，Button、Cell、Icon 等优先复用自有组件，避免官网与小程序出现第二套几何。持久底层保留用户打开前后的空间语境，且不影响遮罩阻止其下层交互。", "alternativesRejected": ["只修改 H5 静态预览：会继续与真实 WXML 能力脱节。", "在 Popup 根级增加 confirm/loading/success：会把业务状态错误地塞入基础浮层。", "继续使用右上绝对关闭按钮：标题与左右按钮无法保持稳定三列几何。", "为 Popup 建立私有 padding、按钮或卡片皮肤：会破坏全局 Token 和组件复用规则。", "打开时继续替换为只含遮罩的独立 Stage：会清空入口语境并制造预览跳变。"]},
+  "impact": {"files": ["popup/popup.js", "popup/popup.wxml", "popup/popup.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/POPUP.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-popup.js"], "dependencies": ["button", "cell", "miniprogram_dist", "component-api", "preview-runtime"]},
+  "verification": {"tests": ["scripts/test-popup.js"], "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"], "browser": ["http://127.0.0.1:4179/#/components/popup：关闭态按顶部、左侧、居中、右侧、底部排布五个 PUI Button。逐个真实点击后，Popup 分别生成 `pui-popup-preview--top/left/center/right/bottom` 类；每次均通过默认 close Button 返回同一五入口关闭态。", "Props 面板逐项选择 top、bottom、left、right、center 后，真实预览分别生成对应的 `pui-popup-preview--top/bottom/left/right/center` 类并成功打开。默认 placement 为 bottom；修正通用 overlay-panel 的 top 继承后，bottom 实测 host top=35、bottom=655，panel top=357、bottom=643，底部间距 12px，确认面板真实贴近预览底部。", "更新后的 H5 计算样式：Header 使用 28px / 1fr / 28px 三列，左右按钮 align-items:flex-start、顶部对齐；左侧 Button 背景为 primary，右侧 close Button 背景为 default 灰色，标题为 white-space: normal、text-overflow: clip，Footer 使用 Token 化 padding。", "390px CDP 视口：innerWidth=390，五入口完整可见，中部三列宽 321px，document/body scrollWidth=375/375，无页面级横向溢出；长标题换行后 Header 仍保留三列。", "Footer 主要动作点击后面板保持打开，右侧关闭真实卸载；light/dark 切换不改变 Header/Footer 几何。"], "deviceRisks": ["微信真机仍需合法 AppID 验证 Header Slot 投影、Footer 内 Button 事件、fixed 位置、rpx 安全区、样式隔离和读屏表现。"]},
+  "ai": {"summary": "Popup 遵循单层 Surface、三列 Header、唯一 Content 滚动区和 Footer 主动作规则，默认从 bottom 弹出，优先组合 PUI Button/Cell/Icon 与现有 spacing Token。", "rules": ["Header 固定三列，左右轨道等宽，中间标题保持几何居中；左右按钮顶部对齐。", "左侧主要执行图标按钮使用 primary/base，右侧 close 使用 default/base 灰色底，不能用透明 text 按钮替代。", "Popup placement 默认 bottom，同时支持 top/bottom/left/right/center 五向。", "H5 关闭态入口必须利用设备空间：顶部、左侧、居中、右侧、底部五个 PUI Button 分别写入对应 placement 后打开同一 Popup；不得只改提示文字或保留单一默认 bottom 入口。", "Content 是唯一滚动区域，Footer 不进入滚动区。", "主要动作必须由 footer Slot 内真实 PUI Button 承担，Popup 不发布伪造 success。", "Popup Surface 使用 --pui-panel-padding，关联操作使用 --pui-content-gap，不建立私有 padding。", "H5 必须使用 buttonSample/cellSample 等共享镜像，原生 button 只保留遮罩或平台能力边界。", "对照 TDesign 时保留其显隐、遮罩和定位边界，并明确记录 PoemUI 的结构扩展。"], "tags": ["popup", "header", "content", "footer", "slots", "spacing", "pui-button", "placement", "tdesign"]}
+}

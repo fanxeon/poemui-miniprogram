@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0193",
+  "title": "全局阴影把条目、透明布局根和展示叶子误提升为浮层",
+  "scope": "global",
+  "components": ["preview-site", "config-provider", "cell", "avatar", "tag", "progress", "field", "empty", "result", "grid", "steps"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "所有组件在全局阴影开启后仍保留正确的信息层级，Cell 等连续条目和展示叶子不能变成并列悬浮卡片。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice", "native-source", "appearance-menu"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 H5 预览的外观菜单打开阴影，Cell 预览行获得 `var(--shadow-soft)`；用户截图显示多行白色条目互相叠影，设备下半区则没有形成对应的组件内容层级。",
+    "静态审计发现通用 H5 选择器及 `data-shadow=on` 规则把外投影写入 Cell、Avatar、Tag、Progress、Field、Empty、Result、Grid 与 Steps 等本不拥有独立 Surface 的根。",
+    "原生源码已证明 Grid、Steps、Progress、Field、Empty、Result 等根没有外投影，Cell selected 与 Grid bordered 只使用 inset 状态/分隔线；Avatar 是唯一原生展示叶子误消费外阴影 Token 的源码项。"
+  ],
+  "expected": "外阴影只表达 Card、浮层或集合根等脱离内容流的独立 Surface。连续 Cell、透明布局根、Grid/Steps 布局和 Avatar/Tag/Badge/Icon/Progress/Skeleton 展示叶子始终无外投影；selected、focus 和 divider 保留 inset 边界。",
+  "actual": "H5 的通用预览样式把视觉开关理解成所有组件都要加阴影，造成连续条目卡片化、展示叶子悬浮化，并与小程序 WXSS 和已有语义合同漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-20 用户提供的 PreviewDevice 截图与追问", "note": "用户明确指出 Cell 类型不应应用阴影，并要求审计同类组件后全部修正。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "修复前存在 Cell、Avatar、Tag、Progress 与通用 Surface 的外阴影规则；修复后建立非 elevation 的最终级联层。"},
+    {"kind": "file", "ref": "avatar/avatar.wxss", "note": "原生结构区分外投影与 selected/focus/divider 的 inset 边界；Avatar 已同步修复为无外投影。"},
+    {"kind": "test", "ref": "scripts/test-non-elevated-shadow-semantics.js", "note": "专项合同测试锁定 H5 选择器、原生 Avatar、Cell/Grid inset 边界及全局/组件文档。"}
+  ],
+  "rootCause": "旧 H5 通用视觉选择器按 class 名批量添加 `--shadow-soft`，没有先按组件是否为独立 Surface 判断资格；全局 `shadow` 开关因而穿透了连续条目和展示叶子。",
+  "decision": {
+    "outcome": "删除已确认的 Cell、Avatar、Tag、Progress 外投影来源，并增加置于最终级联位置的非 elevation 规则，统一保护 Cell、Field、Empty、Result、Grid、Steps、Avatar、Progress、Badge、Icon、Divider 与 Skeleton；Tag 保留 inset outline/highlight，Cell selected 与 Grid bordered 保留 inset 边界。Avatar 原生 WXSS 同步为无外投影。",
+    "rationale": "这让阴影恢复为层级信号，而不是通用装饰；保留 inset 状态边界可维持选中、聚焦和分隔信息，不会削弱可读性或交互状态。",
+    "alternativesRejected": [
+      "只降低阴影透明度：仍会让连续条目呈现错误的并列悬浮层级。",
+      "关闭所有组件阴影：会损失 Card、浮层和集合根应有的脱离内容流层级。",
+      "用更大 gap 区分条目：会把列表和 Grid 的连续原生结构继续误改为卡片集合。"
+    ]
+  },
+  "impact": {
+    "files": ["avatar/avatar.wxss", "preview/styles.css", "scripts/test-avatar.js", "scripts/test-tag.js", "scripts/test-non-elevated-shadow-semantics.js", "package.json", "AGENTS.md", "docs/UI_DESIGN_CONTRACT.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/CELL.md", "docs/components/AVATAR.md", "docs/components/TAG.md", "docs/components/PROGRESS.md", "docs/components/FIELD.md", "docs/components/EMPTY.md", "docs/components/RESULT.md", "docs/components/GRID.md", "docs/components/STEPS.md", "feedback/records/pui-fb-0193-non-elevated-component-shadow-semantics.json"],
+    "dependencies": ["ConfigProvider shadow preference", "PreviewDevice shadow-safe layout", "H5 component mirrors", "native WXSS visual tokens", "collection-root surface policy"]
+  },
+  "verification": {
+    "tests": ["scripts/test-non-elevated-shadow-semantics.js", "scripts/test-avatar.js", "scripts/test-cell.js", "scripts/test-tag.js", "scripts/test-progress.js", "scripts/test-field.js", "scripts/test-empty.js", "scripts/test-result.js", "scripts/test-grid.js", "scripts/test-steps.js"],
+    "commands": ["2026-07-20：专项 `test-non-elevated-shadow-semantics` 与 Avatar、Cell、Tag、Progress、Field、Empty、Result、Grid、Steps 测试通过。", "2026-07-20：`npm run feedback:generate && npm run feedback:check`、`npm run site:build`、完整 `npm run check`、`npm run example:install` 与 `npm run pack:check` 通过；打包干跑为 554 files、324.4 kB。", "2026-07-20：源码 `avatar/{js,json,wxml,wxss}` 与 `miniprogram_dist`、示例已安装 tarball 的对应四件套逐字节一致。", "2026-07-20：微信开发者工具 CLI 已实际启动 IDE server，但示例 `touristappid` 在权限阶段报 code 10；未生成也未伪造 `miniprogram_npm`。"],
+    "browser": ["2026-07-20：H5 真实路由逐一核验 Cell、Avatar、Tag、Progress、Field、Empty、Result、Grid、Steps；阴影开启时它们的根计算 `box-shadow` 均为 `none`，Cell selected 仅为 1px inset，Grid bordered 条目仅为 divider inset。", "2026-07-20：在浅色桌面与 390x844 深色 + 阴影下，所有目标页面 document/clientWidth 等于 scrollWidth；PreviewDevice 内部 viewport 也无横向溢出。验收后已把外观恢复为浅色 + 阴影关闭。"],
+    "deviceRisks": ["微信真机仍需以合法 AppID 复核 rpx 边界、样式隔离、列表/横向 scroll-view 手势、图片回退、系统低动效与辅助技术；H5 不能替代该证据。"]
+  },
+  "ai": {
+    "summary": "阴影是独立 Surface 的层级信号，不能由全局开关无差别灌入连续条目、透明根或展示叶子。",
+    "rules": [
+      "先判断组件是否脱离内容流；只有独立 Card、浮层、集合根等 Surface 才可拥有外投影。",
+      "Cell、Field、Empty、Result、Grid、Steps、Avatar、Tag、Badge、Icon、Progress、Skeleton 的外投影必须在原生和 H5 同时禁止。",
+      "selected/focus/divider 的 inset outline 不属于 elevation；禁止用移除状态边界来修复阴影问题。",
+      "全局视觉选择器每次扩展前都必须经过组件语义合同和专项回归测试。"
+    ],
+    "tags": ["global", "shadow", "surface", "cell", "display-leaf", "h5-preview", "native-parity"]
+  }
+}

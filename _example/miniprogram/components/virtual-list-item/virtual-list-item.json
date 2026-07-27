@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "pui-cell": "poemui-miniprogram/cell/cell",
+    "pui-tag": "poemui-miniprogram/tag/tag"
+  }
+}

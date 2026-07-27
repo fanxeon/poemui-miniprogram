@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0161",
+  "title": "PullRefresh 公开合同误含外部滚动与伪完成能力",
+  "scope": "component",
+  "components": ["pull-refresh", "preview-site", "usage-code", "example", "metadata"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "以联网 TDesign 对照和真实源码为依据收敛 PullRefresh；基础 WXML 只展示局部下拉容器，不把外部滚动、业务完成或方法伪装成组件能力。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "api-reference", "usage-code", "example", "miniprogram-dist"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 391px", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 PullRefresh 公开 19 Props、外部 scrollTop、indicator Slot、finish/reset/refresh 方法和业务 success/failure 过程事件；基础示例与官网把这些扩张能力作为组件默认调用暴露。",
+    "2026-07-20 已联网访问 TDesign PullDownRefresh 页面、官方源码，并读取固定 tdesign-miniprogram@1.15.3 包内 miniprogram_dist/pull-down-refresh 的 props.js、type.d.ts、pull-down-refresh.js、wxml 与 wxss。"
+  ],
+  "expected": "PoemUI 使用组件内部 scroll-view，公开 18 Props、7 Events、header/default 两个 Slots、0 Methods；基础 WXML 零 bind:*，refresh 只请求父级执行工作，timeout 只请求收起。",
+  "actual": "历史合同把外部滚动控制、演示轨道完成、网络成功/失败和方法按钮混为 PullRefresh 公共能力，会诱导调用者依赖组件并未真实完成的业务流程。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授予后续组件的范围化自主验收授权；仍要求每项完成真实浏览器、Ledger 和构建证据。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/pull-down-refresh", "note": "2026-07-20 在线访问，作为公开用法和状态语义对照。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/pull-down-refresh", "note": "2026-07-20 在线核验 TDesign PullDownRefresh 源码位置；固定 npm 包用于可复现 API 判断。"},
+    {"kind": "file", "ref": "pull-refresh/pull-refresh.js", "note": "当前根为内部 scroll-view，精确声明 18 Props 和七个 triggerEvent；没有 finish/reset/refresh 方法或业务成功事件。"},
+    {"kind": "test", "ref": "scripts/test-pull-refresh.js", "note": "专项合同锁定 Props、事件顺序、受控/非受控、timeout、Slots、WXML/API/示例和 dist 同源。"}
+  ],
+  "rootCause": "历史实现把页面的刷新结果、外部位置和调试入口放进组件公开面，未以真实 WXML、固定 TDesign 包和父级数据责任重新审计。",
+  "decision": {
+    "outcome": "收敛为内部滚动下拉容器：保留 TDesign 形状的滚动、阈值、文案、受控状态和七个事件，额外仅保留全库 ariaLabel/reduceMotion；移除外部 scrollTop、indicator Slot、业务成功/失败与实例方法。",
+    "rationale": "组件只应表达真实拖拽和刷新请求，网络、重试、数据替换和业务成功必须由消费者在父级闭环后回写 value=false。",
+    "alternativesRejected": [
+      "保留 finish/reset/refresh 会把父级业务完成伪装成组件能够自行收口。",
+      "保留外部 scrollTop 会违背内置 scroll-view 的真实触摸门禁。",
+      "在基础 WXML 展示全部 bind:* 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["pull-refresh/pull-refresh.js", "pull-refresh/pull-refresh.json", "pull-refresh/pull-refresh.wxml", "pull-refresh/pull-refresh.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/PULLREFRESH.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-pull-refresh.js"],
+    "dependencies": ["PUI Loading", "PUI Cell", "shared usage-code generator", "TDesign PullDownRefresh reference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-pull-refresh.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-code-copy.js"],
+    "commands": ["2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过", "2026-07-20 微信 CLI build-npm：touristappid 不存在，code 10，未生成 miniprogram_npm。"],
+    "browser": ["真实填写 scrollIntoView=pull-refresh-record-07 后，局部滚动区 scrollTop=109 且锚点存在。", "真实顶部长拖显示正在刷新、轨道高度 50px，等待 3000ms 后回到高度 0；受控 true 显示 loading，父级回写 false 后回到 idle。", "禁用和 scrollTop=100 的非顶部向下拖均保持轨道高度 0；loadingBarHeight=120 与 loadingProps.text=联网拉取 在真实拖拽后显示 120px 与对应 PUI Loading 文案。"],
+    "deviceRisks": ["微信真机仍需以合法 AppID 验证内部 scroll-view 的惯性、边缘下拉命中、rpx 轨道高度、Slot 投影、样式隔离、读屏和系统低动效。"]
+  },
+  "ai": {
+    "summary": "PullRefresh 是局部滚动与请求发起组件，不是外部位置、网络完成或结果反馈系统。",
+    "rules": [
+      "先用在线 TDesign 页面、固定 npm 包和真实 WXML 三者交叉确定公开面。",
+      "基础 WXML 只给最小调用；完整 bind 列表只能进入 Events 或事件专项示例。",
+      "timeout 与完成轨道只能表达收起请求，业务成功、失败、重试和数据替换必须由父级处理。"
+    ],
+    "tags": ["pull-refresh", "tdesign", "api-contract", "scroll-view", "no-fake-success"]
+  }
+}

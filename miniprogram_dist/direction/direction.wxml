@@ -1,0 +1,11 @@
+<view
+  class="{{rootClass}} {{changing ? 'pui-direction--changing' : ''}} {{customClass}} custom-class"
+  style="{{rootStyle}};{{customStyle}}"
+  role="group"
+  aria-label="{{ariaLabel}}"
+  data-direction="{{resolvedDirection}}"
+  data-language="{{resolvedLanguage}}"
+>
+  <slot wx:if="{{useSlot}}"></slot>
+  <text wx:else class="pui-direction__content" user-select="{{selectable}}">{{content}}</text>
+</view>

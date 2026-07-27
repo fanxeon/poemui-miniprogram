@@ -1,0 +1,28 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{rootStyle}}" role="search" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}" aria-readonly="{{readonly}}">
+  <pui-input
+    style="display:flex;flex:1;min-width:0;width:100%;"
+    custom-style="{{inputStyle}}"
+    custom-class="pui-search__field"
+    value="{{innerValue}}"
+    placeholder="{{placeholder}}"
+    prefix-icon="search"
+    clearable="{{showClear}}"
+    bordered="{{true}}"
+    align="{{center ? 'center' : 'left'}}"
+    maxlength="{{nativeMaxlength}}"
+    maxcharacter="{{normalizedMaxcharacter}}"
+    disabled="{{disabled}}"
+    readonly="{{readonly}}"
+    focus="{{focus}}"
+    confirm-type="{{confirmTypeValue}}"
+    aria-label="{{semanticLabel}}"
+    reduce-motion="{{reduceMotion}}"
+    bind:change="onInputChange"
+    bind:clear="onInputClear"
+    bind:focus="onFocus"
+    bind:blur="onBlur"
+    bind:enter="onSearch"
+  />
+  <pui-button wx:if="{{showCancel}}" custom-class="pui-search__cancel" variant="text" size="small" disabled="{{disabled || readonly}}" bind:click="onCancel">{{cancelText}}</pui-button>
+  <slot></slot>
+</view>

@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0350",
+  "title": "Preview 阴影边界门禁遗留已下线 Tooltip 的组件数量",
+  "scope": "global",
+  "components": ["preview-site", "catalog", "test-suite"],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "全量 check 必须验证当前发布组件集，不得因已完成的 Tooltip 下线保留过期数量并阻断无关组件交付。",
+  "environment": {
+    "surfaces": ["test-suite", "catalog", "preview-site"],
+    "platforms": ["node"],
+    "viewports": ["not-applicable"],
+    "themes": ["not-applicable"]
+  },
+  "reproduction": [
+    "运行 npm run check。",
+    "test-preview-shadow-boundaries.js 将 metadata.packageComponents.length 硬编码为 71，而当前 approved release set 已是 70，导致阴影合同前置失败。",
+    "继续完整 check 后，test-preview-overview-hierarchy.js 也保留 Tooltip 下线前的 78 条 public route 常量，而当前目录为 77 条。"
+  ],
+  "expected": "阴影边界门禁应验证 packageComponents 与当前 releaseComponentIds 同步；当前 public route 固定范围也应同步为 Tooltip 下线后的 77 条，组件数量的唯一固定发布数由 catalog pruning 门禁维护。",
+  "actual": "阴影门禁保留 Tooltip 下线前的 71 常量，概览层级门禁保留 78 条 route 常量，在当前 70 组件/77 route 发布集中依次失败。",
+  "evidence": [
+    {"kind": "test", "ref": "scripts/test-preview-shadow-boundaries.js", "note": "修复前硬编码 71，修复后与 metadata.releaseComponentIds.size 同源比较。"},
+    {"kind": "test", "ref": "scripts/test-preview-overview-hierarchy.js", "note": "修复后将公开路由常量同步为 Tooltip 下线后的 77。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "当前 packageComponents 与 releaseComponentIds 均为 Tooltip 下线后的 70 个发布组件。"},
+    {"kind": "build", "ref": "npm run check", "note": "2026-07-25 在完整 check 中复现 70 !== 71 的断言失败。"}
+  ],
+  "rootCause": "Tooltip 已从发布集和路由目录移除，但独立阴影门禁与概览层级门禁保留历史固定数量，重复维护组件目录真相。",
+  "decision": {
+    "outcome": "阴影门禁改为比较 packageComponents 与 releaseComponentIds；概览层级门禁同步为当前 77 条公开路由，70 个组件的固定范围继续由 test-component-catalog-pruning.js 独立锁定。",
+    "rationale": "阴影测试应关注其自身布局语义，同时从统一发布集读取数量，避免在无关测试内复制可漂移的 catalog 常量。",
+    "alternativesRejected": [
+      "恢复 Tooltip 目录或发布入口以满足历史 71，会违反已批准的彻底下线边界。",
+      "仅把 71 改为另一个孤立常量，下一次有意的发布集变更仍会重复漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/test-preview-shadow-boundaries.js", "scripts/test-preview-overview-hierarchy.js"],
+    "dependencies": ["metadata.packageComponents", "metadata.releaseComponentIds", "metadata.groups", "scripts/test-component-catalog-pruning.js"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-shadow-boundaries.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-component-catalog-pruning.js"],
+    "commands": ["npm run check"],
+    "browser": [],
+    "deviceRisks": []
+  },
+  "ai": {
+    "summary": "全局专项测试不能复制发布组件总数；应从 metadata 的 release set 派生，固定数量仅在 catalog 专项集中维护。",
+    "rules": [
+      "组件下线后先搜索硬编码数量和遗留 ID，不能只删目录。",
+      "和组件数量无关的专项测试必须读取 metadata 的单一发布集真相。",
+      "不要为让历史计数通过而恢复已删除组件。"
+    ],
+    "tags": ["catalog", "tooltip-retirement", "test-suite", "release-set", "stale-test"]
+  }
+}

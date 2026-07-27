@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0383",
+  "title": "DropdownMenu 重复点击当前筛选项调用了不存在的关闭方法",
+  "scope": "component",
+  "components": ["dropdown-menu", "preview-site", "miniprogram-dist"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "regression",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "下拉筛选打开后再次点击同一触发项应自然关闭，不能导致小程序页面抛出运行时异常。",
+  "environment": {
+    "surfaces": ["native-source", "miniprogram npm", "H5 preview"],
+    "platforms": ["wechat-miniprogram", "web", "node"],
+    "viewports": ["iPhone 12/13 Pro simulator"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在小程序中打开 DropdownMenu 的任一未禁用 trigger。",
+    "保持该面板展开后再次点击同一个 trigger。",
+    "旧实现进入 publishOpen 的同项分支，调用未定义的 this.requestClose，控制台抛出 TypeError。"
+  ],
+  "expected": "同一 trigger 的第二次激活应发布 close 事件并走既有 500ms leaving 状态，不新增 API 或方法。",
+  "actual": "源码误调用不存在的 requestClose，导致 this.requestClose is not a function；H5 镜像已正确调用 closeDropdownPreviewSlim，双端行为失配。",
+  "evidence": [
+    {"kind": "browser", "ref": "微信开发者工具 iPhone 12/13 Pro 模拟器，2026-07-26 14:11", "note": "普通编译后控制台记录 dropdown-menu.js:202 的 this.requestClose is not a function。"},
+    {"kind": "file", "ref": "dropdown-menu/dropdown-menu.js", "note": "publishOpen 同项分支现统一调用已存在的 publishClose。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 同项 trigger 已调用 closeDropdownPreviewSlim，是小程序端应对齐的既有语义。"},
+    {"kind": "test", "ref": "scripts/test-dropdown-menu.js", "note": "新增同一 trigger 连续点击断言，锁定 open → close 事件和 source 透传。"}
+  ],
+  "rootCause": "DropdownMenu 的关闭方法在收敛状态机时命名为 publishClose，但 publishOpen 的同项切换分支遗留了 requestClose 名称；原专项测试未覆盖连续点击同一 trigger。",
+  "decision": {
+    "outcome": "将同项分支改为调用 publishClose，并为小程序和 H5 对齐语义加入回归断言。",
+    "rationale": "复用既有关闭状态机可保留 close 事件、leaving 动效和定时卸载，不扩大公共 API。",
+    "alternativesRejected": [
+      "新增 requestClose 别名：会保留无意义的内部双命名并掩盖状态机调用错误。",
+      "在页面侧捕获异常或强制重渲染：不能恢复组件自身的 close 事件和退出动效。"
+    ]
+  },
+  "impact": {
+    "files": ["dropdown-menu/dropdown-menu.js", "scripts/test-dropdown-menu.js", "docs/components/DROPDOWN-MENU.md", "miniprogram_dist/dropdown-menu/dropdown-menu.js", "miniprogram/miniprogram_npm/poemui-miniprogram/dropdown-menu/dropdown-menu.js"],
+    "dependencies": ["pui-dropdown-menu", "微信 Component methods", "DropdownMenu H5 preview"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dropdown-menu.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具普通编译"],
+    "browser": ["修复前开发者工具实际记录 requestClose TypeError；修复后需再次打开 DropdownMenu 独立页，对同一 trigger 连续点击确认 open → close 与控制台无新异常。"],
+    "deviceRisks": ["尚未在 iOS/Android 真机复验连续点击；需确认动画中的快速连点、Slot 投影和不同基础库事件顺序。"]
+  },
+  "ai": {
+    "summary": "DropdownMenu 的 trigger 切换必须复用 publishClose，不能引用不存在的近似方法名。",
+    "rules": [
+      "同一已展开 trigger 的第二次激活必须走 publishClose 并发布 close，不新增公开方法。",
+      "状态机分支修改必须至少覆盖首次打开、同项关闭、切换项、遮罩关闭和单选关闭。",
+      "H5 已有等价交互时，小程序状态机必须逐分支对齐，而不是只验证首次打开。"
+    ],
+    "tags": ["dropdown-menu", "runtime", "toggle-close", "miniprogram", "regression"]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0144",
+  "title": "Toast H5 隐藏后归一化移除了唯一触发入口并留下空舞台",
+  "scope": "component",
+  "components": ["toast", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须具有真实可操作入口和可观察动画，不接受静态占位、假事件或隐藏态空预览。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-device", "property-panel", "usage-code"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 把 show()/close() 按钮放入 pui-toast-showcase__methods，把事件诊断放入 pui-toast-preview__event。",
+    "component-only 归一化会删除 __methods 和 __event；自动关闭后 Toast 被卸载，PreviewDevice 只剩无入口的空 toast-stage。"
+  ],
+  "expected": "隐藏态仍展示一个可点击的 PUI Button；show/hide、自动关闭和低动效在同一已挂载 Toast 节点上完成真实 opacity/transform 过渡，完成后才卸载并恢复入口。",
+  "actual": "旧结构靠工程诊断控件承载唯一交互，归一化后用户无法再次显示 Toast，也无法验证真实运行态。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求网页实际点击、动画中间帧、完成态与真实父级回写，不接受伪交互，并已授权后续组件在完整门禁证据后自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/toast", "note": "2026-07-20 旧版自动关闭后实际检查 PreviewDevice，只剩空 toast-stage，原 show/close 入口已被 component-only 删除。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "旧归一化识别 __methods/__event；当前改造将真实 Button 留在正常展示结构并使用 show/hide 状态机。"},
+    {"kind": "test", "ref": "scripts/test-toast.js", "note": "专项测试锁定基础入口、四个用途分区、无旧诊断节点和同节点状态机。"}
+  ],
+  "rootCause": "预览把工程诊断 DOM 当作用户触发入口，未适配 component-only 对诊断节点的清理规则。",
+  "decision": {
+    "outcome": "概览固定保留共享 PUI Button 作为 show/hide 入口，按基础/主题/方向/遮罩分区；去除事件诊断和方法面板，隐藏态不再为空。",
+    "rationale": "用户应能从预览本身完成真实操作；API 承担方法与事件说明，概览不应靠诊断块才能使用组件。",
+    "alternativesRejected": [
+      "仅保留空舞台并提示使用 Props 不构成可操作预览。",
+      "用静态成功文字或点击后只改提示文案不能证明 Toast 真正显示。",
+      "保留被归一化规则删除的 __methods 类名会再次回归空预览。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-toast.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/TOAST.md"],
+    "dependencies": ["PreviewDevice component-only normalizer", "shared PUI Button mirror", "Toast H5 timer runtime"]
+  },
+  "verification": {
+    "tests": ["scripts/test-toast.js"],
+    "commands": ["npm run example:install（含 site:build，2026-07-20 通过）", "node scripts/test-toast.js（2026-07-20 通过）", "npm run check"],
+    "browser": ["2026-07-20 实点概览“显示提示”，Toast 根真实出现并改为“隐藏提示”；隐藏后入口恢复。浏览器读取静态 Toast 的 transition 为 opacity/transform 各 0.18s，低动效切换后为各 0.001s；专项 VM 状态机验证 hide 期间节点保留、500ms 完成后才卸载并发布 close。393px 设备与 390px 浏览器视口均无横向溢出；light/dark、border、shadow、frost、largeRadius、gradient 均实际切换并恢复标准浅色。"],
+    "deviceRisks": ["微信端 fixed 定位、Overlay 阻止触摸滚动、动画合成、安全区、系统低动效与读屏需使用合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "component-only 预览不得把可用入口放在会被诊断归一化删除的节点中。",
+    "rules": [
+      "隐藏态浮层组件必须保留一个真实、可访问的 PUI 触发入口。",
+      "概览不展示方法面板和事件日志；方法和事件归入 API。",
+      "验证退场时必须读取真实节点和计算样式，不能只观察提示文字变化。"
+    ],
+    "tags": ["toast", "preview-parity", "component-only", "animation", "browser"]
+  }
+}

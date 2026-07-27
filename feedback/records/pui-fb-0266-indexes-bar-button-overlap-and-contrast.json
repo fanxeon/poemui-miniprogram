@@ -1,0 +1,88 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0266",
+  "title": "Indexes H5 索引 Button 热区重叠且活动字符不可见",
+  "scope": "component",
+  "components": ["indexes", "button", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "第 18 号 Indexes 的侧栏索引必须看得清、点得准，深浅色和 390px 下都不能出现空白当前项或误选相邻分组。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-device", "native-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 `http://127.0.0.1:4179/#/navigation/indexes` 并切到深色模式。",
+    "观察当前索引为白色底块，但星号或字母不可见。",
+    "读取计算几何：包装轨道为 21×18px，内部共享 PUI small Button 为 21×36px并覆盖相邻入口。",
+    "真实点击辅助名称为“定位到C”的入口，旧运行态回写 current=\"B\"。"
+  ],
+  "expected": "H5 精确镜像原生 `42rpx × 36rpx` 紧凑索引入口为 `21px × 18px`；Button 与包装轨道完全重合，活动字符继承反色，点击哪个索引就请求哪个分组。",
+  "actual": "全局 Button 最终尺寸与颜色规则覆盖 Indexes 的局部规则，导致热区高度翻倍、相邻入口重叠，活动 Button 字符又与白色活动底色相同。",
+  "evidence": [
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/navigation/indexes",
+      "note": "修复前深色活动包装背景和 Button 字符均为 rgb(250,250,250)，Button 为 21×36px；真实点 C 得到 current=\"B\"。"
+    },
+    {
+      "kind": "file",
+      "ref": "indexes/indexes.wxss",
+      "note": "原生 custom-class 明确把包装与 PUI Button 约束为 42rpx × 36rpx并由包装提供活动反色。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "最终 scoped 规则在共享 Button 规则后恢复 21×18px、Grid 对齐、inherit 色和无阴影。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-indexes.js",
+      "note": "专项断言锁定最终 scoped 尺寸、包装 Grid 和活动色继承。"
+    }
+  ],
+  "rootCause": "Indexes 的紧凑 PUI Button 规则位于共享 Button 最终尺寸和变体规则之前，后写入的 36px small 尺寸与固定文字色覆盖了组合组件 custom-class；inline span 基线还额外产生 3px 垂直越界。",
+  "decision": {
+    "outcome": "在共享 Button 最终规则之后增加仅限 Indexes bar-item 的尺寸与颜色覆盖，并把包装 span 改为 Grid 精确居中，保持原生 custom-class 的组合语义。",
+    "rationale": "Indexes 仍然复用 PUI Button，只恢复该组件原生已经声明的紧凑 custom-class；限定作用域不会改变其他 Button 的尺寸或主题。",
+    "alternativesRejected": [
+      "扩大每个索引轨道到 36px 会显著压缩可展示索引数量并偏离原生 36rpx 合同。",
+      "移除 PUI Button 改用原生 button 会违反组件复用规则。",
+      "只改活动底色不能解决重叠热区和误选。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-indexes.js", "docs/components/INDEXES.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md"],
+    "dependencies": ["PUI Button H5 helper", "Indexes native custom-class", "PreviewDevice theme"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["2026-07-23 node --check preview/app.js 与 node scripts/test-indexes.js：通过", "2026-07-23 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过", "2026-07-23 微信 CLI build-npm：IDE server 已启动，touristappid 不存在，code 10；未生成或伪造 miniprogram_npm"],
+    "browser": [
+      "修复后五个索引 Button 与包装轨道均为 21×18px，top/bottom overhang 都为 0。",
+      "深色活动项为 rgb(250,250,250) 背景和 rgb(24,24,27) 字；浅色为 rgb(9,9,11) 背景和 rgb(255,255,255) 字。",
+      "真实点击 C 得到 current=\"C\"，事件顺序为 select → change，source=pointer，受控父级真实回写。",
+      "390×844 下 document 为 375/375px，PreviewDevice 为 349/349px，Indexes 根与内部滚动区均无横向溢出。"
+    ],
+    "deviceRisks": [
+      "微信真机仍需用合法 AppID 复核 custom-class 样式隔离、PUI Button tap 热区、touchmove 连续命中、rpx 与读屏。"
+    ]
+  },
+  "ai": {
+    "summary": "组合组件缩小 PUI Button 时，必须在最终全局规则之后验证真实计算尺寸、热区重叠和活动态文字对比度。",
+    "rules": [
+      "不能只读取声明 CSS；必须比较包装轨道和实际 Button 的 getBoundingClientRect。",
+      "紧凑索引入口必须让包装与点击热区完全重合，禁止相邻 Button 互相覆盖。",
+      "活动态颜色要读取 Button 子节点的最终计算色，父级颜色正确不代表文字真实可见。",
+      "组件 scoped custom-class 必须置于共享子组件最终规则之后并由专项测试锁定。"
+    ],
+    "tags": ["indexes", "button", "hit-target", "contrast", "dark-mode"]
+  }
+}

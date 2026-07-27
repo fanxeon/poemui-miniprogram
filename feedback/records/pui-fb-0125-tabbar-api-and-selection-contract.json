@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0125",
+  "title": "Tabbar 公开合同混入业务状态、自动动作和宽泛事件面",
+  "scope": "component",
+  "components": ["tabbar", "button", "badge", "icon", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Tabbar 应参考成熟小程序底部导航保留目的地选择、固定占位、安全区和视觉主干，基础调用克制，严格保留原始值，并把页面业务状态与路由交给消费者。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349x620 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Tabbar 公开 31 Props、4 Events、2 Methods 与 action Slot，把 loading/error/empty/retry、颜色、高度、横滚、动作入口和动画调参塞进应用目的地导航。",
+    "旧值匹配允许数字 0 与字符串 \"0\" 碰撞，全部条目禁用时还可能建立假活动项。",
+    "旧 input/change 重复表达选择，select/selectIndex 方法可绕过父级受控所有权；自动路由也会把权限和失败恢复藏在组件内部。",
+    "TDesign MiniProgram 1.15.3 TabBar/TabBarItem 以 value/defaultValue、theme/shape、bordered/split、fixed/placeholder、安全区和 change 为主干。"
+  ],
+  "expected": "Tabbar 只公开跨微信与 H5 可真实一致的 14 Props、click/change 两个 Events、0 Slots、0 Methods；严格区分 0、\"0\"、false 与空字符串；基础 WXML 零 bind。",
+  "actual": "旧公共面把一级导航、业务状态、动作入口、布局调参和路由职责混在一起，原始值身份、事件顺序和父级所有权不可靠。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API、按用法分区、基础示例不展示全部 bind，并授权完整证据后自主验收。"},
+    {"kind": "file", "ref": "tabbar/tabbar.js", "note": "最终 14 Props、严格原始值、受控/非受控连续性、click 后 change、全部禁用无活动项与固定 180/1ms。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxml", "note": "每项组合 PUI Button/Badge/Icon，空 items 不渲染假壳、状态组件或 action Slot。"},
+    {"kind": "file", "ref": "docs/components/TABBAR.md", "note": "记录 TDesign 1.15.3 的保留、拒绝、事件、值身份、页面状态与路由边界。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "VM 与静态合同覆盖 14/2/0/0、严格边界值、受控等待、事件顺序、禁用、PUI 组合和三层产物。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabbar", "note": "390px 真实点击、键盘、受控父级回写和物理点击禁用项，验证 0、字符串 0、false、空字符串、badge=0/dot、固定占位和低动效。"}
+  ],
+  "rootCause": "旧实现按演示诊断不断扩张 Tabbar 顶层能力，没有先限定组件只负责一级目的地选择，也没有把业务状态、路由、动作入口与受控值身份分开。",
+  "decision": {
+    "outcome": "收敛为 items/value/defaultValue/theme/shape/bordered/split/fixed/placeholder/safeAreaInsetBottom/zIndex/disabled/ariaLabel/reduceMotion；只保留 click/change；0 Slots；0 Methods。",
+    "rationale": "应用一级导航只需要稳定目的地数据、值所有权、布局和平台安全区；页面请求状态、路由守卫与业务动作都应由消费页面真实闭环。",
+    "alternativesRejected": [
+      "保留 loading/error/empty/retry 会让 Tabbar 冒充目的地页面的业务状态容器。",
+      "保留 action Slot、自动导航和 subTabbar 会混淆一级目的地与页面动作或二级导航。",
+      "保留 input 与选择方法会重复 change 并允许绕过受控父级。",
+      "公开高度、颜色、横滚、duration/easing 会把稳定视觉合同变成难以跨端验收的调参面。"
+    ]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.js", "tabbar/tabbar.json", "tabbar/tabbar.wxml", "tabbar/tabbar.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/TABBAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-tabbar.js", "scripts/test-design-contracts.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0125-tabbar-api-and-selection-contract.json"],
+    "dependencies": ["pui-button", "pui-badge", "pui-icon", "TDesign MiniProgram 1.15.3 TabBar/TabBarItem"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "切换固定 click → change，同项只发 click；disabled 根或条目物理点击后选择和事件序列不变。",
+      "受控基础实例把 home 回写为 components；边界实例严格完成 0 → \"0\" → false → 空字符串。",
+      "badge=0 可见，dot 有辅助名称，108 按 maxCount 显示 99+；全部禁用专项保持 activeIndex=-1。",
+      "默认 fixed 为局部 absolute，边界样例 placeholder 为 52px 且 safeAreaInsetBottom 保留 env 安全区。",
+      "正常过渡为 500ms，reduceMotion 计算样式为 1ms；390px document 为 375/375px。"
+    ],
+    "deviceRisks": [
+      "微信 fixed/placeholder 页面占位、env 安全区、rpx、触摸反馈、样式隔离、系统低动效和读屏需合法 AppID 真机复核。",
+      "微信 build-npm 仍受项目 touristappid 阻断时必须保留 pending-cli，不得手工生成产物冒充成功。"
+    ]
+  },
+  "ai": {
+    "summary": "Tabbar 只负责应用一级目的地选择与底部布局；页面状态、路由和业务动作归消费者，原始值身份与父级所有权必须严格保留。",
+    "rules": [
+      "Tabbar 不得恢复根级 loading/error/empty/retry、action Slot、自动路由或二级导航。",
+      "value 比较必须严格区分 0、\"0\"、false 与空字符串；全部禁用时不得伪造活动项。",
+      "可用项点击固定 click 后 change，同项只发 click；disabled 不发布事件，受控模式等待父级回写。",
+      "不得恢复 input、select/selectIndex 或公开颜色、高度、横滚与动画调参。"
+    ],
+    "tags": ["tabbar", "tdesign", "api-contract", "controlled", "navigation"]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0191",
+  "title": "标准组件页缺少逐路由预览滚动容器覆盖门禁",
+  "scope": "global",
+  "components": ["preview-site", "preview-device", "all-components"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "每个组件概览的预览区都必须留在稳定、真实可滚动的容器内，不能因为某个路由的特殊渲染而落回页面滚动、空白画布或静态假预览。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice", "component catalog"],
+    "platforms": ["browser", "node"],
+    "viewports": ["390x844 browser", "351x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 `#/components/shadcn-scroll-area`，可见 ScrollArea 自身的 160px 默认内容区；若只看局部截图，容易误判下方未显示的条目没有滚动承载。",
+    "审计旧的全局测试后发现它只锁定共享渲染函数与 CSS，没有枚举公共目录来明确哪些路由必须使用 PreviewDevice、哪些页面是文档或资源库例外。",
+    "在 390x844 逐一访问目录中 87 个非基础文档候选路由，读取 `.preview-device__viewport` 的数量、真实 `overflow-y`、高度、共享父布局和页面横向宽度。"
+  ],
+  "expected": "85 个标准组件概览均有且仅有一个固定 622px PreviewDevice 的内部真实纵向滚动 viewport；Typography 与 Chart 说明页、Icon 资源库不伪装为设备预览，且页面不出现横向溢出。",
+  "actual": "当前实现已通过同一 renderStage 回退路径正确挂载共享 viewport，但缺少按目录路由数量锁定的专项门禁；未来若增加私有分支，单个函数或 CSS 测试不足以暴露覆盖缺口。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-20 用户提供的 ScrollArea 预览截图", "note": "截图显示默认 320rpx ScrollArea 的前三个条目与下方裁切边界，要求核验所有组件预览是否处于滚动容器。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-scroll-area", "note": "390x844 实测外层 PreviewDevice 为 351x622、overflow=hidden；内部 viewport 为 620px、overflow-y=auto；ScrollArea 自身为 160px、scrollHeight=310px、overflow-y=auto，页面宽度 375/375。"},
+    {"kind": "browser", "ref": "2026-07-20 本轮 87 条候选路由审计", "note": "85 个标准组件概览均为一个 PreviewDevice、一个 data-preview-scroll viewport、一个 shadow-safe 或 edge-to-edge 父布局，viewport 高度 620px、overflow-y=auto、页面无横向溢出；仅 shadcn-typography 与 shadcn-chart 为文档视图。"},
+    {"kind": "test", "ref": "scripts/test-preview-overview-hierarchy.js", "note": "新增公共目录 93 路由、85 标准设备预览以及文档/Icon/Chart 例外的覆盖断言，并锁定唯一 component-preview 滚动合同。"},
+    {"kind": "build", "ref": "微信开发者工具 CLI build-npm（2026-07-20）", "note": "IDE server 已启动，但示例 touristappid 在权限阶段返回 code 10；miniprogram_npm 未生成，未手工复制或伪造。"}
+  ],
+  "rootCause": "PreviewDevice 的共享实现已存在，但目录路由、文档页和资源库的例外集合没有进入同一专项测试，导致截图审查无法快速区分真实组件内部滚动与预览基础设施遗漏。",
+  "decision": {
+    "outcome": "为共享 PreviewDevice viewport 添加 `data-preview-scroll-contract=component-preview` 标记；以目录作为唯一覆盖源，锁定 85 个标准组件概览必须落入该 viewport，且只有文档、未发布 Chart 与 Icon 资源库可以退出设备预览。",
+    "rationale": "运行时标记让浏览器与自动测试能读取同一真实滚动边界；目录覆盖把未来新增路由纳入门禁，避免通过组件私有 padding、页面滚动或第二个容器掩盖问题。",
+    "alternativesRejected": [
+      "把 ScrollArea 默认 320rpx 强行撑满 622px：会改变组件公开默认高度并混淆组件自身滚动与预览基础设施。",
+      "为每个组件复制一个 scroll-view 或 CSS 修补：会形成多套父容器语义并重现阴影裁切与浮层缩进问题。",
+      "只依赖截图人工判断：无法防止新增路由绕过共享 PreviewDevice。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-preview-overview-hierarchy.js", "AGENTS.md", "docs/UI_DESIGN_CONTRACT.md", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "feedback/records/pui-fb-0191-preview-device-route-scroll-coverage.json"],
+    "dependencies": ["PreviewDevice", "component catalog metadata", "ScrollArea H5 mirror", "preview route rendering"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-overview-hierarchy.js", "scripts/test-scroll-area.js"],
+    "commands": ["node scripts/test-preview-overview-hierarchy.js", "node scripts/test-scroll-area.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project _example"],
+    "browser": ["390x844 ScrollArea 外层和组件自身两层滚动均读取真实 overflow-y=auto；ScrollArea 内容高度 310px 大于可视 160px，证明截图的裁切是可滚动内容而非静态截断。", "逐路由审计 87 个候选路由：85 个标准概览全部只有一个 620px 共享 viewport，Typography 与 Chart 是 document，document scrollWidth 等于 clientWidth。"],
+    "deviceRisks": ["本轮只强化 H5 预览基础设施门禁；微信真机仍需用合法 AppID 检查消费者页面嵌套 scroll-view 的惯性、手势竞争、样式隔离和读屏。", "ScrollArea 的默认 320rpx、目标定位和 enhanced 行为未修改，仍需按其组件合同在真机复核。", "本轮微信 CLI 虽以外层 exit 0 返回，但输出的 AppID 权限步骤为 code 10；没有生成 miniprogram_npm，需提供合法 AppID 后重跑。"]
+  },
+  "ai": {
+    "summary": "标准组件概览必须共享唯一 PreviewDevice 内部滚动 viewport；组件自身的局部滚动不能被误判为预览容器缺失。",
+    "rules": [
+      "新增或迁移标准组件路由时，不得创建绕过 data-preview-scroll-contract=component-preview 的私有预览壳或页面级滚动路径。",
+      "先区分组件自身 scroll-view 与 PreviewDevice viewport：前者服从组件 height/slot 合同，后者固定负责 622px 设备内的预览滚动。",
+      "目录中的文档、未发布能力说明和资源库可以不用设备预览，但必须是显式例外，不能以空白或静态假 UI 冒充组件概览。",
+      "验证预览滚动时读取真实 overflow、clientHeight、scrollHeight 与 scrollTop；不要只凭 Props、截图裁切或状态文案判断。"
+    ],
+    "tags": ["preview-site", "preview-device", "scroll", "scroll-view", "route-coverage", "390px", "all-components"]
+  }
+}

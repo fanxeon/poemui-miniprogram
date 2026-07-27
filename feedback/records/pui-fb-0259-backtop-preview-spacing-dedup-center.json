@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0259",
+  "title": "BackTop 预览缺少内距且示例重复、FAB 未居中",
+  "scope": "component",
+  "components": ["back-top", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "BackTop 各分区应有稳定可读的预览内距，示例只展示有区分度的内容，形状和主题示例的 FAB 应在舞台中居中。",
+  "environment": {
+    "surfaces": ["h5-preview", "BackTop showcase", "PreviewDevice"],
+    "platforms": ["browser", "wechat-miniprogram-source"],
+    "viewports": ["390x844 browser", "desktop browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/back-top，并在 390px 预览中查看四个分区。",
+    "修复前每个分区都生成同一套十行 Cell，展示根没有自己的共享内距；形状与主题分区的 FAB 仍贴在舞台右下角。",
+    "在开启阴影或窄屏时，重复列表进一步压缩可视空间，用户无法快速区分每个示例真正验证的 Props。"
+  ],
+  "expected": "每个舞台都消费统一 PreviewDevice 内距；基础用法保留真实长滚动，其余分区精简或移除重复滚动内容，形状/主题 FAB 在各自舞台中心展示并保持 fixed/static 语义。",
+  "actual": "预览内距不足导致 Cell 贴近舞台边缘，四个区重复堆叠十行列表，FAB 的右下定位让形状与主题示例看起来没有居中。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 BackTop 预览反馈", "note": "用户指出预览区没有 padding、有冗余重复示例且没有居中。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "backTopPreviewMarkup 现在仅基础用法生成完整十行列表，阈值为四行 compact，形状/主题使用 is-center-stage 与 center-copy。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "pui-back-top-preview__frame 消费 --pui-preview-device-padding；center-stage 使用 grid 居中，fixed/static 分别保留真实定位。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/back-top · 2026-07-23 · 390x844", "note": "基础与阈值舞台计算 padding 为 14px；真实局部 scrollTop 268 点击 FAB 后回到 0 并隐藏；形状/主题无滚动容器且 FAB 位于舞台中心；document/body 为 375/375。"}
+  ],
+  "rootCause": "预览模板把长列表作为所有分区的默认内容，没有把间距归一到舞台根，也没有为仅展示外观的样例建立独立居中布局语义。",
+  "decision": {
+    "outcome": "由 BackTop 预览舞台统一消费共享安全内距；仅基础用法保留完整局部滚动，阈值用精简列表，外观/主题样例改为居中 FAB 舞台，并让主题与定位样例真实使用 fixed/static 两种定位。",
+    "rationale": "示例应优先表达当前分区的差异，而不是重复相同内容；共享内距能让阴影、Cell 和 390px 预览保持稳定边界，居中舞台能清楚展示形状与主题。",
+    "alternativesRejected": [
+      "给每个 Cell 私有增加 margin：会重复预览间距规则并无法修复外观样例的定位语义。",
+      "删除所有滚动内容：会失去基础用法真实 scrollTop 与回顶闭环。",
+      "继续右下定位并只调整 transform：不能让展示意图与 fixed/static 差异清晰可读。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-back-top.js", "docs/components/BACKTOP.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["PreviewDevice shared padding", "PUI FAB mirror", "BackTop local scroll runtime"]
+  },
+  "verification": {
+    "tests": ["scripts/test-back-top.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["390x844 真实 BackTop 路由：基础/阈值舞台 padding=14px，形状/主题中心舞台无重复列表，真实滚动与回顶闭环通过，document/body 无横向溢出。"],
+    "deviceRisks": ["本轮未改小程序组件四件套；合法 AppID 真机仍需复核预览外不适用的 fixed/static、rpx 内距、样式隔离、FAB 命中区和系统低动效。"]
+  },
+  "ai": {
+    "summary": "预览分区必须用共享内距和有区分度的样例表达 Props，外观示例不能复制长列表或沿用错误定位。",
+    "rules": [
+      "每个普通预览舞台消费共享 PreviewDevice 内距，组件内容不得贴边或重复私有 padding。",
+      "真实交互长列表只保留在需要验证滚动的基础用法，其他分区应精简到能表达当前差异。",
+      "仅展示形状/主题的浮动组件使用独立居中舞台；fixed/static 差异必须由真实定位和可见几何表达。"
+    ],
+    "tags": ["back-top", "preview-site", "spacing", "deduplication", "centered", "390px"]
+  }
+}

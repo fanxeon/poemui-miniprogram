@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0091",
+  "title": "CheckboxGroup 缺少真实父子状态与发布入口",
+  "scope": "component",
+  "components": ["checkbox", "checkbox-group", "preview-site", "example", "npm-dist"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Checkbox 的组合、全选、半选、最大选择数和组级门禁必须由真实 CheckboxGroup 承担，而不是演示层手工拼状态。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844 browser", "351px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 checkbox 目录、index.js、metadata、预览、示例与 miniprogram_dist，发现没有可安装的 checkbox-group 组件。",
+    "旧官网组合仅在演示层拼接多个 Checkbox，无法证明原生 relation、受控数组、max、组级 disabled/readonly 或 checkAll。",
+    "对照 TDesign 1.15.3 CheckboxGroup 文档和源码，确认组合能力应作为真实父组件发布。"
+  ],
+  "expected": "公开 checkbox/checkbox-group 安装路径提供统一数组所有权、options/keys、max、组级继承、checkAll 和单一 change，子项通过 relation 与真实父级同步。",
+  "actual": "没有真实 Group，组合状态只能在 H5 或业务页面重复实现，无法保证小程序、官网、示例和安装产物一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权共有组件按 TDesign 清单逐个完成全部真实实现与验收。"},
+    {"kind": "file", "ref": "checkbox/checkbox-group.js", "note": "新增真实 Group，提供11 Props、1 change Event、1 default Slot、0 Methods，并通过 descendant relation 同步子项。"},
+    {"kind": "file", "ref": "checkbox/checkbox-group.wxml", "note": "options 数据入口与 default Slot 组合都渲染真实 pui-checkbox，非静态占位。"},
+    {"kind": "file", "ref": "index.js", "note": "包索引和 miniprogram_dist 暴露 poemui-miniprogram/checkbox/checkbox-group 安装路径。"},
+    {"kind": "test", "ref": "scripts/test-checkbox.js", "note": "专项执行 relation、typed raw values、unique、max、checkAll、disabled selected 保留、受控/非受控和退控连续性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=checkbox-v7#/components/checkbox", "note": "混合组初始值为[0,false]；全选后为[0,false,空字符串]，再次取消只保留 disabled 的 false，证明真实父级状态和原始类型。"}
+  ],
+  "rootCause": "旧版本把多选组合当作演示案例，没有把父子关系、数组所有权和继承规则定义为发布组件合同。",
+  "decision": {
+    "outcome": "在 checkbox 包内新增 sibling CheckboxGroup，并同步 index、metadata、API、H5、示例、dist 和测试；Group 固定11 Props、1 Event、1 Slot、0 Methods。",
+    "rationale": "真实父组件让 options 数据入口和 Slot 子项共用一套状态机，也与 PoemUI 单包承载父子能力的既有发布策略一致。",
+    "alternativesRejected": [
+      "只在 H5 增加组合 helper 会继续让小程序安装者重复实现。",
+      "把数组和 max 塞回单个 Checkbox 会混淆叶子与集合所有权。",
+      "另建顶层 checkbox-group 包会破坏当前 checkbox 子路径和发布分组。"
+    ]
+  },
+  "impact": {
+    "files": ["checkbox/checkbox-group.js", "checkbox/checkbox-group.json", "checkbox/checkbox-group.wxml", "checkbox/checkbox-group.wxss", "checkbox/checkbox.js", "index.js", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/CHECKBOX.md", "_example/miniprogram/pages/components/index.json", "_example/miniprogram/pages/components/index.wxml", "scripts/test-checkbox.js"],
+    "dependencies": ["pui-checkbox", "component relations", "wx://form-field"]
+  },
+  "verification": {
+    "tests": ["scripts/test-checkbox.js", "scripts/check-package.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "纵向、横向、全选/半选和状态演示均通过共享 Group 状态运行，点击后 checked、indeterminate 与数组值同步。",
+      "max、disabled selected 保留、组级 readonly/disabled 和子项覆盖均由状态机专项锁定。",
+      "Group API 完整展示11 Props、1 Event、1 Slot，所有单元格自然换行且无 ellipsis。"
+    ],
+    "deviceRisks": ["微信 relation linked/unlinked 时序、options 与 Slot 混用、form-field 数组序列化和组级属性传播仍需合法 AppID 真机复核。"]
+  },
+  "ai": {
+    "summary": "多选组合必须调用真实 CheckboxGroup，不得在演示或业务层复制父子状态机。",
+    "rules": [
+      "CheckboxGroup value/defaultValue 必须保留原始标量类型并去重，禁止一律 String 化。",
+      "全选取消时必须保留已选 disabled 项，max 必须阻断新增而不删除已有值。",
+      "组级 disabled/readonly/borderless 只在子项未显式覆盖时继承。",
+      "options 和 default Slot 必须共用同一父级状态所有权。"
+    ],
+    "tags": ["checkbox-group", "composition", "relation", "raw-value", "max", "check-all"]
+  }
+}

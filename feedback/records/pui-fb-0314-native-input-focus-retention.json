@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0314",
+  "title": "原生 Input 与 Textarea 聚焦后立即丢失焦点",
+  "scope": "component",
+  "components": ["input", "textarea", "search", "combobox", "miniprogram"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "小程序中的所有文字输入入口在用户点击聚焦后必须保持焦点和键盘，直到用户实际失焦或显式调用 blur。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-home", "miniprogram-component-page"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在任意使用 pui-input 或 pui-textarea 的小程序页面点击原生输入控件。",
+    "原生 bindfocus 将 focused 写为 true 后立即调用 syncState，旧逻辑随后将 inputFocus 重新计算为 false。",
+    "WXML 的 focus 属性被回写为 false，导致原生控件立刻触发 blur，Search 和 Combobox 使用的 pui-input 也一并受影响。"
+  ],
+  "expected": "原生焦点、focus() 方法焦点和外部 focus Prop 应共同驱动 WXML focus 绑定；手动聚焦必须持续到真实 bindblur、显式 blur() 或控件进入不可交互状态。",
+  "actual": "syncState 只计算外部 focus Prop 与 methodFocus，遗漏 focused；用户手动聚焦后下一帧被强制失焦。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务对话", "note": "用户报告所有 input 一聚焦即失焦。"},
+    {"kind": "file", "ref": "input/input.js", "note": "onFocus 写入 focused=true 后调用 syncState，旧 inputFocus 未包含 focused。"},
+    {"kind": "file", "ref": "textarea/textarea.js", "note": "Textarea 存在同一 focused 与 inputFocus 脱节路径。"},
+    {"kind": "file", "ref": "input/input.wxml", "note": "原生 input 的 focus 直接绑定 inputFocus，false 回写会请求平台失焦。"},
+    {"kind": "file", "ref": "textarea/textarea.wxml", "note": "原生 textarea 的 focus 直接绑定 inputFocus，存在同一平台边界。"}
+  ],
+  "rootCause": "状态同步把原生焦点状态 focused 仅用于 CSS class，却没有纳入 inputFocus；onFocus 的同步因此把真实焦点的 WXML 绑定改回 false。",
+  "decision": {
+    "outcome": "Input 与 Textarea 的 inputFocus 固定由 interactive && (外部 focus || methodFocus || focused) 推导；onBlur/blur()/不可交互状态负责清除 focused 或 methodFocus。",
+    "rationale": "同一个焦点真相源同时覆盖声明式、方法和用户原生交互，不改变公开 Props、Events、Methods 或 Search/Combobox 的组合合同。",
+    "alternativesRejected": [
+      "只在 Search 或 Combobox 页面增加焦点补丁，无法修复直接使用 Input、Textarea 与其他组合组件。",
+      "移除 focus WXML 绑定会破坏外部 focus Prop 和 focus()/blur() 方法合同。",
+      "仅删除 onFocus 内 syncState 会让外观和受控状态失去同步。"
+    ]
+  },
+  "impact": {
+    "files": ["input/input.js", "textarea/textarea.js", "miniprogram_dist/input/input.js", "miniprogram_dist/textarea/textarea.js", "miniprogram/miniprogram_npm/poemui-miniprogram/input/input.js", "miniprogram/miniprogram_npm/poemui-miniprogram/textarea/textarea.js", "scripts/test-input.js", "scripts/test-textarea.js", "docs/components/INPUT.md", "docs/components/TEXTAREA.md", "feedback/records/pui-fb-0314-native-input-focus-retention.json"],
+    "dependencies": ["PUI Input", "PUI Textarea", "PUI Search", "PUI Combobox", "微信原生 input/textarea"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input.js", "scripts/test-textarea.js", "scripts/test-search.js", "scripts/test-combobox.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js"],
+    "commands": ["node scripts/test-input.js", "node scripts/test-textarea.js", "node scripts/test-search.js", "node scripts/test-combobox.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具构建 npm 并在 390px 模拟器验证"],
+    "browser": ["2026-07-24：保持既有微信开发者工具 RC 2.02.2607161 窗口打开，通过工具菜单完成 npm 构建（297ms）并由热重载加载首页；源码、miniprogram_dist 与 miniprogram_npm 中的 Input/Textarea 修复文件 SHA-256 分别完全一致。"],
+    "deviceRisks": ["微信开发者工具无障碍输入注入无法稳定操作模拟器原生 input，因此连续键入的运行态验收仍需用户在当前 390px 模拟器或真机手动确认。", "iOS/Android 真机仍需确认中文输入法候选、键盘高度、readonly/loading 切换与连续输入不会改变焦点。"]
+  },
+  "ai": {
+    "summary": "小程序原生输入组件的 focus 绑定必须覆盖用户真实焦点、外部 Prop 与方法调用三种来源，不能在 bindfocus 后同步回写 false。",
+    "rules": [
+      "任何维护 inputFocus 的 syncState 都必须在 manual bindfocus 后保持 true，直到真实 blur 或显式释放。",
+      "Search、Combobox 等使用 pui-input 的组合组件应复用核心修复，不要另建页面级焦点状态机。",
+      "修复焦点链时同时回归 Input 与 Textarea，并保留外部 focus Prop、focus()/blur() 与不可交互门禁。"
+    ],
+    "tags": ["input", "textarea", "focus", "keyboard", "miniprogram", "regression"]
+  }
+}

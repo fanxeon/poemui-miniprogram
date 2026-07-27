@@ -1,0 +1,138 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0018",
+  "title": "标准组件概览混入工程诊断与重复标签",
+  "scope": "global",
+  "components": [
+    "preview-site",
+    "dialog",
+    "popup",
+    "sheet",
+    "popover",
+    "action-sheet",
+    "dropdown-menu",
+    "overlay"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "标准组件的概览只保留稳定、可操作、用户能理解的真实组件预览，不显示 native mirror、方法名、事件链、受控状态、黑底诊断卡、重复组件标题或没有职责的底色容器；浮层关闭后仍能重新打开。",
+  "environment": {
+    "surfaces": [
+      "h5-preview",
+      "standard-component-overview"
+    ],
+    "platforms": [
+      "browser"
+    ],
+    "viewports": [
+      "390x844",
+      "desktop"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "逐一打开 91 个走标准组件信息架构的路由并读取 PreviewDevice 内的演示根。",
+    "初次扫描发现 68 个路由含 pui-showcase-label，69 个路由出现 native mirror、controlled/uncontrolled、open()/close()、source/layout/state 等工程文案，52 个路由含 methods/event/runtime/platform/meta 或直接诊断节点。",
+    "深色模式逐层读取 Dialog 概览的 stage/canvas/host：Dialog 的激活 Stage 在真实 scrim 之外仍叠加半透明底，其他浮层和导航演示也存在只负责布局却带底色、边框或阴影的根。",
+    "Chart 与 Typography 没有 PreviewDevice，因为它们是明确的文档型能力，不应伪装成组件手机预览。"
+  ],
+  "expected": "概览实时 DOM 只包含组件本体、真实 PUI 触发入口和必要的可见交互结果；工程诊断进入 API 或 PROP。纯布局 stage/canvas/host/frame/viewport 必须透明，实际组件、scrim 和浮层才拥有 Surface；真实浮层遮罩铺满设备 viewport，不能表现成局部矩形底板。所有浮层关闭后都能通过用户文案的 PUI Button 再次打开，页面在 390px 下不溢出。",
+  "actual": "旧预览把组件名、native mirror、受控状态、方法按钮排、事件链、runtime/platform/meta 与状态 Cell 一起堆在组件下方，形成黑底浮窗、面板套面板和过度工程化文案；即使诊断节点删除，部分纯布局 Stage/Canvas/Host 仍有独立底色、边框和阴影。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-18 conversation screenshots",
+      "note": "用户指出 Dialog 下方黑底和诊断浮窗过度工程化、内容被 text-cut，并要求同类问题全局检查。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "390x844 自动遍历 91 个标准路由；修复前为 68 个重复标签、69 个工程文案路由、52 个诊断 class，修复后这三项均为 0，标准演示根均带 component-only 合同且页面横向溢出为 0。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-overview-hierarchy.js",
+      "note": "专项合同锁定 PreviewDevice 必须调用 component-only 渲染器、诊断节点必须 remove 而非 CSS 隐藏、概览直接挂载设备、纯布局根透明、浮层保留 PUI 重开入口，且设计文档同步存在。"
+    }
+  ],
+  "rootCause": "各组件 Showcase 逐步承担了开发调试、事件验证、方法调用和用户演示四种职责，标准概览又直接挂载原始 Showcase HTML，缺少统一的信息层级边界；历史 stage/canvas/host 同时承担布局和装饰职责，导致删除诊断后仍残留多层可见底色。",
+  "decision": {
+    "outcome": "新增统一 renderOverviewComponentPreview：先在离线 template 中删除 showcase label、methods/event/runtime/platform/meta、直接状态 Cell、after/boundary/summary/controls 与已知反馈节点，再转换 Slot、平台与原始值测试等实现文案，最后标记 data-preview-contract=component-only。概览 Stage 直接挂载 PreviewDevice；Dialog、Popup、Sheet、Popover、ActionSheet、已退役组件、DropdownMenu、Overlay 等纯布局 stage/canvas/host/frame/viewport 统一透明无边框无阴影，演示根铺满 PreviewDevice viewport，真实组件、scrim 和浮层保留自身 Surface。",
+    "rationale": "统一边界可以一次覆盖全部标准组件并防止新 Showcase 把调试面板泄漏回概览；在进入实时 DOM 前删除比 CSS 隐藏更符合可访问性和信息层级，独立真实触发入口又保证用户链路完整。",
+    "alternativesRejected": [
+      "逐页用 CSS display:none 隐藏诊断节点：节点仍污染可访问树，且新增组件容易漏网。",
+      "把原始 Showcase 整体重写成静态截图：会丢失真实输入、选择、开合和状态变化。",
+      "删除所有方法栏但不补触发入口：浮层关闭后会形成空预览，用户无法继续操作。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "scripts/test-preview-overview-hierarchy.js",
+      "package.json",
+      "AGENTS.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": [
+      "PUI-FB-0011",
+      "PUI-FB-0013",
+      "PUI-FB-0014",
+      "PUI-FB-0015"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-preview-overview-hierarchy.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check"
+    ],
+    "browser": [
+      "390x844 遍历 91 个标准路由：重复标签、工程术语、诊断 class、空演示根与页面横向溢出均按合同复核；Chart/Typography 作为文档路由单独排除。",
+      "桌面深色遍历当前 99 条目录路由：89 个交互页均无外层 preview-canvas，命中的 22 个布局根全部透明、无边框和阴影；设备与 viewport 均为 #09090b、622px 且横向溢出为 0。",
+      "概览/API/PROP 切换继续验证 Tabs 和二级操作行固定坐标，四项外观刷新后持久化并在验收结束恢复浅色全关。"
+    ],
+    "deviceRisks": [
+      "本次修改集中在 H5 官网信息层级，不改变原生组件 API 与 WXML；微信真机交互风险不增加。",
+      "组件消费者传入的极端自定义 Slot 文案和第三方 generic 内容不经过官网固定样例归一化，仍需真实业务页面自行保证可读性。"
+    ]
+  },
+  "ai": {
+    "summary": "标准组件概览只能挂载 component-only 演示结构；工程诊断进入 API/PROP，浮层必须保留真实重开入口。",
+    "rules": [
+      "标准组件概览必须调用 renderOverviewComponentPreview，禁止直接挂载 renderComponentPreview 的原始 Showcase。",
+      "showcase label、methods/event/runtime/platform/meta、直接诊断 Cell 和事件反馈必须在进入实时 DOM 前删除，禁止仅用 CSS 或 text-cut 隐藏。",
+      "Slot、平台名、源码名、原始值与受控状态等实现词汇不得作为默认概览文案，应改成用户任务语言。",
+      "Chart、Typography 等文档型能力不强制套 PreviewDevice，也不得用空手机壳冒充组件预览。",
+      "PreviewDevice 内只负责定位、裁切或排列的 stage/canvas/host/frame/viewport 必须透明；真实组件、scrim 和浮层才可建立 Surface。",
+      "浮层的演示根和透明布局 Stage 必须铺满 PreviewDevice viewport，真实遮罩不得缩成组件附近的局部矩形底板。",
+      "每次新增或修改标准 Showcase 都要运行专项合同，并在 390px 全路由扫描空根、工程术语、诊断 class 和横向溢出。"
+    ],
+    "tags": [
+      "overview",
+      "component-only",
+      "preview-site",
+      "information-hierarchy",
+      "engineering-diagnostics",
+      "pui-composition",
+      "390px",
+      "floating-layer"
+    ]
+  }
+}

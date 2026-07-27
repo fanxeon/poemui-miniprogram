@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0262",
+  "title": "BackTop 两个预览列表的滚动内容不足",
+  "scope": "component",
+  "components": ["back-top", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "基础用法和显示阈值两个列表都要有足够长的真实 Cell 内容，使 BackTop 的滚动、阈值和回顶行为清楚可见。",
+  "environment": {
+    "surfaces": ["h5-preview", "BackTop showcase", "PreviewDevice"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/back-top 查看两个列表。",
+    "基础列表只有 10 个 Cell，阈值列表只有 4 个 Cell；后者仅产生很短的滚动距离。",
+    "在固定 260px 可视窗口内滚动，列表长度不足以稳定表达长页面回顶场景。"
+  ],
+  "expected": "保持两个列表和固定可视窗口不变，通过增加真实 Cell 数量形成明显滚动距离；基础列表承担完整长页，阈值列表也应能持续滚动。",
+  "actual": "列表项数量偏少，尤其阈值列表接近一屏，BackTop 的长页语义和滚动距离不充分。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 BackTop 列表长度反馈", "note": "用户要求把两个列表做长。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "基础列表由 10 项增加到 18 项，阈值列表由 4 项增加到 12 项；最后一项统一标记列表底部边界。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?refresh=bt8#/components/back-top · 2026-07-23 · 390x844", "note": "基础列表 18 项，clientHeight=260、scrollHeight=1234、最大滚动 974；阈值列表 12 项，scrollHeight=826、最大滚动 566。基础列表真实滚动到 900 后 FAB 显示，点击后回到 0；document/body 为 375/375。"}
+  ],
+  "rootCause": "上一轮为了减少重复示例，把阈值列表压缩到 4 项，过度削减了 BackTop 需要的长内容场景。",
+  "decision": {
+    "outcome": "固定可视窗口仍为 260px，基础列表使用 18 个 Cell，阈值列表使用 12 个 Cell；不通过增高 PreviewDevice 或复制更多分区制造长度。",
+    "rationale": "增加内容数量可以提供足够滚动距离，同时保持设备尺寸、Cell 中线、FAB 安全内距和两个分区结构稳定。",
+    "alternativesRejected": [
+      "直接把列表可视窗口继续增高：会挤压固定 PreviewDevice 中另一个列表，并降低两区同时可读性。",
+      "恢复更多 FAB/主题分区：不能增加单个真实列表的滚动距离，反而重新制造重复示例。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-back-top.js", "docs/components/BACKTOP.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0262-backtop-list-length.json"],
+    "dependencies": ["PUI Cell mirror", "BackTop local-scroll runtime", "PreviewDevice fixed viewport"]
+  },
+  "verification": {
+    "tests": ["scripts/test-back-top.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["390x844 下基础列表最大滚动 974px、阈值列表最大滚动 566px；基础列表从 scrollTop=900 点击 FAB 后真实回到 0，页面无横向溢出。"],
+    "deviceRisks": ["本轮只修改官网列表内容数量；合法 AppID 真机的 wx.pageScrollTo、fixed 安全区和触摸滚动风险不变。"]
+  },
+  "ai": {
+    "summary": "BackTop 预览需要足够长的真实列表内容，但可视窗口和 PreviewDevice 尺寸必须保持稳定。",
+    "rules": [
+      "减少重复示例不等于削短真实任务场景；BackTop 列表必须提供明显滚动距离。",
+      "列表需要变长时优先增加真实 Cell 数量，不通过增高设备或增加无关分区制造长度。",
+      "修改列表数量后必须实测 clientHeight、scrollHeight、最大滚动距离和点击回顶。"
+    ],
+    "tags": ["back-top", "preview-site", "cell", "long-list", "scroll-distance", "390px"]
+  }
+}

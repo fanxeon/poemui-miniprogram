@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0151",
+  "title": "Skeleton 公开面混入非结构化状态、事件与私有动效",
+  "scope": "component",
+  "components": ["skeleton", "preview-site", "usage-code", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "按在线 TDesign 与固定源码逐组件收敛 Skeleton，只保留真实可复用的结构占位能力，基础 WXML 保持最小且不以计时或内容回显伪造请求结果。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "usage-code", "api-reference", "example", "miniprogram-dist"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["375px PreviewDevice", "390px responsive contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "历史 Skeleton 公开 16 个 Props，混入头像开关、私有间距/时长、具名 placeholder Slot、show/hide 生命周期和 pulse/wave；基础 WXML 还展示 bind:show/bind:hide。",
+    "2026-07-20 已在线访问 TDesign Skeleton 页面、官方仓库和 npm 发布页，并读取 tdesign-miniprogram@1.15.3 的 miniprogram_dist/skeleton/{props.js,type.d.ts,skeleton.js,skeleton.wxml,skeleton.wxss}。固定包公开 animation/delay/loading/rowCol/theme 五项，无公开事件或方法。"
+  ],
+  "expected": "PoemUI 只保留七项闭环 Props：animation/delay/loading/rowCol/theme/ariaLabel/reduceMotion；一个 loading=false 时的默认 Slot；0 Events、0 Methods；基础 WXML 为 <pui-skeleton />。",
+  "actual": "历史 API 把预览诊断和不再需要的装饰控制暴露为组件合同，事件与内容出现容易被调用方误解为网络生命周期或成功结果。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已确认范围化自主验收授权：后续组件无需逐项确认，agent 在完整审计、浏览器、专项测试、文档、Ledger 和构建门禁后可自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/skeleton", "note": "2026-07-20 已访问官方 Skeleton 动态页，作为演示分区与结构占位语义来源。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "2026-07-20 已访问官方仓库；固定 npm 包用于可复现 Props、Slot、事件和方法判断。"},
+    {"kind": "file", "ref": "skeleton/skeleton.js", "note": "当前实现只声明七项 Props，内部 delay/交叉淡入不触发 triggerEvent。"},
+    {"kind": "test", "ref": "scripts/test-skeleton.js", "note": "专项合同锁定精确公开面、无事件、默认 Slot、动效边界、H5 分区、示例和生成产物。"}
+  ],
+  "rootCause": "历史实现将演示所需的视觉配置、内部阶段和错误的生命周期扩大为公共 API，未按真实 WXML、固定 TDesign 包和“结构占位不代表业务结果”的边界重新审计。",
+  "decision": {
+    "outcome": "收敛为七项 Props、一个默认 Slot、零 Events/Methods；rowCol 承担安全结构配置，loading 只由父级控制，固定 180ms/1ms 是内部视觉合同。",
+    "rationale": "Skeleton 的可复用责任是预示结构而非管理请求。全库 ariaLabel/reduceMotion 保留可访问性一致性，其余历史字段没有独立且必要的组件职责。",
+    "alternativesRejected": [
+      "保留 show/hide 会把占位显隐误导为网络请求生命周期。",
+      "保留 placeholder Slot 或 avatar 私有 Props 会把结构定制拆成重复入口。",
+      "在基础 WXML 继续列出 bind:* 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["skeleton/skeleton.js", "skeleton/skeleton.wxml", "skeleton/skeleton.wxss", "metadata/components.js", "metadata/shadcn.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/SKELETON.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-skeleton.js"],
+    "dependencies": ["theme behavior", "shared usage-code generator", "PUI Button", "PUI Cell", "PUI Tag"]
+  },
+  "verification": {
+    "tests": ["scripts/test-skeleton.js"],
+    "commands": ["2026-07-20 npm run feedback:generate && npm run feedback:check：通过（152 records）", "2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过；tarball 338658 bytes / 554 files / shasum c5e528a6a4a3dfe7a37cfd19882da3d44cb3ea46", "2026-07-20 微信 CLI build-npm：IDE server 启动后 touristappid 被拒绝为不存在的 AppID（code 10），未生成 miniprogram_npm、未冒充通过"],
+    "browser": ["真实 H5 点击“显示内容/重新显示占位”，父级 loading 真正回写；1000ms delay 等待、取消和完成均不闪出占位。", "真实操作 PUI Select、JSON 输入、低动效 Switch、重置、代码复制以及 light/dark、border/shadow/frost/large-radius/gradient；根保持透明，内容不伪造业务结果。"],
+    "deviceRisks": ["微信真机仍需以合法 AppID 确认 rpx、动画合成、复杂默认 Slot、样式隔离、读屏与系统低动效。", "本轮内置浏览器未提供独立 390px 页级视口改写接口；375px PreviewDevice 与响应式专项合同已覆盖，目标手机浏览器仍需最终确认。"]
+  },
+  "ai": {
+    "summary": "Skeleton 只能反映父级 loading 的内容轮廓，不能把内部计时、动效或默认内容可见当作业务成功。",
+    "rules": [
+      "先以在线 TDesign 页面、固定版本 npm 包和真实 WXML 三者交叉确定公开面。",
+      "基础 WXML 只保留最小调用；没有真实 Events 或 Methods 时不得为了演示添加 bind:* 或状态日志。",
+      "错误、空态、重试和成功反馈必须在 Skeleton 外部组合真实 PUI 组件。"
+    ],
+    "tags": ["skeleton", "tdesign", "api-contract", "no-fake-success", "usage-code"]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0372",
+  "title": "快速样式的粘性预览与 Tabs 下划线必须对齐真实轨道",
+  "scope": "component",
+  "components": ["style-utilities", "tabs", "scroll-area"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "快速样式页只保留粘性预览和无标题目录；Tabs 与预览都能随滚动保持可见，下划线准确落在当前项。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "pui-tabs", "pui-scroll-area"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/styles/index 并切换五个分类。",
+    "旧页面的尺寸分类没有预览；目录仍显示“全部样式”标题。",
+    "Tabs 把下划线作为横向轨道的绝对元素，且未启用 PUI Button 的 block 轨道；small Button 的默认最小宽压过 4.5 轨道，造成左侧空轨。"
+  ],
+  "expected": "五类都有真实预览，Tabs Header 和预览在唯一 ScrollArea 内粘住；目录没有额外标题，当前文字、点击区域与下划线始终重合。",
+  "actual": "尺寸分类可出现空白，目录额外占用标题空间；line 下划线与真实 Button 分属不同坐标/宽度约束，首项可能显成空位。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务对话与截图", "note": "用户指出首项空白、下划线位置错误，并要求 Tabs 与预览 sticky。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "五类均有预览；CellGroup 已移除标题与说明。"},
+    {"kind": "file", "ref": "tabs/tabs.wxml", "note": "Indicator 直接作为激活 pui-button 的子元素，不再作为横向 row 的独立绝对元素。"},
+    {"kind": "file", "ref": "tabs/tabs.wxml", "note": "每个 Tabs Button 使用 block，真实点击根严格填满 4.5 轨道；Indicator 以 Button 自身 50% 中心定位。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "锁定尺寸预览与无目录标题。"},
+    {"kind": "test", "ref": "scripts/test-tabs.js", "note": "锁定无坐标测量、激活 Button 内锚点和真实点击根的最小宽覆盖。"}
+  ],
+  "rootCause": "样式页只实现四类预览，且把目录分组标题留在 Tabs 内容内；Tabs 的 shared Indicator 与非 block 的 pui-button--small 分别采用 row 坐标和默认最小宽，导致左侧起点、视觉标签与下划线锚点不一致。",
+  "decision": {
+    "outcome": "补齐尺寸预览，移除目录标题；保留同一 ScrollArea 的 Tabs Header 与预览 sticky。line Indicator 直接放进激活 pui-button，并用 Button 的 block 能力让点击根填满当前轨道。",
+    "rationale": "预览必须覆盖每个可选分类；唯一 ScrollArea 保证用户滚动目录时始终能看到效果。下划线和标签共用同一个 Button 根后不再需要预测或测量横向 ScrollView 坐标。",
+    "alternativesRejected": [
+      "为尺寸分类保留空白或只显示文字不能提供样式效果。",
+      "保留“全部样式”标题会重新制造用户要求删除的 Tabs 内容标题区。",
+      "继续用 row 上的 left 值、百分比公式或 SelectorQuery 追踪下划线会让它再次脱离真实 Button 根。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/styles/index.wxml", "tabs/tabs.js", "scripts/test-miniprogram-style-utilities-page.js", "scripts/test-tabs.js", "docs/components/TABS.md", "docs/MINIPROGRAM_HOME.md"],
+    "dependencies": ["pui-tabs", "pui-cell-group", "pui-scroll-area"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabs.js", "scripts/test-miniprogram-style-utilities-page.js"],
+    "commands": ["node scripts/test-tabs.js", "node scripts/test-miniprogram-style-utilities-page.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["2026-07-25，微信开发者工具 Stable 2.01.2510290 的 iPhone 12/13 Pro 390px 模拟器：尺寸与背景分类可真实切换；尺寸显示三个尺寸/比例方块；当前项下划线分别正中“尺寸”和“背景”文字，第五项保持半露。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 ScrollView 横向惯性、系统低动效与不同基础库上的吸顶时序。"]
+  },
+  "ai": {
+    "summary": "样式页每个 Tab 必须有粘性预览，目录不另设标题；Tabs 下划线必须锚定真实激活 Button，而不是横向轨道坐标。",
+    "rules": [
+      "Tab 分类增加或保留时，必须同时提供对应预览，不能留下可点击空白分类。",
+      "Tabs 内容只允许预览和实际目录；不要恢复分类标题、说明、已选 class 或目录标题区。",
+      "粘性 Header 与粘性预览必须共享同一个 ScrollArea，不能增加第二个滚动容器。",
+      "Tabs 必须传入 PUI Button 的 block，不能靠外部 class 覆盖其 small 默认最小宽；line Indicator 直接从激活 Button 的中心定位，不计算 ScrollView 坐标。"
+    ],
+    "tags": ["style-utilities", "tabs", "sticky", "indicator", "miniprogram"]
+  }
+}

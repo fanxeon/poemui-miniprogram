@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0070",
+  "title": "CountDown 兼容别名、可变动效与生命周期事件扩张核心计时合同",
+  "scope": "component",
+  "components": ["count-down", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "CountDown 应以准确、可暂停和可恢复的计时为核心，公开 API 克制，基础用法最小，并让父级可以读取和控制真实剩余时间。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 count-down/count-down.js：15 个 Props 混入 finishText、customContent、pauseOnHidden、duration 和 easing，并重复公开 start/pause/reset 生命周期事件。",
+    "旧合同同时保留 restart/getRemaining 与 prefix/suffix slot，使同一计时任务存在重复方法、重复内容入口和组件私有动效策略。",
+    "对照 tdesign-miniprogram@1.15.3 的 CountDown 文档、props.js、type.d.ts、WXML、WXSS 和实现：核心为 time/format/theme/size/millisecond/autoStart/content/splitWithUnit、change/finish 及 start/pause/reset。"
+  ],
+  "expected": "CountDown 只公开准确计时、显示格式、主题尺寸、控制策略、内容组合、语义和低动效；change/finish 表达值变化与自然完成，方法不重复发布伪生命周期。",
+  "actual": "旧合同用多个别名、三个无独立信息量的生命周期事件和私有动效扩张 API，且 paused/autoStart 的持续策略边界不够清晰。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求逐组件参考 TDesign 收敛 API，并授权单组件完整门禁后自主验收连续推进。"},
+    {"kind": "file", "ref": "count-down/count-down.js", "note": "最终固定 11 Props、change/finish 两事件、一个默认 Slot和 start/pause/reset/getTime 四方法，使用 targetTime 与 Date.now 校正计时。"},
+    {"kind": "file", "ref": "count-down/count-down.wxml", "note": "default/round/square、三档尺寸、单位分隔与默认 Slot 均来自同一真实时间快照。"},
+    {"kind": "test", "ref": "scripts/test-count-down.js", "note": "专项锁定 11 Props、2 Events、1 Slot、4 Methods、暂停恢复、自然完成顺序、0/false/空字符串及固定低动效。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/count-down", "note": "实际暂停保留剩余时间，getTime 返回同值；3 秒计时的最后一个 change 先于唯一 finish。"}
+  ],
+  "rootCause": "旧设计没有先固定 CountDown 是值驱动计时器，因而把展示文案、内容插槽、页面生命周期、动效和调用动作都分别扩张为顶层 API。",
+  "decision": {
+    "outcome": "公开合同收敛为 11 Props、2 Events、1 default Slot、4 Methods；删除 finishText/customContent/pauseOnHidden/duration/easing、start/pause/reset Events、restart/getRemaining 和 prefix/suffix Slots。",
+    "rationale": "time 与 targetTime 是唯一计时真相源；start/pause/reset 是命令，change/finish 才是父级需要观察的状态；动效固定 500ms并由 reduceMotion 压缩为1ms。",
+    "alternativesRejected": [
+      "机械复制 TDesign 的全部实现细节会丢失 PoemUI 的 paused 受控策略、ARIA 和低动效合同。",
+      "保留 start/pause/reset Events 只会重复调用者已知的命令，不提供独立业务事实。",
+      "保留 finishText 或 prefix/suffix Slots 会与 default Slot、content 和外层组合重复。"
+    ]
+  },
+  "impact": {
+    "files": ["count-down/count-down.js", "count-down/count-down.json", "count-down/count-down.wxml", "count-down/count-down.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/COUNTDOWN.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-count-down.js"],
+    "dependencies": ["pui-button", "pui-icon", "theme behavior"]
+  },
+  "verification": {
+    "tests": ["scripts/test-count-down.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "pause() 冻结显示与 getTime() 返回值，start() 从同一剩余值恢复；reset() 回到当前 time。",
+      "autoStart=false 不会中断已经运行的计时；paused=true 冻结，false 只恢复由 paused 造成的暂停。",
+      "time=3000、autoStart=false 时先保持 3 秒，start 后自然完成，最后 change 先于唯一 finish。",
+      "重置恢复源码 time=0，显示 00:00:00，start 禁用且不伪造 finish。"
+    ],
+    "deviceRisks": [
+      "微信后台定时器节流、页面切换后的 Date.now 校正、rpx 字体回流、辅助技术和系统低动效仍需合法 AppID 真机复核。",
+      "旧消费者若使用已删除 Props、事件、方法或 prefix/suffix Slots，需要迁移到 default Slot、外层布局与 change/finish。"
+    ]
+  },
+  "ai": {
+    "summary": "CountDown 是 targetTime 驱动的值计时器；命令用方法，业务观察只用 change/finish。",
+    "rules": [
+      "禁止恢复 finishText/customContent/pauseOnHidden/duration/easing 或 start/pause/reset Events。",
+      "autoStart 只决定初始化、time 更新和 reset 后是否启动，不能被当成持续运行开关。",
+      "paused=false 只能恢复由 paused=true 造成的暂停，不能让初始 autoStart=false 的实例自行启动。",
+      "自然归零必须先发布最后 change，再且仅再发布一次 finish；初始化或 reset 到0不得伪造 finish。"
+    ],
+    "tags": ["count-down", "api", "tdesign", "timer", "controlled-state"]
+  }
+}

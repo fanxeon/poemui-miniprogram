@@ -1,0 +1,79 @@
+.pui-notice-bar {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  max-height: 0;
+  min-height: 0;
+  align-items: center;
+  gap: var(--pui-space-xs);
+  overflow: hidden;
+  padding: 0 var(--pui-space-sm);
+  color: var(--pui-text-primary);
+  background: var(--pui-bg-muted);
+  border-radius: var(--pui-radius-large);
+  opacity: 0;
+  transform: translateY(-8rpx);
+  transition: max-height var(--pui-notice-duration, var(--pui-duration-normal)) var(--pui-ease-standard), min-height var(--pui-notice-duration, var(--pui-duration-normal)) var(--pui-ease-standard), padding var(--pui-notice-duration, var(--pui-duration-normal)) var(--pui-ease-standard), opacity var(--pui-notice-duration, var(--pui-duration-normal)) var(--pui-ease-standard), transform var(--pui-notice-duration, var(--pui-duration-normal)) var(--pui-ease-standard);
+}
+
+.pui-notice-bar--active {
+  max-height: 240rpx;
+  min-height: 80rpx;
+  padding-top: var(--pui-space-xs);
+  padding-bottom: var(--pui-space-xs);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pui-notice-bar--info { color: var(--pui-color-brand); }
+.pui-notice-bar--success { color: var(--pui-color-success); }
+.pui-notice-bar--warning { color: var(--pui-color-warning); }
+.pui-notice-bar--error { color: var(--pui-color-danger); }
+
+.pui-notice-bar__icon,
+.pui-notice-bar__operation {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.pui-notice-bar__icon { width: 44rpx; }
+.pui-notice-bar__operation { font-weight: 700; }
+.pui-notice-bar__icon pui-button,
+.pui-notice-bar__operation pui-button { display: block; }
+
+.pui-notice-bar__viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pui-notice-bar__text {
+  display: inline-block;
+  min-width: 100%;
+  color: inherit;
+  font-size: var(--pui-font-size-small);
+  line-height: var(--pui-line-height-small);
+  white-space: nowrap;
+  transition-property: transform;
+  transition-timing-function: linear;
+  will-change: transform;
+}
+
+.pui-notice-bar__viewport--vertical,
+.pui-notice-bar__swiper { height: 40rpx; }
+.pui-notice-bar__vertical-text {
+  overflow: hidden;
+  color: inherit;
+  font-size: var(--pui-font-size-small);
+  line-height: 40rpx;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pui-notice-bar--reduced-motion .pui-notice-bar__text {
+  transition-duration: 1ms !important;
+  transform: translate3d(0, 0, 0) !important;
+  will-change: auto;
+}

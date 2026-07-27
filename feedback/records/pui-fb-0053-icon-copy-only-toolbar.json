@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0053",
+  "title": "Icon 独立资源页隐藏复制并泄漏无效选择模式",
+  "scope": "component",
+  "components": ["icon", "preview-site", "button"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Icon 独立资源页仍能就近复制当前真实 WXML，但不显示不适用的元素选择、机型、刷新或重置控件，390px 保持紧凑。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-overview", "clipboard"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Icon 概览，#componentCopyAction 已存在且 aria-hidden=false，但父 previewUtilityToolbar 因 Icon 不支持元素选择而 hidden，用户无法点击复制。",
+    "开放工具栏后在 390px 截图，preview-mode-mount 虽带 hidden，display:flex 仍覆盖浏览器 hidden 默认规则，常规/选择元素两个无效按钮泄漏。",
+    "隐藏无效模式后测量移动工具栏，仍使用双行 88px 最小高度，复制按钮下面产生一整行空白。"
+  ],
+  "expected": "Icon 概览显示唯一的 PUI Copy IconButton，复制当前 name/非默认 Props 的同源 WXML；无效模式和设备操作不可见，390px 工具栏为单行 44px 且页面无横向溢出。",
+  "actual": "旧页面完全隐藏复制；初次特例修复又因 hidden CSS 和移动双行高度泄漏无效按钮与多余空白。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    { "kind": "browser", "ref": "http://127.0.0.1:4179/#/icons", "note": "选择 error-circle 后真实点击复制进入 success，aria-label 变为已复制、aria-live 播报；390px 最终 mode display=none、copy-only 工具栏 44px、document 375/375。" },
+    { "kind": "file", "ref": "preview/app.js", "note": "Icon overview 单独使用 copy-only 模式；机型/刷新/重置只服务 standardOverview，copy 继续读取 makeUsageCode。" },
+    { "kind": "file", "ref": "preview/styles.css", "note": "preview-mode-mount[hidden] 强制退出布局，390px copy-only 工具栏恢复普通单行语义高度。" },
+    { "kind": "test", "ref": "scripts/test-icon.js", "note": "专项合同锁定 Icon copy-only 分支、hidden 规则与移动单行高度。" },
+    { "kind": "test", "ref": "scripts/test-design-contracts.js", "note": "全局信息架构合同更新为 standardOverview，防止 Icon 特例让其他组件丢失设备/刷新/重置。" }
+  ],
+  "rootCause": "预览工具栏把元素选择能力和所有操作绑在同一个父级显隐条件上；CSS 又显式设置 hidden mount 的 display，移动高度固定假设始终有左右两行。",
+  "decision": {
+    "outcome": "Icon 概览新增 copy-only 工具栏模式：只让同源 Copy 可见，设备/刷新/重置与选择模式退出；补齐 hidden CSS，并在 700px 以下使用 44px 单行高度。",
+    "rationale": "复制是所有组件调用任务，元素选择和设备模拟却不适用于独立资源文档；拆开能力显隐可以减少误导并保留统一 PUI Copy 反馈。",
+    "alternativesRejected": [
+      "把 Icon 改回标准 PreviewDevice 会破坏 200 资源筛选的文档任务和既有独立路由。",
+      "只在属性页保留复制会让概览选择资源后的主任务多一次视图切换。",
+      "显示禁用的常规/选择元素或机型按钮仍会暗示存在不可用能力。",
+      "保留 88px 空工具栏会浪费 390px 首屏空间并弱化分区层级。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-icon.js", "scripts/test-design-contracts.js", "docs/components/ICON.md"],
+    "dependencies": ["iconButtonSample", "makeUsageCode", "writePreviewClipboard", "preview utility toolbar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-design-contracts.js", "scripts/test-layout-contracts.js", "scripts/test-preview-code-copy.js"],
+    "commands": ["node scripts/test-icon.js", "node scripts/test-design-contracts.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "桌面 error-circle 资源选择后 Copy 可访问名称唯一且可见；点击后 copyState=success、aria-label=已复制当前组件效果代码、aria-live=当前组件效果代码已复制。",
+      "390px viewport 中 document/body/main/shell 均无横向溢出，Icon grid 为两列、资源工具 349/349；无效模式 display=none，copy-only 工具栏从 88px 收敛为 44px。",
+      "深色、阴影、毛玻璃、大圆角、边框关闭和渐变开启时复制入口保持可见，外观菜单 Esc 关闭后焦点恢复；验收后恢复标准浅色配置。"
+    ],
+    "deviceRisks": ["局域网 HTTP 复制依赖 document.execCommand 回退；自动化已验证真实 success 反馈，最终剪贴板粘贴内容与移动浏览器辅助技术仍需目标浏览器人工复核。"]
+  },
+  "ai": {
+    "summary": "Icon 独立资源页只显示同源复制，不泄漏不适用的选择模式、设备或刷新操作。",
+    "rules": [
+      "Icon overview 使用 copy-only 工具栏；Copy 继续调用 makeUsageCode，禁止维护第二份 WXML。",
+      "元素选择、机型、刷新和重置不得在 Icon 资源页出现或仅以 disabled 伪装。",
+      "带 hidden 的 mount 必须有明确 display:none 合同，不能被 flex/grid 基础规则覆盖。",
+      "390px copy-only 工具栏固定单行语义高度，不保留双行空白。"
+    ],
+    "tags": ["icon", "preview-toolbar", "copy", "hidden", "390px", "pui-button", "single-source"]
+  }
+}

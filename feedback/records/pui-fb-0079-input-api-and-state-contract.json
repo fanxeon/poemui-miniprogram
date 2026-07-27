@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0079",
+  "title": "Input 公开合同被键盘别名、重复事件和调试方法扩张",
+  "scope": "component",
+  "components": ["input", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Input 应参考 TDesign 的单行输入主干，只暴露真实受控、长度、状态、组合、键盘和辅助能力；基础用法零 bind，完整事件只进 API Events。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["393px PreviewDevice", "375px PreviewDevice", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Input 合同，password/error/invalid/errorMessage 与 type/status/tips 重复，customLabel/customPrefix/customSuffix/customExtra 与 Slot 并行，input/change 和 setValue/reset/getState 又提供多条写入路径。",
+    "旧实现对 value 的空值判定不足以稳定表达0、false、空字符串以及受控转非受控的连续性。",
+    "对照 TDesign Miniprogram 1.15.3 Input 官方文档、GitHub 组件源码与安装包 props/type/WXML/WXSS，确认核心是 value/defaultValue、字符限制、clear、status/tips、键盘和 Slot，不是平行别名和调试方法。"
+  ],
+  "expected": "Input 使用单一值合同、Unicode 安全限制、四类语义状态、六类 Slot、五个必要事件和四个读写方法；disabled/readonly/loading 真实阻断写入。",
+  "actual": "旧合同同时提供多套状态、Slot 开关、事件和方法，扩大 API 且容易让 AI 生成重复 bind 和冲突值路径。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求按 TDesign 逐组件收敛 API、基础示例零 bind，并授权后续队列自主验收。"},
+    {"kind": "file", "ref": "input/input.js", "note": "最终固定29 Props、5 Events、6 Slots、4 Methods，受控边界和加权截断由同一状态机处理。"},
+    {"kind": "file", "ref": "input/input.wxml", "note": "只保留一个原生 input，清空、图标和 loading 分别组合 PUI Button/Icon/Loading。"},
+    {"kind": "test", "ref": "scripts/test-input.js", "note": "专项锁定29/5/6/4、0/false/空字符串、受控退出、clear→change、emoji 安全与三类门禁。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/input", "note": "真实输入、回车、清空、受控回写、退出受控、maxcharacter=5 和三类锁定状态均按合同生效。"}
+  ],
+  "rootCause": "旧设计没有先固定单行输入的值与原生键盘根，随后把别名、调试状态、Slot Boolean 和便利方法不断累加到公开 API。",
+  "decision": {
+    "outcome": "收敛为29 Props、5 Events、6 Slots、4 Methods；type 直接包含 password，status 固定 default/success/warning/error，Slot 用 slot 哨兵值启用，普通输入只发 change，清空固定 clear→change。",
+    "rationale": "输入组件的主干是值、键盘、长度、状态和组合；一次用户输入不应同时迫使消费者处理 input/change 两条语义相同的路径。",
+    "alternativesRejected": [
+      "机械复制 TDesign 全部平台属性会继续扩张低频 API；本轮只保留 PoemUI 真实支持且能验证的常用键盘参数。",
+      "保留 password/error/invalid 别名会让同一状态出现多种冲突组合。",
+      "保留 setValue/reset/getState 会绕过 value/defaultValue 和父级回写，不符合受控合同。"
+    ]
+  },
+  "impact": {
+    "files": ["input/input.js", "input/input.wxml", "input/input.wxss", "input/input.json", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/INPUT.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-input.js"],
+    "dependencies": ["pui-button", "pui-icon", "pui-loading", "theme behavior", "native input"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run precheck", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "value=0/false/空字符串均保持受控；value 从12切为 null 后保留最后已渲染值。",
+      "AB中😀C 在 maxcharacter=5 时安全得到 AB中和4/5；清空显示 clear→change，Enter 发出 enter 与 confirmType=done。",
+      "disabled、readonly、loading 均使真实 input 失去写入能力，loading 同时标记 aria-busy。"
+    ],
+    "deviceRisks": [
+      "微信软键盘的 cursorSpacing、adjustPosition、holdKeyboard、confirmHold、confirmType 和 focus 时序仍需合法 AppID 真机复核。",
+      "输入法组合文字、emoji 和代理对的系统差异，以及读屏对 label/required/tips Slot 的朗读顺序需真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Input 只围绕单一值合同、字符限制、状态、Slot 和原生键盘建模。",
+    "rules": [
+      "value 只有 null/未传才是非受控；0、false 和空字符串都必须保留。",
+      "普通输入只发 change，清空顺序固定 clear→change，基础用法禁止绑定任何 bind。",
+      "maxcharacter 优先于 maxlength，必须使用 Unicode 安全截断，禁止切断 emoji 代理对。",
+      "disabled/readonly/loading 都阻断写入、清空和 focus()；禁止伪造事件或成功。"
+    ],
+    "tags": ["input", "api", "tdesign", "controlled-state", "unicode", "keyboard", "slots"]
+  }
+}

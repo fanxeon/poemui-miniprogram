@@ -1,0 +1,85 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0362",
+  "title": "Alert 图标与正文使用紧凑间距导致信息层级拥挤",
+  "scope": "component",
+  "components": ["alert", "preview-site", "miniprogram-component-pages"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Alert 的图标与正文要有清晰呼吸感，同时保持外壳左内距和关闭操作轨道不变。",
+  "environment": {
+    "surfaces": ["alert", "miniprogram-alert-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram-webview", "wechat-devtools", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 390px 微信开发者工具中打开 Alert 独立页。",
+    "默认 Alert 将 Icon 与正文都使用 small（12rpx）间距，标题和两行说明紧贴图标，阅读节奏拥挤。",
+    "外壳左内距为 large（28rpx），因此问题只在 Icon 到正文的内部组合关系，不应通过扩大外壳 padding 修复。"
+  ],
+  "expected": "保持 left padding=large、主内容与关闭操作 gap=small；仅将 Icon 与正文提升为 normal 内容组合间距。",
+  "actual": "修复前 Icon 与正文共用 small 间距，视觉上小于同级信息块的正常阅读节奏。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-25 当前对话",
+      "note": "用户指出 Alert 图标和内容之间的间距太小，并确认只调整该内部关系。"
+    },
+    {
+      "kind": "file",
+      "ref": "alert/alert.wxss",
+      "note": "Alert 外壳 padding 为 --pui-space-lg，主内容 Icon/正文 gap 已改为 --pui-space-normal，根到关闭操作仍为 --pui-space-sm。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 .pui-alert-demo__main 已消费 --pui-preview-space-normal；本次将小程序端对齐同一语义级别。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-alert.js",
+      "note": "专项同时锁定小程序和 H5 的 normal 内容组合间距。"
+    }
+  ],
+  "rootCause": "Alert 初始实现将根级主内容与关闭操作的紧凑 small 间距错误复用于 Icon 与正文，忽略了正文多行阅读需要的 normal 组合节奏。",
+  "decision": {
+    "outcome": "仅将 .pui-alert__main 的 gap 改为 --pui-space-normal；不改变 Alert 左右 padding、Icon 尺寸、关闭操作轨、API 或动效。",
+    "rationale": "normal 是既有 Token 中 Icon 与可换行正文的语义组合层级，增加 8rpx 而不会引入页面私有尺寸或压缩 390px 可用宽度。",
+    "alternativesRejected": [
+      "扩大外壳 padding 会同时移动 Icon、正文和关闭操作，不能精准解决内部信息关系。",
+      "使用裸 20rpx 会绕开现有 Token。",
+      "同时增大 Icon 会改变既有视觉尺寸与行高对齐，超出用户确认范围。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "alert/alert.wxss",
+      "scripts/test-alert.js",
+      "docs/components/ALERT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "feedback/records/pui-fb-0362-alert-icon-content-normal-gap.json"
+    ],
+    "dependencies": ["pui-icon", "pui-config-provider", "pui-space-normal", "H5 Alert mirror"]
+  },
+  "verification": {
+    "tests": ["scripts/test-alert.js", "scripts/test-miniprogram-feedback-pages.js", "scripts/check-package.js"],
+    "commands": ["node scripts/test-alert.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project '/Users/fanx/Documents/poemUI 小程序组件库/miniprogram'", "shasum alert/alert.wxss miniprogram_dist/alert/alert.wxss _example/node_modules/poemui-miniprogram/miniprogram_dist/alert/alert.wxss miniprogram/miniprogram_npm/poemui-miniprogram/alert/alert.wxss"],
+    "browser": ["微信开发者工具 RC 2.02.2607161、AppID wx23aa017375535746、iPhone 12/13 Pro 390px 主 WebView 热重载：Alert 的 44rpx Icon 到正文显示 normal 20rpx 间距；外壳左内距、关闭操作位置、换行宽度与关闭/恢复交互均保持正常。", "源码、miniprogram_dist、示例 npm 安装包和微信 miniprogram_npm 的 Alert WXSS SHA-1 均为 787a2c986f64022cdc1b675112d45e1972f55ccc。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 rpx 计算、系统字体基线、深浅色/全局外观与触摸命中。"]
+  },
+  "ai": {
+    "summary": "Alert 外壳、Icon 到正文、正文到关闭操作是三个独立间距关系，不能共用一个紧凑 gap。",
+    "rules": [
+      "Alert 外壳 left/right padding 使用 large，Icon 与正文使用 normal，主内容与关闭操作使用 small。",
+      "修正 Alert 阅读节奏时不得扩大页面或组件外壳 padding，也不得使用魔法 rpx。",
+      "小程序与 H5 必须使用同一 normal 语义层级，并由专项测试共同锁定。"
+    ],
+    "tags": ["alert", "spacing", "icon", "content", "token", "h5-parity"]
+  }
+}

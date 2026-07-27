@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0156",
+  "title": "NoticeBar H5 重绘吞掉生命周期且长内容撑宽公告容器",
+  "scope": "component",
+  "components": ["notice-bar", "preview-site", "responsive-layout", "animation", "usage-code"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须镜像真实 NoticeBar WXML/WXSS：显隐有中间帧，vertical 按 interval 轮播，horizontal 只在真实溢出时跑马，390px 不让组件或页面横向溢出。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-styles", "overview", "property-panel", "responsive-layout"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 在 renderStage 重建 NoticeBar 节点后才加 active class，180ms 进入没有可测中间帧；vertical 只有演示按钮，没有按 interval 自动轮播。",
+    "在 390px 输入有效的长 JSON 文本后，.pui-showcase-section 按最小内容宽度扩展，NoticeBar 和 viewport 宽到 845px/671px，真实溢出测量为 false，跑马不启动。",
+    "旧 WXML 默认 PUI Button 与外层 tap 同时调用 onClick，存在一次点击重复上报风险。"
+  ],
+  "expected": "同一 NoticeBar DOM 节点以 180ms/1ms 切换进入和离开；vertical content 数组按 interval 自动变化；horizontal 文本保持本征宽度但公告容器不超过 PreviewDevice；每次区域点击只走一条事件路径。",
+  "actual": "H5 会以静态重绘或局部演示代替原生行为，长内容虽被设备裁切却无法触发真实跑马，且 WXML 存在重复 click 风险。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-20 用户授权", "note": "用户授权后续组件在完整证据、构建门禁和 Ledger 收口后由 agent 自主验收；NoticeBar 仍按单组件 battle 收口。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "当前 enterNoticePreview/requestNoticePreviewVisibility 在同一节点切换 class，scheduleNoticePreviewVertical 按 interval 轮播，bindNoticePreviewMarquee 使用 DOM 宽度。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "NoticeBar showcase/article/root 都有 min-width:0/max-width:100%，正文 width:max-content/flex:none，由 viewport 裁切。"},
+    {"kind": "file", "ref": "notice-bar/notice-bar.wxml", "note": "默认 PUI Button 只由外层 catchtap 统一发布 click，删除重复 bind:click 路径。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/notice-bar", "note": "390px 实测 document 375/375、PreviewDevice 349/349、NoticeBar 280px；长正文 671px 对 106px viewport 溢出，transform 为负位移且 transition=0.24s。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/notice-bar", "note": "真实属性操作后 vertical 从第一条自动轮播到第二条；进入中间帧 opacity=0.810029/max-height=97.2034px，完成态 opacity=1/max-height=120px。"},
+    {"kind": "test", "ref": "scripts/test-notice-bar.js", "note": "专项测试锁定实际 SelectorQuery 溢出、12px 分段、180ms/1ms、WXML 单一路径与 H5 容器约束。"}
+  ],
+  "rootCause": "H5 生命周期将状态更新与整段 Stage 重绘耦合，纵向轮播缺少运行时计时器；Grid 子项的默认 min-content 约束没有被 NoticeBar 分区显式解除。",
+  "decision": {
+    "outcome": "使用同节点 requestAnimationFrame 进入、固定完成后才卸载；用一个真实 interval 计时器推进 vertical 索引；给 NoticeBar 分区与根添加宽度约束，正文保持 max-content 供 DOM 实测；WXML 只保留外层 catchtap。",
+    "rationale": "动画、溢出和事件都必须可在真实预览中观察，不能依赖文案、固定百分比或静态状态替代。",
+    "alternativesRejected": [
+      "使用无限 CSS translate 百分比会绕开真实内容宽度和 speed/loop/delay。",
+      "通过 overflow:hidden 掩盖 845px 公告宽度会让 marquee 永远不触发。",
+      "保留 Button bind:click 与外层 catchtap 会使同一用户操作产生两次公共 click。"
+    ]
+  },
+  "impact": {
+    "files": ["notice-bar/notice-bar.wxml", "preview/app.js", "preview/styles.css", "scripts/test-notice-bar.js", "docs/components/NOTICEBAR.md", "docs/H5_PREVIEW_COMPATIBILITY.md"],
+    "dependencies": ["PreviewDevice shadow-safe layout", "PUI Button/Icon mirror", "shared property panel", "browser reduced-motion media query"]
+  },
+  "verification": {
+    "tests": ["scripts/test-notice-bar.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["2026-07-20 node scripts/test-notice-bar.js：通过", "2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install、npm run feedback:generate/check：通过", "2026-07-20 微信 CLI build-npm：touristappid 不存在，code 10，未生成 miniprogram_npm；源码/dist/示例安装/tarball 的 NoticeBar 四件套 SHA256 一致。"],
+    "browser": ["真实 suffix-icon、operation、visible=false/true、reduceMotion、vertical 自动轮播、有效/非法 JSON、代码复制、API 和 390px 都已实际操作。", "dark、border-off、shadow、frost、large-radius、gradient 实点后 NoticeBar 为 rgba(39,39,42,.74)、透明中性边界、blur(18px)、14px 圆角和真实 shadow，随后恢复浅色标准组合。"],
+    "deviceRisks": ["微信真机仍需确认 swiper 自动播放节流、SelectorQuery 实测宽度、rpx 文本回流、样式隔离和触摸命中。"]
+  },
+  "ai": {
+    "summary": "H5 公告预览必须先保持容器边界，再用真实 DOM 溢出和同节点生命周期镜像小程序。",
+    "rules": [
+      "不要用整段重绘或固定百分比动画冒充 NoticeBar 的进入、退出或跑马。",
+      "在 Grid/Flex 演示分区中给公告根和分区显式 min-width:0/max-width:100%。",
+      "区域点击只保留一个公共事件路径；默认 PUI Button 不能与外层同事件重复上报。"
+    ],
+    "tags": ["notice-bar", "preview-parity", "animation", "marquee", "responsive", "390px"]
+  }
+}

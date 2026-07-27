@@ -1,0 +1,22 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}} {{rootStyle}}"
+  role="img"
+  aria-label="{{semanticLabel}}"
+>
+  <image
+    wx:if="{{shouldRenderImage}}"
+    class="pui-image__node {{imageLoaded ? 'pui-image__node--loaded' : ''}}"
+    src="{{displaySrc}}"
+    mode="{{resolvedMode}}"
+    lazy-load="{{lazy}}"
+    webp="{{webp}}"
+    show-menu-by-longpress="{{showMenuByLongpress}}"
+    bindload="onLoad"
+    binderror="onError"
+  />
+  <view wx:if="{{status === 'loading'}}" class="pui-image__state"><pui-loading size="small" text="{{text || '加载中'}}" reduce-motion="{{reduceMotion}}" /></view>
+  <view wx:elif="{{status === 'error'}}" class="pui-image__state pui-image__state--error"><pui-icon name="image" size="32" /><text>{{text || '图片加载失败'}}</text></view>
+  <view wx:elif="{{status === 'empty'}}" class="pui-image__state"><pui-icon name="image" size="32" /><text>{{text || '暂无图片'}}</text></view>
+  <view wx:if="{{showSlot}}" class="pui-image__slot"><slot /></view>
+</view>

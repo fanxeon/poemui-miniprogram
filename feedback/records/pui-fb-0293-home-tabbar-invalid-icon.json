@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0293",
+  "title": "首页任务 Tabbar 引用了 Icon 清单中不存在的名称",
+  "scope": "component",
+  "components": ["miniprogram-home", "tabbar", "icon"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页、任务、我的三个纯图标 Tabbar 项必须全部由真实 PUI Icon 显示，禁用项也不能成为空白入口。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "wechat simulator"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390px", "wechat simulator"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开真实首页底部 Tabbar。",
+    "任务项配置 icon=list，但 Icon manifest 只提供 list-bullet 与 list-number。",
+    "任务项虽然 disabled，不会切换，但可见图标为空，破坏纯图标导航的信息架构。"
+  ],
+  "expected": "任务项使用 Icon manifest 的有效图标，保持 label 为空、ariaLabel=任务且 disabled，不添加假路由或假 change。",
+  "actual": "任务项引用不存在的图标名称，导致底部三个目的地中间项缺失可见图形。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "icon/icon-font-catalog.js",
+      "note": "Icon 字体目录存在 list-bullet/list-number，不存在 list。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.js",
+      "note": "任务项改用 list-bullet，disabled、空 label 和 ariaLabel 保持不变。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-home.js",
+      "note": "首页专项要求 list-bullet 并拒绝无效 list 名称。"
+    },
+    {
+      "kind": "file",
+      "ref": ".audit/poemui-home-2026-07-24-fixed/06-home-legal-appid-final.png",
+      "note": "合法 AppID wx23aa017375535746 下普通编译完成，iPhone 12/13 Pro 390px 模拟器显示三个真实 PUI 图标；此前同一源码会话点击任务后首页仍为活动项，任务仍为 disabled。"
+    }
+  ],
+  "rootCause": "页面配置按通用图标记忆写入 list，没有在 PUI Icon manifest 中校验真实名称；禁用状态掩盖了可见资源缺失。",
+  "decision": {
+    "outcome": "只修正真实首页 item.icon 为 list-bullet，不改变共享 Tabbar/Icon API，不新增页面或事件。",
+    "rationale": "这是消费者配置错误，有现成 PUI Icon 可直接复用；任务和我的仍是未完成且 disabled 的信息项。",
+    "alternativesRejected": [
+      "新增 list 图标别名会为单页拼写错误扩张共享 Icon 合同。",
+      "使用字符图标或隐藏任务项会破坏 PUI 复用与既定信息架构。",
+      "添加即将上线弹窗或假路由会制造无业务结果的操作。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.js", "scripts/test-miniprogram-home.js"],
+    "dependencies": ["PUI Icon manifest", "PUI Tabbar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "微信开发者工具：普通编译"],
+    "browser": ["静态合同确认任务项使用有效 list-bullet，label 为空、ariaLabel 保留且 disabled 不触发切换。", "微信开发者工具 390px 模拟器完成普通编译并点击任务项：首页保持选中，任务保持 disabled 且没有发生切换。"],
+    "deviceRisks": ["微信真机仍需确认三个图标的字体/基线、触摸命中和读屏名称。"]
+  },
+  "ai": {
+    "summary": "页面配置 PUI Icon 前必须校验真实 manifest；disabled 只控制交互，不能掩盖资源名称错误。",
+    "rules": [
+      "Tabbar item.icon 必须来自当前 PUI Icon manifest，禁止凭通用名称猜测。",
+      "纯图标项继续显式 label 为空并提供 ariaLabel。",
+      "禁用目的地不添加假路由、假 change 或即将上线提示。"
+    ],
+    "tags": ["miniprogram-home", "tabbar", "icon", "manifest", "disabled"]
+  }
+}

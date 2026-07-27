@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0295",
+  "title": "Tag 全量 observer 在真实页面挂载后自触发更新循环",
+  "scope": "component",
+  "components": ["tag", "divider", "miniprogram"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Divider 独立页面必须能真实挂载 PUI Tag 组合并保持可滚动，不因共享组件内部同步而阻塞页面。",
+  "environment": {
+    "surfaces": ["miniprogram-component-page", "component-contract"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "在合法 AppID 的微信开发者工具中打开 Divider 独立页面。",
+    "保留布局与线型区域的 PUI Tag 后，自动化读取页面状态超时；移除全部 Tag 后同一路由立即可用。",
+    "检查 Tag 源码可见 `**` observer 调用 updateClass，而 updateClass 又 setData 写入 rootClass、maxWidthStyle 和 resolvedIcon。"
+  ],
+  "expected": "Tag 只在公开外观输入变化时同步派生 class/style/icon；内部派生 data 回写必须收敛，页面可正常挂载并参与 Divider 组合。",
+  "actual": "全量 observer 同时观察公开 Props 与内部派生 data，真实运行中 setData 再次触发同一 observer，形成自触发更新循环并阻塞页面。",
+  "evidence": [
+    {"kind": "file", "ref": "tag/tag.js", "note": "观察器改为显式公开输入列表，内部 rootClass、maxWidthStyle 和 resolvedIcon 不再触发 updateClass。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/divider/index.wxml", "note": "恢复自定义内容与纵向布局中的 4 个真实 PUI Tag。"},
+    {"kind": "test", "ref": "scripts/test-tag.js", "note": "专项测试禁止 catch-all observer，并验证派生 setData 不命中公开输入观察列表。"},
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161 · wx23aa017375535746", "note": "390×844 模拟器真实打开 Divider 页面，2 个纵向 Divider、2 个虚线 Divider、4 个 Tag 均挂载，console 和 exception 为空。"}
+  ],
+  "rootCause": "Tag 使用 `**` 方便统一同步，却把自身 setData 产生的派生字段也纳入观察范围；静态 VM 测试没有模拟微信组件 observer 的真实回调链。",
+  "decision": {
+    "outcome": "只观察 theme、variant、shape、icon、maxWidth、disabled、content、size、closable 和 colorScheme；attached 继续执行首次同步，内部派生字段不参与观察。",
+    "rationale": "显式输入列表保留全部公开视觉响应，同时切断内部 setData 自触发路径，不改变 Tag API、WXML、WXSS 或 H5 镜像语义。",
+    "alternativesRejected": [
+      "在 Divider 页面移除 Tag 会破坏真实 PUI 组合并掩盖共享组件缺陷。",
+      "给 updateClass 增加页面级延迟仍会保留循环和不可预测的更新顺序。",
+      "只在自动化脚本增加超时不能解决真实 App Service 阻塞。"
+    ]
+  },
+  "impact": {
+    "files": ["tag/tag.js", "docs/components/TAG.md", "scripts/test-tag.js", "miniprogram/pages/components/divider/index.wxml", "feedback/records/pui-fb-0295-tag-public-prop-observer-stability.json"],
+    "dependencies": ["theme behavior", "miniprogram component observers", "pui-divider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tag.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-divider.js"],
+    "commands": ["node scripts/test-tag.js", "node scripts/test-miniprogram-component-pages.js", "node scripts/test-divider.js", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": [
+      "390×844 Divider 页面 document 为 390×844，Navbar 为 390×88，ScrollArea 为 390×756。",
+      "真实页面读取到 vertical=2、dashed=2、outline Tag=4，consoleErrors=[]、exceptions=[]。"
+    ],
+    "deviceRisks": [
+      "开发者工具模拟器已证明观察器收敛，但不同基础库与 iOS/Android 真机的生命周期时序仍需复核。",
+      "Tag 的触摸 Close、rpx 取整、Slot 投影和读屏不属于本页面挂载验收，继续保留真机风险。"
+    ]
+  },
+  "ai": {
+    "summary": "组件派生状态同步必须只观察公开输入，禁止用 catch-all observer 观察自身 setData 写入的派生字段。",
+    "rules": [
+      "任何 observer 内调用 setData 前必须确认写入字段不在该 observer 的依赖集合中。",
+      "真实页面挂载超时时应逐项隔离组合子组件，并在微信运行时复核，不得只扩大自动化超时。",
+      "消费者页面不得通过移除真实 PUI 组合掩盖共享组件的自触发循环。"
+    ],
+    "tags": ["tag", "observer", "setData", "wechat-devtools", "runtime-loop"]
+  }
+}

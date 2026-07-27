@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0419",
+  "title": "Upload 单文件失败态重复且 Retry 在窄屏退化为无文案大按钮",
+  "scope": "component",
+  "components": ["upload", "button", "icon", "progress", "miniprogram", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "文件处理状态中的失败项应清楚、克制，并让右侧重试操作位置和语义都正确。",
+  "environment": {
+    "surfaces": ["upload component", "miniprogram upload page", "h5 component preview"],
+    "platforms": ["wechat-miniprogram", "h5-preview", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入小程序 Upload 独立页，滚动到“看懂文件处理状态”。",
+    "失败文件同时显示整卡红框、失败 Tag、红色原因、错误 Progress 与 0%。",
+    "390px 规则把 actions 强制移到整行，纯刷新图标 Button 成为左侧大块空白按钮。",
+    "独立页没有绑定 retry，点击失败项操作没有可见回执。"
+  ],
+  "expected": "失败文件保持中性 Surface，只用一处可读原因表达错误；不显示无意义的 0% 进度；右侧显示“重试”文字操作，点击发布 retry 并明确等待业务回写。",
+  "actual": "失败信息重复、视觉权重过重，Retry 位置和文案错误，而且示例未闭合事件回执。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户指出文件处理状态的右侧按钮和失败设计不正确，要求重新设计。"},
+    {"kind": "browser", "ref": "/tmp/poemui-upload-failure-before.png", "note": "390x844 微信模拟器复现整卡红框、0% 进度和掉到下一行的无文案刷新按钮。"},
+    {"kind": "file", "ref": "upload/upload.wxml", "note": "失败态改为单一 error region，Progress 只服务 uploading/paused，Retry 使用可见 PUI Button。"},
+    {"kind": "file", "ref": "upload/upload.wxss", "note": "文件 Surface 边界保持中性，窄屏保留右侧 action 轨。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/upload/index.js", "note": "独立页接收 retry 并显示等待业务重新上传的真实回执，不修改 error。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 使用相同失败层级和共享 PUI Button 镜像。"},
+    {"kind": "test", "ref": "scripts/test-upload.js", "note": "锁定单一失败区、无 error Progress、中性文字 Retry 与双端同步。"}
+  ],
+  "rootCause": "旧实现把状态 Tag、文件消息、Progress status 和 Surface 边界同时当作失败主表达；窄屏又机械把全部 actions 移到下一行，且独立页只渲染组件、未接 retry 事件。",
+  "decision": {
+    "outcome": "失败文件使用中性 Surface、内嵌危险色原因区和右侧“重试”中性 Button；失败时不渲染 Tag 与 Progress。独立页只回执 retry 请求，不自动把文件改为 uploading 或 success。",
+    "rationale": "失败信息只需一个视觉中心；重试属于恢复而非危险动作。保留父级 error 能守住 Upload 不执行远端上传的公共合同。",
+    "alternativesRejected": [
+      "保留 0% Progress 会把离散失败误画成仍在进行的任务。",
+      "整卡红框加失败 Tag 会重复强调并压过文件名称和恢复动作。",
+      "纯图标 Retry 在独立页语境不够明确，窄屏宿主还会放大为空白按钮。",
+      "点击后直接切成成功或上传中会伪造消费者尚未执行的网络任务。"
+    ]
+  },
+  "impact": {
+    "files": ["upload/upload.wxml", "upload/upload.wxss", "miniprogram/pages/components/upload/index.wxml", "miniprogram/pages/components/upload/index.js", "preview/app.js", "preview/styles.css", "scripts/test-upload.js", "scripts/test-miniprogram-form-pages.js", "docs/components/UPLOAD.md", "docs/UI_DESIGN_CONTRACT.md"],
+    "dependencies": ["PUI Button", "PUI Icon", "PUI Progress", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-upload.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": ["npm run site:build：通过", "npm run check：通过", "npm run example:install：通过", "npm run pack:check：通过", "微信开发者工具 build-npm：通过，warnings=[]"],
+    "browser": [
+      "微信开发者工具 390x844 浅色截图 /tmp/poemui-upload-failure-light-3.png：失败项保持中性卡片，只显示一次“网络中断”，右侧 Retry 为紧凑文字按钮且没有 0% Progress。",
+      "真实点击“重试 真机截图.png”后，页面显示“等待业务重新上传”；运行态回读 uploadStateFiles[2].status 仍为 error，console error/warn 为空。",
+      "微信开发者工具 390x844 深色截图 /tmp/poemui-upload-failure-dark.png：danger-light 原因区、文字、按钮与中性 Surface 对比清楚；验收后恢复 light。",
+      "H5 375px 运行态：errorCards=1、errorProgress=0、document scrollWidth/clientWidth=375/375，失败原因 region 位于文件卡边界内，console warn/error 为空。"
+    ],
+    "deviceRisks": ["iOS/Android 真机的按钮命中、长文件名、系统字体放大、读屏和真实上传业务回写仍需复核。"]
+  },
+  "ai": {
+    "summary": "Upload 失败文件只显示一处原因和右侧文字 Retry；失败不显示进度，也不由组件伪造恢复。",
+    "rules": [
+      "error 文件不得同时显示失败 Tag、错误 Progress、整卡危险边界和错误原因。",
+      "失败时 Progress 退出，Retry 使用可见文字 Button 并保持在右侧 action 轨。",
+      "Retry 是中性恢复操作，不使用 danger 主题。",
+      "retry 只发布请求，组件和示例都不得自动把 error 改成 uploading 或 success。"
+    ],
+    "tags": ["upload", "error-state", "retry", "responsive", "no-fake-success"]
+  }
+}

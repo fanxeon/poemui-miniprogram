@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0061",
+  "title": "Badge 官网仍展示旧生命周期说明且重置未回到源码默认值",
+  "scope": "component",
+  "components": ["badge", "preview-site", "documentation", "example"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Badge 官网应按常见用法分区，Props、WXML、API 与兼容说明都对应当前 12 Props 纯展示实现，重置必须恢复真实源码默认值。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "example", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开旧 Badge 概览和属性兼容说明：仍出现 count > content > value > text、四角 position、standalone、clickable、显隐生命周期与 0–500ms 动画说明。",
+    "点击重置后 count 回到演示初值 3，而源码默认 count=0；工具栏声称恢复组件默认样式但实际回到演示样例。",
+    "旧概览以生命周期和事件诊断卡为主，基础代码与示例绑定 Badge 自身事件，不便筛选数量、红点、尺寸、主题与宿主组合。"
+  ],
+  "expected": "概览按用户任务分为五段；API 显示 12 Props、0 Events、2 Slots；属性说明只描述新合同；基础代码零 bind；重置恢复源码默认 count=0。",
+  "actual": "H5、API、兼容文案和重置状态仍保留旧 27 Props 状态机的多处事实，和新源码及用户学习路径不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Badge 已改为五段用户用法、12 项属性、零事件生成、真实源码默认重置和同源 WXML。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "API 登记 12 Props、2 Slots、0 Events，并拆为内容定位与外观两组。"},
+    {"kind": "file", "ref": "_example/miniprogram/pages/components/index.wxml", "note": "示例使用 count、dot 和 count Slot，不再绑定 Badge 自身事件。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/badge", "note": "浏览器确认五段概览、属性即时回写、12 Props API、2 Slots、零 Events、两处复制成功和重置后 mark 数量为 0。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/badge", "note": "390px document/main 均 375/375，PreviewDevice 349/349，五个 article 282/282；API 64 个字段自然换行且无页面横向溢出。"}
+  ],
+  "rootCause": "演示初值、源码默认值、兼容文案和运行态分别维护，旧 Badge 重构后没有把全部站点事实源和 reset 路径一起迁移。",
+  "decision": {
+    "outcome": "概览固定为基础用法、红点与上限、尺寸与形状、主题与变体、组合用法；删除诊断状态机。Badge reset 单独读取 componentPropDefaults 源码默认，初次展示仍使用 count=3 作为可见样例；所有代码从 makeUsageCode 同源生成。",
+    "rationale": "可见初始样例和组件源码默认是两个不同概念；明确分离后既能让用户第一眼看到徽标，也能保证重置、过滤默认 Props 和复制代码语义真实。",
+    "alternativesRejected": [
+      "把源码默认改成 3 只为适配官网会改变安装端行为并破坏 showZero 合同。",
+      "继续让重置回到演示初值会违反全站重置恢复组件默认 Props 的明确合同。",
+      "只改 API 文档而保留旧兼容说明和示例会继续制造多套冲突事实源。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "preview/components-data.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/BADGE.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-badge.js", "scripts/test-design-contracts.js"],
+    "dependencies": ["badgeSample", "buttonSample", "cellSample", "iconComponent", "makeUsageCode", "API reference renderer"]
+  },
+  "verification": {
+    "tests": ["scripts/test-badge.js", "scripts/test-design-contracts.js", "scripts/test-preview-code-copy.js", "scripts/test-preview-element-inspector.js", "scripts/test-api-reference-readability.js"],
+    "commands": ["npm run catalog:generate", "npm run precheck", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "真实点击基础代码和当前效果复制，aria-label 分别变为已复制且可见 WXML 不含 bind:*。",
+      "390px 深色、阴影、毛玻璃、大圆角、渐变和边框关闭均真实操作；Cell 宿主得到 blur/radius/shadow，Badge dot 仍为 8×8、999px 圆角，关闭边框不改变 20.03×18px 徽标几何。",
+      "API 文本包含全部 12 Props 与 2 Slots，未渲染空 Events 区；兼容说明明确 0 Events 和无显隐动画，浏览器日志为空。"
+    ],
+    "deviceRisks": [
+      "H5 用 HTML/px/absolute 映射 WXML/rpx；真实设备的字体基线、Slot 测量、1rpx 边界和读屏顺序仍需合法 AppID 真机确认。",
+      "微信开发者工具 Service Port 关闭时无法补建 miniprogram_npm，安装端门禁必须保留 pending-cli。"
+    ]
+  },
+  "ai": {
+    "summary": "Badge 官网只展示数量、红点、外观和真实宿主组合；演示初值可见但 reset、默认过滤和源码合同必须读取同一个源码默认源。",
+    "rules": [
+      "Badge 概览固定为五段用户用法，禁止恢复生命周期、事件日志、方法按钮或点击递增诊断。",
+      "基础 WXML 必须零 bind，完整 API 不渲染空 Events 表，default/count Slot 只在 Slots 区说明。",
+      "初次演示 count=3 不得冒充源码默认；重置和默认 Prop 过滤必须使用 componentPropDefaults.badge。",
+      "兼容说明、metadata、属性面板、示例和安装产物必须和 12 Props、0 Events、2 Slots 同步。"
+    ],
+    "tags": ["badge", "preview", "reset", "api", "documentation", "390px", "appearance"]
+  }
+}

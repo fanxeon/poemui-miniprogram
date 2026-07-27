@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0175",
+  "title": "DropdownMenu H5 打开态的遮罩不能接收真实指针点击",
+  "scope": "component",
+  "components": ["dropdown-menu", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "DropdownMenu 的 H5 遮罩必须像真实小程序浮层一样可点击关闭，不能只支持键盘或改提示文字。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice"],
+    "platforms": ["Chrome"],
+    "viewports": ["390×844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 390px Chrome 中打开 DropdownMenu，菜单 panel 与遮罩都已显示，键盘 Enter 激活遮罩会关闭。",
+    "使用真实鼠标坐标点击 panel 外的遮罩区域，旧 `.pui-dropdown-slim__layer` 一直是 `pointer-events:none`，浏览器命中遮罩却不会冒泡到预览动作链。"
+  ],
+  "expected": "仅在菜单 active 时，完整遮罩必须是可点击关闭根；进入或离开时不可因指针状态产生穿透、重复关闭或重新打开。",
+  "actual": "旧 H5 只给遮罩子节点开启 pointer-events，却让父 layer 永久不接收指针；实际鼠标点击失效，键盘路径掩盖了问题。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权本 Goal 在每个组件完成真实浏览器、Ledger、构建和产物证据后由 agent 自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/dropdown-menu", "note": "2026-07-20 Chrome 390×844 实测：遮罩按钮 enabled，键盘可关闭，而真实 panel 外鼠标点击无法关闭。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "修复后 `.pui-dropdown-slim__layer.is-active` 显式为 pointer-events:auto，离开态仍由基础 none 阻断。"},
+    {"kind": "test", "ref": "scripts/test-dropdown-menu.js", "note": "专项断言 active layer 与遮罩同为可点击指针状态，防止只修子节点后回归。"}
+  ],
+  "rootCause": "H5 浮层层级只考虑了视觉透明与离开态阻断，遗漏了父级 pointer-events 对真实命中链的影响。",
+  "decision": {
+    "outcome": "保持基础 layer 的 pointer-events:none，只在 `.is-active` 切换为 auto；遮罩与 panel 的 active 子规则继续决定各自的可点状态。",
+    "rationale": "这样遮罩关闭、panel 内选项和离开阶段的交互门禁都由同一真实 active 状态控制，不需要浏览器专属假事件。",
+    "alternativesRejected": [
+      "只为遮罩额外绑定 document 点击，会绕开 PreviewDevice 边界并产生穿透。",
+      "让 layer 永远 pointer-events:auto，会让离开帧和隐藏态截获页面交互。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-dropdown-menu.js", "docs/components/DROPDOWN-MENU.md", "docs/H5_PREVIEW_COMPATIBILITY.md"],
+    "dependencies": ["PreviewDevice edge-to-edge layer", "dropdownPreviewSlim"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dropdown-menu.js"],
+    "commands": ["node scripts/test-dropdown-menu.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["修复后 Chrome 390×844 在 menu 外真实鼠标坐标点击遮罩，触发 close({ index: 0, source: 'overlay' }) 并在 180ms 后卸载。", "closeOnClickOverlay=false 时同一真实点击保持 panel 打开且遮罩 disabled。"],
+    "deviceRisks": ["微信真机仍需用合法 AppID 复核 catchtap、fixed 遮罩、安全区与触摸穿透。"]
+  },
+  "ai": {
+    "summary": "浮层遮罩的可访问按钮与真实指针命中必须同时验收，不能只因键盘可关闭就宣称遮罩可用。",
+    "rules": [
+      "检查遮罩时同时读取父 layer、遮罩子节点的 pointer-events，并用 panel 外真实坐标点击。",
+      "active 以外的 retained leaving 节点必须不可点；不要靠 document 级假点击补救。"
+    ],
+    "tags": ["dropdown-menu", "overlay", "pointer-events", "browser-battle", "preview-parity"]
+  }
+}

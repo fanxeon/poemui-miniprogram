@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0139",
+  "title": "Sticky H5 旧预览以诊断状态模拟吸顶且用法代码与容器函数脱节",
+  "scope": "component",
+  "components": ["sticky", "preview-site", "cell"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "官网 Sticky 要按真实用法分区，Props 必须实际改变局部滚动结果，WXML、API 和兼容说明不得误导用户。",
+  "environment": {
+    "surfaces": ["h5-preview", "property-panel", "usage-code", "api-reference", "appearance-menu"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 把 normal/fixed/boundary/error 诊断状态和实例方法放在概览中，用户无法从基础示例分辨真实最小调用。",
+    "旧用法代码会输出已删除的参数和 bind，且把 container 的函数能力混同为可直接传递的字符串。",
+    "旧预览有独立滚动状态算法与事件提示，Props 变化可能只更新说明文字而非真实 sticky 布局。"
+  ],
+  "expected": "概览分为基础用法、顶部偏移、容器边界与禁用；每段真实局部滚动，H5 以 CSS sticky 呈现结果，基础 WXML 零 bind，container 代码明确由 page.js 提供函数。",
+  "actual": "旧预览与调用代码被扩展合同污染，无法作为真实 WXML/WXSS 的可靠教学和验收载体。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求演示像 TDesign 一样分区、基础必须基础、所有 Props 实际生效，并明确授权后续组件在完整证据后自主验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "当前实现把展示、运行时绑定、属性重置、说明和 makeUsageCode 收敛到四 Prop 真相源。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Sticky 展示使用局部 overflow 与 CSS position: sticky，不以 display:none、height:auto transition 或事件状态卡模拟。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "最终 API 只陈列四 Props、scroll、default Slot 与零 Methods。"},
+    {"kind": "test", "ref": "scripts/test-sticky.js", "note": "专项测试锁定分区、真实局部滚动 DOM、基础代码零 bind、容器函数代码、文档和产物一致性。"}
+  ],
+  "rootCause": "旧官网维护了脱离最终 WXML 的高级状态壳、方法按钮和第二份用法拼接，导致 H5 不能证明小程序能力。",
+  "decision": {
+    "outcome": "删除旧诊断和方法交互，改为真实可滚动局部示例；基础代码只输出非默认公开 Props，container 非空时输出 page.js 函数绑定标识。",
+    "rationale": "用户看到并操作的结构必须与真实默认 Slot、页面滚动和容器边界对应，不能用提示文字代替布局效果。",
+    "alternativesRejected": [
+      "继续保留事件状态 Cell 会把工程诊断误当组件内容。",
+      "把 container 字符串直接序列化为小程序参数会虚构 NodesRef 函数能力。",
+      "用页面 document 滚动替代 PreviewDevice 局部滚动会破坏官网工作流。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/STICKY.md", "scripts/test-sticky.js"],
+    "dependencies": ["PreviewDevice", "PUI Cell H5 helper", "shared usage-code generator", "appearance system"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sticky.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-code-copy.js"],
+    "commands": ["node scripts/test-sticky.js", "npm run site:build", "npm run check"],
+    "browser": ["2026-07-20 真实网页滚动证明基础 CSS sticky 吸顶、40px offset、容器底部回退和 disabled 普通流；不是事件提示或静态占位。", "组件引用与基础 WXML Copy 均实际显示已复制成功；API 可见完整4 Props、scroll、default Slot和零 Methods。", "iPhone 15 393px PreviewDevice 与局部 viewport 均无横向溢出；light/dark和六项外观已实际切换并恢复。"],
+    "deviceRisks": ["微信 page scroll、SelectorQuery、rpx、样式隔离、触摸和系统读屏需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "Sticky H5 必须以真实局部滚动和同源 WXML 代码展示定位结果，不能用状态文案或第二份调用拼接伪装。",
+    "rules": [
+      "H5 Sticky 每个示例必须有真实局部滚动根和 CSS sticky 结果，不能只更新提示。",
+      "基础用法不得出现 bind、方法按钮或工程诊断；scroll 只进入 API 或专项事件示例。",
+      "container 输入只能映射当前 H5 边界示例；输出代码必须提示 page.js 提供 NodesRef 函数。",
+      "Props、API、兼容说明、复制和属性重置必须读取同一四 Prop 真相源。"
+    ],
+    "tags": ["sticky", "preview-parity", "scroll", "usage-code", "browser"]
+  }
+}

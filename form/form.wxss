@@ -1,0 +1,17 @@
+.pui-form {
+  box-sizing: border-box;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  gap: var(--pui-section-gap);
+  padding: 0;
+  color: var(--pui-text-primary);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.pui-form--reduced { scroll-behavior: auto; }

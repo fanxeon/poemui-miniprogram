@@ -1,0 +1,84 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0043",
+  "title": "Button 基础用法堆叠全部平台事件绑定",
+  "scope": "component",
+  "components": ["button", "preview-site", "documentation"],
+  "type": "ai-usability",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Button 的基础用法必须基础，不展示 contact、手机号、设置、拉起 App 等全部 bind；完整事件应在 API Events 中按需查询。",
+  "environment": {
+    "surfaces": ["h5-preview", "usage-code", "api-documentation", "code-copy"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["375x667", "393x852", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Button 概览的基础 WXML，旧代码会机械输出 contact、createliveactivity、getphonenumber、error、opensetting、launchapp 等全部 bind。",
+    "点击复制当前效果，事件绑定与普通视觉 Props 一起进入最常用代码，用户必须删除大量与当前任务无关的处理器。",
+    "旧概览还展示事件链和平台诊断信息，使最小按钮任务被工程内部信息淹没。"
+  ],
+  "expected": "默认基础 WXML 只有 `<pui-button>按钮</pui-button>`；完整事件清单只在 API Events；专项示例只绑定当前能力真正需要的事件。",
+  "actual": "基础示例和复制代码把所有平台 bind 当成必填模板，既不基础，也会诱导 AI 生成不存在的页面处理器。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户在 Button battle 报告后明确确认验收。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户连续指出无需在基础用法完全展示全部 bind，并明确要求基础必须基础。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "Button 的 makeUsageCode 分支只生成组件标签、非默认 Props 和内容，不生成任何 bind。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "真实概览基础代码为 `<pui-button>按钮</pui-button>`；改变 Props 后仍不出现 bind，API Events 单独显示 12 个事件。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-button.js",
+      "note": "专项合同断言基础代码和当前效果复制均不包含 bind，并锁定 Events 独立元数据。"
+    }
+  ],
+  "rootCause": "WXML 生成器把完整事件能力误当成调用模板，没有区分最小任务、事件参考和平台专项示例三种信息层级。",
+  "decision": {
+    "outcome": "Button 基础、当前效果和复制代码全部移除 bind；API 新增独立 Events 与 Slots；文档仅在 click、contact 等专项例中写入所需事件。",
+    "rationale": "最小示例更容易理解和复制，同时 Events 仍保持完整可查；专项示例能把事件放回真实任务语境，避免假处理器。",
+    "alternativesRejected": [
+      "把每个 bind 机械换行只改善排版，不解决基础示例信息过载。",
+      "只用 CSS 折叠事件代码会让复制结果和 AI 读取仍包含全部处理器。",
+      "完全从文档删除平台事件会损失真实微信能力。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/BUTTON.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "scripts/test-button.js"],
+    "dependencies": ["usage code generator", "API renderer", "current effect copy"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-preview-code-copy.js"],
+    "commands": ["node scripts/test-button.js", "npm run site:build", "npm run check"],
+    "browser": ["默认基础区域文本精确包含 `<pui-button>按钮</pui-button>` 且无 bind；API Events 显示 click 与十一类平台事件。"],
+    "deviceRisks": ["事件专项示例的微信回调仍需真机和合法 AppID；基础示例零 bind 不改变组件底层原样转发能力。"]
+  },
+  "ai": {
+    "summary": "基础用法只生成最小 Button WXML，完整事件进入 API Events，专项示例按需绑定。",
+    "rules": [
+      "任何组件的基础用法都不得机械输出完整 bind 列表。",
+      "Events 必须在 API 独立展示；事件专项示例只绑定当前能力所需事件。",
+      "复制当前视觉效果只序列化非默认 Props 和内容，不把临时运行态或无关事件写入代码。"
+    ],
+    "tags": ["button", "events", "basic-usage", "wxml", "ai-usability"]
+  }
+}

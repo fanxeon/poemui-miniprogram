@@ -1,0 +1,63 @@
+.pui-collapse {
+  --pui-collapse-accent: var(--pui-color-brand);
+  --pui-collapse-accent-bg: var(--pui-color-brand-light);
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--pui-glass-surface);
+  border: 1rpx solid var(--pui-glass-border);
+  border-radius: var(--pui-radius-medium);
+  box-shadow: var(--pui-shadow-card);
+  -webkit-backdrop-filter: var(--pui-frosted-filter);
+  backdrop-filter: var(--pui-frosted-filter);
+}
+
+.pui-collapse--card {
+  display: grid;
+  overflow: visible;
+  background: transparent;
+  border-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  gap: var(--pui-content-gap);
+}
+
+.pui-collapse--disabled { opacity: .56; }
+.pui-collapse__item + .pui-collapse__item { border-top: 1rpx solid var(--pui-border-color); }
+
+.pui-collapse--card .pui-collapse__item {
+  overflow: hidden;
+  background: var(--pui-glass-surface);
+  border: 1rpx solid var(--pui-glass-border);
+  border-radius: var(--pui-radius-medium);
+  box-shadow: var(--pui-shadow-card);
+  -webkit-backdrop-filter: var(--pui-frosted-filter);
+  backdrop-filter: var(--pui-frosted-filter);
+}
+
+.pui-collapse--card .pui-collapse__item + .pui-collapse__item { border-top-width: 1rpx; }
+.pui-collapse__trigger { display: flex; align-items: center; justify-content: space-between; min-height: 88rpx; padding: 0 var(--pui-panel-padding); transition: background-color var(--pui-duration-normal) var(--pui-ease-standard); }
+.pui-collapse__heading { display: flex; flex: 1; align-items: center; min-width: 0; gap: var(--pui-content-gap); }
+.pui-collapse__label { min-width: 0; color: var(--pui-text-primary); font-size: var(--pui-font-size-medium); font-weight: 600; line-height: var(--pui-line-height-medium); overflow-wrap: anywhere; }
+.pui-collapse__item-icon { flex: 0 0 auto; color: var(--pui-collapse-accent); }
+.pui-collapse__aside { display: flex; flex: 0 1 auto; align-items: center; justify-content: flex-end; min-width: 0; max-width: 48%; gap: var(--pui-content-gap); }
+.pui-collapse__note { color: var(--pui-text-secondary); font-size: var(--pui-font-size-small); line-height: var(--pui-line-height-small); overflow-wrap: anywhere; }
+.pui-collapse__icon { flex: 0 0 auto; color: var(--pui-text-secondary); transition-property: transform, color; }
+.pui-collapse__item--expanded .pui-collapse__trigger { background: var(--pui-collapse-accent-bg); }
+.pui-collapse__item--expanded .pui-collapse__icon { color: var(--pui-collapse-accent); transform: rotate(180deg); }
+.pui-collapse__content { overflow: hidden; color: var(--pui-text-secondary); font-size: var(--pui-font-size-small); line-height: var(--pui-line-height-small); pointer-events: none; transform-origin: top; transition-property: max-height, opacity, transform; }
+.pui-collapse__item--expanded .pui-collapse__content { pointer-events: auto; }
+.pui-collapse__content-inner { min-height: 1rpx; padding: 0 var(--pui-panel-padding) var(--pui-panel-padding); overflow-wrap: anywhere; }
+.pui-collapse__item--disabled .pui-collapse__label,
+.pui-collapse__item--disabled .pui-collapse__note { color: var(--pui-text-disabled); }
+.pui-collapse__state { display: flex; align-items: center; justify-content: center; min-height: 160rpx; padding: var(--pui-panel-padding); }
+.pui-collapse--card .pui-collapse__state { background: var(--pui-glass-surface); border: 1rpx solid var(--pui-glass-border); border-radius: var(--pui-radius-medium); box-shadow: var(--pui-shadow-card); -webkit-backdrop-filter: var(--pui-frosted-filter); backdrop-filter: var(--pui-frosted-filter); }
+.pui-collapse__state pui-empty { width: 100%; }
+.pui-spacing--equal .pui-collapse--card {
+  --pui-collapse-inset: var(--pui-surface-inset);
+  gap: var(--pui-collapse-inset);
+}
+.pui-spacing--equal .pui-collapse--card .pui-collapse__trigger { padding-left: var(--pui-surface-inset); padding-right: var(--pui-surface-inset); }
+.pui-spacing--equal .pui-collapse--card .pui-collapse__content-inner { padding-left: var(--pui-surface-inset); padding-right: var(--pui-surface-inset); padding-bottom: var(--pui-surface-inset); }

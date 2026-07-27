@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0361",
+  "title": "Style Utilities 的背景渐变必须可直接挂载到 View 与容器",
+  "scope": "global",
+  "components": ["style-utilities", "preview-site", "theme-tokens"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "快速样式开发需要流金粉、高级黑、水泥白、黑金、浅金，以及 AI 色、粉蓝紫等可筛选、可复用的渐变背景预设。",
+  "environment": {
+    "surfaces": ["npm-utilities", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "导入 theme/utilities.wxss 后只能组合普通背景色和既有中性官网渐变。",
+    "打开官网外观菜单，渐变只有开关，无法选择命名预设或恢复其选择。"
+  ],
+  "expected": "公开 utilities 提供九个主题感知的 pui-bg-gradient-* 类，可直接挂载到业务 View 或布局容器；官网以 PUI Select 选择并持久化预设，且渐变不隐式污染组件 Surface。",
+  "actual": "原先仅有官网内部中性渐变开关，npm utilities 没有命名预设，也没有选择和持久化路径；现已补齐九个主题感知预设，其中新增 AI 雾蓝紫、赛博粉蓝、极光紫。",
+  "evidence": [
+    { "kind": "user-report", "ref": "2026-07-25 当前对话", "note": "用户明确点名流金粉、高级黑、水泥白、黑金和浅金预设。" },
+    { "kind": "user-report", "ref": "2026-07-25 当前对话", "note": "用户明确要求 pui-bg-gradient-* 可直接丢进 View 的 class 使用，而非页面专用概念。" },
+    { "kind": "file", "ref": "common/style/theme.wxss", "note": "提供 light/dark 同名背景渐变 Token。" },
+    { "kind": "file", "ref": "common/style/utilities.wxss", "note": "发布九个公开 pui-bg-gradient-* 类。" },
+    { "kind": "test", "ref": "scripts/test-style-utilities.js", "note": "锁定公共类、Token 与 H5 镜像。" }
+  ],
+  "rootCause": "旧设计把背景渐变误命名并限制为页面专用承载层，导致调用者无法把它理解为可直接组合的背景 utility。",
+  "decision": {
+    "outcome": "以 theme.wxss 的九组 light/dark Background Gradient Token 为唯一色值源，utilities 发布 pui-bg-gradient-*；调用者可直接将类写入业务 View 或布局容器，官网 gradientPreset 继续只控制 App Shell、Preview Stage 和 PreviewDevice。",
+    "rationale": "预设成为可直接组合的背景能力，同时保持主题文字对比、组件 Surface 语义和现有渐变开关的布局零副作用。",
+    "alternativesRejected": [
+      "将渐变写进 Button、Cell、Tag 或 Card Surface，会制造不受控的多层材质。",
+      "提供任意颜色或任意渐变字符串，会绕开 Token、深色模式和可审计边界。",
+      "选择预设时强制切换网站主题，会破坏主题偏好的独立性。"
+    ]
+  },
+  "impact": {
+    "files": ["common/style/theme.wxss", "common/style/utilities.wxss", "preview/app.js", "preview/styles.css", "preview/index.html", "docs/STYLE_UTILITIES.md", "scripts/test-global-gradient-preference.js", "scripts/test-style-utilities.js"],
+    "dependencies": ["theme/utilities.wxss", "PUI Select H5 mirror", "localStorage"]
+  },
+  "verification": {
+    "tests": ["scripts/test-global-gradient-preference.js", "scripts/test-style-utilities.js"],
+    "commands": ["npm run site:build", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run pack:check"],
+    "browser": [],
+    "deviceRisks": ["浏览器 390px 的选择、刷新恢复和深浅色对比尚待真实页面点击验证。", "微信小程序目标基础库的 CSS 变量继承、渐变渲染与性能尚待合法 AppID 真机验证。"]
+  },
+  "ai": {
+    "summary": "pui-bg-gradient-* 是直接作用于调用者 View/容器的背景 utility，不是页面专用概念，也不是组件 Surface 的隐式外观 Token。",
+    "rules": ["pui-bg-gradient-* 可直接挂在业务 View 或布局容器；不要穿透覆盖 PUI 组件内部 Surface。", "新增预设必须同时提供 light/dark Token、官网 Select、持久化白名单和 source/dist 契约。", "预设不能改变主题、间距、圆角、层级或组件业务状态。"],
+    "tags": ["style-utilities", "background-gradient", "theme", "preferences", "dark-mode"]
+  }
+}

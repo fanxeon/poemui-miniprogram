@@ -1,0 +1,99 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}};{{customStyle}}"
+  role="navigation"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+>
+  <view class="pui-sidebar__body">
+    <scroll-view
+      class="{{contentClass}}"
+      scroll-y="true"
+      scroll-into-view="{{scrollIntoView}}"
+      scroll-with-animation="{{animated}}"
+      aria-label="{{semanticLabel}}内容"
+    >
+      <view
+        wx:for="{{groups}}"
+        wx:for-item="group"
+        wx:for-index="groupIndex"
+        wx:key="id"
+        class="pui-sidebar__group {{group.disabled ? 'pui-sidebar__group--disabled' : ''}}"
+      >
+        <view class="pui-sidebar__group-title {{sticky ? 'pui-sidebar__group-title--sticky' : ''}} {{group.showTitle ? '' : 'pui-sidebar__group-title--empty'}}">
+          <text>{{group.title}}</text>
+        </view>
+        <view class="pui-sidebar__items">
+          <view
+            wx:for="{{group.children}}"
+            wx:for-item="item"
+            wx:for-index="itemIndex"
+            wx:key="id"
+            id="{{item.id}}"
+            class="pui-sidebar__item-wrap"
+          >
+            <pui-button
+              custom-class="pui-sidebar__item {{innerKey === item.valueKey ? 'pui-sidebar__item--active' : ''}}"
+              theme="default"
+              variant="text"
+              size="small"
+              block
+              loading="{{item.loading}}"
+              loading-props="{{item.loadingProps}}"
+              disabled="{{disabled || loading || error || readonly || !clickable || group.disabled || item.disabled}}"
+              aria-label="{{item.label}}"
+              reduce-motion="{{reduceMotion}}"
+              color-scheme="{{colorScheme}}"
+              data-flat-index="{{item.flatIndex}}"
+              bind:click="onSelect"
+            >
+              <view class="pui-sidebar__item-content">
+                <pui-icon
+                  wx:if="{{showIcon && item.icon}}"
+                  name="{{innerKey === item.valueKey ? 'check' : item.icon}}"
+                  size="32"
+                  color-scheme="{{colorScheme}}"
+                />
+                <view class="pui-sidebar__copy">
+                  <text class="pui-sidebar__label">{{item.label}}</text>
+                  <text wx:if="{{showDescription && item.description}}" class="pui-sidebar__description">{{item.description}}</text>
+                </view>
+                <view class="pui-sidebar__trailing">
+                  <pui-badge
+                    wx:if="{{showBadge && item.badgeVisible}}"
+                    count="{{item.badge}}"
+                    dot="{{item.badgeDot}}"
+                    max-count="{{item.badgeMax}}"
+                    show-zero
+                    size="small"
+                    aria-label="{{item.label}}徽标"
+                    color-scheme="{{colorScheme}}"
+                  />
+                </view>
+              </view>
+            </pui-button>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="pui-sidebar__state pui-sidebar__state--loading {{stateType === 'loading' ? 'pui-sidebar__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'loading'}}">
+      <pui-loading
+        loading="{{stateType === 'loading'}}"
+        size="36rpx"
+        text="{{loadingText}}"
+        reduce-motion="{{reduceMotion}}"
+        color-scheme="{{colorScheme}}"
+      />
+    </view>
+
+    <view class="pui-sidebar__state pui-sidebar__state--error {{stateType === 'error' ? 'pui-sidebar__state--active' : ''}}" role="alert" aria-hidden="{{stateType !== 'error'}}">
+      <pui-empty custom-class="pui-sidebar__empty" description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
+      <pui-button wx:if="{{retryText}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" bind:click="onRetry">{{retryText}}</pui-button>
+    </view>
+
+    <view class="pui-sidebar__state pui-sidebar__state--empty {{stateType === 'empty' ? 'pui-sidebar__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'empty'}}">
+      <pui-empty custom-class="pui-sidebar__empty" description="{{emptyText}}" icon="inbox" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" />
+    </view>
+  </view>
+</view>

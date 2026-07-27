@@ -64,6 +64,7 @@ Tabs region
 - 点击可用项先发布 click；不同值紧接 change。重复点击当前项只发布 click。swipe 只发布 change，source 为 swipe。
 - swipe 使用固定 72rpx 水平阈值，必须大于垂直位移，跳过禁用项且不首尾循环；touchcancel/pointercancel 必须清理手势。
 - 不公开 input、retry、animationend 或实例方法；受控 value 已能表达所有真实切换请求。
+- Tabs 只发布分类变化，不拥有消费者内容区的滚动位置。若切换后替换同一个长目录，页面应在 `change` 的受控回写中同步把唯一 ScrollArea 的 `scrollTop` 设为 `0`；不得给 Tabs 增加外部滚动目标、回顶 Method 或重挂载内容来伪造回顶。快速样式页是该组合规则的参考消费者。
 
 ## 8. 可访问性
 
@@ -103,3 +104,7 @@ Tabs region
 5. 新事实写入 Tabs Feedback Ledger；用户已授权本 Goal 后续组件由 Agent 在完整证据后自主验收。
 
 真机仍需复核微信 ScrollView 横向惯性、sticky、rpx 指示器、触摸取消、样式隔离、系统低动效和目标基础库 ARIA 支持。任何不能满足本文的实现必须写入 Ledger，不得静默绕过。
+
+## 2026-07-27 外观 Surface 边界
+
+Tabs Header 是唯一可消费边框、毛玻璃和圆角的导航 Surface；每个 Tab 复用 PUI Button 时必须显式 `surface="transparent"`，不能在果味或毛玻璃外观下变成一排独立按钮。实现位于 `tabs/tabs.wxml`、`preview/app.js`、`preview/styles.css`，见 `PUI-FB-0426`。

@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0276",
+  "title": "NavigationMenu Header 操作退化为透明图标",
+  "scope": "component",
+  "components": ["navigation-menu", "button", "icon", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-27",
+  "userGoal": "NavigationMenu Header 的可用返回与关闭应是清楚、可点击的 PUI 圆形图标按钮；根层不可返回时不得留下半透明幽灵按钮。",
+  "environment": {
+    "surfaces": ["h5-preview", "miniprogram-source", "component-contract"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 #/components/navigation-menu 的概览，展开默认“组件”根菜单。",
+    "查看 Header 左侧返回与右侧关闭操作；旧 H5 以 buttonSample 的 text/round 输出，右侧 close 看起来是裸 ×。",
+    "在深浅色下读取 Header action 的计算几何和背景。",
+    "2026-07-27 打开小程序 NavigationMenu 垂直工作区；根层 canBack=false 仍渲染 disabled back，和 close 一起只剩半透明色块，图标与操作语义难以识别。"
+  ],
+  "expected": "可用 back/close 通过 PUI Button + PUI Icon 构成高对比实底圆形按钮；root back 不可用时以无 Surface 的空轨平衡三列标题。",
+  "actual": "第一次修复把 back/close 改为 outline 圆形 Button，却让根层 disabled back 长期显示；在小程序玻璃 Panel 上，返回与关闭退化成图标近乎不可见的半透明色块。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务截图", "note": "用户指出 #20 右上关闭不是圆形图标按钮。"},
+    {"kind": "file", "ref": "navigation-menu/navigation-menu.wxml", "note": "根层使用 inert spacer；子层 back 与常驻 close 使用 base/circle/small/icon-only PUI Button。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 Header 使用同样的根层 spacer 与共享 iconButtonSample。"},
+    {"kind": "browser", "ref": "/tmp/poemui-navigation-menu-header-fixed.png", "note": "新版 WeChatIDE 390px 模拟器显示根层左轨无幽灵 Surface，右侧 close 为可识别的实底圆形 X 按钮。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/navigation-menu", "note": "390x844 H5 深浅色实测：根层仅有一个 28px inert spacer、无 disabled Header action；子层 back 与 close 均为 28px 实底圆形按钮，close 可真实收起面板。"},
+    {"kind": "test", "ref": "scripts/test-navigation-menu.js", "note": "专项测试锁定根层无 Surface 空轨、子层返回与关闭的实底 IconButton、尺寸与 H5 级联选择器。"},
+    {"kind": "user-report", "ref": "2026-07-27 当前任务截图", "note": "用户指出垂直工作区 Header 顶部存在无法识别的半透明色块并要求移除。"}
+  ],
+  "rootCause": "第一次修复只把透明 text 改为 outline Button，并强制根层保留 disabled back；同时没有声明 icon-only。禁用透明度、玻璃 Panel 与弱对比 Surface 叠加后，控件只剩模糊色块。",
+  "decision": {
+    "outcome": "根层 canBack=false 时用 56rpx/28px 无 Surface 空轨代替 disabled back；进入子层后才渲染实底 icon-only 返回按钮，关闭始终使用同尺寸实底 icon-only Button；H5 同步相同结构。",
+    "rationale": "标题平衡只需要几何占位，不需要伪装成不可用控件；真实操作必须同时具备明确图标、实底圆形 Surface 与可访问名称。",
+    "alternativesRejected": [
+      "仅给裸 × 添加背景：仍绕过共享 PUI IconButton 合同。",
+      "继续使用 transparent text 变体：深色和浅色都无法表达操作边界。",
+      "直接删除 back 且不保留轨道会让 Header 标题相对 close 偏移。",
+      "继续显示 disabled back 会保留用户无法理解的幽灵控件。"
+    ]
+  },
+  "impact": {
+    "files": ["navigation-menu/navigation-menu.wxml", "navigation-menu/navigation-menu.wxss", "miniprogram_dist/navigation-menu/navigation-menu.wxml", "miniprogram_dist/navigation-menu/navigation-menu.wxss", "preview/app.js", "preview/styles.css", "docs/components/NAVIGATION-MENU.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-navigation-menu.js", "feedback/records/pui-fb-0276-navigation-menu-header-icon-button-visibility.json", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["PUI Button", "PUI Icon", "iconButtonSample", "NavigationMenu Header"]
+  },
+  "verification": {
+    "tests": ["scripts/test-navigation-menu.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "node scripts/test-navigation-menu.js", "npm run check", "npm run pack:check", "npm run example:install", "wechatide build_npm"],
+    "browser": [
+      "新版 WeChatIDE 2.02.2607252 的 390px 模拟器中，根层 Header 左轨为空且没有半透明按钮，标题保持居中，右侧 close 显示高对比 X；build_npm warnings=[]。",
+      "H5 390x844 深色计算样式：root spacer=1、Header action=1、disabled action=0；close 为 28x28px、rgb(39,39,42) 实底、rgb(250,250,250) 图标、999px 圆角。",
+      "H5 390x844 浅色计算样式：root spacer=1、Header action=1、disabled action=0；close 为 28x28px、rgb(228,228,231) 实底、rgb(9,9,11) 图标、999px 圆角。",
+      "H5 进入“数据展示”子层后 spacer=0，back/close 均可用且为 28x28px 实底圆形按钮；点击 Header close 后面板从 DOM 退出。"
+    ],
+    "deviceRisks": ["iOS/Android 真机仍需验证 pui-button external class 的 base/circle/icon-only 级联、56rpx 点击区、子菜单 back、Slot 样式隔离和触摸命中。"]
+  },
+  "ai": {
+    "summary": "纯图标 Header 操作必须复用高对比实底 IconButton；不可用的平衡轨只保留几何，不渲染幽灵控件。",
+    "rules": [
+      "Header 的 close/back 必须使用 iconButtonSample 或原生 pui-button + pui-icon 的圆形 Button 合同，不得以透明裸图标替代。",
+      "视觉检查必须读取最终 background、border、width/height 和 border-radius；通用 Button variant 的高特异性规则可能覆盖组件 CSS。",
+      "根层不可返回时使用同尺寸 inert spacer 平衡三列标题，禁止渲染 disabled ghost Button。"
+    ],
+    "tags": ["navigation-menu", "header", "icon-button", "button", "preview-parity", "390px"]
+  }
+}

@@ -1,0 +1,45 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{rootStyle}}" role="group" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}" aria-readonly="{{readonly}}">
+  <pui-popup
+    wx:if="{{usePopup}}"
+    visible="{{currentVisible}}"
+    placement="bottom"
+    card="{{true}}"
+    show-header="{{showHeader}}"
+    title="{{title}}"
+    show-footer="{{showHeader}}"
+    close-btn="{{false}}"
+    close-on-overlay-click="{{closeOnOverlayClick}}"
+    aria-label="{{semanticLabel}}"
+    duration="{{reduceMotion ? 1 : 500}}"
+    reduce-motion="{{reduceMotion}}"
+    bind:visible-change="onPopupVisibleChange"
+  >
+    <include src="./template.wxml" />
+    <view wx:if="{{showHeader}}" slot="footer" class="pui-picker__actions">
+      <pui-button
+        block
+        variant="outline"
+        content="{{cancelText}}"
+        disabled="{{disabled}}"
+        aria-label="取消选择"
+        bind:click="onCancelTap"
+      />
+      <pui-button
+        block
+        theme="primary"
+        content="{{confirmText}}"
+        disabled="{{confirmDisabled}}"
+        aria-label="确认选择"
+        bind:click="onConfirmTap"
+      />
+    </view>
+  </pui-popup>
+  <view wx:else class="pui-picker__surface">
+    <view wx:if="{{showHeader}}" class="pui-picker__header">
+      <pui-button variant="text" size="small" content="{{cancelText}}" disabled="{{disabled}}" aria-label="取消选择" bind:click="onCancelTap" />
+      <view class="pui-picker__title">{{title}}</view>
+      <pui-button theme="primary" variant="text" size="small" content="{{confirmText}}" disabled="{{confirmDisabled}}" aria-label="确认选择" bind:click="onConfirmTap" />
+    </view>
+    <include src="./template.wxml" />
+  </view>
+</view>

@@ -1,0 +1,305 @@
+const assert = require('assert');
+const childProcess = require('child_process');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const root = path.resolve(__dirname, '..');
+const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+const iconSource = read('icon/icon.js');
+const iconWxml = read('icon/icon.wxml');
+const iconWxss = read('icon/icon.wxss');
+const iconFontWxss = read('icon/icon-font.wxss');
+const previewFontCss = read('preview/icon-font.css');
+const iconFontMap = require(path.join(root, 'icon/icon-font-map.js'));
+const iconFontCatalog = require(path.join(root, 'icon/icon-font-catalog.js'));
+const codepoints = JSON.parse(read('assets/icon-codepoints.json'));
+const manifest = JSON.parse(read('assets/icons-src/manifest.json'));
+const metadata = require(path.join(root, 'metadata/components.js'));
+const preview = read('preview/app.js');
+const previewCss = read('preview/styles.css');
+const previewHtml = read('preview/index.html');
+const previewDataSource = read('preview/icons-data.js');
+const api = read('docs/COMPONENT_API.md');
+const contract = read('docs/components/ICON.md');
+const contractIndex = read('docs/components/README.md');
+const componentIconNames = [
+  'button', 'divider', 'icon', 'popup', 'popover', 'sheet', 'action-sheet',
+  'dropdown-menu', 'overlay', 'badge', 'cell', 'swipe-cell', 'scroll-area', 'dialog',
+];
+const componentIconSources = {
+  button: 'rectangle-horizontal',
+  divider: 'separator-horizontal',
+  icon: 'shapes',
+  popup: 'square',
+  popover: 'square',
+  sheet: 'panel-bottom',
+  'action-sheet': 'panel-bottom',
+  'dropdown-menu': 'panel-top',
+  overlay: 'square',
+  badge: 'rectangle-horizontal',
+  cell: 'rectangle-horizontal',
+  'swipe-cell': 'rectangle-horizontal',
+  'scroll-area': 'square',
+  dialog: 'square',
+};
+const componentIconPrimitiveCounts = {
+  button: 2,
+  divider: 1,
+  icon: 2,
+  popup: 2,
+  popover: 2,
+  sheet: 2,
+  'action-sheet': 2,
+  'dropdown-menu': 3,
+  overlay: 2,
+  badge: 2,
+  cell: 2,
+  'swipe-cell': 2,
+  'scroll-area': 2,
+  dialog: 3,
+};
+const directLucideIcons = {
+  'arrow-left-right': { category: 'navigation', source: 'arrow-left-right' },
+  tag: { category: 'editing', source: 'tag' },
+  'gallery-horizontal': { category: 'media', source: 'gallery-horizontal' },
+};
+
+assert.deepStrictEqual(metadata.apiProps.icon, ['name', 'size', 'color', 'ariaLabel']);
+assert.deepStrictEqual(metadata.apiEvents.icon.map((event) => event.name), ['load', 'error']);
+assert.strictEqual(metadata.apiSlots.icon, undefined, 'Icon is a leaf and must not expose slots');
+assert.strictEqual(Object.keys(iconFontMap).length, 218);
+assert.strictEqual(iconFontCatalog.icons.length, 218);
+assert.strictEqual(iconFontCatalog.categories.length, 17);
+assert.strictEqual(Object.keys(codepoints.glyphs).length, 218);
+assert.strictEqual(manifest.icons.length, 218);
+assert.strictEqual(manifest.categories.length, 17);
+assert.strictEqual(manifest.font.family, 'PoemUI Roundline');
+assert.strictEqual(manifest.font.format, 'woff2');
+assert.strictEqual(manifest.font.delivery, 'embedded-data-uri');
+assert.strictEqual(manifest.font.glyphCount, 218);
+assert.deepStrictEqual(
+  manifest.icons.find((item) => item.name === 'codex'),
+  {
+    name: 'codex',
+    category: 'abstract',
+    source: 'bot',
+    path: 'abstract/codex.svg',
+    codepoint: codepoints.glyphs.codex
+  },
+  'Codex 必须来自锁定 Lucide bot 源并进入同一字体生成链'
+);
+assert(manifest.font.bytes > 10000 && manifest.font.bytes < 50000, 'local WOFF2 must remain compact enough for a Mini Program package');
+assert.strictEqual(iconFontWxss, previewFontCss, 'H5 and Mini Program must consume the exact same generated Icon Font CSS');
+const fontMatch = iconFontWxss.match(/base64,([A-Za-z0-9+/=]+)"\)/);
+assert(fontMatch, 'generated Icon Font CSS must embed a local WOFF2 data URI');
+const fontBuffer = Buffer.from(fontMatch[1], 'base64');
+assert.strictEqual(fontBuffer.subarray(0, 4).toString('ascii'), 'wOF2');
+assert.strictEqual(fontBuffer.length, manifest.font.bytes);
+assert.strictEqual(crypto.createHash('sha256').update(fontBuffer).digest('hex'), manifest.font.sha256);
+assert(!iconFontWxss.includes('https://') && !iconFontWxss.includes('http://'), 'Icon Font must not depend on a runtime CDN');
+
+assert(iconWxss.includes('@import "./icon-font.wxss";'));
+assert(iconWxss.includes('font-family: "PoemUI Roundline"'));
+assert(
+  /\.pui-icon\s*\{[\s\S]*?color:\s*inherit;/.test(iconWxss),
+  'Mini Program Icon must inherit the consumer foreground so currentColor remains visible in solid Buttons',
+);
+assert(
+  !/\.pui-icon\s*\{[\s\S]*?color:\s*var\(--pui-text-primary\);/.test(iconWxss),
+  'Icon root must not reset a composite consumer foreground to the page text token',
+);
+assert(iconSource.includes("require('./icon-font-map')"), 'Mini Program pui-icon must resolve names through icon-font-map');
+assert(!iconSource.includes("require('./icon-map')"));
+assert(!fs.existsSync(path.join(root, 'icon/icon-map.js')), 'legacy SVG icon-map runtime must be removed');
+for (const forbidden of ['src:', 'iconSrc', 'createCanvasContext', 'drawImage', 'renderWithCanvas', 'onImageLoad', 'onImageError', 'platform-info']) {
+  assert(!iconSource.includes(forbidden), `Mini Program Icon runtime must not retain ${forbidden}`);
+}
+assert(!/<(?:image|canvas)\b/.test(iconWxml), 'Mini Program Icon markup must only render a font glyph or fallback text');
+assert(!/pui-icon__(?:image|canvas|preload|pending)/.test(iconWxss), 'Mini Program Icon CSS must not retain image or Canvas branches');
+
+const assignedCodepoints = new Set();
+for (const [name, glyph] of Object.entries(iconFontMap)) {
+  const manifestItem = manifest.icons.find((item) => item.name === name);
+  const catalogItem = iconFontCatalog.icons.find((item) => item.name === name);
+  assert(manifestItem, `font map contains an unknown icon ${name}`);
+  assert(catalogItem, `font catalog is missing ${name}`);
+  assert.strictEqual(glyph.length, 1, `${name} must resolve to one BMP private-use glyph`);
+  const codepoint = glyph.charCodeAt(0);
+  assert(codepoint >= 0xe000 && codepoint <= 0xf8ff, `${name} must use the Unicode Private Use Area`);
+  assert.strictEqual(codepoint.toString(16).toUpperCase().padStart(4, '0'), codepoints.glyphs[name]);
+  assert.strictEqual(catalogItem.codepoint, manifestItem.codepoint);
+  assert.strictEqual(catalogItem.category, manifestItem.category);
+  assert.strictEqual(catalogItem.source, manifestItem.source);
+  assert(!assignedCodepoints.has(codepoint), `${name} reuses an existing Icon Font codepoint`);
+  assignedCodepoints.add(codepoint);
+}
+
+assert.deepStrictEqual(manifest.categories.find((category) => category.key === 'components'), {
+  key: 'components',
+  label: 'Components 组件',
+  desc: 'PoemUI 已落地组件的专属图形',
+  count: 14,
+});
+assert.deepStrictEqual(manifest.icons.filter((icon) => icon.category === 'components').map((icon) => icon.name), componentIconNames);
+for (const name of componentIconNames) {
+  const item = manifest.icons.find((icon) => icon.name === name);
+  const svg = read(`assets/icons-src/${item.path}`);
+  assert.strictEqual(item.source, componentIconSources[name], `${name} must keep its stable Lucide source alias`);
+  assert(iconFontMap[name], `${name} must be available through the generated Icon Font map`);
+  assert(svg.includes(`Derived from Lucide ${componentIconSources[name]}`), `${name} SVG must retain its Lucide source notice`);
+  assert(svg.includes('viewBox="0 0 24 24"') && svg.includes('stroke-width="2.15"') && svg.includes('stroke-linecap="round"') && svg.includes('stroke-linejoin="round"'), `${name} must use the Roundline SVG contract`);
+  const primitiveCount = (svg.match(/<(?:path|rect|circle|line|polyline|polygon|ellipse)\b/g) || []).length;
+  assert.strictEqual(primitiveCount, componentIconPrimitiveCounts[name], `${name} must keep the reviewed reduced-stroke geometry`);
+  assert(primitiveCount <= 3, `${name} must not exceed three visible primitives at 20rpx`);
+}
+for (const [name, expected] of Object.entries(directLucideIcons)) {
+  const item = manifest.icons.find((icon) => icon.name === name);
+  assert(item, `${name} must exist in the generated public catalog`);
+  assert.strictEqual(item.category, expected.category, `${name} must stay in its semantic generic category`);
+  assert.strictEqual(item.source, expected.source, `${name} must keep the direct locked Lucide source`);
+  assert(iconFontMap[name], `${name} must be available through the generated Icon Font map`);
+}
+
+const popupSvg = read('assets/icons-src/components/popup.svg');
+assert(popupSvg.includes('M9 20H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v5'));
+assert(popupSvg.includes('<rect x="9" y="11" width="10" height="10" rx="2.5"/>'));
+assert(read('scripts/generate-icons.js').includes('writeComponentIconPreview'));
+assert(fs.existsSync(path.join(root, 'assets/component-icons-preview.svg')));
+
+const previewContext = { window: {} };
+vm.runInNewContext(previewDataSource, previewContext);
+const previewIconData = previewContext.window.POEMUI_ICON_DATA;
+assert.strictEqual(previewIconData.icons.length, 218);
+assert.strictEqual(previewIconData.categories.length, 17);
+assert.strictEqual(previewIconData.font.family, 'PoemUI Roundline');
+assert(previewIconData.icons.every((item) => item.name && item.category && item.source && item.codepoint));
+assert(previewIconData.icons.every((item) => item.svg === undefined && item.path === undefined), 'H5 catalog must not carry inline SVG bodies or SVG runtime paths');
+assert(previewHtml.includes('href="./icon-font.css'));
+assert(preview.includes('String.fromCodePoint(Number.parseInt(icon.codepoint, 16))'));
+assert(preview.includes('class="pui-icon__glyph"'));
+assert(!preview.includes('<svg class="glyph"'));
+assert(!preview.includes('function bindIconSourcePreview'));
+assert(!preview.includes('data-pui-icon-source'));
+assert(!previewCss.includes('.pui-icon__source-mask'));
+assert(!previewCss.includes('.pui-icon__image'));
+assert(!previewCss.includes('.pui-icon .glyph'));
+assert(previewCss.includes('--pui-font-family-icon: "PoemUI Roundline"'));
+assert(previewCss.includes('font-family: var(--pui-font-family-icon)'));
+assert(preview.includes('H5 与小程序都使用同一份本地 Icon Font'));
+assert(preview.includes('业务图片使用 Image'));
+const iconDescriptionBlock = preview.match(/if \(id === 'icon'\) \{[\s\S]*?return descriptions\[key\];\n  \}/)?.[0] || '';
+assert(iconDescriptionBlock, 'H5 Icon prop descriptions must exist');
+assert(!/\b(?:src|disabled):/.test(iconDescriptionBlock), 'H5 Icon descriptions must not restore removed src or disabled props');
+
+for (const forbidden of ['disabled:', 'onTap: function onTap', "triggerEvent('click'"]) {
+  assert(!iconSource.includes(forbidden), `Icon must remain a display leaf without ${forbidden}`);
+}
+assert(!iconWxml.includes('bindtap='));
+assert(iconWxml.includes('<text wx:if="{{fontGlyph}}" class="pui-icon__glyph">{{fontGlyph}}</text>'));
+assert(iconWxml.includes('aria-hidden="{{!ariaLabel}}"'));
+assert(iconWxml.includes('aria-label="{{ariaLabel}}"'));
+assert(!iconWxss.includes('pui-icon--disabled'));
+assert(iconSource.includes("error: 'unknown-icon'"));
+assert(iconSource.includes("error: 'font-glyph-unavailable'"));
+
+assert(preview.includes("if (runtimeId === 'icon')"));
+assert(preview.includes('<pui-icon name="${escapeHtml(iconName)}"'));
+assert(preview.includes('function setIconLibraryCopyFeedback(name, status)'));
+assert(preview.includes('await writePreviewClipboard(iconName)'));
+assert(preview.includes('function toastPreviewMarkup('));
+assert(previewCss.includes('.icon-library__toast-layer'));
+assert(api.includes('Icon 本身不伪装成不完整的交互控件'));
+assert(api.includes('并通过真实剪贴板能力复制该图标名'));
+assert(api.includes('| `load` | `{ name, source: "font" }` |'));
+assert(api.includes('本地 WOFF2 字形') && api.includes('currentColor'));
+assert(!api.match(/## Icon[\s\S]*?\| `click` \|[\s\S]*?## Cell/));
+assert(api.includes('<pui-icon name="arrow-left" size="36" aria-label="返回" />'));
+assert(contract.includes('## 9. TDesign 1.15.3 对照决定'));
+assert(contract.includes('拒绝 Icon `click/disabled`'));
+assert(contract.includes('icon-font-map.js') && contract.includes('icon-font-catalog.js'));
+assert(contract.includes('assets/icon-codepoints.json'));
+assert(contract.includes('H5') && contract.includes('小程序') && contract.includes('Icon Font'));
+assert(contractIndex.includes('[Icon](./ICON.md)'));
+
+const sourceWxml = [];
+function collectWxml(relative) {
+  const full = path.join(root, relative);
+  for (const entry of fs.readdirSync(full, { withFileTypes: true })) {
+    const child = path.join(relative, entry.name);
+    if (entry.isDirectory()) {
+      if (['node_modules', 'miniprogram_npm', 'miniprogram_dist'].includes(entry.name)) continue;
+      collectWxml(child);
+    } else if (entry.name.endsWith('.wxml')) sourceWxml.push(child);
+  }
+}
+collectWxml('.');
+for (const file of sourceWxml) {
+  const text = read(file);
+  const invalid = [...text.matchAll(/<pui-icon\b[^>]*\bsize="([^"]+)"/g)]
+    .filter((match) => !/^\d+$/.test(match[1]) && !/^\{\{[^}]+\}\}$/.test(match[1]));
+  assert.strictEqual(invalid.length, 0, `${file} contains non-numeric Icon size: ${invalid.map((match) => match[1]).join(', ')}`);
+  assert(!/<pui-icon\b[^>]*\bsrc=/.test(text), `${file} must use pui-image for business images instead of pui-icon src`);
+}
+
+let definition = null;
+vm.runInNewContext(iconSource, {
+  Component(value) { definition = value; },
+  require(request) {
+    if (request === '../common/behaviors/theme') return {};
+    if (request === './icon-font-map') return iconFontMap;
+    throw new Error(`Unexpected dependency: ${request}`);
+  },
+});
+assert(definition, 'Icon runtime definition must be captured');
+assert.deepStrictEqual(Object.keys(definition.properties), ['name', 'size', 'color', 'ariaLabel']);
+assert.strictEqual(definition.methods.onTap, undefined);
+
+function makeInstance(overrides) {
+  const events = [];
+  const instance = {
+    data: {
+      name: '', size: 44, color: '', ariaLabel: '', colorScheme: '',
+      ...definition.data,
+      ...overrides,
+    },
+    events,
+    getColorSchemeClass() { return this.data.colorScheme ? `pui-theme--${this.data.colorScheme}` : ''; },
+    setData(patch, callback) { Object.assign(this.data, patch); if (callback) callback.call(this); },
+    triggerEvent(name, detail) { events.push({ name, detail }); },
+  };
+  Object.assign(instance, definition.methods);
+  return instance;
+}
+
+const unknown = makeInstance({ name: 'missing-icon', size: 0 });
+unknown.syncIcon();
+assert.strictEqual(unknown.data.iconStyle, 'width:8rpx;height:8rpx;font-size:8rpx;');
+assert.strictEqual(unknown.data.fallbackGlyph, 'M');
+assert.deepStrictEqual(unknown.events.map((event) => event.name), ['error']);
+assert.strictEqual(unknown.events[0].detail.error, 'unknown-icon');
+unknown.syncIcon();
+assert.strictEqual(unknown.events.length, 1, 'same unknown name must not emit duplicate errors');
+
+const tinted = makeInstance({ name: 'spark', color: '#2563eb', size: 256 });
+tinted.syncIcon();
+assert.strictEqual(tinted.data.fontGlyph, iconFontMap.spark);
+assert.strictEqual(tinted.data.iconStyle, 'width:256rpx;height:256rpx;font-size:256rpx;color:#2563eb;');
+assert.strictEqual(tinted.events.at(-1).name, 'load');
+assert.strictEqual(tinted.events.at(-1).detail.source, 'font');
+
+const tokenTinted = makeInstance({ name: 'warning-triangle', color: 'var(--pui-alert-warning-tinted-fg)' });
+tokenTinted.syncIcon();
+assert.strictEqual(tokenTinted.data.fontGlyph, iconFontMap['warning-triangle']);
+assert(tokenTinted.data.iconStyle.includes('color:var(--pui-alert-warning-tinted-fg);'));
+assert.strictEqual(tokenTinted.events.at(-1).name, 'load');
+
+const outlineAudit = childProcess.execFileSync(
+  process.execPath,
+  [path.join(root, 'scripts/test-icon-font-outlines.js')],
+  { encoding: 'utf8' },
+);
+assert(outlineAudit.includes('59 hollow circles and 25 semantic dots'));
+
+process.stdout.write('Icon Font cross-platform contract tests passed.\n');

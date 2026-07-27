@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0306",
+  "title": "小程序 Icon 页代表性复制卡未覆盖完整图标目录",
+  "scope": "component",
+  "components": ["icon", "search", "scroll-area", "miniprogram"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Icon 独立页的搜索框必须全宽，全部真实 PUI 图标以三列纯图标网格展示，并通过目录与分类文案提供足够的浏览引导。",
+  "environment": {
+    "surfaces": ["miniprogram-component-page"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 miniprogram/pages/components/icon/index 页面。",
+    "旧页面仅维护 12 个代表性图标，将名称与复制操作放入两列 Button 卡片。",
+    "搜索仅过滤该代表性数组，不能检索当前安装 PUI 包中的完整 Icon 目录。"
+  ],
+  "expected": "搜索框占满 ScrollArea 内容宽度；图标页从标准 npm 已构建的 PUI Icon map 读取全量目录，按真实资源分类显示为三列纯图标网格。目录说明、分类语义与数量提供浏览引导，网格叶子不显示名称、卡片或伪复制动作。",
+  "actual": "旧页面以私有 12 项样本数组和复制卡片代替完整目录，信息密度、搜索范围与用户目标不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求全宽搜索、三列纯图标陈列，并优先按分类展示。"},
+    {"kind": "file", "ref": "miniprogram/miniprogram_npm/poemui-miniprogram/icon/icon-font-catalog.js", "note": "微信 npm 产物含 209 个真实字体图标名称、分类、来源和稳定码点。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/icon/index.js", "note": "页面直接读取 Icon Font 目录，按分类分组并用搜索词过滤完整目录。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/icon/index.wxml", "note": "页面只渲染 PUI Search、分类标题和 PUI Icon 三列网格。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-component-pages.js", "note": "专项合同锁定全宽搜索、真实 npm 图标目录、目录与分类说明、三列网格和无复制卡片。"}
+  ],
+  "rootCause": "详情页首版为了演示 Icon API 使用了有限样本与复制动作；这与当前用户要求的完整浏览型图标目录相冲突。",
+  "decision": {
+    "outcome": "小程序 Icon 页直接消费已安装 poemui-miniprogram 的 icon-font-catalog，按真实分类分区；搜索过滤全量目录，页面与分类标题提供文案与数量，网格叶子只保留 pui-icon 与可见名称。",
+    "rationale": "npm 图标映射是安装端唯一可复现的目录真相源，避免手写或复制 200 项名单；纯图标网格保持浏览密度，而目录文案和分区留白保证用户不面对裸图标墙。",
+    "alternativesRejected": [
+      "继续维护页面私有图标数组会随组件库目录漂移。",
+      "保留名称和复制 Button 卡片与纯图标陈列目标冲突。",
+      "将 H5 图标库的复制交互搬入小程序会扩大本次页面范围，且不符合用户当前目标。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/components/icon/index.js", "miniprogram/pages/components/icon/index.wxml", "miniprogram/pages/components/icon/index.wxss", "miniprogram/pages/components/icon/index.json", "scripts/test-miniprogram-component-pages.js", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0306-miniprogram-icon-full-catalog-grid.json"],
+    "dependencies": ["pui-icon", "pui-search", "pui-scroll-area", "poemui-miniprogram/icon/icon-font-catalog"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-component-pages.js", "scripts/test-icon.js", "scripts/test-search.js", "scripts/test-scroll-area.js"],
+    "commands": ["node scripts/test-miniprogram-component-pages.js", "node scripts/test-icon.js", "node scripts/test-search.js", "node scripts/test-scroll-area.js", "npm run feedback:generate", "npm run feedback:check", "npm run check", "微信开发者工具普通编译", "微信 CLI build-npm"],
+    "browser": ["合法 AppID wx23aa017375535746 的微信开发者工具 RC 2.02.2607161、iPhone 12/13 390px 模拟器已显示目录说明、分类语义与数量、40rpx 三列图标及唯一 ScrollArea；Search 宽度以 PUI-FB-0307 的组件级修复验收。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 200 图标长列表的惯性滚动、Search 软键盘、SVG 加载和读屏 ariaLabel。", "当前开发者工具辅助功能 set_value 会显示输入值但不派发小程序 Search change，不能单独作为筛选真机证据；页面运行态专项测试已验证 arrow 过滤与清空恢复。", "H5 图标资源库的名称复制能力由 PUI-FB-0294 与 ICON 合同单独约束，本轮未改动。"]
+  },
+  "ai": {
+    "summary": "小程序完整 Icon 浏览应直接消费 npm Icon Font 目录，并以搜索加分类纯图标网格展示，禁止复制一份页面私有目录。",
+    "rules": [
+      "图标目录来自 npm 已构建的 icon-font-catalog 时，页面不得维护平行图标名单。",
+      "用户要求纯图标网格时，叶子只渲染 pui-icon；名称、复制卡片和无对应交互的 Button 一并移除，但页面与分区仍须提供可读浏览文案。",
+      "页面组合变更不改变共享 Icon API 时，不为同步而修改 H5 图标资源库。"
+    ],
+    "tags": ["miniprogram", "icon", "search", "grid", "npm"]
+  }
+}

@@ -1,0 +1,111 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}};{{customStyle}}"
+  role="list"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+>
+  <view wx:if="{{showHeader || customHeader}}" class="pui-list__header">
+    <slot wx:if="{{customHeader}}" name="header"></slot>
+    <pui-cell
+      wx:else
+      custom-class="pui-list__header-cell"
+      title="{{title}}"
+      description="{{description}}"
+      bordered="{{false}}"
+      color-scheme="{{colorScheme}}"
+    />
+  </view>
+
+  <view class="pui-list__body">
+    <view class="pui-list__content {{stateType === 'content' ? 'pui-list__content--active' : 'pui-list__content--inactive'}}">
+      <slot wx:if="{{useSlot}}"></slot>
+      <block wx:else>
+        <view wx:for="{{normalizedItems}}" wx:key="id" class="pui-list__item-wrap" role="listitem">
+          <pui-cell
+            custom-class="pui-list__item {{item.disabled ? 'pui-list__item--disabled' : ''}} {{item.loading ? 'pui-list__item--loading' : ''}}"
+            title="{{item.title}}"
+            description="{{showDescription ? item.description : ''}}"
+            note="{{item.note}}"
+            value="{{showValue ? item.valueText : ''}}"
+            image="{{item.image}}"
+            left-icon="{{showIcon ? item.leftIcon : ''}}"
+            right-icon="{{showIcon ? item.rightIcon : ''}}"
+            align="{{item.align}}"
+            required="{{item.required}}"
+            clickable="{{clickable && item.clickable && !disabled && !item.disabled && !item.loading}}"
+            hover="{{clickable && item.clickable && !disabled && !item.disabled && !item.loading}}"
+            arrow="{{showArrow && item.arrow && !item.loading}}"
+            bordered="{{false}}"
+            color-scheme="{{colorScheme}}"
+            data-index="{{item.index}}"
+            bind:click="onItemTap"
+          >
+            <view slot="right" class="pui-list__trailing">
+              <pui-loading
+                wx:if="{{item.loading}}"
+                loading
+                size="28rpx"
+                duration="{{duration}}"
+                easing="{{easing}}"
+                reduce-motion="{{reduceMotion}}"
+                aria-label="{{item.title}}加载中"
+                color-scheme="{{colorScheme}}"
+              />
+              <pui-badge
+                wx:elif="{{showBadge && item.badgeVisible}}"
+                count="{{item.badge}}"
+                dot="{{item.badgeDot}}"
+                max-count="{{item.badgeMax}}"
+                color="{{item.badgeColor}}"
+                show-zero
+                size="small"
+                aria-label="{{item.badgeAriaLabel}}"
+                color-scheme="{{colorScheme}}"
+              />
+            </view>
+          </pui-cell>
+        </view>
+      </block>
+    </view>
+
+    <view class="pui-list__state pui-list__state--loading {{stateType === 'loading' ? 'pui-list__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'loading'}}">
+      <pui-loading
+        loading="{{stateType === 'loading'}}"
+        size="36rpx"
+        text="{{loadingText}}"
+        duration="{{duration}}"
+        easing="{{easing}}"
+        reduce-motion="{{reduceMotion}}"
+        color-scheme="{{colorScheme}}"
+      />
+    </view>
+    <view class="pui-list__state pui-list__state--error {{stateType === 'error' ? 'pui-list__state--active' : ''}}" role="alert" aria-hidden="{{stateType !== 'error'}}">
+      <pui-empty description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
+    </view>
+    <view class="pui-list__state pui-list__state--empty {{stateType === 'empty' ? 'pui-list__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'empty'}}">
+      <slot wx:if="{{customEmpty}}" name="empty"></slot>
+      <pui-empty wx:else description="{{emptyText}}" icon="inbox" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" />
+    </view>
+  </view>
+
+  <view class="pui-list__footer {{showFooter ? 'pui-list__footer--active' : 'pui-list__footer--inactive'}}">
+    <slot wx:if="{{customFooter}}" name="footer"></slot>
+    <pui-button
+      wx:else
+      custom-class="pui-list__footer-button"
+      theme="{{footerState === 'error' ? 'danger' : 'default'}}"
+      variant="text"
+      size="small"
+      block
+      icon="{{footerIcon}}"
+      loading="{{footerState === 'loading'}}"
+      loading-props="{{loadingProps}}"
+      disabled="{{footerDisabled}}"
+      aria-label="{{footerText}}"
+      reduce-motion="{{reduceMotion}}"
+      color-scheme="{{colorScheme}}"
+      bind:click="onFooterTap"
+    >{{footerText}}</pui-button>
+  </view>
+</view>

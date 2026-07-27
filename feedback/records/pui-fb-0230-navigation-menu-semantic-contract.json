@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0230",
+  "title": "NavigationMenu 缺少专属语义合同",
+  "scope": "component",
+  "components": ["navigation-menu"],
+  "type": "ai-usability",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "基于 Popup battle 的真实交互和可读性规则，自主审计并优化全库官网组件预览。",
+  "environment": {"surfaces": ["component-contract", "h5-preview", "miniprogram-source"], "platforms": ["browser", "node", "wechat-miniprogram"], "viewports": ["390x844"], "themes": ["light", "dark"]},
+  "reproduction": ["发布组件 navigation-menu 不在 docs/components 已建立合同清单中，后续修改无法读取其五重受控、Layer、状态与跨端边界。"],
+  "expected": "每个已发布组件都有基于实际源码、预览、API、示例、测试和 Ledger 的专属语义合同。",
+  "actual": "NavigationMenu 已有源码和专项测试，但缺少长期语义合同。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户授权按全库规则自主优化，无需逐个组件确认。"},
+    {"kind": "file", "ref": "navigation-menu/navigation-menu.js", "note": "实现包含五重受控、树上限、状态与 Layer 生命周期。"},
+    {"kind": "file", "ref": "docs/components/NAVIGATION-MENU.md", "note": "合同记录结构、PUI 组合、状态、动效和 H5/真机边界。"},
+    {"kind": "test", "ref": "scripts/test-navigation-menu.js", "note": "专项测试锁定合同关键语义和 60 Props 实现。"}
+  ],
+  "rootCause": "历史合同迁移未覆盖复杂菜单组件。",
+  "decision": {"outcome": "建立真实语义合同并接入专项测试。", "rationale": "减少后续 Agent 把菜单、遮罩、导航或工程诊断误改为页面私有实现的风险。", "alternativesRejected": ["批量生成空白模板：没有真实实现价值。"]},
+  "impact": {"files": ["docs/components/NAVIGATION-MENU.md", "docs/components/README.md", "scripts/test-navigation-menu.js", "feedback/records/pui-fb-0230-navigation-menu-semantic-contract.json", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"], "dependencies": ["pui-button", "pui-cell", "pui-badge", "pui-icon", "pui-loading", "pui-empty"]},
+  "verification": {"tests": ["scripts/test-navigation-menu.js"], "commands": ["node scripts/test-navigation-menu.js", "npm run feedback:generate", "npm run feedback:check", "npm run check"], "browser": ["本次只补合同；此前 390x844 已实际点击根入口并验证展开面板无横向溢出，仍需按本 Goal 继续覆盖全部状态与外观。"], "deviceRisks": ["合法 AppID 真机仍需验证 fixed 遮罩、scroll-view、rpx、Slot、微信导航 API、触摸、读屏与低动效。"]},
+  "ai": {"summary": "复杂组件的合同必须写清结构、状态、受控与平台边界，不能只留 Props 表。", "rules": ["NavigationMenu 修改前必须同时审计树上限、五重受控、Layer、PUI Button/Cell 组合和导航 API。", "官网概览的工程诊断由 component-only 归一化移除，不能重新作为用户内容。"], "tags": ["navigation-menu", "contract", "governance"]}
+}

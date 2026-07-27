@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0177",
+  "title": "ConfigProvider 专项测试仍断言旧版 H5 Store 说明文字",
+  "scope": "component",
+  "components": ["config-provider", "preview-site"],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "DropdownMenu 完整门禁不能被 ConfigProvider 的过期展示文案断言阻断，且不改变已存在的全局视觉配置能力。",
+  "environment": {
+    "surfaces": ["test-suite", "h5-preview", "miniprogram-source"],
+    "platforms": ["node"],
+    "viewports": ["not-applicable"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "执行 npm run check，ConfigProvider 专项测试要求 preview/app.js 包含旧中文说明 `useGlobalConfig=true 时读取 visualConfig.theme` 与 `Store 配置优先于本组件的单项视觉 Props`。",
+    "当前 H5 为了和官网全局外观状态同源，configProviderEffectiveProps 在 useGlobalConfig 时实际读取 state.theme/shadow/frost/radius/border，并在 data-config-source 标注 global/local。小程序端仍从 visualConfig Store 读取。"
+  ],
+  "expected": "测试必须验证当前 H5 全局配置的真实状态来源与可见来源标识，不应把已移除的说明句子当作能力证据。",
+  "actual": "过期文案断言使全库 check 在 DropdownMenu 以外停止，而实际 H5 和小程序 Provider 的全局配置主链仍存在。",
+  "evidence": [
+    {"kind": "test", "ref": "scripts/test-config-provider.js", "note": "2026-07-20 npm run check 在两条旧中文文案断言处失败。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "configProviderEffectiveProps 在全局模式读取 state.theme/shadow/frost/radius/border，并输出 global/local data-config-source。"},
+    {"kind": "file", "ref": "config-provider/config-provider.js", "note": "微信组件 useGlobalConfig 仍通过 visualConfig.get/subscribe 提取共享主题与效果。"}
+  ],
+  "rootCause": "H5 Store 镜像从旧说明文案演示改为站点外观状态派生后，专项测试未同步为可执行状态合同。",
+  "decision": {
+    "outcome": "仅更新测试为读取 state.theme 与 global/local 来源标识，不改 H5 或小程序 ConfigProvider 实现。",
+    "rationale": "测试仍覆盖全局模式覆盖局部 Props 的真实数据路径，同时允许文案按产品需要演进。",
+    "alternativesRejected": [
+      "把旧说明句补回 H5，只会制造重复和误导。",
+      "跳过 ConfigProvider 测试，会降低全库门禁对全局视觉状态的保护。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/test-config-provider.js"],
+    "dependencies": ["configProviderEffectiveProps", "visualConfig", "global appearance state"]
+  },
+  "verification": {
+    "tests": ["scripts/test-config-provider.js"],
+    "commands": ["npm run check"],
+    "browser": ["未改动 ConfigProvider 运行态；本次仅使专项测试重新断言当前 H5 全局状态派生合同。"],
+    "deviceRisks": []
+  },
+  "ai": {
+    "summary": "跨端同一能力可以有不同的状态桥接，但测试必须断言真实数据源而不是旧文案。",
+    "rules": [
+      "修复全库 gate 前先核验 H5 和小程序路径是否仍提供能力；只校正过期断言，不以恢复旧文案冒充修复。",
+      "ConfigProvider H5 全局模式读取站点共享状态，小程序全局模式读取 visualConfig Store，两端都必须有可验证的来源标识。"
+    ],
+    "tags": ["config-provider", "test-contract", "global-config", "stale-assertion"]
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0359",
+  "title": "ActionSheet 共同 Layer 透明度导致遮罩先于面板完成进入",
+  "scope": "component",
+  "components": ["action-sheet", "popup", "preview-site", "miniprogram-component-pages"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "ActionSheet 打开时遮罩、Blur 与底部 Surface 像 Popup 一样在同一进入帧开始，不能先完成遮罩再出现面板。",
+  "environment": {
+    "surfaces": ["action-sheet", "miniprogram-action-sheet-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram-webview", "wechat-devtools", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开小程序 ActionSheet 独立页并点击“打开动作面板”。",
+    "观察色遮先明显出现，底部 Surface 随后才达到可见状态。",
+    "对比 Popup：Popup Layer 不拥有 opacity，Mask 和 Surface 分别在同一 entered 状态下开始自己的过渡。",
+    "检查 action-sheet/action-sheet.wxss：ActionSheet Layer、Mask、Surface 三层都声明 opacity，Surface 被共同 Layer 和自身透明度重复合成。"
+  ],
+  "expected": "全屏 Layer 只负责层级、指针边界和退场保留；Mask 独立淡入，Surface 独立执行 opacity/translateY，Blur 从 Layer 挂载起参与合成。",
+  "actual": "共同 Layer 额外执行 500ms opacity，Mask 与 Surface 又各自执行 500ms 动效，形成双重透明度并让 Surface 视觉晚于遮罩。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-25 当前对话",
+      "note": "用户指出 ActionSheet 仍然遮罩后出，要求学习 Popup 的进入模型。"
+    },
+    {
+      "kind": "file",
+      "ref": "action-sheet/action-sheet.wxss",
+      "note": "修复前 Layer、Mask、Surface 同时拥有 opacity；修复后 Layer 不再声明 opacity/transition。"
+    },
+    {
+      "kind": "file",
+      "ref": "popup/popup.wxss",
+      "note": "Popup 已确立共同 Layer 无视觉透明度、Mask 与 Surface 独立同帧进入的参考实现。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-action-sheet.js",
+      "note": "专项锁定 Layer 不拥有 opacity/transition，Mask 与 Surface 分别拥有自己的进入动效，并核对 H5 镜像。"
+    }
+  ],
+  "rootCause": "ActionSheet 在补齐独立 Mask 淡入后没有移除历史 Layer opacity，导致共同祖先和 Surface 双重透明度合成；Popup 的同类修复没有同步迁移到 ActionSheet。",
+  "decision": {
+    "outcome": "将 ActionSheet Layer 收敛为无视觉动画的全屏挂载层；保留现有 active/phase 生命周期，由 Mask 和 Surface 在同一个 active 帧分别开始 opacity 与 translateY。",
+    "rationale": "复用 Popup 已验证的职责划分即可消除视觉延迟，不改变 ActionSheet API、500ms/1ms 时长、受控显隐、事件顺序或退场卸载。",
+    "alternativesRejected": [
+      "缩短 Surface duration 只能掩盖共同 Layer 的重复透明度，无法保证 Blur 同帧合成。",
+      "延迟 Mask 进入会把错误时序反向复制，并让背景在 Surface 出现前仍可干扰阅读。",
+      "页面额外叠加私有 Overlay 会产生第二个遮罩和点击边界，不是组件级修复。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "action-sheet/action-sheet.wxss",
+      "scripts/test-action-sheet.js",
+      "docs/components/ACTION-SHEET.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0359-action-sheet-mask-surface-enter-timing.json"
+    ],
+    "dependencies": ["pui-action-sheet", "pui-popup-motion-model", "backdrop-filter", "visualConfig"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-action-sheet.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/check-package.js",
+      "scripts/prepare-example.js"
+    ],
+    "commands": [
+      "node scripts/test-action-sheet.js",
+      "PUI_VERIFY_DIST=1 node scripts/test-action-sheet.js",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project '/Users/fanx/Documents/poemUI 小程序组件库/miniprogram'",
+      "shasum action-sheet/action-sheet.wxss miniprogram_dist/action-sheet/action-sheet.wxss _example/node_modules/poemui-miniprogram/miniprogram_dist/action-sheet/action-sheet.wxss miniprogram/miniprogram_npm/poemui-miniprogram/action-sheet/action-sheet.wxss"
+    ],
+    "browser": [
+      "微信开发者工具 RC 2.02.2607161、AppID wx23aa017375535746、iPhone 12/13 Pro 390px 主 WebView：沿首页真实路由进入 ActionSheet 独立页，打开与取消关闭均真实回写；开启局部毛玻璃后，同一次点击即显示完整 Blur 遮罩与底部 Surface，未再观察到面板等待遮罩完成。",
+      "ActionSheet WXSS 在源码、miniprogram_dist、示例 npm 安装包与微信 miniprogram_npm 中 SHA-1 均为 0c7b8483cbac246ab41eb6a8e69b601ced16971b。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机仍需确认 backdrop-filter 性能、系统低动效、fixed 遮罩和触摸命中。"
+    ]
+  },
+  "ai": {
+    "summary": "ActionSheet 与 Popup 的共同 Layer 都只能管理挂载和层级；Mask 与 Surface 必须独立且同帧进入。",
+    "rules": [
+      "任何带 Blur 的浮层不得在共同 Layer 上动画 opacity；否则 backdrop-filter 与 Surface 会被父级透明度延后。",
+      "ActionSheet Mask 自己管理色遮 opacity，Surface 自己管理 opacity/translateY，两者共享同一 active 帧和时长。",
+      "修复浮层时序必须同步小程序、H5 镜像断言、组件合同、Ledger、dist、示例安装和微信 npm 产物。"
+    ],
+    "tags": ["action-sheet", "popup", "overlay", "blur", "motion", "same-frame"]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0278",
+  "title": "Sidebar 概览缺少消费者内容，选值结果不可见",
+  "scope": "component",
+  "components": ["sidebar", "cell", "button", "badge", "icon", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Sidebar 预览右侧必须显示会随左侧选项切换的内容，让用户看见导航选择的真实结果。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-contract", "api-reference"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "393x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 #/components/sidebar 的概览。",
+    "修复前只显示独立的 Sidebar 窄列与重复场景，点击条目虽会更新 value，却没有可见消费者内容表明选择产生了什么结果。"
+  ],
+  "expected": "概览应是全高双栏工作区：左侧 Sidebar 保持唯一选值所有权，右侧消费者内容通过同一个 current value 显示对应标题、说明和 PUI Cell；点击后两侧必须同步更新。",
+  "actual": "旧概览把四个示例纵向堆叠，没有右侧结果区，用户无法从视觉上确认左侧切换的价值。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求右侧有内容，并能看见 Sidebar 切换内容显示。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "Sidebar 概览现输出 pui-sidebar-workspace；右侧 data-sidebar-content、标题和 CellGroup 均从 current.item 推导。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/sidebar",
+      "note": "390px 实点基础后，左侧 active=基础、data-sidebar-current=foundation、右侧 data-sidebar-content=foundation 与标题基础组件同步变化。"
+    }
+  ],
+  "rootCause": "官网把 Sidebar 当作孤立叶子组件展示，沿用纵向堆叠的能力分区，没有提供真实消费者读取 change/value 的上下文。",
+  "decision": {
+    "outcome": "Sidebar 官网概览改为唯一全高工作区：左栏为真实 Sidebar，右栏为外部消费者内容；右栏使用 PUI CellGroup/Cell 呈现并由同一个 current value 驱动。Sidebar 公开 API 仍为24 Props、2 Events、0 Slots、0 Methods。",
+    "rationale": "这样既可让用户直观看到选择结果，也不把页面内容、路由或业务数据错误塞进 Sidebar 组件本身。",
+    "alternativesRejected": [
+      "只在左栏下方更新事件文本，不能证明消费者内容真实切换。",
+      "把右栏作为 Sidebar 新 Slot 或 Prop，会扩大组件职责和公开 API。",
+      "继续堆叠多个窄列示例，无法形成连贯的导航工作流。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-sidebar.js", "scripts/test-preview-overview-hierarchy.js", "docs/components/SIDEBAR.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "feedback/records/pui-fb-0278-sidebar-consumer-content-workspace.json"],
+    "dependencies": ["PreviewDevice edge-to-edge layout", "PUI Sidebar Button/Badge/Icon", "PUI CellGroup", "PUI Cell"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sidebar.js", "scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["node scripts/test-sidebar.js", "node scripts/test-preview-overview-hierarchy.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["390px 下工作区=327×600px，左栏=180×600px、右栏=147×600px；点击基础后左栏和右栏均为 foundation，页面横向 overflow=0。"],
+    "deviceRisks": ["右侧消费者内容是官网演示层，不替代微信页面路由；真机仍需确认 Sidebar 自身 rpx、scroll-view、sticky、Button 触摸和读屏。"]
+  },
+  "ai": {
+    "summary": "导航组件概览需要可见消费者结果，但消费者内容必须在组件外组合，不能借机扩大 Sidebar API。",
+    "rules": [
+      "当导航项切换时，右侧消费者内容必须读取同一个受控或非受控 current value 真实更新。",
+      "右侧演示内容优先组合 PUI CellGroup 和 Cell，不要用静态提示文字冒充结果。",
+      "Sidebar 仍只负责选值、局部滚动和集合状态；右侧内容不得新增为 Slot、Prop 或业务职责。"
+    ],
+    "tags": ["sidebar", "consumer-context", "controlled", "preview-workspace", "390px"]
+  }
+}

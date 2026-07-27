@@ -1,0 +1,117 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0365",
+  "title": "H5 与小程序必须统一为 Icon Font 唯一运行时",
+  "scope": "component",
+  "components": ["icon", "image"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "所有 pui-icon 在 H5 与微信小程序中都必须使用同一 Icon Font，并把 inline SVG、icon-map、图片、CSS mask 和 Canvas 旧运行时彻底移出当前环境。",
+  "environment": {
+    "surfaces": ["icon-component", "h5-preview", "miniprogram-icon-page", "npm-package", "wechat-npm"],
+    "platforms": ["browser", "wechat-miniprogram-webview", "wechat-devtools", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "H5 的 iconComponent 仍从 preview/icons-data.js 读取 svg body 并生成 inline SVG，而小程序内置 name 已使用 WOFF2，形成两套运行时。",
+    "pui-icon 仍公开 src，并在小程序保留 image、隐藏 image、Canvas source-in 与平台尺寸计算；H5 则保留 image/CSS mask/probe 分支。",
+    "Icon 独立页、包检查和专项测试仍依赖 icon-map.js，导致旧 SVG 路径表会被生成器和安装产物持续恢复。"
+  ],
+  "expected": "H5 与小程序全部 209 个 name 使用同一 WOFF2、稳定码点和 currentColor；pui-icon 只保留 name/size/color/ariaLabel，业务图片使用 pui-image；所有旧运行时、生成入口和发布产物均不存在。",
+  "actual": "跨端运行时不一致，旧 src 与 SVG/image/mask/Canvas 分支仍存在于源码、H5 数据、目录页、测试、文档和发布检查中。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-25 当前对话",
+      "note": "用户明确要求 H5 和小程序全部 pui-icon 统一 Icon Font，并彻底移除旧方案。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "修复前 iconComponent 为内置 name 生成 inline SVG，并为 src 生成 image 或 CSS mask。"
+    },
+    {
+      "kind": "file",
+      "ref": "icon/icon.js",
+      "note": "修复前 src 分支通过 image 和 Canvas source-in 着色，并依赖平台窗口尺寸。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-icon.js",
+      "note": "专项锁定跨端字体 CSS 逐字节一致、209 字形与 17 分类、稳定码点、H5 字体 DOM，以及旧 map/SVG/image/mask/Canvas/src 分支不存在。"
+    }
+  ],
+  "rootCause": "此前只迁移了小程序内置 name，仍把 H5 inline SVG 和自定义 src 视为兼容能力；生成器、资源页和包检查因此继续维护 SVG 路径表，未建立跨端唯一运行时门禁。",
+  "decision": {
+    "outcome": "pui-icon 公共 API 收敛为 name/size/color/ariaLabel；生成器输出 icon-font-map.js、icon-font-catalog.js 及跨端一致的内嵌 WOFF2 CSS。H5 和小程序只渲染字体字形，删除 icon-map.js、inline SVG、CSS mask/image、小程序 image/Canvas 和 src API。SVG 仅作为字体生成与审计真相源，业务图片统一使用 pui-image。",
+    "rationale": "单一字体运行时才能保证名称、几何、码点、颜色继承和安装产物跨端一致，也能避免旧兼容分支持续增加解码、Canvas 和双重测试成本。",
+    "alternativesRejected": [
+      "H5 继续 inline SVG 会保留两套运行时，无法证明所有 pui-icon 都是 Icon Font。",
+      "保留 src 兼容会继续要求 image/mask/Canvas 分支，与用户要求的纯 Icon Font 合同冲突。",
+      "让 Icon 页面继续读取 SVG icon-map 会使旧路径表继续进入 npm 与微信构建产物。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scripts/generate-icons.js",
+      "icon/icon.js",
+      "icon/icon.wxml",
+      "icon/icon.wxss",
+      "icon/icon-font-map.js",
+      "icon/icon-font-catalog.js",
+      "icon/icon-font.wxss",
+      "preview/icon-font.css",
+      "preview/icons-data.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/components/icon/index.js",
+      "metadata/components.js",
+      "docs/components/ICON.md",
+      "docs/ICONS.md",
+      "docs/COMPONENT_API.md",
+      "scripts/test-icon.js",
+      "scripts/check-package.js"
+    ],
+    "dependencies": ["makerjs", "svg-path-commander", "svg2ttf", "wawoff2", "lucide-static"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-miniprogram-component-pages.js", "scripts/check-package.js"],
+    "commands": [
+      "npm run icons:generate",
+      "node scripts/test-icon.js",
+      "node scripts/test-miniprogram-component-pages.js",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project '/Users/fanx/Documents/poemUI 小程序组件库/miniprogram'"
+    ],
+    "browser": [
+      "H5 Icon 资源页桌面运行态共 209 个图标、235 个可见 pui-icon；235 个节点全部包含字体 glyph，pui-icon 内 SVG、image、Canvas 均为 0，document.fonts.check('20px \"PoemUI Roundline\"') 为 true。",
+      "H5 390x844 运行态中 Icon 网格 clientWidth/scrollWidth 均为 351px，页面无横向溢出；209 张图标卡保持两列，计算字体为 PoemUI Roundline，pui-icon 内 SVG、image、Canvas 仍为 0。",
+      "微信开发者工具 RC 2.02.2607161 在 AppID wx23aa017375535746、主 WebView、iPhone 12/13 模拟器中热重载编译成功；Icon 页显示 209 个图标与 17 分类，筛选“组件”后显示 9 个字体图标并保持三列，无 Icon 运行时错误。",
+      "微信标准 npm 构建耗时 2284ms 且 warnings 为空；miniprogram_npm 中存在 icon-font-map/catalog/WXSS，不存在 icon-map.js。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机仍需确认内嵌 WOFF2 data URI 的首次解析、字体基线、20rpx 抗锯齿、缓存和不同基础库表现。",
+      "移除 src 是有意的 API 收敛；旧消费者必须迁移到 pui-image，不能依赖静默兼容。"
+    ]
+  },
+  "ai": {
+    "summary": "pui-icon 在 H5 与小程序只有 Icon Font 一种运行时；SVG 只做生成源，业务图片只走 pui-image。",
+    "rules": [
+      "禁止恢复 icon-map.js、inline SVG、CSS mask/image 或小程序 image/Canvas 图标分支。",
+      "禁止给 pui-icon 恢复 src；业务图片和品牌图必须使用 pui-image。",
+      "H5 与小程序字体 CSS 必须由同一生成调用输出并逐字节一致。",
+      "Icon 目录只能消费生成的 icon-font-catalog.js 或同源 H5 字体目录，不维护页面私有名单。",
+      "新增图标必须进入 SVG 设计真相源、稳定码点和唯一字体生成链路。"
+    ],
+    "tags": ["icon", "icon-font", "h5", "wechat", "currentcolor", "woff2", "api", "migration"]
+  }
+}

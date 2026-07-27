@@ -1,0 +1,85 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0344",
+  "title": "小程序 Sheet 的 Popup 承载层与 Header end 轨必须稳定三段结构",
+  "scope": "component",
+  "components": ["sheet", "popup", "miniprogram-component-pages"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "小程序 Sheet 像 Popup 一样拥有紧凑、全宽的 Header、Content、Footer；关闭按钮在 Header 最右侧，Footer 的主 Button 占满动作区。",
+  "environment": {
+    "surfaces": ["miniprogram-component-pages", "miniprogram-dist"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 miniprogram/pages/components/sheet/index 的 Sheet 示例。",
+    "Sheet 通过 Popup default Slot 放入 pui-popup__content；该容器已有 Surface inset，而 Sheet Header 和 Body 再次加入自己的 inset。",
+    "标题横向起点和父容器边界显著过远，Footer 没有专用满宽动作轨，关闭 Button 也只是标题行的普通同级节点。",
+    "首轮将 Popup Content 改为 display:flex 的零内距承载层时遗漏 flex-direction:column，Header、Body、Footer 进入同一横向 flex 轨，真机截图中正文和标题消失、Footer 与关闭入口错位。",
+    "默认关闭入口使用 text 变体且没有 iconOnly；Header 只依赖 flex + margin-left:auto，没有固定右端轨，用户截图中显示为未居中、未贴右侧的裸叉号。",
+    "对照 Popup Header 后发现 Sheet 拖拽柄区域使用 space-sm / step-12，未使用 Popup 同源的 Surface inset，顶部与左右外侧间距不一致。",
+    "拖拽柄绝对触摸区首轮误写不存在的 --pui-space-step-48；完整 layout contract 因未定义 Token 失败。"
+  ],
+  "expected": "Popup 在 Sheet 场景只提供 Surface 与零内距承载；Sheet Header、唯一可滚动 Body、Footer 均全宽且各自只消费一次 inset。Sheet Header 顶、左、右外侧 inset 与 Popup Header 同源；Header 以固定 end 轨右对齐 default/base 的圆形 iconOnly PUI Button，Footer 以满宽 action track 承载单一主要 Button。",
+  "actual": "Popup Content 与 Sheet 分区叠加两层 padding，Footer 直接投影 Slot，缺少组件级的满宽动作轨和 Header end 对齐轨；首轮修复还遗漏纵向 flex 方向，造成 Sheet 三段内容横向折叠并被裁切。后续 Header 虽出现关闭入口，但仍使用 text 变体、缺少 iconOnly，并没有固定 end 轨；拖拽柄区域也没有使用 Popup 同源的外侧 inset，且绝对触摸区一度引用未定义 Token。",
+  "evidence": [
+    {"kind": "file", "ref": "popup/popup.wxml", "note": "Popup 默认以 pui-popup__content ScrollView 承载 unnamed Slot。"},
+    {"kind": "file", "ref": "popup/popup.wxss", "note": "pui-popup__content 默认消费 pui-popup-panel-padding。"},
+    {"kind": "file", "ref": "sheet/sheet.wxml", "note": "修复后 Sheet 显式声明 Header end 与 Footer action-track 容器。"},
+    {"kind": "file", "ref": "sheet/sheet.wxss", "note": "仅 Sheet 场景将 Popup content 归零并明确为 flex-direction:column；Header 外侧 inset 显式别名到 pui-surface-inset。"},
+    {"kind": "user-report", "ref": "2026-07-25 当前任务截图", "note": "真机截图显示首轮缺少 column 时标题和正文不可见、Footer 与关闭入口错位。"},
+    {"kind": "user-report", "ref": "codex-clipboard-84037346-5fb5-407b-bcf7-5a0c8932931b.png", "note": "当前 Sheet 截图显示默认 close 是裸叉号且没有贴 Header 最右端。"},
+    {"kind": "test", "ref": "scripts/test-sheet.js", "note": "专项锁定零内距纵向承载、Header end 轨、Footer 满宽轨、已定义触摸区 Token 和发布产物一致性。"}
+  ],
+  "rootCause": "Sheet 复用 Popup 的无名 Content Slot 时，没有中和 Popup 默认 Content padding，也没有把 Header 和 Footer 的结构轨与消费者 Slot 分开；首次把该 ScrollView 改为 flex 承载层时遗漏纵向方向，导致三个直接分区按默认 row 排列并在 overflow:hidden 下被裁切。关闭入口后续仍沿用了 text Button，且 Header 只借助弹性推挤而没有声明固定 end 轨，因此绕过了共享 iconOnly 的标准圆形居中几何。拖拽柄区域还错误地直接选择较小的 space Token，而没有继承 Popup Surface 的外侧 inset；之后用于 48rpx 触摸宽度的 Token 序号又被误写成 48，而不是实际定义的 step-24。",
+  "decision": {
+    "outcome": "Sheet 根禁用 Popup section gap，并把 pui-popup__content 设为零 padding、全宽、flex-direction:column 的承载层；Header action、Body ScrollView、Footer action-track 都成为明确内部结构。Sheet Header 的顶、左、右外侧统一别名为 --pui-sheet-header-inset:var(--pui-surface-inset)，与 Popup Header 的 panel inset 同源；拖拽柄改为居中的绝对定位触摸区，不占用 Header 文档流，并使用已定义的 step-24 宽 / step-12 高 Token。默认 Header 改为标题区 + 固定 72rpx end 轨，使用 default/base、circle、small、iconOnly 的 PUI Button。Footer action-track 采用 column + stretch，不使用 WXSS 通配选择器触碰 Slot 子树。",
+    "rationale": "继承 Popup 的 Surface 不等于继承其 Content inset。三段容器必须先在同一纵向轨中排列，再由 Sheet 自身统一管理几何，同时保留消费者 Footer Slot 的业务边界。关闭是标准图标操作，必须复用 Button 的圆形 iconOnly 几何，而不是由空内容的 text Button 偶然呈现。",
+    "alternativesRejected": [
+      "只在详情页减少标题或 Button 的 margin：其他 Sheet 消费者仍会叠加两层 inset。",
+      "用 .pui-sheet__footer > * 强制 Button 宽度：微信 WXSS 不支持该通配选择器，也会穿透 Slot。",
+      "把 Footer 放入 Body ScrollView：会让主操作随内容滚走，违反三段结构。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "sheet/sheet.wxml",
+      "sheet/sheet.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "miniprogram_dist/sheet/sheet.wxml",
+      "miniprogram_dist/sheet/sheet.wxss",
+      "docs/components/SHEET.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "scripts/test-sheet.js",
+      "scripts/test-equal-spacing-visual-config.js"
+    ],
+    "dependencies": ["pui-popup", "pui-button", "pui-scroll-view", "pui-config-provider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sheet.js", "scripts/test-button.js", "scripts/test-equal-spacing-visual-config.js", "scripts/test-wxss-universal-selector-compatibility.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run pack:check"],
+    "browser": [],
+    "deviceRisks": [
+      "尚未在当前合法 AppID 开发者工具的 390px 模拟器或 iOS/Android 真机确认 Popup 内层 ScrollView 与 Sheet Body 的最终滚动仲裁、rpx 内距、拖拽、Footer 伸展和安全区。"
+    ]
+  },
+  "ai": {
+    "summary": "Popup-backed compound Surface 必须归零继承 Content inset，并明确为纵向 flex，再让 Header、Body、Footer 独立负责一次结构内距。",
+    "rules": [
+      "不要让 Popup 默认 Content padding 与 Sheet 分区 padding 叠加。",
+      "把 Popup ScrollView 变为 Sheet 承载 flex 层时，必须显式声明 flex-direction:column；默认 row 会让 Header、Body、Footer 横向折叠并在裁切边界中消失。",
+      "Header 的关闭操作必须放在独立 end 轨，默认关闭固定复用 default/base、circle、small、iconOnly 的 PUI Button；Footer 的单一主操作必须使用内部满宽 action track。",
+      "不得用 WXSS 通配选择器重写消费者 Footer Slot；以明确内部容器的 flex stretch 表达几何。"
+    ],
+    "tags": ["sheet", "popup", "header", "footer", "spacing", "miniprogram"]
+  }
+}

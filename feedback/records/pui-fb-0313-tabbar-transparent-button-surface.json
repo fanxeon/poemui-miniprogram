@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0313",
+  "title": "Tabbar 条目泄露 PUI Button 默认卡片表面",
+  "scope": "component",
+  "components": ["tabbar", "button", "preview-site", "miniprogram-home"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "normal 全宽 Tabbar 的每个目的地必须是平整的图标导航项，只保留活动短横和微分隔，不能露出独立 Button 的圆角卡片、边界或阴影。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-home", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在首页以 theme=normal、shape=normal、split=true 渲染四项 label:'' 的 pui-tabbar。",
+    "在微信开发者工具 iPhone 12/13 (Pro) 模拟器查看首页；即使 Tabbar 已传入 variant=transparent 与 surface=transparent，未激活目的地仍会露出微信原生 button 的浅色底。"
+  ],
+  "expected": "所有 normal Tabbar 条目由 Tabbar 的唯一全宽 Surface 承载，Button 只保留可点击、禁用和 aria 语义；活动项仅呈现品牌短横，split 仅呈现内收微分隔。",
+  "actual": "Tabbar 的 normal 样式仍泄露 Button 自身背景；H5 的后置 disabled 规则还可恢复中性边框，视觉被误读为一组独立小按钮。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话截图 codex-clipboard-4c4b8d91-ee31-4cf9-901d-a20102aa000b.png", "note": "用户提供的微信开发者工具截图显示未激活 Tabbar 图标仍带浅色矩形底。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxml", "note": "原先只使用 custom-class；当前显式组合 variant=transparent 与 surface=transparent。"},
+    {"kind": "file", "ref": "button/button.js", "note": "Button 公开并规范化 default/transparent surface，由自身根类承担可见表面边界。"},
+    {"kind": "file", "ref": "button/button.wxss", "note": "transparent surface 在 Button 自身样式层强制清除 native background-color 与 ::after 边框。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 Tabbar 的 disabled 条目在组件级恢复透明表面，不让共享 Button 后置规则回填边框或底色。"},
+    {"kind": "test", "ref": "scripts/test-button.js", "note": "锁定 Button surface 枚举、根类、小程序原生背景清理与 H5 镜像。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "锁定 Tabbar 同时使用 transparent 视觉变体与 transparent surface，并禁止以页面补丁隐藏微信原生 Button 底色。"},
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161，iPhone 12/13 (Pro) 模拟器", "note": "2026-07-24 执行 npm 构建后，首页四项图标共用平整 Tabbar 底面；未激活项不再有独立矩形底。"}
+  ],
+  "rootCause": "虽然 Tabbar 已把视觉权责交给 Button 的 variant=transparent + surface=transparent，Button 的 transparent Surface 只写了 background shorthand 与透明 border-color，未在原生 button 根强制覆盖微信平台默认 background-color 和 ::after 边框；H5 的后置 disabled 规则也未被 Tabbar 专门收口。",
+  "decision": {
+    "outcome": "PUI Button 保持受控 variant=transparent + surface=transparent。前者表达无底色、无边界、无外投影的 Button 视觉，后者在自身原生根强制设定 transparent background-color 并清除 ::after 边框，使 Tabbar 根维持唯一 Surface；H5 同时让禁用条目越过通用 disabled 表面回退。两者都保留原生 button 的交互、禁用、slot 与无障碍语义。所有主题的活动与非活动条目都保持透明，活动项仅以品牌短横、文字权重与语义状态区分。",
+    "rationale": "透明表面属于 Button 在已有唯一容器 Surface 内的明确组合边界，且必须在平台原生根收口；页面 CSS、行内 style 或跨组件 custom-class 都不是修复路径。",
+    "alternativesRejected": [
+      "在首页追加私有 background、border 或负 margin 只能修复一个页面，无法修复组件消费者。",
+      "移除 PUI Button 或手写 view 点击会丢失原生 button、禁用和 aria 合同。",
+      "用 custom-style 行内重置视觉会绕过 Token、H5 镜像和组件级样式治理。"
+    ]
+  },
+  "impact": {
+    "files": ["button/button.wxss", "tabbar/tabbar.wxml", "preview/styles.css", "docs/components/BUTTON.md", "docs/components/TABBAR.md", "scripts/test-button.js", "scripts/test-tabbar.js", "feedback/records/pui-fb-0313-tabbar-transparent-button-surface.json"],
+    "dependencies": ["PUI Button", "PUI Tabbar", "PUI Icon", "PUI Badge"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-tabbar.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-button.js", "node scripts/test-tabbar.js", "node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": ["2026-07-24：保持已打开的微信开发者工具 RC 2.02.2607161，执行 npm 构建（290ms）后在 iPhone 12/13 (Pro) 390px 模拟器实看。四项纯图标处于同一平整底栏，首页仅保留短横和内收微分隔，未激活项不再显示独立矩形 Button 底色。", "2026-07-24：H5 #/components/tabbar 读取五个示例的条目计算样式；所有活动/非活动条目的 background 为 rgba(0, 0, 0, 0)、border 为透明、box-shadow 为 none、radius 为 0px。禁用条目也复验为同一组透明几何。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认安全区、原生 Button hover、样式隔离、tag 活动 Surface、四项触摸热区与读屏。"]
+  },
+  "ai": {
+    "summary": "当 PUI Button 位于已有唯一 Surface 的复合导航中时，surface=transparent 必须在 Button 原生根清除微信默认 background-color 与 ::after，不能仅依赖 shorthand 或外层样式。",
+    "rules": [
+      "Tabbar 条目固定组合 PUI Button 的 variant=transparent + surface=transparent，不用页面 CSS 或行内 style 擦除 Button Surface。",
+      "surface=transparent 必须在 Button 原生根明确覆盖 background-color 并移除 ::after；H5 复合容器须拦截共享 Button 的 disabled 表面回退；不要假定透明 shorthand 会覆盖平台默认底色。",
+      "transparent Button 仍保留真实原生 button、disabled、click、slot 与 aria；不能改成 view 或无事件图标。",
+      "normal/tag 的活动与非活动 Tabbar 条目都必须透明；不得以 item-wrap、Button 后置规则或全局外观开关恢复任何条目底色。",
+      "修改共享 Button 表面边界时同步原生、H5、合同、API、专项测试、Ledger、dist、示例安装与微信 npm 产物。"
+    ],
+    "tags": ["tabbar", "button", "surface", "style-isolation", "miniprogram-home", "h5-parity"]
+  }
+}

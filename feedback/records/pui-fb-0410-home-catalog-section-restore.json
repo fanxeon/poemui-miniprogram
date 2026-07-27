@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0410",
+  "title": "首页返回后丢失上次展开分区和阅读位置",
+  "scope": "global",
+  "components": ["miniprogram", "collapsible", "scroll-area"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "从组件页返回首页时继续看到上次打开的目录分区，并将该分区适当地带回可见区域。",
+  "environment": {
+    "surfaces": ["miniprogram home"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在首页展开表单组件等靠后的分区并进入组件页。",
+    "返回或重新进入首页。",
+    "旧页面重新执行首屏逻辑，展开状态和阅读位置不能稳定恢复。"
+  ],
+  "expected": "首页记住最后一次主动展开的合法分区；返回时恢复互斥展开状态，并通过唯一 ScrollArea 的稳定锚点把该分区滚到可见位置。",
+  "actual": "旧实现只在本次页面实例内保存 activeCatalogSection，并可能再次被两秒自动展开浮层覆盖。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "新增合法分区校验、本地持久化、onShow 恢复和滚动锚点调度。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "唯一 ScrollArea 消费 scroll-into-view，每个目录分区拥有稳定 id。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "锁定存储键、无效值回退、恢复优先级和锚点写入。"},
+    {"kind": "browser", "ref": "/tmp/poemui-home-restored-form.png", "note": "390x844 模拟器重新进入首页后直接显示已展开的表单组件分区。"}
+  ],
+  "rootCause": "目录展开状态只存在于页面 data；返回生命周期没有从稳定存储恢复，也没有把分区标题映射为 ScrollArea 可消费的定位锚点。",
+  "decision": {
+    "outcome": "只持久化最后一次打开的合法目录 key；onLoad/onShow 恢复并标记为用户选择，从而阻止两秒浮层默认行为覆盖；ScrollArea 使用稳定 id 执行一次适度定位。",
+    "rationale": "保留用户最后阅读上下文，同时继续使用现有受控 Collapsible 和唯一滚动容器，不引入页面级滚动或第二套目录状态。",
+    "alternativesRejected": [
+      "记忆像素 scrollTop 会在版头、字体或内容长度变化后漂移。",
+      "每次返回继续自动展开浮层会覆盖用户明确选择。",
+      "持久化关闭动作会让返回首页没有明确恢复目标。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.js", "miniprogram/pages/index/index.wxml", "scripts/test-miniprogram-home.js", "docs/MINIPROGRAM_COMPONENT_PAGE_ACCEPTANCE.md"],
+    "dependencies": ["PUI Collapsible", "PUI ScrollArea"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "npm run miniprogram:build", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具写入 form 分区后重新打开首页，运行态回读 activeCatalogSection=form、homeScrollIntoView=home-section-form。"],
+    "deviceRisks": ["iOS/Android 真机返回栈、低端设备 setStorageSync 和滚动锚点时序仍需复核。"]
+  },
+  "ai": {
+    "summary": "首页目录恢复应保存语义分区 key，而不是易漂移的像素位置。",
+    "rules": [
+      "只持久化当前目录清单中存在的分区 key。",
+      "恢复的用户分区优先于首屏自动展开策略。",
+      "滚动定位必须复用首页唯一 ScrollArea 和稳定分区 id。"
+    ],
+    "tags": ["home", "catalog", "restore", "scroll-into-view", "miniprogram"]
+  }
+}

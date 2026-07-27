@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0317",
+  "title": "Popup Blur 被总 Layer 透明度延后",
+  "scope": "component",
+  "components": ["popup", "preview-site", "miniprogram-home"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页底部 Popup 打开时，背景 Blur 必须与 Popup Surface 同时开始出现，不能等遮罩淡入结束后才模糊。",
+  "environment": {
+    "surfaces": ["popup", "miniprogram-home", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "首页打开外观菜单，使用 `pui-popup placement=bottom`、`blur-overlay=true`。",
+    "旧实现把 opacity 过渡施加在 Popup 总 Layer；遮罩 backdrop-filter 是该 Layer 的后代，因此背景模糊被父层透明度一起压住，视觉上晚于 Surface 出现。"
+  ],
+  "expected": "Layer 挂载后 Blur 立即参与背景合成；Mask 色遮与 Popup Surface 在同一进入帧开始各自 opacity/transform 过渡。",
+  "actual": "总 Layer 的 opacity 统一控制遮罩与 Surface，导致 blurOverlay 的模糊效果被延后。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户指出 Popup 需要与 Overlay Blur 同步，而不是遮罩完成后才模糊。"},
+    {"kind": "file", "ref": "popup/popup.wxss", "note": "Layer 不再声明 opacity 过渡；Mask 独立淡入，Surface 保持自己的 opacity/transform 过渡。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 已使用 Mask 自身 opacity 与 Surface 同一 host phase，作为小程序实现的对等模型。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项锁定 Layer 不拥有 opacity、Mask 自身淡入以及 H5 同相位镜像。"}
+  ],
+  "rootCause": "将视觉显隐状态放在共同祖先 Layer 上会同时影响 backdrop-filter 的合成结果；Layer 的职责被错误扩大为颜色遮罩和 Surface 的动画载体。",
+  "decision": {
+    "outcome": "Popup Layer 只承担层级、指针边界和退场保留；Mask 自己从 opacity 0 进入 1，Popup Surface 保持独立 opacity/transform。blurOverlay 在 Layer 挂载时就应用 backdrop-filter。",
+    "rationale": "这样保留单一完整遮罩和受控退场，又让 Blur 与 Popup Surface 在同一进入帧呈现，不增加页面私有遮罩或第二个滚动上下文。",
+    "alternativesRejected": [
+      "缩短或取消 Popup duration 只会掩盖时序问题，不能保证 Blur 合成时机。",
+      "首页额外叠一层私有 blur view 会复制 Popup 的遮罩职责并造成多层交互边界。",
+      "等待 opacity 完成后通过 JS 再加 blur class 会制造可见延迟与额外状态。"
+    ]
+  },
+  "impact": {
+    "files": ["popup/popup.wxss", "preview/styles.css", "scripts/test-popup.js", "docs/components/POPUP.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0317-popup-blur-enters-with-surface.json"],
+    "dependencies": ["pui-popup", "popup-overlay", "backdrop-filter", "miniprogram-home"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js", "scripts/test-miniprogram-home.js", "scripts/test-config-provider.js"],
+    "commands": ["npm run miniprogram:build", "node scripts/test-popup.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": [],
+    "deviceRisks": ["当前开发者工具焦点仍是另一项目，尚未在 PoemUI 390px 模拟器重放 Popup 的进入中间帧；iOS/Android 真机仍需确认 backdrop-filter 合成时机、性能、低动效、fixed 遮罩与读屏。"]
+  },
+  "ai": {
+    "summary": "Popup 的 Layer 不得以 opacity 包裹 blurOverlay；遮罩色与 Surface 同帧进入，Blur 从 Layer 挂载开始参与合成。",
+    "rules": [
+      "需要 backdrop-filter 的 Popup 遮罩不能把 opacity 过渡放在共同 Layer；Mask 自己管理色遮淡入。",
+      "Layer 只管理 z-index、完整覆盖、指针边界和退场保留，不能承担所有子层视觉透明度。",
+      "小程序与 H5 必须共享同一进入阶段：Mask 与 Surface 同时进入，Blur 不等待遮罩动画结束。"
+    ],
+    "tags": ["popup", "blur-overlay", "backdrop-filter", "motion", "miniprogram-home"]
+  }
+}

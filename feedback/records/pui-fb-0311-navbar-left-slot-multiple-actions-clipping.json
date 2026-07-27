@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0311",
+  "title": "Navbar 左 Slot 图标按钮的可见性与点击命中",
+  "scope": "component",
+  "components": ["navbar", "button", "icon", "miniprogram-home", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页 Navbar 左上必须同时可见并可点击搜索与菜单两个真实 PUI 图标按钮，同时继续与右上微信原生胶囊保持镜像对称。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-home", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 custom navigation 的首页渲染 capsule=true 的 PUI Navbar，并向 left Slot 传入搜索与菜单两个 PUI Button + Icon。",
+    "Navbar 的 left Slot 中放入搜索与菜单两个 PUI Button + Icon，并在页面上分别绑定 bind:click。",
+    "旧实现虽已移除左轨 overflow 裁切，却仍让 Button 的 click 保持默认非 composed；在复合 Navbar 命名 Slot 边界下，消费者无法获得稳定的点击回调，搜索 Overlay 不会打开。"
+  ],
+  "expected": "左 Slot 的多个 PUI 图标按钮完整可见、分别可点击，并在真实胶囊宽度对应的左镜像轨内居中；标题仍保持全屏几何居中，右上胶囊不被重绘或点击。",
+  "actual": "两个按钮可渲染，但用户报告搜索按钮始终不能打开搜索布局；此前专项测试只锁定了几何和 WXML 绑定，未锁定跨命名 Slot 的 click 事件选项。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户指出 Navbar 没有正确显示所要求的两个按钮。"},
+    {"kind": "file", "ref": "navbar/navbar.wxss", "note": "左 action 使用 overflow:visible，允许已在镜像轨内的多操作 Slot 完整呈现。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "首页保留两个各自具备真实 click 与 ariaLabel 的 PUI Button + Icon。"},
+    {"kind": "file", "ref": "button/button.js", "note": "Button click 以 bubbles:true 与 composed:true 发出，能穿过 Navbar 命名 Slot 的复合组件边界。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxss", "note": "左 Slot 分组填满镜像轨，两个纯布局宿主在轨内等分并居中各自的 PUI Button。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 Navbar 组合预览同步展示搜索与菜单两项真实 PUI IconButton。"},
+    {"kind": "test", "ref": "scripts/test-navbar.js", "note": "专项锁定原生/H5 左镜像轨不裁切多操作 Slot。"},
+    {"kind": "test", "ref": "scripts/test-button.js", "note": "专项锁定 Button click 的 bubbles 与 composed 事件选项。"}
+  ],
+  "rootCause": "PUI-FB-0291 修复了单个左操作的胶囊镜像几何，后续又修复了多个左操作的 overflow 裁切；但 Button 没有声明 composed click，导致被放入复合 Navbar 命名 Slot 时不能提供稳定的页面事件通路。",
+  "decision": {
+    "outcome": "Navbar 左 action 继续允许镜像轨内的 Slot 内容可见；首页双按钮分组继续填满轨道；PUI Button 的 click 明确为 bubbles + composed，使搜索与菜单可以直接使用各自真实 bind:click，H5 组合预览继续展示两个图标操作。",
+    "rationale": "多个左侧操作仍属于 Navbar 的既有 left Slot。点击事件应由 Button 作为可组合的叶子操作向消费者透传，不应为 Navbar 新增业务 API，也不应由页面叠加私有 tap 兜底。",
+    "alternativesRejected": [
+      "用页面绝对定位、负 margin 或固定机型偏移会破坏共享胶囊镜像合同。",
+      "在首页另加不可见的 tap 代理会制造重复热区，绕过 PUI Button 的真实交互合同。",
+      "把菜单移到右 Slot 会与原生胶囊重叠。",
+      "删掉一个按钮会回避而不是修复 Slot 布局缺口。"
+    ]
+  },
+  "impact": {
+    "files": ["navbar/navbar.wxss", "button/button.js", "preview/app.js", "preview/styles.css", "miniprogram/pages/index/index.wxml", "miniprogram/pages/index/index.wxss", "docs/COMPONENT_API.md", "docs/components/BUTTON.md", "docs/components/NAVBAR.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-button.js", "scripts/test-navbar.js", "scripts/test-miniprogram-home.js", "feedback/records/pui-fb-0311-navbar-left-slot-multiple-actions-clipping.json"],
+    "dependencies": ["wx.getMenuButtonBoundingClientRect", "PUI Button", "PUI Icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-navbar.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-button.js", "node scripts/test-navbar.js", "node scripts/test-miniprogram-home.js", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具热重载"],
+    "browser": [],
+    "deviceRisks": ["当前开发者工具焦点是另一项目，尚未在 PoemUI 模拟器重新实点；iOS/Android 真机仍需确认不同原生胶囊宽度、横竖屏、Slot 事件组合、双按钮热区和读屏。"]
+  },
+  "ai": {
+    "summary": "capsule=true 的 Navbar 左 Slot 可以包含多个 PUI 图标按钮；它们必须位于共享镜像轨内，并以可组合 click 事件真实到达消费者，不能被组件裁切或改用页面私有定位。",
+    "rules": [
+      "多个 left Slot 操作保持 PUI Button + Icon、各自 ariaLabel 和真实 click；被放入复合命名 Slot 的 Button click 必须使用 bubbles:true、composed:true。",
+      "Navbar 负责镜像轨几何，页面分组只填满并居中该轨，不写左右偏移。",
+      "修复 Slot 几何时同步原生 WXSS、H5 镜像、合同、专项测试、Ledger、dist 和示例安装。"
+    ],
+    "tags": ["navbar", "left-slot", "capsule", "button", "miniprogram-home"]
+  }
+}

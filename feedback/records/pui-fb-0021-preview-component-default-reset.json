@@ -1,0 +1,112 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0021",
+  "title": "概览缺少恢复组件默认样式的独立重置动作",
+  "scope": "global",
+  "components": ["preview-site", "button", "icon", "tabs"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "概览与 PROP 都提供明确的重置按钮，让当前组件恢复 PoemUI 默认 Props 和默认运行态，而不是只能刷新演示或切换到 PROP 后重置。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件页概览并在 PROP 或元素 Inspector 修改组件 Props。",
+    "返回概览后操作行只有刷新按钮；点击刷新只重建运行态并按合同保留 Props。",
+    "若要恢复组件默认值，必须切换到 PROP 再使用重置，概览没有等价入口。"
+  ],
+  "expected": "概览同时提供刷新与重置：刷新保留 Props，只恢复演示运行态；重置恢复默认 Props、默认运行态和默认滚动，并清除失效元素选择。PROP 使用同一个重置实现。两个动作不改变六项站点外观偏好或机型。",
+  "actual": "旧概览只有一个刷新 IconButton，故意保留用户配置 Props；PROP 的单一重置会删除 Props 并刷新运行态，但该能力没有在概览暴露，且刷新/重置由同一个动态按钮承担，语义容易混淆。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求概览和 PROP 都增加重置按钮，把组件重置到默认样式。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "概览操作组新增 refresh-preview 与 reset-component 两个 PUI IconButton；resetCurrentComponent 统一删除当前 Props、清除元素选择并调用运行态清理。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-component-reset.js",
+      "note": "专项合同锁定两个动作的 PUI 组合、可访问名称、共享默认值源、运行态清理、固定操作组 Token 与文档规则。"
+    },
+    {
+      "kind": "test",
+      "ref": "package.json",
+      "note": "Feedback、设计/布局/Token、预览基础设施及 83 个组件合同全部通过；site:build、example:install 与 pack:check 同步通过。"
+    }
+  ],
+  "rootCause": "此前为固定 Tabs 信息架构只保留一个 36px 动作槽：概览将其解释为刷新并保留 Props，PROP 将同一节点解释为重置。两种不同任务共享一个动态动作节点，导致概览无法同时表达“刷新当前配置”和“恢复默认配置”。",
+  "decision": {
+    "outcome": "概览透明工具栏右侧显示由 PUI Token 定宽的 Refresh 与 Undo 双 IconButton 操作组：前者只调用 refreshCurrentPreview，后者调用 resetCurrentComponent；PROP 在 Props 标题区使用独立 PUI Undo 节点，但与概览调用同一个 resetCurrentComponent/default Props 源。resetCurrentComponent 删除当前组件 Props 缓存，使 getProps 从 metadata/default 定义重建默认值，同时清理计时器、动画、请求、演示运行态、滚动位置和元素选择。站点外观偏好与机型不在重置范围。",
+    "rationale": "刷新和重置对用户数据的影响不同，必须并列且名称清楚；两个视图复用同一个函数和默认值源能阻止算法漂移，同时让 PROP 的重置留在当前任务附近。概览双按钮固定宽度并随机型整组右对齐，不再影响 Header Tabs。",
+    "alternativesRejected": [
+      "直接把概览刷新改成重置会破坏此前已确认的刷新保留 Props 任务。",
+      "继续让一个按钮按视图动态变义，会使可访问名称、节点身份和用户预期漂移。",
+      "分别为概览和 PROP 编写重置逻辑，会形成两个默认值源并产生维护偏差。",
+      "把六项外观偏好一起恢复会把组件级动作扩大为站点级破坏性操作。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-component-reset.js",
+      "scripts/test-preview-element-inspector.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-design-contracts.js",
+      "scripts/test-style-utilities.js",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0013-component-page-tabs-information-architecture.json",
+      "feedback/records/pui-fb-0020-preview-element-selection-context-inspector.json",
+      "feedback/records/pui-fb-0021-preview-component-default-reset.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["button", "icon", "tabs", "component default Props"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-component-reset.js", "scripts/test-preview-element-inspector.js", "scripts/test-preview-infrastructure-composition.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "Button PROP 将 theme 改为 danger、content 改为“已修改按钮”后返回概览；点击刷新，修改后的内容继续保留，证明刷新没有清空 Props。",
+      "在元素选择模式选中 Button 组件主体后点击概览重置，content 恢复“确认操作”、theme 恢复 primary，元素 Inspector 与高亮清除。",
+      "再次在 PROP 将 theme 改为 success、content 改为“PROP 修改值”，直接点击同名重置后两个字段恢复默认；返回概览继续显示默认组件。",
+      "阴影、毛玻璃、大圆角、渐变背景、深色五项全开且机型切为 430px 后执行组件重置，五项与机型全部保持；验收结束恢复 393px 与 light/off/off/normal/off。",
+      "概览同时显示“刷新当前预览，保留组件 Props”和“重置为组件默认样式”；PROP 只显示同一个重置，刷新不进入 PROP 交互树。"
+    ],
+    "deviceRisks": [
+      "本次只改变 H5 官网操作入口，不改变小程序组件 API、默认 Props 或 WXML。",
+      "390px 下双按钮操作组由固定 Token 和契约测试约束；移动浏览器触摸目标与辅助技术仍需目标设备复核。"
+    ]
+  },
+  "ai": {
+    "summary": "概览同时提供保留 Props 的刷新与恢复默认 Props/运行态的重置；PROP 复用同一个重置，站点外观偏好不受影响。",
+    "rules": [
+      "刷新与重置必须是两个独立 PUI IconButton；刷新保留 Props，重置恢复默认 Props 和默认运行态。",
+      "概览与 PROP 可以使用各自位置的 PUI Reset 节点，但必须调用同一个 resetCurrentComponent/default Props 源，禁止复制重置算法。",
+      "组件重置必须清理计时器、动画、请求、演示状态、预览滚动和失效元素选择。",
+      "组件重置不得修改 theme、border、shadow、frost、radius、gradient、device 或本地偏好。",
+      "刷新与重置必须使用不同 Icon、title 和 aria-label，禁止使用含糊的“重新加载”覆盖两种行为。",
+      "概览双按钮操作组必须消费 PUI gap 和固定宽度 Token，与机型选择整组居右；PROP 的重置留在 Props 标题区，二者均不得移动 Tabs。"
+    ],
+    "tags": ["preview-site", "reset", "refresh", "default-props", "runtime-state", "pui-icon-button", "tabs", "accessibility"]
+  }
+}

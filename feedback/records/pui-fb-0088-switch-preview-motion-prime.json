@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0088",
+  "title": "Switch H5 重建与缺失缓动变量导致动画直接完成",
+  "scope": "component",
+  "components": ["switch", "preview-site", "motion"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Switch H5 必须对应 WXSS 的 transform 过渡，真实存在可观察中间帧、完成态和 reduceMotion，而不是重建后直接跳到终点。",
+  "environment": {
+    "surfaces": ["h5-preview", "wechat-component"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "点击基础 Switch 后在45ms与500ms读取拇指 transform，旧节点已处于最终18px且 motion state=completed。",
+    "读取计算样式发现根虽写入500ms，但未声明 --pui-switch-preview-ease，transition 简写整体无效并回退 all 0s。",
+    "补齐变量后，新 DOM 仍先以完成态插入再回拉起点，浏览器启动反向过渡；随后正向切换触发反转缩短并提前完成。"
+  ],
+  "expected": "普通模式固定500ms transform 过渡并可读到中间位置，完成后精确落在0或目标位；reduceMotion 与系统低动效固定1ms。",
+  "actual": "旧 H5 的 transition 变量链和节点重建首帧都不完整，视觉表现等价于瞬移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授权后续共有组件完成完整门禁后由 agent 自主连续验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=switch4#/components/switch", "note": "初始计算样式为 transition all 0s；补变量后为 transform 0.18s，但45ms仍提前完成。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Switch 根声明 duration/ease 默认值，并增加 is-motion-prime 首帧校准态，仅校准阶段禁用过渡。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "运行绑定先用 prime 类无过渡落稳旧值、强制布局，再在下一帧启动唯一正向 transform 过渡并以 transitionend 完成。"},
+    {"kind": "test", "ref": "scripts/test-switch.js", "note": "专项锁定 motion prime、强制首帧、transform transitionend、180/1ms和禁止 height:auto/display:none 动画。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=switch5#/components/switch", "note": "物理点击后50ms transform=10.262px、130ms=17.5115px且 state=running，最终18px/completed；reduceMotion 计算0.001s并在30ms完成。"}
+  ],
+  "rootCause": "H5 Switch 普通根只由 helper 写 duration，没有默认 ease；Stage 重建又让最终类先参与首轮样式计算，随后回拉起点形成反向动画和过渡反转缩短。",
+  "decision": {
+    "outcome": "为 Switch 根补齐500ms/standard easing 默认变量；重建后的首帧通过 is-motion-prime 无过渡校准，强制布局后下一帧只执行正向 transform，transitionend 或安全超时进入 completed。",
+    "rationale": "显式首帧可让 H5 重建模型仍复现原生节点持续存在时的单向过渡，且不依赖无效 height:auto、display:none 或任意延时猜测。",
+    "alternativesRejected": [
+      "只增加 setTimeout 会掩盖变量无效和过渡反转，无法保证中间帧。",
+      "把节点直接保留为全局单例会扩大预览架构改动并影响组件切换。",
+      "用 CSS animation 另造 keyframes 会偏离小程序 WXSS 的 transform transition 合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-switch.js", "docs/components/SWITCH.md", "docs/H5_PREVIEW_COMPATIBILITY.md"],
+    "dependencies": ["requestAnimationFrame", "transform transition", "prefers-reduced-motion"]
+  },
+  "verification": {
+    "tests": ["scripts/test-switch.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["node --check preview/app.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "正常模式在50ms和130ms均为running并分别处于10.262px和17.5115px中间帧，180ms后精确18px/completed。",
+      "reduceMotion=true 时根内联1ms，计算 transition-duration=0.001s并在30ms完成。",
+      "深浅色与阴影、毛玻璃、大圆角、边框、渐变切换不改变180/1ms和轨道几何。"
+    ],
+    "deviceRisks": ["微信真机帧率、基础库 transitionend 等价行为、系统低动效读取和快速连续点击仍需目标设备录屏复核。"]
+  },
+  "ai": {
+    "summary": "Switch H5 重建后必须先无过渡校准起点，再执行唯一500ms正向 transform；低动效为1ms。",
+    "rules": [
+      "Switch 动画必须验证计算 transition 和至少一个真实中间帧，不能只检查最终 class。",
+      "动态重建完成态节点时必须先无过渡校准起点，禁止让回拉和正向切换形成反转缩短。",
+      "缓动变量必须有可解析默认值，不能让整个 transition 简写因未定义 var 失效。",
+      "禁止用 height:auto、display:none、假状态文字或 CSS keyframes 替代轨道 transform。"
+    ],
+    "tags": ["switch", "preview", "motion", "transform", "middle-frame", "reduced-motion"]
+  }
+}

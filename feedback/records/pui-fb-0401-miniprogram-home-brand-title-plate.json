@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0401",
+  "title": "首页品牌版头缺少左文右图的留白视觉中心",
+  "scope": "component",
+  "components": ["miniprogram-home", "image", "config-provider"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "design-review",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-27",
+  "userGoal": "首页采用白底、左文右图的紧凑留白排版气质；Logo 必须无底色并真实兼容深色模式，描述、目录统计和首个 Collapsible 的纵向节奏必须紧凑，但不得修改 Navbar 或下方 Collapsible 内容区的结构、顺序、样式与交互。",
+  "environment": {
+    "surfaces": ["miniprogram/pages/index/index", "微信小程序首页"],
+    "platforms": ["wechat-miniprogram", "Wechat DevTools simulator"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页，修复前版头仅居中展示 144rpx 品牌图和一句“月下成行, 面向 AI 时代的原生小程序组件”。",
+    "品牌信息没有清晰的名称、中文语义、产品定位和目录起点层级，视觉中心不足。",
+    "用户澄清参考图是白底、左对齐标题、右侧月与行文标记、下方目录统计的留白版头，并明确 Navbar 与内容区不得改动。",
+    "首版调用只在页面 WXSS 中清除背景；实测截图仍显示 Image 默认的 #F4F4F5 灰色圆角容器，说明没有命中组件根。",
+    "用户继续指出描述、目录统计和正文之间的留白过大；审计发现版头四边统一使用 56rpx，且目录统计又有 24rpx 顶距。"
+  ],
+  "expected": "只在 home-brand 内建立白底、左文右标记的紧凑版头，保留 Poem UI、月下成行、定位与真实目录统计；完整 Logo 没有容器底色，描述和统计紧凑相连，统计到首个 Collapsible 不保留版头的大块尾部留白；浅/深/auto 实际深色均读取对应透明底资产，且 Navbar、ScrollArea、Collapsible 目录、Cell、搜索、Tabbar 和自动展开行为保持原样。",
+  "actual": "旧版头只有单一品牌图与描述句，缺少能组织组件库入口的视觉节奏和明确的排版层级；首版透明 Logo 还遗留了 Image 默认灰底与边框，紧凑版初稿的下方留白仍偏大。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 当前任务参考图", "note": "用户澄清目标是白底、左文右图的留白版头，并明确禁止改动 Navbar 和内容区。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "改动仅位于 home-brand，复用 pui-image 呈现完整的透明底月下成行 Logo、Poem UI、定位和目录统计；Collapsible 循环未变。"},
+    {"kind": "file", "ref": "miniprogram/assets/poemui-moon-lines-mark-dark.png", "note": "从既有品牌 PNG 的明暗蒙版抠出透明底黑色 Logo；角像素透明，白底复核后保留原始月牙与三条线比例。"},
+    {"kind": "file", "ref": "miniprogram/assets/poemui-moon-lines-mark-light.png", "note": "从同一明暗蒙版抠出透明底白色 Logo；角像素透明，深底复核后保留原始月牙与三条线比例。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "品牌调用点通过 Image 既有 custom-style 在组件根内联清除默认灰底和边框，避免页面 WXSS 无法胜过组件默认 Surface。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxss", "note": "版头使用上 28rpx、下 16rpx 的非对称 Token 化内距；目录统计没有额外顶距，不跨组件覆盖 PUI Image 自身 Surface，也不使用 filter、渐变或私有色值。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项测试锁定版头语义、目录统计真相源、透明底黑白完整 Logo、Provider 深色切换、紧凑间距和与 Collapsible 的样式隔离。"}
+  ],
+  "rootCause": "首页第一版只为品牌图和一条说明预留了居中纵向轨道，没有建立组件库入口所需的名称、语义、定位和目录起点层级；后续只写页面 WXSS，未穿透到 Image 自身以 --pui-bg-muted 和 2rpx border 建立的默认媒体 Surface；紧凑版初稿又沿用了四边 56rpx 的版头 padding 并保留目录统计的 24rpx 顶距。",
+  "decision": {
+    "outcome": "仅重构 home-brand 为紧凑的白底左文右图版头：Poem UI、月下成行、原生小程序组件库，按需组合；右侧以 144rpx pui-image 呈现从既有 PNG 抠出的两张完整透明底 Logo，并以 Image 既有 custom-style 清除其默认灰底和边框，按 Provider 实际主题切换黑/白资产；版头内距改为上 28rpx、下 16rpx、左右 56rpx，目录统计移除额外 24rpx 顶距；组件和规范数量从目录真相源计算；其余首页结构与行为不动。",
+    "rationale": "留白、左对齐和右侧小型意象把品牌与目录起点连成一个安静的入口；压缩只发生在版头，既让描述、统计与首个目录形成连续阅读路径，也为实际组件目录保留更多首屏空间，不依赖小程序滤镜支持。",
+    "alternativesRejected": [
+      "重做 Navbar：违反用户明确的范围保护，也会影响原生胶囊和搜索/外观入口几何。",
+      "改造 Collapsible 目录为卡片或摘要：会破坏用户现有内容区、展开语义和目录阅读效率。",
+      "使用渐变、投影、玻璃或新 Logo：违背月下成行既有平面品牌合同，并制造与组件库无关的装饰。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.wxml", "miniprogram/pages/index/index.wxss", "miniprogram/pages/index/index.js", "miniprogram/assets/poemui-moon-lines-mark-dark.png", "miniprogram/assets/poemui-moon-lines-mark-light.png", "scripts/test-miniprogram-home.js", "docs/MINIPROGRAM_HOME.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0401-miniprogram-home-brand-title-plate.json"],
+    "dependencies": ["pui-image", "config-provider theme events", "首页目录真相源", "poemui-moon-lines-mark-dark.png", "poemui-moon-lines-mark-light.png"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "微信开发者工具 build-npm"],
+    "browser": ["已按用户提供的 390px 参考图核对版头范围；本轮真实微信开发者工具 390px 的深浅色视觉、自动展开时版头到目录的首屏节奏尚待验证。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认图标字体加载、深色文本对比、rpx 字体基线、Collapsible 展开后的滚动起点与读屏。"]
+  },
+  "ai": {
+    "summary": "首页品牌版头可以重构为紧凑留白入口，但 Navbar 与目录属于独立合同；只改 home-brand，右侧必须优先复用既有品牌 Logo，并由 pui-image 和 Provider 实际主题事件承载。",
+    "rules": [
+      "选定留白左文右图版头时只调整 home-brand WXML/WXSS 与其目录统计派生数据，不改变 Navbar、ScrollArea、Collapsible、Cell、目录排序或自动展开状态。",
+      "月下成行标记必须优先从既有 Logo 精确抠出透明底黑/白版本，经 pui-image 呈现；调用点必须用 Image 既有 custom-style 清除默认灰底和边框，不得用页面 WXSS 跨组件抢占，也不得用通用图标近似或为版头新增渐变、阴影、玻璃和另一套图标资产。",
+      "版头在 light、dark 和 auto 的实际深色状态下都必须切换对应透明底资产；禁止依赖 CSS filter，也不能替换为另一套近似图形。",
+      "需要为目录腾出空间时只能压缩 home-brand 的 Token 化 padding、gap、标记尺寸和辅助文字；描述与统计不得再叠加额外 margin，不得挤压 Navbar、ScrollArea、Collapsible 或目录行。"
+    ],
+    "tags": ["miniprogram", "home", "brand", "whitespace", "moonlit-stanza", "390px", "theme"]
+  }
+}

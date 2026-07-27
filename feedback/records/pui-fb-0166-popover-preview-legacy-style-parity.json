@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0166",
+  "title": "Popover H5 残留旧状态层样式与兼容说明，导致正文不可见",
+  "scope": "component",
+  "components": ["popover", "preview-site", "preview-styles", "property-panel", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须以真实 Popover WXML/WXSS 镜像内容、位置、主题、外部点击、受控回写和视觉 Token，不得遗留假状态或过时说明。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-styles", "property-panel", "api-reference", "PreviewDevice"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 393px", "PreviewDevice 375px", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "收敛后的 popoverShowcase 已不生成状态层，但后置旧 CSS 仍对 .pui-popover-preview__content 写入 opacity:0、pointer-events:none 和 translateY，浏览器里打开气泡只看到空 Surface。",
+    "属性页 H5 兼容说明仍称存在 tap/longpress/manual、title/footer、error/loading/empty、open/close/toggle 与五向位置，和 10 Props/2 Slot/零 Methods 的真实实现冲突。"
+  ],
+  "expected": "H5 气泡正文始终可见，最终 CSS 只镜像 default/content、12 个位置、6 主题、外部点击、fixed 和 180ms/1ms；属性页兼容说明与 API、WXML 和源码同源。",
+  "actual": "旧层叠规则覆盖了新组件正文，且过时说明把已删除能力重新展示给用户，形成可见功能缺陷和文档误导。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求真实网页 battle，不接受只看 DOM 或构建结果的伪验收。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "旧状态层选择器位于收敛样式之后，曾把 Popover content 设为 opacity:0；最终合同显式恢复 opacity:1、pointer-events:auto、transform:none。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "compatId=popover 的四条说明已改为 default/content、12 placement、唯一 visible-change 和固定动效。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/popover", "note": "真实截图先复现空黑色气泡，再在修复后实点显示完整正文；计算样式为 opacity=1、pointer-events=auto、transform=none。"},
+    {"kind": "test", "ref": "scripts/test-popover.js", "note": "专项断言正文最终覆盖、无旧兼容术语、PUI Button 入口和原生控件边界。"}
+  ],
+  "rootCause": "预览样式表存在多代 Popover 规则，旧的状态容器选择器优先级和书写顺序未随 API 收敛同步清理；兼容说明也保留了旧模板。",
+  "decision": {
+    "outcome": "在旧层之后增加 Popover 最终 H5 合同，重置正文可见性并锁定 12 位置、主题、fixed 局部坐标、外部层和低动效；兼容说明直接描述当前最小合同。",
+    "rationale": "浏览器的级联顺序是 H5 真正运行路径，源码函数不生成旧节点不能保证旧 CSS 无害；最终组件规则必须明确胜出并被专项测试锁定。",
+    "alternativesRejected": [
+      "只删除 JSX/模板中的旧状态节点无法恢复被通用选择器隐藏的 content。",
+      "用提示文字解释 H5 差异会继续让用户看不到真实 content。",
+      "保留旧兼容说明作为历史背景会把不存在的 API 当作可用能力。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "preview/app.js", "scripts/test-popover.js", "scripts/test-overlay-state-composition.js", "scripts/test-core-state-composition.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/POPOVER.md"],
+    "dependencies": ["PreviewDevice edge-to-edge layout", "PUI Button mirror", "appearance preferences", "shared H5 compatibility renderer"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popover.js", "scripts/test-preview-theme-coverage.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：最终结果记录在本组件进度项。"],
+    "browser": ["打开后正文实际显示“这是相对触发元素显示的轻量说明。”，计算 opacity=1、pointer-events=auto、transform=none。", "属性页不再出现 tap/longpress/manual、reference/title/default/footer、error > loading > content > empty 或 open()/close()/toggle()。", "深色、浅色、border/shadow/frost/large-radius/gradient 均实际切换；375px PreviewDevice 与 viewport 均 clientWidth=scrollWidth=373。"],
+    "deviceRisks": ["H5 fixed 以 PreviewDevice 的 transform containing block 近似小程序视口；真机仍需验证 SelectorQuery 坐标、fixed 合成层、触摸穿透、rpx 箭头和样式隔离。"]
+  },
+  "ai": {
+    "summary": "精简组件 API 后，必须审计 H5 CSS 级联和属性页说明，旧节点消失不代表旧规则已经失效。",
+    "rules": [
+      "每次删除 H5 状态节点，都要搜索同组件的 content/state/footer/title 选择器并检查最终计算样式。",
+      "用真实截图和 getComputedStyle 验证可见内容、动效与外观开关，不能只看 DOM 是否存在。",
+      "兼容说明必须与当前源码/API 同一次更新；发现过时能力立即删除，不把历史实现留在用户页面。"
+    ],
+    "tags": ["popover", "preview-parity", "css-cascade", "property-panel", "browser-battle"]
+  }
+}

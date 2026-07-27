@@ -1,0 +1,143 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0217",
+  "title": "标准组件预览根未填满 PreviewDevice 可用全高",
+  "scope": "global",
+  "components": [
+    "preview-site",
+    "preview-device",
+    "all-components",
+    "documentation"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "所有标准组件页面的预览根必须填满统一 PreviewDevice 的内部全高，不能只让顶部内容占一小块、下方留下无意义空白。",
+  "environment": {
+    "surfaces": [
+      "H5 PreviewDevice",
+      "常规模式代码正文",
+      "元素选择辅助层"
+    ],
+    "platforms": [
+      "browser"
+    ],
+    "viewports": [
+      "1280x720 browser",
+      "390x844 browser"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开任一普通组件概览，检查 `.preview-device__component-layout--shadow-safe` 的直接预览根；旧根只按内容自然高度占据设备顶部。",
+    "打开 ScrollArea 概览；旧的 880rpx（H5 440px）滚动区小于 shadow-safe 内容高度 564px，底部留下无职责空白。",
+    "打开浮层或屏幕附着组件，检查 edge-to-edge 预览根是否覆盖完整 PreviewDevice viewport。"
+  ],
+  "expected": "统一 PreviewDevice 仍固定为 622px；普通 shadow-safe 预览根必须填满扣除四向 28px 安全内距后的 564px 内容高度，edge-to-edge 预览根必须覆盖完整 viewport。ScrollArea 概览以非默认高度填满普通内容区。只有 PreviewDevice 内部 viewport 纵向滚动。",
+  "actual": "复验发现此前修复只写入 min-height=100%，但 shadow-safe Grid 仍以内容高度建立 auto 行；390px 下 Label 的 PreviewDevice viewport/layout 为620px/620px，直接预览根仅34px。现改为共享 Preview ScrollArea 的确定 minmax(0,1fr) 轨道，并让直接根固定 height=100%/min-height=0。",
+  "evidence": [
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/scroll-area",
+      "note": "修复前 1280x720：ScrollArea 的真实区域为 clientHeight=440、scrollHeight=1116，而同一 shadow-safe 内容区可用高度为 564px，底部留下 124px 空白。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/label 与 72 路由扫描",
+      "note": "390x844 修复前 Label 根为34px；修复后 shadow-safe 根为564px、Dialog edge-to-edge 根为620px。逐一访问72个标准设备预览，全部具备 data-preview-scroll-area=preview-device、根高与对应可用轨道一致、页面宽度无失败。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "PreviewDevice 的 shadow-safe / edge-to-edge 共享父布局对所有直接预览根施加全高规则。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "ScrollArea 概览的初始演示高度为 1128rpx，并与当前效果 WXML 共用该非默认值。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-overview-hierarchy.js",
+      "note": "专项测试锁定 shadow-safe 与 edge-to-edge 的所有直接预览根填满对应 PreviewDevice 内容区。"
+    }
+  ],
+  "rootCause": "共享父布局虽然设了 min-height=100%，但 shadow-safe Grid 的行仍是 auto，百分比 min-height 没有形成确定的 Grid 轨道；直接根因此按内容高度停在顶部。ScrollArea 概览又使用比该可用高度更小的非默认高度。",
+  "decision": {
+    "outcome": "保留固定 622px 的唯一 PreviewDevice、唯一内部 Preview ScrollArea、shadow-safe/edge-to-edge 父布局和中性设备 Surface。两类父布局以 minmax(0,1fr) 建立确定轨道，直接预览根固定 height=100%/min-height=0；shadow-safe 填满扣除四向安全内距后的564px内容高度，edge-to-edge 填满620px viewport。ScrollArea 概览显式使用 height=1128rpx（H5 564px），与当前效果 WXML 共用该非默认值。",
+    "rationale": "这样所有组件都在相同设备几何内占满自己的预览区域，同时不篡改组件自身公开高度合同，也不把组件局部滚动混入页面级滚动。",
+    "alternativesRejected": [
+      "只增加 ScrollArea 的演示高度：不能修复其他组件页面的共享预览根边界。",
+      "缩短或按浏览器视口重算 PreviewDevice：会破坏现有 622px 统一设备比较尺度与窄屏可操作性。",
+      "让页面级滚动承接组件长内容：会破坏唯一 PreviewDevice viewport 和组件自身滚动边界。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-overview-hierarchy.js",
+      "scripts/test-design-contracts.js",
+      "AGENTS.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "CHANGELOG.md",
+      "feedback/records/pui-fb-0217-preview-device-available-full-height.json"
+    ],
+    "dependencies": [
+      "PreviewDevice",
+      "PreviewStage",
+      "shadow-safe 父布局",
+      "edge-to-edge 父布局"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-preview-overview-hierarchy.js",
+      "scripts/test-design-contracts.js",
+      "scripts/test-layout-contracts.js"
+    ],
+    "commands": [
+      "node scripts/test-preview-overview-hierarchy.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project _example"
+    ],
+    "browser": [
+      "2026-07-22 浏览器实测：390x844 下 Label 的 shadow-safe 父布局/根为620px/564px，Dialog 的 edge-to-edge 父布局/根为620px/620px；ScrollArea 的根/真实滚动区为564px/564px。逐一访问72个标准设备预览，均有唯一 data-preview-scroll-area=preview-device、根高符合布局轨道且无页面级横向溢出。"
+    ],
+    "deviceRisks": [
+      "H5 的浏览器 viewport 测量不能替代微信真机中的嵌套 scroll-view 惯性、rpx 回流、样式隔离、辅助技术与系统低动效验证；2026-07-22 微信 CLI 因 touristappid code 10 未生成 miniprogram_npm，未以手工复制掩盖该失败。"
+    ]
+  },
+  "ai": {
+    "summary": "标准组件概览维持统一 PreviewDevice 高度；每个预览根必须填满其对应内部内容区。",
+    "rules": [
+      "不得把组件预览根按内容自然高度留在 PreviewDevice 顶部；普通和屏幕附着布局都必须填满对应内部高度。",
+      "每个标准组件概览仍只能有一个 data-preview-scroll-contract=component-preview 的内部纵向滚动 viewport。",
+      "shadow-safe 预览根填满扣除安全内距后的可用高度，edge-to-edge 预览根填满完整 viewport。",
+      "组件自身 scroll-view 的高度与 PreviewDevice 高度是两套语义，不能通过篡改组件公开 Props 来填满页面。"
+    ],
+    "tags": [
+      "preview-site",
+      "preview-device",
+      "full-height",
+      "viewport",
+      "scroll",
+      "all-components",
+      "390px"
+    ]
+  }
+}

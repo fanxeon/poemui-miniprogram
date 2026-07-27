@@ -1,0 +1,54 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0229",
+  "title": "Combobox 缺专属合同且概览暴露工程诊断",
+  "scope": "component",
+  "components": ["combobox", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "基于 Popup battle 的真实交互和可读性规则，自主审计并优化全库官网组件预览。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-contract", "miniprogram-source"],
+    "platforms": ["browser", "node", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 #/components/combobox 概览，组件本体下方出现 open()/close()/reset() 工程按钮、事件运行日志和 native mirror 标签；同时 docs/components 缺少 COMBOBOX.md。"
+  ],
+  "expected": "概览只承载真实 Combobox 入口、搜索、选项和可见结果；实例方法与事件细节进入 API/示例，且发布组件拥有基于真实源码建立的专属语义合同。",
+  "actual": "概览将工程诊断混入用户预览，且组件没有专属合同，后续 Agent 缺少结构与跨端边界。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户授权按全库规则自主优化，无需逐个组件确认。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Combobox 概览原先输出 methods、event、after 与 native mirror 标签。"},
+    {"kind": "file", "ref": "docs/components/COMBOBOX.md", "note": "新合同由 JS/JSON/WXML/WXSS、H5、API、示例、测试和现有 Ledger 审计后建立。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?combobox-contract=20260722-229#/components/combobox", "note": "390x844 改版后输入 Poem、选择创建项，面板关闭、值保留且 diagnostics=false。"},
+    {"kind": "test", "ref": "scripts/test-combobox.js", "note": "锁定 PUI 组合、连续 panel、真实 H5 输入/选项以及概览不得出现工程诊断。"}
+  ],
+  "rootCause": "早期 H5 Showcase 同时承担了测试诊断和用户概览，且历史组件合同迁移未覆盖 Combobox。",
+  "decision": {
+    "outcome": "移除概览工程诊断，保留可操作本体；新增 Combobox 专属合同并由专项测试锁定。",
+    "rationale": "用户预览需要清楚的真实路径，而工程调用和事件顺序仍应在 API、示例与自动化测试中可追溯。",
+    "alternativesRejected": ["只用 CSS 隐藏诊断：DOM 仍污染概览且未来容易重新显示。", "保留方法按钮作为方便测试入口：它们不是普通用户的组件内容。"]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-combobox.js", "docs/components/COMBOBOX.md", "docs/components/README.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0229-combobox-overview-contract.json"],
+    "dependencies": ["pui-input", "pui-tag", "pui-button", "pui-icon", "pui-loading", "pui-empty", "bindComboboxPreviewRuntime"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js"],
+    "commands": ["node scripts/test-combobox.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["390x844：改版后真实输入 Poem，创建项可见；选择后面板关闭、输入值保留，概览 diagnostics=false，document/body 均为 375px、无横向溢出。", "深浅色与四项外观开关纳入后续全库批次，不能由本组件交互结论替代。"],
+    "deviceRisks": ["未在合法 AppID 真机验证 scroll-view、rpx、selector query、Tag 关闭、Slot 投影、读屏与触摸/键盘差异。"]
+  },
+  "ai": {
+    "summary": "概览只能展示用户可理解的真实组件路径，工程诊断必须留在 API、示例或测试。",
+    "rules": ["建立缺失组件合同时必须先审计源码、H5、API、示例、测试和 Ledger，禁止批量空壳。", "Combobox 概览不得展示实例方法按钮、事件日志、运行时状态或实现标签。", "受控回写、真实输入和选项交互必须保留，不能以移除诊断替代交互。"],
+    "tags": ["combobox", "overview", "contract", "preview-parity"]
+  }
+}

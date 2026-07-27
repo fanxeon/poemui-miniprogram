@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0242",
+  "title": "Swiper 概览泄露工程诊断，状态切换和重置偏离真实默认预览",
+  "scope": "component",
+  "components": ["swiper", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "基于 Popup battle 的状态预览、空间语义与真实交互规则，自主修复全库官网组件预览。",
+  "environment": {
+    "surfaces": ["h5-preview", "props-panel", "api-reference", "component-contract"],
+    "platforms": ["browser", "node", "wechat-miniprogram"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 `#/components/swiper` 概览，点击轮播箭头或等待项切换后，基础用法下显示 `animationfinish：value=… · source=transition` 等工程事件文本，并有“重置当前项 / 读取状态”操作。",
+    "在概览点击“加载 / 空 / 错误”时，旧实现调用 `renderStage()` 重建整个舞台，状态层没有 500ms 中间帧。",
+    "在属性页把 `items` 改为任意 JSON 后点击工具栏“重置”，旧实现使用仅用于代码生成比对的空 `swiperSourceDefaults.items`，默认 Swiper 被错误地重置为空态。"
+  ],
+  "expected": "组件概览只展示用户可感知的轮播、导航和状态结果；状态 Props 在同一四层节点上按500ms过渡；重置必须恢复三项默认 items、Navigation、当前项与默认运行态。",
+  "actual": "已移除事件/方法诊断与读取按钮，状态按钮真实写入父级 Props 后复用挂载节点切换，重置深拷贝可见 Swiper 默认数据；浏览器复验状态中间帧和默认内容均正确。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前 Goal 范围化授权",
+      "note": "用户明确授权：后面的组件你都不需要我确认你直接跑完把能做的都做了, 决定你自己做。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/?swiper-battle=20260722-214#/components/swiper",
+      "note": "390x844 实点箭头、状态按钮、属性 JSON、禁用、低动效、重置和外观设置；加载120ms时 content opacity=0.0281962、loading opacity=0.971804、transition=0.5s，重置后3个默认 slide、active=0、非 empty。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "Swiper 概览不再生成 data-swiper-status 或 method 诊断；updateSwiperPreviewStateDom 复用层节点，重置深拷贝 componentPropDefaults.swiper。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-swiper.js",
+      "note": "专项合同锁定无工程诊断、无概览方法按钮、保留节点状态更新和可见默认数据重置。"
+    }
+  ],
+  "rootCause": "H5 把调试反馈与实例方法直接混入概览；状态控件沿用全量渲染路径；重置分支误把代码生成的 source defaults 当成可见演示默认值。",
+  "decision": {
+    "outcome": "概览保留真实可感知交互，工程事件和实例方法仅在 API/属性 battle；状态层局部更新；重置以 componentPropDefaults 的深拷贝为真相源。",
+    "rationale": "用户无法从事件日志获得组件价值，而整段重绘会伪装成动画完成；重置必须满足官网工具栏对默认 Props 与运行态的一致承诺。",
+    "alternativesRejected": [
+      "用 CSS 隐藏事件文本而继续保留诊断节点和方法按钮。",
+      "把状态切换时长改为0ms以掩盖整段重绘。",
+      "继续复用空 source defaults，并在空态外补一个静态占位。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "preview/index.html", "scripts/test-swiper.js", "scripts/test-preview-typography-contract.js", "docs/components/SWIPER.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0242-swiper-component-only-state-and-reset-parity.json"],
+    "dependencies": ["componentPropDefaults.swiper", "bindSwiperPreviewRuntime", "renderInspector", "PUI Button", "PUI Loading", "PUI Empty"]
+  },
+  "verification": {
+    "tests": ["scripts/test-swiper.js", "scripts/test-preview-typography-contract.js"],
+    "commands": ["node scripts/test-swiper.js", "node scripts/test-preview-typography-contract.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["390x844 下页面 scrollWidth=375；无 data-swiper-status；箭头实际从0切到false，属性 JSON 实测空字符串 value 选中 index=2；disabled 阻止箭头，reduceMotion 把 track/state transition 压缩为0.001s；深色、毛玻璃和大圆角在 Swiper viewport 实测为 rgb(24,24,27)、blur(18px) saturate(1.35)、14px。", "API Tab 在390px实测六张参考表且页面无横向溢出。"],
+    "deviceRisks": ["微信真机仍需使用合法 AppID 核验 swiper 惯性、循环克隆、图片解码、后台 autoplay 节流、rpx 回流、读屏与系统低动效。"]
+  },
+  "ai": {
+    "summary": "概览必须展示真实可感知结果，不得把事件日志、实例方法或空 source defaults 当成交付体验。",
+    "rules": [
+      "组件概览的事件、方法和父级回写诊断只进入 API/属性 battle；概览保留真实触发入口和可见结果即可。",
+      "已有常驻状态层时，Props 驱动的状态切换必须局部更新同一节点并实测中间帧，禁止 renderStage 整段重建。",
+      "重置必须从可见演示的默认 Props 深拷贝，代码生成或比较用 source defaults 不能作为用户可见默认状态。"
+    ],
+    "tags": ["swiper", "component-only", "state-transition", "reset", "props", "browser-battle", "h5"]
+  }
+}

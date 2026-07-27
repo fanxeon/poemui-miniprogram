@@ -1,0 +1,18 @@
+<template name="toast-content">
+  <view class="{{rootClass}} {{innerVisible ? 'pui-toast--active' : 'pui-toast--inactive'}} {{customClass}}" style="{{layerStyle}} {{customStyle}}" role="status" aria-live="{{ariaLive}}" aria-label="{{semanticLabel}}" aria-hidden="{{!innerVisible}}">
+    <pui-loading wx:if="{{isLoading}}" loading="{{innerVisible}}" size="36rpx" inherit-color aria-label="{{semanticLabel}}" reduce-motion="{{reduceMotion}}" />
+    <pui-icon wx:elif="{{iconName}}" name="{{iconName}}" size="36" color="{{accentColor}}" aria-label="{{normalizedTheme || '提示'}}" />
+    <slot name="icon"></slot>
+    <text wx:if="{{message}}" class="pui-toast__message">{{message}}</text>
+    <slot name="message"></slot>
+  </view>
+</template>
+
+<block wx:if="{{rendered}}">
+  <pui-overlay wx:if="{{overlayEnabled}}" visible="{{rendered}}" position="stretch" padding="none" background-color="{{overlayBackground}}" z-index="{{overlayZIndex}}" duration="{{overlayDuration}}" prevent-scroll-through="{{overlayPreventScrollThrough}}" aria-label="{{semanticLabel}}" reduce-motion="{{reduceMotion}}">
+    <template is="toast-content" data="{{rootClass,innerVisible,customClass,layerStyle,customStyle,ariaLive,semanticLabel,isLoading,reduceMotion,iconName,accentColor,normalizedTheme,message}}"></template>
+  </pui-overlay>
+  <view wx:else class="pui-toast-layer">
+    <template is="toast-content" data="{{rootClass,innerVisible,customClass,layerStyle,customStyle,ariaLive,semanticLabel,isLoading,reduceMotion,iconName,accentColor,normalizedTheme,message}}"></template>
+  </view>
+</block>

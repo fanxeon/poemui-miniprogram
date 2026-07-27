@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0068",
+  "title": "Grid 顶层外观与 footer 能力掩盖入口和状态主合同",
+  "scope": "component",
+  "components": ["grid", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Grid 应以少而明确的 API 组织快捷操作，基础用法保持最小，并让加载、空、错误和重试形成真实父级闭环。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 grid/grid.js：18 个 Props 混入顶层 hover/theme/showFooter/duration/easing，只有 click，没有错误重试闭环。",
+    "旧 Grid 把 error/empty 手写为 Icon 加文字，而不是组合项目 PUI Empty；footer slot 又让快捷入口容器承担无稳定语义的自由尾部区域。",
+    "对照 tdesign-miniprogram@1.15.3 的 Grid/GridItem props、类型、WXML/WXSS 和官方文档：核心为列数、间距、边线、对齐、横向滚动及 item 内容与点击。"
+  ],
+  "expected": "Grid 只公开入口数据、布局、禁用、状态、语义和低动效；点击与重试都只发布父级请求，不维护 selected 或伪造成功。",
+  "actual": "旧合同用五项顶层外观/尾部/动效参数扩张入口组件，同时缺少 column=0、description、item theme 和真实 retry。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求逐组件参考 TDesign 收敛 API，并授权单组件完整门禁后自主验收连续推进。"},
+    {"kind": "file", "ref": "grid/grid.js", "note": "最终固定 14 Props、click/retry 两事件；column=0、item schema、状态优先级和原始值边界均在同一状态同步路径。"},
+    {"kind": "file", "ref": "grid/grid.wxml", "note": "Item 组合 Button/Icon/Badge，状态组合 Loading/Empty；四层持续挂载，retry 不清除 error。"},
+    {"kind": "test", "ref": "scripts/test-grid.js", "note": "专项锁定 14 Props、2 Events、0 Slots、0 Methods、原始值、状态优先级、组合边界和低动效。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/grid", "note": "实际点击保留 value=0，错误态 retry 后仍保持错误并显示等待父级更新。"}
+  ],
+  "rootCause": "旧设计没有先固定 Grid 是动作入口容器，因而把一般 Surface 外观、自由 footer 和可变动效一起当成组件 API，同时遗漏真实失败恢复边界。",
+  "decision": {
+    "outcome": "公开合同收敛为 14 Props、click/retry 两 Events、零 Slots、零业务 Methods；增加 column=0、item description/theme 和 PUI Empty 重试，删除 hover/theme/showFooter/duration/easing。",
+    "rationale": "入口按压由 Button 固定提供，主题属于每个入口，状态动效使用全局 500ms Token；retry 必须交给父级真实请求，Grid 不应该拥有选择或导航成功状态。",
+    "alternativesRejected": [
+      "机械复制 TDesign 的独立 GridItem 包会增加数据驱动页面的声明成本，且不解决 PoemUI 状态闭环。",
+      "继续保留 footer slot 会让一个规则网格承担任意自由布局，List/Cell/业务容器更适合该任务。",
+      "增加 selected/active 会把动作入口错误塑造成选择器；选择任务已有 Checkbox、Radio、ToggleGroup 和 Tabs。"
+    ]
+  },
+  "impact": {
+    "files": ["grid/grid.js", "grid/grid.json", "grid/grid.wxml", "grid/grid.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/GRID.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-grid.js"],
+    "dependencies": ["pui-button", "pui-icon", "pui-badge", "pui-loading", "pui-empty", "theme behavior"]
+  },
+  "verification": {
+    "tests": ["scripts/test-grid.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "当前入口点击主题项后回写 click：主题 / 0 / pointer；disabled Item 不可点击。",
+      "错误态重试只回写已请求重试，等待父级更新，错误 PUI Empty 保持可见。",
+      "重置恢复源码 items=[]、column=4 和宫格导航 ARIA，基础 WXML 为无 bind 的 <pui-grid />。",
+      "API 完整展示 14 Props 与 2 Events，四个 role=table 共 94 个字段无 nowrap、ellipsis 或内容裁切。"
+    ],
+    "deviceRisks": [
+      "微信 scroll-view 惯性、Button 触摸反馈、Badge 定位、1rpx 分隔线和读屏仍需合法 AppID 真机复核。",
+      "旧消费者若使用 hover/theme/showFooter/duration/easing 或 footer slot，需要迁移到 Item theme、全局 Token 与外层布局。"
+    ]
+  },
+  "ai": {
+    "summary": "Grid 是数据驱动动作入口，不是选择器或自由布局容器；点击和重试都只发布父级请求。",
+    "rules": [
+      "禁止恢复 hover/theme/showFooter/duration/easing 或 Grid selected/active/readonly。",
+      "column=0 必须保留为横向 scroll-view，不能被真假值回退成 4。",
+      "items 的 0、false、空字符串、空 label/icon 和 badge=0 必须原样保留。",
+      "错误重试只触发 retry，组件不得自行清除 error 或伪造请求成功。"
+    ],
+    "tags": ["grid", "api", "tdesign", "action-navigation", "state-composition"]
+  }
+}

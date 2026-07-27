@@ -1,0 +1,85 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0002",
+  "title": "Style Utilities 分类与实时预览没有形成真实浏览链路",
+  "scope": "component",
+  "components": ["style-utilities"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-17",
+  "updatedAt": "2026-07-25",
+  "userGoal": "通过组件化分类快速筛选常用 utility，并确认选择的类真实作用于预览和生成的 WXML。",
+  "environment": {
+    "surfaces": ["h5-preview", "props-panel", "generated-wxml"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 #/foundation/style-utilities，尝试直接点击旧分类名称筛选能力。",
+    "调整 Props 后检查实时组合 DOM，确认旧实现只展示 class 字符串而没有把组合类挂到预览节点。"
+  ],
+  "expected": "分类应是可操作组件，点击后真实回写 Props；预览节点、主题对照和生成 WXML 都应使用当前组合。",
+  "actual": "旧分类只是不可点击文字，用户必须在右栏 select 中寻找；实时区显示类名但没有应用对应 utility，容易产生假预览。",
+  "evidence": [
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/foundation/style-utilities",
+      "note": "battle 审计实点分类、主题视图并读取实时 DOM 与 computed style。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "五类分类和主题 Button 回写 Props，liveClass 被挂载到真实组合节点。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-style-utilities.js",
+      "note": "合同检查 Button actions、真实 class 挂载、ConfigProvider WXML 和 H5 镜像。"
+    }
+  ],
+  "rootCause": "文档页先按静态清单实现，没有把分类视作用户任务入口，也没有为展示的 class 字符串建立 DOM 生效合同。",
+  "decision": {
+    "outcome": "使用 PoemUI Button、Card、Icon、Tag 建立布局、尺寸与间距、字体与内容、背景与外观、主题与行为五类浏览器和四种主题视图，并把实时组合类真实挂载到组合节点。",
+    "rationale": "用户可以在主预览区直接筛选和比较；小程序与 H5 使用同一五类，Props、DOM、computed style 与生成 WXML 共享同一状态。",
+    "alternativesRejected": [
+      "继续只依赖右侧 select，移动端和快速浏览路径过长。",
+      "只更新提示文字或 class 文本，不能证明 WXML/WXSS 能力真实生效。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "metadata/components.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/index.html",
+      "docs/STYLE_UTILITIES.md",
+      "scripts/test-style-utilities.js"
+    ],
+    "dependencies": ["button", "card", "icon", "tag", "config-provider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-style-utilities.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "点击“主题与行为”后只保留对应分类卡，点击“布局”后只保留布局分类卡。",
+      "themeView=dark 生成 theme=dark 的 ConfigProvider WXML；compare 恢复 light/dark 双面板。",
+      "390px 下五类筛选 Button、Card 和主题面板逐容器无横向溢出。"
+    ],
+    "deviceRisks": [
+      "H5 镜像不能替代微信真机对 WXML、rpx 和组件样式隔离的最终确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Style Utilities 文档浏览器是可交互合同页，分类和主题动作必须回写 Props，预览必须真实挂载所展示的类。",
+    "rules": [
+      "不要把 class 字符串展示当作样式已经生效，必须检查真实节点和 computed style。",
+      "文档分类优先使用 PoemUI 自身 Button、Card、Icon、Tag 形成真实组合样例。",
+      "筛选动作、Props 面板、WXML 示例和预览 DOM 必须共享同一状态。"
+    ],
+    "tags": ["style-utilities", "h5-preview", "props-panel", "wxml", "fake-preview"]
+  }
+}

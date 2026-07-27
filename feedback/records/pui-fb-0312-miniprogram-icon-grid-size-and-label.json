@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0312",
+  "title": "小程序 Icon 网格图标过小且缺少名称",
+  "scope": "component",
+  "components": ["icon", "miniprogram", "scroll-area"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "小程序 Icon 独立页的图标展示应在现有基础上放大两个尺寸档位，并在每个图标下方显示可读名称。",
+  "environment": {
+    "surfaces": ["miniprogram-component-page"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 miniprogram/pages/components/icon/index。",
+    "当前三列网格以 40rpx 渲染纯图标，用户无法直接读取图标稳定名称。"
+  ],
+  "expected": "三列网格中的每个图标以 56rpx 显示，并在正下方完整显示名称；长名称可换行但不得截断、横向溢出或把展示叶子变成点击控件。",
+  "actual": "网格图标尺寸为 40rpx，且没有名称文本。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务对话", "note": "用户明确要求图标增大两个尺寸档位并显示名称。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/icon/index.wxml", "note": "原实现固定 size={{40}}，且网格项只含 pui-icon。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/icon/index.wxss", "note": "原网格保持三列布局，可在同一网格项内垂直组合图标与名称。"}
+  ],
+  "rootCause": "PUI-FB-0306 为纯图标浏览密度移除了名称，但该信息密度不再满足当前用户对图标识别与名称可见性的要求。",
+  "decision": {
+    "outcome": "在不改变共享 Icon API、完整 npm icon-map、三列网格和唯一 ScrollArea 的前提下，将页面图标从 40rpx 提升至 56rpx，并在下方添加完整可换行的名称文本。",
+    "rationale": "当前请求覆盖 PUI-FB-0306 对小程序页面纯图标叶子的旧展示取舍；56rpx 对应 40→48→56 两个既有 8rpx 递进，名称文本消除仅凭图形猜测的识别负担。",
+    "alternativesRejected": [
+      "仅放大图标而不显示名称，无法满足当前识别需求。",
+      "使用 ellipsis 截断长名称，会隐藏用户要求查看的稳定名称。",
+      "把图标包装为 Button 或恢复复制卡片，会把展示需求扩大为未授权交互改造。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/components/icon/index.wxml", "miniprogram/pages/components/icon/index.wxss", "scripts/test-miniprogram-component-pages.js", "docs/MINIPROGRAM_HOME.md", "feedback/records/pui-fb-0312-miniprogram-icon-grid-size-and-label.json"],
+    "dependencies": ["pui-icon", "pui-search", "pui-scroll-area", "poemui-miniprogram/icon/icon-map"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-component-pages.js", "scripts/test-feedback-ledger.js"],
+    "commands": ["node scripts/test-miniprogram-component-pages.js", "npm run feedback:generate", "npm run feedback:check", "微信开发者工具 RC 2.02.2607161：自动热重载并打开 pages/components/icon/index"],
+    "browser": ["微信开发者工具 RC 2.02.2607161 的 iPhone 12/13 Pro 390px 模拟器中，Icon 页首屏可见 56rpx 三列图标与其下方名称；arrow-left、more-horizontal 等名称完整显示，未见页面横向溢出。"],
+    "deviceRisks": ["需在 390px 微信模拟器与真机复核长名称换行后的列表密度、惯性滚动、深浅色对比和读屏。"]
+  },
+  "ai": {
+    "summary": "当用户要求小程序 Icon 网格显示名称时，保留真实 pui-icon 展示叶子与 npm icon-map，只在页面组合层增加无截断的文本标签。",
+    "rules": [
+      "用户对独立页面展示密度的最新明确要求覆盖此前纯图标展示取舍。",
+      "图标尺寸以数值 rpx 传入 pui-icon；40rpx 增大两个 8rpx 档位应为 56rpx。",
+      "名称属于关键识别信息，必须完整换行显示；不要使用 ellipsis 或将图标伪装成 Button。"
+    ],
+    "tags": ["miniprogram", "icon", "visual-layout", "label", "accessibility"]
+  }
+}

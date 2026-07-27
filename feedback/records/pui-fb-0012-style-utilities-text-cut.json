@@ -1,0 +1,99 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0012",
+  "title": "Style Utilities 缺少统一的 text-cut 单行省略入口",
+  "scope": "global",
+  "components": ["style-utilities", "typography", "preview-site"],
+  "type": "capability-gap",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-19",
+  "userGoal": "把 text-cut 纳入 Style Utilities，形成可发现、可复用、跨小程序与 H5 一致的单行省略能力，同时明确它不能被用来掩盖关键内容或布局错误。",
+  "environment": {
+    "surfaces": ["miniprogram", "h5-preview", "documentation"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查 common/style/utilities.wxss 的文字溢出类。",
+    "确认原实现只有 pui-text-truncate，没有用户约定的 pui-text-cut 主入口。",
+    "检查 Style Utilities 与 Typography 文档，示例也只展示旧类名。"
+  ],
+  "expected": "Style Utilities 发布 pui-text-cut，H5 镜像和文档可直接发现并演示；pui-text-truncate 继续兼容旧用法，关键操作和状态不得被裁切。",
+  "actual": "公开工具层没有 pui-text-cut，团队容易重复手写 overflow/text-overflow/white-space，且缺少关于允许省略范围的约束。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "codex-clipboard-67b4e538-0ce4-4c59-9ed1-c81b3b1606c5.png",
+      "note": "用户要求将 text-cut 写入 Style Utilities，并同时指出关键预览信息不应被无意义裁切。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/utilities.wxss",
+      "note": "新增 pui-text-cut，并与 pui-text-truncate 共享单行省略声明。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-style-utilities.js",
+      "note": "专项合同锁定 521 个选择器、text-cut 属性、兼容别名、H5 镜像、文档与示例。"
+    }
+  ],
+  "rootCause": "Style Utilities 早期采用 truncate 命名，但当前设计语言约定 text-cut；缺少主入口别名和使用边界，导致命名不可发现，也容易把省略当成布局修补手段。",
+  "decision": {
+    "outcome": "新增 pui-text-cut 作为单行省略主入口，与 pui-text-truncate 共享声明并保留兼容；同步 H5 镜像、Typography、Style Utilities、API、矩阵和示例，选择器总数更新为 521。",
+    "rationale": "别名不会破坏既有消费者，同时让团队按约定名称复用标准能力；文档明确省略只适用于可牺牲的次要单行信息。",
+    "alternativesRejected": [
+      "直接删除 pui-text-truncate 会破坏已发布调用方。",
+      "只在 H5 预览写 text-cut 不会进入小程序 npm 产物。",
+      "在每个组件私有样式重复三条裁切声明会造成维护漂移。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/style/utilities.wxss",
+      "miniprogram_dist/common/style/utilities.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/index.html",
+      "metadata/components.js",
+      "docs/STYLE_UTILITIES.md",
+      "docs/TYPOGRAPHY.md",
+      "docs/COMPONENT_API.md",
+      "docs/COMPONENT_MATRIX.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "CHANGELOG.md",
+      "README.md",
+      "_example/miniprogram/pages/components/index.wxml",
+      "_example/node_modules/poemui-miniprogram/miniprogram_dist/common/style/utilities.wxss",
+      "scripts/test-style-utilities.js",
+      "feedback/records/pui-fb-0012-style-utilities-text-cut.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["config-provider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-style-utilities.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "wechat-cli build-npm"],
+    "browser": [
+      "390x844 Style Utilities 实测显示 521 selectors，并在 Typography 样例节点真实挂载 pui-text-cut；计算样式为 overflow:hidden、text-overflow:ellipsis、white-space:nowrap、min-width:0。",
+      "真实长文本样例 clientWidth=293px、scrollWidth=336px，页面 document scrollWidth=clientWidth=375px，证明省略发生在局部单行边界且没有制造页面横向溢出；控制台无 warning/error。"
+    ],
+    "deviceRisks": [
+      "微信 CLI build-npm 已以 touristappid 完成且 0 warnings，源码、dist、示例 node_modules、微信 miniprogram_npm 四路 utilities 哈希一致；自定义组件样式隔离下仍需通过公开 utilities 入口或明确 externalClasses 消费，合法 AppID 真机渲染待最终确认。"
+    ]
+  },
+  "ai": {
+    "summary": "单行省略统一使用 pui-text-cut，truncate 只做兼容；关键操作、状态和布局问题不得靠裁切隐藏。",
+    "rules": [
+      "新增单行省略时优先复用 pui-text-cut，禁止在页面私有样式重复手写三项声明。",
+      "按钮、主要状态、错误信息和用户必须读完的文本不得使用 text-cut。",
+      "出现裁切前先判断内容是否应删除、换行或修正容器；text-cut 只用于允许省略的次要单行信息。"
+    ],
+    "tags": ["style-utilities", "typography", "text-cut", "truncate", "overflow", "documentation", "ai-usability"]
+  }
+}

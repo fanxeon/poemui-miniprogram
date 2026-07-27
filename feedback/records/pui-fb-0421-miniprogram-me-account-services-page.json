@@ -1,0 +1,120 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0421",
+  "title": "第四 Tab 需要真实我的账户与服务页面",
+  "scope": "component",
+  "components": ["miniprogram", "tabbar", "card", "avatar", "input", "button", "cell", "toast"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "把“我的”页面做成克制但可用的账户页：可修改昵称、复制 OpenID，并提供高级版授权、订单、隐私协议和关于诗上四个 Cell，尽量使用 PUI 组件。",
+  "environment": {
+    "surfaces": ["miniprogram tabbar", "me top-level page"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开小程序第四个 Tab。",
+    "原页面只组合 tabbar-placeholder，Tabbar 上方为空白，没有资料、OpenID 或服务入口。",
+    "工程当前没有登录后端、支付和订单数据源，页面不能通过静态值伪造这些能力。"
+  ],
+  "expected": "第四项进入 pages/me/index；昵称可真实持久化，OpenID 只在真实登录来源存在时可复制，隐私与跨小程序入口调用微信平台 API，未开放业务明确反馈。",
+  "actual": "旧页面只有空白目的地，没有任何账户与服务交互。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户要求实现昵称编辑、OpenID 复制、四个服务 Cell 和诗上科技小程序跳转。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "页面组合 ConfigProvider、Navbar、ScrollArea、Card、Avatar、Input、Button、CellGroup、Cell、Toast 与 Tabbar。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/utils/user-profile.js",
+      "note": "昵称与真实 OpenID 通过唯一资料 Store 恢复和持久化，写入任一字段均保留另一字段。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.js",
+      "note": "剪贴板、隐私合同和跨小程序跳转分别使用 wx.setClipboardData、wx.openPrivacyContract 与 wx.navigateToMiniProgram。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "锁定 PUI 组合、资料 Store、无 OpenID 门禁、平台 API 参数、未开放业务和 Tabbar 路由。"
+    }
+  ],
+  "rootCause": "第四 Tab 最初只为信息架构预留空白壳；项目尚未建立账户页合同，也没有对真实身份来源和未开放后端能力设置门禁。",
+  "decision": {
+    "outcome": "删除 tabbar-placeholder，新增真实 pages/me/index 与 user-profile Store。昵称本地持久化；App 登录态 OpenID 优先于兼容存储，无值时复制 Cell 禁用。隐私和关于诗上调用微信真实平台能力；授权和订单仅显示明确未开放 Toast。",
+    "rationale": "以最少页面结构满足当前可交付路径，同时让身份、剪贴板和跳转结果来自真实来源。后端尚不存在时，诚实禁用或反馈比静态假数据和空白页更可维护。",
+    "alternativesRejected": [
+      "在前端随机生成或写死 OpenID：无法代表微信用户身份。",
+      "为授权和订单建立没有后端的数据页或假支付按钮：制造不可完成流程。",
+      "继续使用空白 Tabbar 占位壳：用户无法完成任何资料或服务动作。",
+      "用原生 input/button 和页面私有 Cell：绕过 PUI 组件与外观合同。",
+      "把应用账户页复制成 H5 标准组件页：该页面不是 npm 组件，浏览器也没有等价微信身份和平台能力。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/me/",
+      "miniprogram/common/utils/user-profile.js",
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-miniprogram-tabbar-pages.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_RULES_INDEX.md"
+    ],
+    "dependencies": ["PUI ConfigProvider", "PUI Navbar", "PUI ScrollArea", "PUI Tabbar", "PUI Card", "PUI Avatar", "PUI Input", "PUI Button", "PUI Cell", "PUI Toast"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-miniprogram-tabbar-pages.js",
+      "scripts/test-miniprogram-home.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过",
+      "node scripts/test-miniprogram-home.js：首次专项运行通过，随后被并行工作区的首页返回锚点基线断言阻断",
+      "npm run site:build：通过",
+      "npm run example:install：通过",
+      "npm run pack:check：通过",
+      "微信 DevTools build-npm：996ms，warnings=[]"
+    ],
+    "browser": [
+      "微信开发者工具现有会话在 iPhone 12/13 Pro 390x844、SDK 3.17.0 打开 /pages/me/index；当前页面、窗口和内容根宽度均为 390px，截图 /tmp/poemui-me-page-final-390.png 显示资料区、无 OpenID 禁用态、四个服务 Cell 与第四 Tab，console 未命中 warning/error。",
+      "运行态调用页面昵称回写链将 PoemUI 用户改为诗上昵称，页面 data 和 PUI Input 可见 value 同步；随后恢复原值并重新打开页面，nickname 仍为 PoemUI 用户，证明持久化恢复链生效。",
+      "当前 App 未注入真实 OpenID，运行态 hasOpenId=false、openIdDisplay=尚未获取，请先完成登录；未用测试身份冒充真实复制验收。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机仍需确认昵称软键盘与焦点、真实 OpenID 剪贴板权限、隐私合同弹层、跨小程序跳转、safe-area、深浅色和读屏。",
+      "小程序深色及边框、阴影、毛玻璃、大圆角、等距组合仍未在本页逐项运行验证。",
+      "当前工程没有真实登录后端；无 OpenID 的禁用态是已实现边界，不代表登录能力已经交付。",
+      "高级版授权和订单服务尚未交付；当前 Cell 仅提供明确未开放反馈。",
+      "完整 npm run check 被本页范围外的 Navbar H5 标题断言和首页返回锚点断言阻断；本页专项、构建、安装与打包门禁已独立通过。"
+    ]
+  },
+  "ai": {
+    "summary": "我的页只交付真实账户动作：昵称持久化、真实 OpenID 门禁与平台 API；未开放支付和订单不伪造。",
+    "rules": [
+      "OpenID 只能来自 App 登录态、后端结果或兼容真实存储，不能在前端随机生成、写死或推导。",
+      "可见 OpenID 可以脱敏，但复制必须写入完整真实值；无值时 Cell 禁用。",
+      "昵称与 OpenID 必须通过唯一资料 Store 写入，更新任一字段不得清空另一字段。",
+      "微信隐私合同和跨小程序跳转必须使用平台 API，并由失败回调反馈，不能以静态页面或成功文案替代。",
+      "没有支付、订单或登录后端时明确显示未开放，不建立假路由、假数据或假成功。",
+      "应用一级目的地优先组合 PUI 组件；应用页面不伪造成 H5 标准组件页。"
+    ],
+    "tags": ["miniprogram", "tabbar", "me", "profile", "openid", "privacy", "navigate-to-miniprogram", "pui-composition", "no-fake-success"]
+  }
+}

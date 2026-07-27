@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0203",
+  "title": "Dialog H5 预览遗漏运行时注册而停在透明入场态",
+  "scope": "component",
+  "components": ["dialog", "preview-site"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "Dialog 官网预览必须能真实打开、关闭和操作，不能显示不可交互的透明占位层。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice"],
+    "platforms": ["browser"],
+    "viewports": ["desktop", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 `#/components/dialog`，点击“打开 Dialog”。",
+    "修复前 Panel 节点已挂载，但 `data-dialog-phase=entering`、`aria-hidden=true`、Panel `opacity=0`，入场计时器和可交互状态没有完成。"
+  ],
+  "expected": "Dialog 的 H5 状态机必须完成 180ms 入场，显示真实 Surface 与完整 PreviewDevice 遮罩；Cancel、Close 和可关闭遮罩要请求父级回写，Confirm 保持开启。",
+  "actual": "`bindPreviewRuntime()` 未分发 dialog，导致 `bindDialogPreviewRuntime()` 从未执行，状态机一直停留在透明 entering 层。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-22 当前任务对话", "note": "用户报告 Dialog 预览区无法操作。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/dialog", "note": "修复前实测 Panel 存在但 opacity=0、layer aria-hidden=true、phase=entering；修复后 240ms 到达 phase=visible、Panel/Scrim opacity=1。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "在 bindPreviewRuntime 中注册 bindDialogPreviewRuntime(props)。"},
+    {"kind": "test", "ref": "scripts/test-dialog.js", "note": "专项断言 Dialog runtime 分发不可再遗漏。"}
+  ],
+  "rootCause": "Dialog Showcase 已实现独立 H5 状态机，但共享运行时分发表遗漏 dialog 分支；渲染首帧没有进入后续 requestAnimationFrame、计时器、焦点和键盘绑定路径。",
+  "decision": {
+    "outcome": "在共享运行时分发表显式注册 Dialog runtime，并增加专项回归断言和 H5 合同说明。",
+    "rationale": "状态机渲染与运行时绑定必须成对存在；仅让首帧挂载节点会形成不可见、不可用的伪交互。",
+    "alternativesRejected": [
+      "在 Dialog CSS 中强制初始 opacity=1，会跳过真实 500ms 动画并掩盖运行时缺失。",
+      "把 Dialog 改成静态默认显示，不能验证父级 visible 回写与关闭语义。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-dialog.js", "docs/components/DIALOG.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0203-dialog-h5-runtime-registration.json"],
+    "dependencies": ["PreviewDevice", "Popup", "PUI Button", "shared preview runtime"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["桌面实点打开后 240ms layer=visible、aria-hidden=false、Panel/Scrim opacity=1；Cancel、Close 与遮罩空白区均真实卸载，Confirm 保持可见。", "390px 下 document 375/375、PreviewDevice 349/349；深色 Dialog 为 #18181b 背景、#fafafa 前景和真实阴影，随后恢复浅色。"],
+    "deviceRisks": ["本次只修 H5 运行时；微信 Popup 遮罩、触摸穿透、安全区、Slot 投影、读屏和系统低动效仍需合法 AppID 真机复核。"]
+  },
+  "ai": {
+    "summary": "任何有独立 H5 动画或事件状态机的组件，都必须同时注册到 bindPreviewRuntime，不能只实现 Showcase 函数。",
+    "rules": [
+      "新增 H5 runtime helper 时，在同一改动中把 previewId 分发分支和专项静态断言一并补齐。",
+      "浮层验收必须在动画完成后读取 phase、aria-hidden、opacity、pointer-events 和真实空白区点击结果。",
+      "不要用默认 opacity=1 或静态可见来掩盖缺失的状态机绑定。"
+    ],
+    "tags": ["dialog", "h5-preview", "runtime", "animation", "overlay", "regression"]
+  }
+}

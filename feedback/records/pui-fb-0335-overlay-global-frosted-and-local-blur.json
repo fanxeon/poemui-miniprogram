@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0335",
+  "title": "Overlay 默认遮罩需兼容全局毛玻璃与局部 blur API",
+  "scope": "global",
+  "components": ["overlay", "config-provider", "preview-site", "miniprogram-home"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "pui-overlay 默认保持半透明遮罩；全局外观打开毛玻璃时自动获得 blur，同时调用方继续可以通过 blur API 单独请求 Overlay 模糊。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-devtools", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Overlay 仅在 blur=true 时添加 pui-overlay-layer--blurred，位于 ConfigProvider 的 pui-frosted-glass--on 子树时仍保持纯颜色遮罩。",
+    "H5 镜像仅读取组件 Props.blur，切换站点全局毛玻璃不会改变 Overlay 的 backdrop-filter。"
+  ],
+  "expected": "有效模糊必须为 blur=true 或 Provider/App Shell 的 frostedGlass 开启；默认和两者均关闭时保持半透明纯颜色遮罩。局部 API 与全局外观均不改变 Overlay 的颜色、层级、Slot、事件、滚动阻断或布局。",
+  "actual": "原生和 H5 都只读取局部 blur Prop，遗漏了已存在的全局 frostedGlass Token 边界。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确纠正：全局毛玻璃开启时 Overlay 应变为 blur，同时保留用户独立 blur API。"},
+    {"kind": "file", "ref": "overlay/overlay.wxss", "note": "修复前仅 .pui-overlay-layer--blurred 应用 --pui-overlay-blur，未匹配 Provider 状态类。"},
+    {"kind": "file", "ref": "config-provider/config-provider.js", "note": "Provider 已在实际子树根公开 pui-frosted-glass--on/off 状态类和 frostedGlass 有效值。"},
+    {"kind": "test", "ref": "scripts/test-overlay.js", "note": "专项契约同时锁定局部 blur、Provider frostedGlass 后代选择器与 H5 并集计算。"}
+  ],
+  "rootCause": "早期把 Overlay blur 设计为页面搜索场景的独立 API，未将其接入后续建立的 ConfigProvider 毛玻璃状态类与 H5 App Shell 外观镜像。",
+  "decision": {
+    "outcome": "保留 blur:Boolean API；Overlay WXSS 以 .pui-overlay-layer--blurred 和 .pui-frosted-glass--on .pui-overlay-layer 共同消费 --pui-overlay-blur。H5 以 props.blur || state.frost === 'on' 计算同一 filter。",
+    "rationale": "局部 API 继续满足调用方的显式需求，而全局外观能对整个 Provider 子树保持一致；两者都关闭时没有 backdrop-filter，默认遮罩仍克制且可预测。",
+    "alternativesRejected": [
+      "移除 blur API 会破坏调用方按浮层单独选择背景模糊的既有能力。",
+      "仅让 Overlay 跟随全局毛玻璃会使搜索等明确要求模糊的局部流程失去控制。",
+      "由页面私有 WXSS 或 H5 私有滤镜补丁会绕开 Provider Token 边界并造成跨端漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["overlay/overlay.wxss", "preview/app.js", "scripts/test-overlay.js", "docs/components/OVERLAY.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/UI_DESIGN_CONTRACT.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md"],
+    "dependencies": ["pui-config-provider", "pui-overlay", "--pui-overlay-blur", "App Shell data-frost"]
+  },
+  "verification": {
+    "tests": ["scripts/test-overlay.js", "scripts/test-config-provider.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["H5 Overlay 实测（dark）：frost=off + blur=false 的 computed backdrop-filter 为 none，背景为 rgba(9, 9, 11, 0.42)。", "H5 外观菜单实测：仅开启 App Shell 毛玻璃后，Props.blur=false 的可见 Overlay computed backdrop-filter 为 blur(10px)。", "H5 属性面板实测：关闭全局毛玻璃后，仅勾选 blur=true 的可见 Overlay computed backdrop-filter 仍为 blur(10px)。", "390x844 H5 实测：dark + frost=off + blur=false 时 PreviewDevice 内容宽度、document 宽度与 body 宽度均为 375px，无横向溢出。"],
+    "deviceRisks": ["真机仍需确认 iOS/Android 的 backdrop-filter 支持与性能、fixed Overlay、catchtouchmove、Slot 投影、读屏和系统低动效。"]
+  },
+  "ai": {
+    "summary": "Overlay 的背景模糊取局部 blur API 与全局 frostedGlass 的并集；默认遮罩不模糊，不得用页面私有滤镜替代。",
+    "rules": [
+      "blur=true 必须继续是 Overlay 的公开 Boolean Prop，不能因全局外观接入而删除。",
+      "Provider 的 pui-frosted-glass--on 必须让其子树 Overlay 自动消费同名 --pui-overlay-blur Token。",
+      "两项都关闭时 Overlay 只保留半透明背景色；不要残留 backdrop-filter。",
+      "局部与全局 blur 都不能改变 Overlay 的 Slot、点击回写、滚动阻断、zIndex 或几何。",
+      "H5 使用 App Shell 的 data-frost 与 Props.blur 同步同一优先级，禁止单端例外。"
+    ],
+    "tags": ["overlay", "frosted-glass", "blur", "config-provider", "h5-preview", "visual-config"]
+  }
+}

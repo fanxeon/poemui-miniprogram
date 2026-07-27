@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0143",
+  "title": "Toast 公开合同混入受控显隐和私有动效参数",
+  "scope": "component",
+  "components": ["toast", "preview-site", "usage-code", "shadcn-message"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "联网对照 TDesign 的真实公开能力，基础用法保持最小可用，API、源码、H5、示例和安装产物必须同源。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "usage-code", "api-reference", "example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Toast 公开 visible/defaultVisible、showIcon、zIndex、motionDuration、easing 与 input/change/open；基础 WXML 也展示所有 bind。",
+    "在线访问 TDesign Toast 页面、官方仓库和 npm 发布页，并读取 tdesign-miniprogram@1.15.3 的 miniprogram_dist/toast/{props.js,type.d.ts,toast.js,toast.json,toast.wxml,toast.wxss}，其公开主干是 direction/duration/icon/message/overlayProps/placement/preventScrollThrough/showOverlay/theme/usingCustomNavbar、icon/message Slot、close 及 show/hide。"
+  ],
+  "expected": "PoemUI 仅保留能真实实现的 TDesign Toast 主干，加上全库 ariaLabel/reduceMotion；基础 WXML 零 bind，自动收起不表达业务成功。",
+  "actual": "旧公开面把受控显示、诊断事件、默认 Slot、层级与动效私参暴露为消费者合同，和在线 TDesign 参考及最小调用原则不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求联网参考 TDesign，基础用法只保留基础调用，并授权后续组件在完整证据后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/toast", "note": "2026-07-20 访问 TDesign Toast 在线页面；动态页作为产品信息来源。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "2026-07-20 访问官方仓库并以 npm 1.15.3 固定包复现源码判断。"},
+    {"kind": "file", "ref": "toast/toast.js", "note": "当前改造中的公开 Props、show(options)/hide() 与 close 实现。"},
+    {"kind": "test", "ref": "scripts/test-toast.js", "note": "专项合同测试锁定 12 Props、2 Slots、close、show/hide、基础 WXML 和产物一致性。"}
+  ],
+  "rootCause": "旧实现把早期 H5 调试器的受控状态机和私有视觉调参直接外泄，未按 TDesign 实际公共边界重新审计。",
+  "decision": {
+    "outcome": "收敛为 10 个 TDesign 核心 Props 加 ariaLabel/reduceMotion、icon/message 两 Slot、唯一 close、show(options)/hide()；删除受控显隐、私有动效和默认 Slot。",
+    "rationale": "单条 Toast 的调用意图是命令式短反馈；可访问名称和低动效为全库横向合同，其他旧字段既重复又无法改善调用路径。",
+    "alternativesRejected": [
+      "保留 visible/defaultVisible 会继续把单条提示变成需要父级回写的伪状态组件。",
+      "保留 input/change/open 会让自动关闭被误解为业务流程成功。",
+      "在基础 WXML 罗列全部 bind 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["toast/toast.js", "toast/toast.wxml", "toast/toast.wxss", "toast/toast.json", "metadata/components.js", "metadata/shadcn.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-toast.js"],
+    "dependencies": ["PUI Overlay", "PUI Loading", "PUI Icon", "shared usage-code generator", "shadcn Message/Toast route mapping"]
+  },
+  "verification": {
+    "tests": ["scripts/test-toast.js"],
+    "commands": ["npm run example:install（含 site:build，2026-07-20 通过）", "node scripts/test-toast.js（2026-07-20 通过）", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run pack:check"],
+    "browser": ["2026-07-20 实点属性面板并验证 message 回写为“正在同步草稿”、theme=loading、direction=column、placement=top、showOverlay=true；概览真实 PUI Button 显示 Toast 和 Overlay，状态根含正确文字与 polite 语义。API 显示 12 Props、close、2 Slots、show(options)/hide()；基础代码复制得到零 bind 的 <pui-toast id=\"delivery-toast\"/>。duration=0 与自动关闭边界由同源 VM 状态机专项测试覆盖；浏览器范围控件的原生交互由共享 Slider 助手承载，未把自动化输入限制误判为 Toast 行为。"],
+    "deviceRisks": ["微信 fixed 层、Overlay 触摸滚动门禁、rpx、安全区、Slot 投影、读屏和系统低动效仍需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "Toast 的可见阶段、受控回写和动效私参不能因旧预览存在就自动成为公共 API。",
+    "rules": [
+      "先在线核对官方页面、仓库/NPM 与固定包源码，再决定公开 Props、Slots、Events、Methods。",
+      "基础 WXML 只展示可安装的最小调用，完整事件只进 API 或事件专项示例。",
+      "自动收起与 close 只能表示提示结束，不能写成业务成功。"
+    ],
+    "tags": ["toast", "api-contract", "tdesign", "usage-code", "no-fake-success"]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "description": "PoemUI MiniProgram example",
+  "miniprogramRoot": "miniprogram/",
+  "setting": {
+    "es6": true,
+    "minified": true,
+    "packNpmManually": true,
+    "packNpmRelationList": [
+      {
+        "packageJsonPath": "./package.json",
+        "miniprogramNpmDistDir": "./miniprogram/"
+      }
+    ],
+    "minifyWXML": true
+  },
+  "compileType": "miniprogram",
+  "appid": "touristappid"
+}

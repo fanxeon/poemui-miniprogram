@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0074",
+  "title": "Swiper 字段别名、分页开关与自由 Slot 扩张原生 swiper 合同",
+  "scope": "component",
+  "components": ["swiper", "shadcn-swiper", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Swiper 应围绕真实 swiper、严格原始值、统一 Navigation、可组合条目和真实状态收口；基础调用克制，事件只在 API 或专项示例出现。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["393px PreviewDevice", "1280x720", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Swiper 的 42 Props、8 Events、3 Slots、1 Generic 和8个方法：itemKey/titleKey 等字段映射、indicatorDots/activeColor/showArrows/showCounter 等并行分页开关、readonly、pauseOnTouch、skipHiddenItemLayout、header/footer/default Slots 与 selectIndex 同时公开。",
+    "旧合同把内部触摸暂停、平台优化、演示文案、分页颜色和业务布局提升为公共 API；transition 与 animationfinish 同时暴露近义运行事件。",
+    "对照 TDesign Miniprogram 1.15.3 Swiper/SwiperNav 的文档与安装源码，确认可借鉴的是原生 swiper 参数、统一导航对象和图片资源事件，而不是机械复制全部字段。"
+  ],
+  "expected": "Swiper 只公开数据与当前值、原生播放布局、单一 Navigation、状态、语义和低动效；0、false、空字符串不混淆，受控请求等待父级回写，Retry 不伪造恢复。",
+  "actual": "旧合同要求调用者同时理解字段映射、六类分页开关、自由 Slot、内部优化和重复方法事件，基础 WXML 与父级回写成本远高于真实轮播目标。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求逐组件参考 TDesign 收敛 API 与分区演示，并授权完整门禁后自主接受后续组件。"},
+    {"kind": "file", "ref": "swiper/swiper.js", "note": "最终固定26 Props、7 Events、0 Slots、1 swiper-slide Generic和7 Methods；value/defaultValue 保留严格原始值。"},
+    {"kind": "file", "ref": "swiper/swiper.wxml", "note": "真实 swiper 组合 PUI Image/Tag/Icon/Button/Loading/Empty，并以 error > loading > content > empty 共享单一状态机。"},
+    {"kind": "test", "ref": "scripts/test-swiper.js", "note": "专项锁定26/7/0/1/7、0/false/空字符串、受控退控、触摸暂停、边界、Navigation、状态优先级和固定180ms/1ms。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-swiper", "note": "真实拖拽从 value=0 切到 false；受控 false 通过分页回写空字符串；autoplay 触摸后重新计时，disableTouch 阻断拖拽但方法边界保留。"}
+  ],
+  "rootCause": "旧设计没有先固定 Swiper 是 swiper 状态与导航根，因此把数据适配、内部安全行为、视觉配置、业务 Header/Footer 和便捷别名持续累加到顶层。",
+  "decision": {
+    "outcome": "收敛为26 Props、7 Events、0 Slots、1 Generic、7 Methods；固定 SwiperItem schema，以 navigation Boolean/Object 统一 dots、dots-bar、fraction、inside/outside、controls 和 minShowNum；删除字段 Key、分页颜色与并行开关、readonly、pauseOnTouch、skipHiddenItemLayout、transition、自由 Slots 和 selectIndex。",
+    "rationale": "swiper 的真实价值是当前项、触摸/自动播放、方向/同屏、导航、资源与状态；内部触摸暂停应默认安全，结构差异只需一个 Generic，业务布局应放在组件外。",
+    "alternativesRejected": [
+      "机械复制 TDesign Swiper 与 SwiperNav 的全部字段会引入平台兼容参数和两套组件拆分，不符合 PoemUI 单一组合合同。",
+      "保留42 Props并仅标记旧字段 deprecated 会继续诱导 AI 生成并行分页与字段映射入口。",
+      "继续公开 header/footer/default Slots 会让轮播承担业务页面布局并形成 H5 与 WXML双实现。"
+    ]
+  },
+  "impact": {
+    "files": ["swiper/swiper.js", "swiper/swiper.wxml", "swiper/swiper.wxss", "swiper/swiper.json", "metadata/components.js", "metadata/shadcn.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/SWIPER.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-swiper.js"],
+    "dependencies": ["pui-button", "pui-image", "pui-icon", "pui-tag", "pui-loading", "pui-empty", "theme behavior", "wechat swiper"]
+  },
+  "verification": {
+    "tests": ["scripts/test-swiper.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run precheck", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "非受控 value=0 经真实拖拽变为 false；受控 value=false 经分页请求后属性面板真实回写为空字符串，非法 JSON 保留上次有效值并设置 aria-invalid。",
+      "autoplay=1000ms 可真实切换；触摸在原计时中点发生后600ms仍不切换，释放后约1150ms切换，证明暂停并重新计时；disableTouch=true 后同一路径拖拽不改变索引。",
+      "circular=false 首项上一项真实 disabled，下一项切换；单项且 minShowNum=2 时 Navigation 与 Controls 均不渲染。",
+      "error 同时存在时优先于 loading；retry 保持 error 并明确等待业务请求；坏图片真实触发 image-error。"
+    ],
+    "deviceRisks": [
+      "微信 swiper 的触摸惯性、纵向手势冲突、circular 多项同屏、图片内存和辅助技术播报仍需合法 AppID 真机复核。",
+      "旧消费者若使用已删除字段映射、分页平行 Props、Slots、transition 或 selectIndex，需要迁移到固定 item schema、navigation、组件外布局、animationfinish 与 select。"
+    ]
+  },
+  "ai": {
+    "summary": "Swiper 只围绕固定 items、严格 value、原生 swiper 和单一 navigation 建模，结构差异使用 swiper-slide Generic。",
+    "rules": [
+      "禁止恢复 itemKey/titleKey 等字段别名、分页颜色与并行开关、readonly、pauseOnTouch 或 skipHiddenItemLayout。",
+      "当前项事件固定为 input 后 change；受控模式必须等待父级真实回写，0、false 与空字符串不得字符串化比较。",
+      "业务 Header/Footer 放在组件外；Swiper 不公开 Slot，只允许 swiper-slide Generic 接管条目内容。",
+      "Retry 只发布请求并保持 error；状态优先级固定 error > loading > content > empty。"
+    ],
+    "tags": ["swiper", "api", "tdesign", "controlled-state", "navigation", "generic"]
+  }
+}

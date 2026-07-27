@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0054",
+  "title": "Divider 默认无内容横线被根节点间距截断",
+  "scope": "component",
+  "components": ["divider", "preview-site"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "默认 Divider 应是一条连续分割线；只有真实文字或 Slot 存在时才在内容两侧留出间距，横竖、虚线和语义跨端一致。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "以默认 Props 渲染 pui-divider：WXML 生成 before/after 两段线条且没有 content 节点。",
+    "检查 divider.wxss，根 .pui-divider 仍无条件设置 gap: var(--pui-space-normal)，因此两段线之间留下空隙。",
+    "打开 H5 Divider 路由，镜像 .pui-divider-preview 同样无条件设置 gap，默认横线在中心断开。"
+  ],
+  "expected": "无内容横向 Divider 的两段线条边界完全相接；content/showContent 生效时才由内容节点提供两侧间距。纵向只保留唯一线条，并暴露与真实布局一致的 aria-orientation。",
+  "actual": "原生 WXSS 和 H5 镜像都把内容间距放在根节点，导致默认空 Divider 仍在中心出现视觉断口；原生根也未声明方向语义。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户已明确授权后续组件无需逐项确认，由 agent 直接完成真实 battle 并自主决定验收。"
+    },
+    {
+      "kind": "file",
+      "ref": "divider/divider.wxss",
+      "note": "根节点移除无条件 gap，pui-divider__content 独占左右 var(--pui-space-normal) 间距。"
+    },
+    {
+      "kind": "file",
+      "ref": "divider/divider.wxml",
+      "note": "根 separator 增加 aria-orientation，纵向仍只渲染 after 唯一线条。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/divider",
+      "note": "默认根 childCount=2、contentCount=0，两段线宽各 167.5px 且测得 gap=0；文字态内容两侧均为 10px，纵向虚线为 1x32px。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-divider.js",
+      "note": "专项合同锁定原生/H5 根无 gap、内容 margin、横竖显隐、虚线、非法值回退与 ARIA 方向。"
+    }
+  ],
+  "rootCause": "旧实现把“文字与线条之间的间距”错误建模成 Divider 根的全局 gap，没有区分 content 节点是否真实存在；H5 镜像直接复制了这一结构。",
+  "decision": {
+    "outcome": "原生和 H5 同时从根移除 gap，把间距迁移到内容节点；保留两段横线以支持三种对齐，纵向继续只用唯一线条，并增加 orientation 派生状态与 ARIA 映射。",
+    "rationale": "内容节点拥有间距才能同时满足默认连续线和带内容分隔线，并保持现有对齐算法、Slot API 与盒模型稳定。",
+    "alternativesRejected": [
+      "无内容时通过负 margin 抵消根 gap 会引入魔法数，并让虚线和边框关闭状态更难推理。",
+      "改成单一伪元素会破坏 left/center/right 两段线独立伸缩与现有 WXML 结构。",
+      "只修 H5 会继续让真实小程序产物显示错误。"
+    ]
+  },
+  "impact": {
+    "files": ["divider/divider.js", "divider/divider.wxml", "divider/divider.wxss", "preview/app.js", "preview/styles.css", "scripts/test-divider.js", "docs/components/DIVIDER.md"],
+    "dependencies": ["theme behavior", "spacing tokens", "border tokens", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-divider.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js", "scripts/test-spacing-token-contract.js"],
+    "commands": ["npm run precheck", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "默认 horizontal/center/content='' /showContent=false 渲染两条相接线段，实测 gap=0。",
+      "content=章节内容时显示三个子节点，内容前后间距均为 10px；空字符串配 showContent=true 真实显示 PUI Tag Slot。",
+      "left/right 对齐短线分别为 16px，另一侧为 221px；vertical+dashed 只有一个子节点，根与线均为 1x32px，border-left=dashed。",
+      "decorative=false 与 ariaLabel=章节边界同步得到 aria-hidden=false、aria-orientation=vertical 和真实名称。"
+    ],
+    "deviceRisks": [
+      "1rpx 实线/虚线在不同设备像素比上的抗锯齿仍需微信真机目视确认。",
+      "aria-orientation 与 aria-hidden 在微信辅助技术中的朗读效果需目标基础库和真机读屏确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Divider 的内容间距只能属于真实内容节点，默认无内容横线必须连续。",
+    "rules": [
+      "禁止在 Divider 根恢复无条件 gap；默认两条横线必须相接。",
+      "content/showContent 只在横向创建内容节点，纵向始终忽略内容和对齐视觉。",
+      "原生与 H5 必须同时验证横竖、虚线、对齐和 aria-orientation。",
+      "不要用负 margin、空文字或隐藏占位节点修补中心断口。"
+    ],
+    "tags": ["divider", "gap", "content", "slot", "vertical", "aria", "preview-parity"]
+  }
+}

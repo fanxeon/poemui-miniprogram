@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0150",
+  "title": "Progress 已实现 label Slot 但官网 metadata 未公开",
+  "scope": "component",
+  "components": ["progress", "preview-site", "api-reference", "metadata"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "WXML、metadata、官网 API、示例和文档必须完整一致，调用方可以发现每一个真实公开 Slot，且不虚构默认 Slot。",
+  "environment": {
+    "surfaces": ["progress-wxml", "metadata", "api-reference", "h5-preview", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px browser viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "progress/progress.wxml 有 <slot name=\"label\"></slot>，组件合同、H5 标签内容分区和 COMPONENT_API.md 也说明了该 Slot。",
+    "浏览器打开 #/components/progress 的 API 视图时，metadata.apiSlots.progress 缺失，API 只显示 10 Props，未显示 Slots。"
+  ],
+  "expected": "Progress API 视图显示唯一 label Slot，并明确不存在 default Slot；描述应只承诺追加读数，不改变 percentage 或业务状态。",
+  "actual": "真实 WXML 能力被官网 API 隐藏，调用者无法从 metadata 驱动的参考页发现 label Slot。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已确认范围化自主验收授权：后续组件无需逐项确认，agent 在完整审计、浏览器、专项测试、文档、Ledger 和构建门禁后可自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/progress", "note": "2026-07-20 修复前 API 只有 Props；生成 catalog 后真实 API 显示 Slots、label 与“未列出的 default Slot 不存在”。"},
+    {"kind": "file", "ref": "progress/progress.wxml", "note": "原生 WXML 声明唯一具名 <slot name=\"label\"></slot>，没有无名 Slot。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "apiSlots.progress 现记录 label 的公开说明，供 API Reference 同源读取。"},
+    {"kind": "test", "ref": "scripts/test-progress.js", "note": "专项测试精确锁定 metadata.apiSlots.progress 与 WXML 的唯一 label Slot。"}
+  ],
+  "rootCause": "Progress 的源码、文档与 H5 已完成 Slot 收敛，但 metadata 作为官网 API 的真相源漏填该字段，导致生成页面漂移。",
+  "decision": {
+    "outcome": "在 metadata.apiSlots 增加唯一 label 条目，并在专项测试中直接比较 Slot 名称与说明；重新生成 catalog 产物后用浏览器复验。",
+    "rationale": "metadata 是官网 API 的直接数据源，必须与 WXML 一起被测试，才能防止真实能力被遗漏或虚构。",
+    "alternativesRejected": [
+      "在 API 页面硬编码 label 不能修复 metadata 与后续生成产物。",
+      "新增默认 Slot 只为让通用文案成立会违反真实 WXML。"
+    ]
+  },
+  "impact": {
+    "files": ["metadata/components.js", "preview/components-data.js", "scripts/test-progress.js", "docs/COMPONENT_API.md", "docs/components/PROGRESS.md"],
+    "dependencies": ["API Reference generator", "catalog generator", "shared usage-code generator"]
+  },
+  "verification": {
+    "tests": ["scripts/test-progress.js"],
+    "commands": ["2026-07-20 npm run site:build：通过，生成含 Progress label Slot 的 preview/components-data.js", "2026-07-20 npm run check、npm run pack:check、npm run example:install：通过；微信 CLI build-npm 因 touristappid 不存在返回内部 code 10，未生成 miniprogram_npm"],
+    "browser": ["真实 API 视图显示 10 Props 后的 Slots 区段、1 Slot、label 和不存在 default Slot 的准确说明；属性页与概览的标签内容分区继续保持可用。"],
+    "deviceRisks": ["微信运行时仍需以合法 AppID 确认 label Slot 的投影顺序、长内容换行与读屏结果。"]
+  },
+  "ai": {
+    "summary": "任何 WXML Slot 的增删都必须同步 metadata API，并用浏览器与专项测试确认生成参考页没有遗漏。",
+    "rules": [
+      "WXML、metadata.apiSlots、API 页面、组件合同和示例必须共同列入组件 battle 审计。",
+      "具名 Slot 存在时必须在 metadata 精确声明；没有 default Slot 时不得暗示它可用。",
+      "metadata 改动后必须重新生成 catalog，再对运行中的真实 API 页面复验。"
+    ],
+    "tags": ["progress", "metadata", "slots", "api-reference", "preview-parity"]
+  }
+}

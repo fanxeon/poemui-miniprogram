@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0256",
+  "title": "Grid 官网错误态 Empty 与重试按钮横向挤压",
+  "scope": "component",
+  "components": ["grid", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Grid 的加载、空和错误示例在窄屏预览中应保持清晰分层，错误态的 Empty 与重试动作不能互相挤压。",
+  "environment": {
+    "surfaces": ["h5-preview", "Grid showcase"],
+    "platforms": ["browser", "wechat-miniprogram-source"],
+    "viewports": ["390x844 browser", "desktop browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/grid，进入 Grid 的加载、空与错误分区。",
+    "在 390px 预览中观察错误态：父状态层使用 flex row，Empty 和重试 Button 作为兄弟节点横向排列。",
+    "修复前错误态状态层宽约 280px，Empty 实际宽约 201.7px，重试 Button 占约 54.3px，内容被压缩且纵向层次不清。"
+  ],
+  "expected": "错误态以垂直堆叠呈现 Empty 与重试动作，使用统一间距 Token；状态层在 390px 下保持居中、可读且不产生页面级横向溢出。",
+  "actual": "Grid 原生与 H5 预览的状态容器都是横向 flex。错误态的 Empty 与独立重试 Button 被挤在同一行，Empty 的可用宽度被动作按钮侵占。",
+  "evidence": [
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/grid · 2026-07-23 · 390x844", "note": "真实预览几何显示错误态 Empty x=54、width=201.703px，重试 Button x=255.7、width=54.297px，父状态层 width=280px。"},
+    {"kind": "file", "ref": "grid/grid.wxml", "note": "错误层保持 Empty 与独立 PUI retry Button 两个真实兄弟节点，不能依赖横向排列承载窄屏状态。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 错误层通过 emptySample 与 buttonSample 组合，结构与 WXML 一致。"},
+    {"kind": "test", "ref": "scripts/test-grid.js", "note": "专项测试新增原生 WXSS 与 H5 预览状态层垂直堆叠及 Token gap 断言。"}
+  ],
+  "rootCause": "状态容器只定义了 align-items/justify-content，没有为 Empty 与外置 retry Button 建立垂直内容组合语义；错误态的两个兄弟节点因此共享一条横向 flex 轨道。",
+  "decision": {
+    "outcome": "原生 WXSS 与 H5 镜像统一把 Grid 状态层改为 column flex，并分别使用 pui-space-normal 与 pui-preview-content-gap 作为垂直间距；保留所有状态层常驻和独立重试动作。",
+    "rationale": "Error 状态是 Empty 说明与用户动作的上下级关系，垂直堆叠能保证 390px 可读性，同时不改变 retry 事件、状态优先级或消费者回写责任。",
+    "alternativesRejected": [
+      "继续横向排列：窄屏下 Empty 必然被动作按钮侵占。",
+      "给 Empty 写固定更小宽度：会以牺牲状态说明可读性换取错误布局。",
+      "把 retry Button 塞进 Empty 默认 action：会改变 Grid 原生 WXML 的组合树和 Empty 消费者语义。"
+    ]
+  },
+  "impact": {
+    "files": ["grid/grid.wxss", "preview/styles.css", "scripts/test-grid.js", "feedback/records/pui-fb-0256-grid-preview-error-state-layout.json", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["PUI Empty", "PUI Button", "Grid retained state layers", "PreviewDevice shadow-safe layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-grid.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["390x844 真实 Grid 路由已复现错误态横向挤压，修复后需确认 Empty 与 retry Button 垂直居中、间距稳定且 document/body 无横向溢出。", "桌面 Grid 路由需确认三列状态展示仍保持自然分区，不改变状态优先级和真实 retry 回写。"],
+    "deviceRisks": ["微信真机仍需复核 rpx gap、PUI Empty/Button 样式隔离、读屏顺序和触摸命中；当前示例 touristappid 可能阻断 build-npm。"]
+  },
+  "ai": {
+    "summary": "Grid 的 Error 状态由 Empty 说明和独立 retry 动作组成，窄屏预览必须以垂直内容组合承载，不能让状态兄弟节点共享横向轨道。",
+    "rules": [
+      "状态容器同时包含 Empty 与外置动作时，先按信息层级选择 column flex，再用语义 gap Token 控制间距。",
+      "H5 镜像的状态布局必须与真实 WXML 组合树一致，不能只通过缩小文字或固定宽度掩盖挤压。",
+      "修复预览布局后仍要验证 390px 页面级 scrollWidth，以及 loading/error/empty 状态层的真实切换和 retry 回写。"
+    ],
+    "tags": ["grid", "preview-site", "error-state", "empty", "retry", "390px", "spacing"]
+  }
+}

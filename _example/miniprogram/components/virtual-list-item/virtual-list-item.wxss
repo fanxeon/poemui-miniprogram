@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  box-sizing: border-box;
+  height: 100%;
+  min-width: 0;
+}
+
+pui-cell {
+  display: block;
+  box-sizing: border-box;
+  height: 100%;
+}

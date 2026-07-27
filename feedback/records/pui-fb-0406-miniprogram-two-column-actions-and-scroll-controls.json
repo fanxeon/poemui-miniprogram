@@ -1,0 +1,156 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0406",
+  "title": "小程序双操作行应等分两列且滚动示例需要足够验证空间",
+  "scope": "global",
+  "components": [
+    "miniprogram",
+    "component-page",
+    "button",
+    "scroll-area",
+    "sticky",
+    "virtual-list"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "组件独立页中的两个操作按钮应稳定等分为两列并保留标准间距；Sticky 需要更长正文验证吸顶；ScrollArea 需要直接控制遮罩显隐与尺寸。",
+  "environment": {
+    "surfaces": [
+      "miniprogram component pages",
+      "scroll-area page",
+      "sticky page"
+    ],
+    "platforms": [
+      "wechat-miniprogram"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "进入包含两个并列操作的组件独立页，旧通用 component-page__row 使用可换行 Flex，按钮只按内容宽度排列，不能形成稳定两列。",
+    "进入 Sticky 独立页，旧正文只有五条 Cell，滚动距离不足以持续观察吸顶进入、保持和退出。",
+    "进入 ScrollArea 独立页，旧页面固定开启 md 遮罩，没有用户可操作的显隐与尺寸演示。"
+  ],
+  "expected": "两个并列操作稳定等分、占满可用宽度并以 --pui-content-gap 保留 16rpx 间距；Sticky 正文加倍；ScrollArea 在唯一滚动区中提供真实 Switch 和尺寸增减，并直接回写公开 Props。",
+  "actual": "双按钮曾使用通用可换行 Flex；Sticky 只有五条正文；ScrollArea 遮罩为固定 WXML 值。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "miniprogram/styles/component-page.wxss",
+      "note": "新增只服务操作区的两列 Grid，保留通用内容行 Flex。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/scroll-area/index.wxml",
+      "note": "Switch 与两个等分 Button 直接控制 gradientOverlay 和 gradientOverlaySize。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/sticky/index.js",
+      "note": "Sticky 正文由五条扩充为十条。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-component-pages.js",
+      "note": "锁定双按钮操作行的两列语义类、block Button 与 16rpx 内容间距。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-layout-pages.js",
+      "note": "锁定遮罩开关、sm/md/lg 边界和 Sticky 十条正文。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户明确要求双按钮两列、Sticky 内容加倍及 ScrollArea 遮罩控制区。"
+    }
+  ],
+  "rootCause": "通用内容行同时承担了设置组合与操作排列，缺少双操作专用语义；两个滚动示例只证明组件存在，没有为关键视觉状态提供足够运行态控制与滚动预算。",
+  "decision": {
+    "outcome": "新增 component-page__row--actions 两列 Grid，并让双操作 PUI Button 使用 block 与 --pui-content-gap；VirtualList、Navigation 与 Steps 双操作工具栏同步两列和 16rpx 间距。Sticky 固定十条正文。ScrollArea 在自身唯一 Slot 中组合遮罩 Switch 与尺寸增减按钮，尺寸严格限制为 sm/md/lg 并在边界禁用按钮。",
+    "rationale": "独立操作语义避免误伤 Switch、Label、Icon 和文案行；直接绑定真实公开 Props 能让演示结果与组件合同一致，且不增加第二滚动区或新 API。",
+    "alternativesRejected": [
+      "把所有 component-page__row 改成 Grid，会破坏 Switch+文案、Icon 与标签等普通内容组合。",
+      "仅给按钮设置固定宽度，无法在不同页面 gutter 和 390px 下稳定等分。",
+      "用静态说明描述遮罩尺寸，不足以验证真实组件视觉变化。",
+      "为 ScrollArea 增加任意数值尺寸或实例方法，会超出已有 sm/md/lg 公共合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/styles/component-page.wxss",
+      "miniprogram/styles/advanced-pages.wxss",
+      "miniprogram/pages/components/",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-layout-pages.js",
+      "scripts/test-miniprogram-advanced-pages.js",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/MINIPROGRAM_LAYOUT_PAGES.md",
+      "docs/MINIPROGRAM_COMPONENT_PAGE_ACCEPTANCE.md",
+      "docs/components/SCROLL-AREA.md",
+      "docs/components/STICKY.md"
+    ],
+    "dependencies": [
+      "PUI Button",
+      "PUI Switch",
+      "PUI ScrollArea",
+      "PUI Sticky"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-component-page-quality.js",
+      "scripts/test-miniprogram-layout-pages.js",
+      "scripts/test-miniprogram-advanced-pages.js",
+      "scripts/test-scroll-area.js",
+      "scripts/test-sticky.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "微信开发者工具 build-npm"
+    ],
+    "browser": [
+      "微信开发者工具编译并打开 ScrollArea 与 Sticky 独立页，页面均返回 success=true；最终 build-npm cost=865 且 warnings=[]。",
+      "ScrollArea 浅色截图确认开关区、状态文字和两个通栏按钮稳定等分；运行态触发增大操作后 areaGradientOverlaySize 由 md 变为 lg、areaGradientCanIncrease=false，触发 Switch change 后 areaGradientOverlay=false 且两个尺寸按钮进入禁用态，随后恢复 true / md。",
+      "Sticky 浅色截图确认两个操作按钮稳定等分，页面运行态回读 stickyRows 为十条且首屏底部仍有后续正文。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 Sticky 惯性滚动、fixed 边界与 ScrollArea 遮罩过渡仍需合法 AppID 复核。",
+      "读屏、系统字体放大与低动效仍需真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "双操作需要独立两列语义；滚动演示必须提供足够内容和可直接验证的公开 Prop 控制。",
+    "rules": [
+      "恰好两个并列 PUI Button 使用共享两列 Grid，并以 block 填满各自轨道。",
+      "两列 Button 之间必须显式消费 --pui-content-gap，默认 16rpx，禁止贴合。",
+      "不得把通用 component-page__row 改成 Grid；Switch、Label、Icon 与文案组合继续使用 Flex。",
+      "Sticky 小程序独立页至少保留十条连续正文，确保能够观察吸顶进入、保持和恢复。",
+      "ScrollArea 遮罩控制必须直接绑定 gradientOverlay 与 gradientOverlaySize，尺寸只允许 sm、md、lg，不得创建第二滚动区或扩张 API。"
+    ],
+    "tags": [
+      "miniprogram",
+      "component-page",
+      "two-column-actions",
+      "scroll-area",
+      "sticky",
+      "390px"
+    ]
+  }
+}

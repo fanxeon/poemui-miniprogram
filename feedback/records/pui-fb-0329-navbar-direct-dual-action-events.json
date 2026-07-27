@@ -1,0 +1,82 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0329",
+  "title": "Navbar 双按钮不应依赖 Slot 冒泡而失去页面监听",
+  "scope": "component",
+  "components": ["navbar", "miniprogram-home", "component-page-navbar", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "needs-device",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Navbar 的搜索与菜单两个标准操作必须能够由页面直接绑定并可靠触发。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-home", "component-page-navbar", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools-webview", "wechat-webview", "browser"],
+    "viewports": ["390px", "iPhone custom-navigation"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 capsule=true 的 Navbar left Slot 放置搜索和菜单两个 PUI Button。",
+    "页面仅依赖 Slot 内 bind:click 接收动作。",
+    "此前 Skyline 配置下的真机报告显示第二个操作无法稳定命中；当前项目已明确禁用 Skyline，WebView 真机仍需验证。"
+  ],
+  "expected": "Navbar 应提供两个正式的内建图标操作配置，并分别通过 bind:leftBtn 与 bind:rightBtn 向页面发布事件。",
+  "actual": "双按钮已改由 Navbar 内建 PUI Button 并公开 direct event；此前 iOS/Android Skyline 真机仅命中最左按钮，但当前产品已移除 Skyline。开发者工具 WebView 与 JS 直接方法测试仍不能替代 WebView 真机点击验收。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-24 当前会话",
+      "note": "用户明确反馈双按钮无法监听，并要求组件暴露 bind:leftBtn 与 bind:rightBtn。"
+    },
+    {
+      "kind": "file",
+      "ref": "navbar/navbar.wxml",
+      "note": "修复后 Navbar 自身渲染 leftBtn/rightBtn 的 PUI Button 并绑定内部处理器。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-navbar.js",
+      "note": "专项测试执行两个内部处理器并锁定精确事件名与 detail。"
+    },
+    {
+      "kind": "real-device",
+      "ref": "2026-07-24 当前任务对话",
+      "note": "用户补充 iOS 与 Android 真机均只有最左 Navbar 按钮生效；随后明确当前项目不启用、不支持 Skyline，因此该报告保留为已撤出范围的证据。"
+    }
+  ],
+  "rootCause": "此前 Slot 事件路径确有缺口，direct event 已修复该部分；随后报告的右侧不命中发生在当前已撤出的 Skyline 配置，候选宿主命中盒问题不再属于本项目支持范围。WebView 真机尚未提供同类失败证据。",
+  "decision": {
+    "outcome": "保留 leftBtn/rightBtn 的正式 API 和组件内事件发布；本项目不再为 Skyline 添加包装命中层。该记录保留为 needs-device，后续只以 WebView 真机确认两个入口。",
+    "rationale": "用户已明确 WebView 是当前产品边界，不能为了未启用渲染器扩大 Navbar API 或引入无需求的布局分支；VM 直接调用仍不能替代受支持目标的真机触摸验收。",
+    "alternativesRejected": [
+      "继续让页面在 Slot 内绑定 click，无法形成稳定组件事件合同。",
+      "让 Navbar 捕获并猜测任意 Slot 内按钮身份，无法保证两个操作的语义和顺序。",
+      "在每个页面重复 navbar 私有双按钮壳，会再次分叉几何和触摸逻辑。",
+      "以开发者工具 WebView 的点击通过或直接调用 onRightBtnClick 代替受支持 WebView 真机命中验证。"
+    ]
+  },
+  "impact": {
+    "files": ["navbar/navbar.js", "navbar/navbar.wxml", "metadata/components.js", "preview/app.js", "miniprogram/pages/index/index.wxml", "miniprogram/components/component-page-navbar/component-page-navbar.wxml", "docs/components/NAVBAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-navbar.js"],
+    "dependencies": ["PUI Button", "微信自定义组件事件", "微信原生胶囊几何"]
+  },
+  "verification": {
+    "tests": ["scripts/test-navbar.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js"],
+    "commands": ["node scripts/test-navbar.js", "node scripts/test-miniprogram-home.js", "node scripts/test-miniprogram-component-pages.js", "npm run miniprogram:build", "npm run site:build", "npm run check"],
+    "browser": ["H5 Navbar 以同一 leftBtn/rightBtn 配置渲染内建 PUI IconButton，并显示对应事件反馈；开发者工具 WebView 结果不能再作为 WebView 真机命中结论。"],
+    "deviceRisks": ["WebView iOS/Android 真机仍需确认两个按钮的独立命中、原生胶囊矩形、横竖屏与读屏；Skyline 不属于当前支持范围。"]
+  },
+  "ai": {
+    "summary": "当 Navbar 的两个操作属于统一导航合同，必须公开显式配置和组件事件，不能把可监听性托付给 Slot 冒泡。",
+    "rules": [
+      "标准双图标入口使用 leftBtn/rightBtn 配置，页面使用 bind:leftBtn/bind:rightBtn。",
+      "leftBtn/rightBtn 任一存在时替代默认返回与 left Slot，避免三套左侧交互并存。",
+      "双操作必须由 Navbar 内部 PUI Button 渲染，并在 disabled 时全部阻断。",
+      "当前项目只验收 WebView；若未来重新启用 Skyline，必须先恢复独立的设备布局与命中验证计划，不能沿用 WebView 结论。",
+      "变更必须同步 H5、API 元数据、组件合同、页面消费者、专项测试和 npm 安装产物。"
+    ],
+    "tags": ["navbar", "events", "slot", "skyline", "miniprogram", "h5"]
+  }
+}

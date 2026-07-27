@@ -1,0 +1,60 @@
+<view
+  class="{{rootClass}} {{dragging ? 'pui-swipe-cell--dragging' : ''}} {{customClass}}"
+  style="{{customStyle}}"
+  role="group"
+  aria-label="{{ariaLabel || '滑动操作'}}"
+  aria-expanded="{{currentPosition ? true : false}}"
+  aria-disabled="{{disabled}}"
+>
+  <view class="pui-swipe-cell__actions pui-swipe-cell__actions--left" aria-hidden="{{currentPosition !== 'left'}}">
+    <slot name="left"></slot>
+    <view wx:for="{{leftItems}}" wx:key="_key" class="pui-swipe-cell__action-wrap {{item.themeClass}} {{item.className}}" style="width:{{item.width}}rpx;{{item.style}}">
+      <pui-button
+        content="{{item.text}}"
+        icon="{{item.icon}}"
+        theme="{{item.theme}}"
+        surface="transparent"
+        size="small"
+        block
+        disabled="{{disabled}}"
+        aria-label="{{item.text || '操作'}}"
+        custom-class="pui-swipe-cell__action-button"
+        custom-style="height:100%;min-height:100%;border-radius:0;"
+        data-position="left"
+        data-index="{{index}}"
+        bind:click="onActionTap"
+      />
+    </view>
+  </view>
+  <view class="pui-swipe-cell__actions pui-swipe-cell__actions--right" aria-hidden="{{currentPosition !== 'right'}}">
+    <slot name="right"></slot>
+    <view wx:for="{{rightItems}}" wx:key="_key" class="pui-swipe-cell__action-wrap {{item.themeClass}} {{item.className}}" style="width:{{item.width}}rpx;{{item.style}}">
+      <pui-button
+        content="{{item.text}}"
+        icon="{{item.icon}}"
+        theme="{{item.theme}}"
+        surface="transparent"
+        size="small"
+        block
+        disabled="{{disabled}}"
+        aria-label="{{item.text || '操作'}}"
+        custom-class="pui-swipe-cell__action-button"
+        custom-style="height:100%;min-height:100%;border-radius:0;"
+        data-position="right"
+        data-index="{{index}}"
+        bind:click="onActionTap"
+      />
+    </view>
+  </view>
+  <view
+    class="pui-swipe-cell__content"
+    style="{{contentStyle}}"
+    bindtouchstart="onTouchStart"
+    bindtouchmove="onTouchMove"
+    bindtouchend="onTouchEnd"
+    bindtouchcancel="onTouchCancel"
+    bindtap="onContentTap"
+  >
+    <view class="pui-swipe-cell__content-inner"><slot></slot></view>
+  </view>
+</view>

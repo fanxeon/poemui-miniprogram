@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0397",
+  "title": "Picker Popup 未透传 showHeader 导致确认与取消入口消失",
+  "scope": "component",
+  "components": ["picker", "date-time-picker", "popup", "miniprogram"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "regression",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "Picker 与 DateTimePicker 在小程序中必须保留草稿、确认、取消和受控显隐的完整可操作边界。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "Picker Popup", "DateTimePicker Popup"],
+    "platforms": ["wechat-miniprogram", "Wechat DevTools simulator"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "在微信开发者工具 390x844 模拟器打开 pages/components/picker/index，点击“选择发布通道”。",
+    "Popup 中只有滚轮与遮罩，没有取消、标题或确认入口；点击遮罩虽会关闭 visible，但页面仍显示“选择器已打开”。",
+    "审计 picker/template.wxml 可见 Header 依赖 showHeader，而 picker/picker.wxml 挂载 pui-popup 时未传递 show-header。"
+  ],
+  "expected": "Picker Popup 在 showHeader=true 时展示 PUI Button 取消、标题和确认；DateTimePicker 通过同一 Picker 组合继承该行为，确认与取消保持既定事件顺序。",
+  "actual": "Picker 将 Header Slot 放入 Popup，但 Popup 默认 showHeader=false，导致 Header Slot 不渲染，草稿确认合同在真实小程序页面中不可达。",
+  "evidence": [
+    {"kind": "real-device", "ref": "Wechat DevTools 390x844 simulator /tmp/poemui-full-acceptance.yoidnE/picker-open.png", "note": "真实模拟器截图显示滚轮 Popup 没有标题、取消或确认入口。"},
+    {"kind": "file", "ref": "picker/picker.wxml", "note": "修复前 pui-popup 未绑定 show-header，修复后转发 Picker 的 showHeader。"},
+    {"kind": "file", "ref": "picker/template.wxml", "note": "取消、标题和确认均位于 wx:if showHeader 的 header Slot。"},
+    {"kind": "test", "ref": "scripts/test-picker.js", "note": "新增源码断言，防止 Popup 模式再次遗漏 showHeader 透传。"}
+  ],
+  "rootCause": "Picker 的 showHeader 只控制 template 内 Header Slot，本身没有传递给 Popup 的 showHeader 属性；Popup 默认不渲染 header Slot。",
+  "decision": {
+    "outcome": "在 Picker 挂载的 PUI Popup 上显式绑定 show-header={{showHeader}}，不改变 Picker、DateTimePicker 的公开 API 或事件模型。",
+    "rationale": "Header 的存在是既有 Picker/DateTimePicker 草稿确认合同的一部分；透传同名属性能以最小改动恢复两个组件共享的真实入口。",
+    "alternativesRejected": [
+      "改写小程序示例为遮罩关闭并把它说成取消：遮罩按合同只能表示 visible-change 与 close。",
+      "在 Picker 内部复制一套 Popup Header：会破坏 Popup 的唯一 Surface 与 Header Slot 组合边界。",
+      "把 showHeader 默认改为 false：会使公开确认/取消方法继续不可由用户触达。"
+    ]
+  },
+  "impact": {
+    "files": ["picker/picker.wxml", "scripts/test-picker.js", "miniprogram_dist/picker/picker.wxml", "miniprogram/pages/components/picker/index.wxml", "miniprogram/pages/components/date-time-picker/index.wxml"],
+    "dependencies": ["popup", "button", "date-time-picker"]
+  },
+  "verification": {
+    "tests": ["scripts/test-picker.js", "scripts/test-date-time-picker.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run site:build", "npm run pack:check", "微信开发者工具 390x844 自动化"],
+    "browser": ["修复前的 390x844 微信模拟器截图已复现 Header 缺失；修复后源码、dist、安装产物与专项合同已通过，新版开发者工具的 Automator WebSocket 在 build-npm 后不可用，需恢复自动化或人工解锁后补验取消、确认与遮罩三条运行态路径。"],
+    "deviceRisks": ["iOS/Android 真机仍需验证 picker-view 惯性滚动、Popup 遮罩命中与安全区。"]
+  },
+  "ai": {
+    "summary": "向 Popup 提供 header Slot 时，必须同时传递 Popup 的 showHeader，不能只在消费者模板中渲染 Slot 内容。",
+    "rules": [
+      "Picker usePopup=true 且 showHeader=true 时，pui-popup 必须接收 show-header={{showHeader}}。",
+      "遮罩关闭只表示 visible-change 与 close，不能代替 Picker 的 cancel 或 confirm。",
+      "修改 Picker Popup 结构后必须同时用 DateTimePicker 组合页和 390px 小程序验证确认、取消、遮罩三条路径。"
+    ],
+    "tags": ["picker", "date-time-picker", "popup", "header-slot", "confirm", "miniprogram"]
+  }
+}

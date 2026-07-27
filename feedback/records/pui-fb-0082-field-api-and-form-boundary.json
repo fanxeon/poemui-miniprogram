@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0082",
+  "title": "Field 旧 disabled 伪能力与状态别名扩张公开合同",
+  "scope": "component",
+  "components": ["field", "form", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Field 应参考 TDesign FormItem 的组合职责，只公开标签、布局、帮助、反馈和 Slot 能力；不能用容器透明度冒充子控件禁用，也不能在没有 Form 关系时伪造校验方法。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["393px PreviewDevice", "375px PreviewDevice", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Field 的 label、description、error、required、disabled、orientation、labelWidth、status 八项合同，disabled 只降低 Field 外壳透明度，无法阻断默认 Slot 内真实输入、选择或切换控件。",
+    "旧 description/error 与 help/message/status 语义重叠，orientation 又与标签布局混在一起，消费者无法从 API 判断反馈、布局和子控件状态的边界。",
+    "对照 TDesign Miniprogram 1.15.3 官方 Form 文档、form-item/props.js、type.d.ts、WXML、WXSS 和 Form relation 源码，确认 rules/showErrorMessage/validate 必须依赖真实 Form 父子关系，不能先放进独立 Field。"
+  ],
+  "expected": "Field 是统一字段行的可编辑形态；公开合同能完整表达标签、必填标记、对齐、宽度、帮助、反馈、箭头和五类 Slot，子控件值与禁用、只读、加载及校验提交仍由真实控件或 Form 管理。",
+  "actual": "旧合同把不能向 Slot 子树传播的 disabled 当成公开能力，同时存在重复状态命名，并缺少 label/content 对齐、具名反馈 Slot 和清晰 Form 边界。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求按 TDesign 逐组件收敛公开合同、分区演示并授权后续队列由 agent 自主完成验收。"},
+    {"kind": "file", "ref": "field/field.js", "note": "固定12 Props，并标记共享 field-row 的 editable 形态；仍只计算语义状态和无业务方法的内部状态。"},
+    {"kind": "file", "ref": "field/field.wxml", "note": "最终组合 default、label、help、message、extra 五类 Slot 与 PUI Icon，不包含原生控件或业务 bind。"},
+    {"kind": "test", "ref": "scripts/test-field.js", "note": "专项锁定12/0/5/0、边界归一化、共享 field-row、零业务事件与未实现 Form 校验 API 禁入。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/field", "note": "name、label/help/message、required 标记位置、三类标签对齐、内容对齐、labelWidth、arrow、四类 status 和 reduceMotion 均由真实 Props 面板生效。"}
+  ],
+  "rootCause": "旧设计没有先界定 Field 与 Slot 子控件、Form 父级的所有权，随后用外壳透明度和重复字段名代替真实状态传播与校验关系。",
+  "decision": {
+    "outcome": "Field 收敛为12 Props、0 Events、5 Slots、0 Methods；删除 description/error/disabled/orientation，增加 name/help/message、requiredMarkPosition、labelAlign、contentAlign、arrow、reduceMotion；Field 为共享 field-row 的 editable 形态，Cell 为 readonly 形态；rules、showErrorMessage 和 validate 留到真实 Form 关系实现后再评估。",
+    "rationale": "容器只能公开自身能够真实执行的组合和布局职责；Slot 子控件状态必须显式传入对应控件，Form 校验必须由可追踪的父子数据关系驱动。",
+    "alternativesRejected": [
+      "保留 disabled 并只让 Field 变淡仍允许 Slot 控件交互，是可复现的伪禁用。",
+      "机械复制 TDesign rules/showErrorMessage/validate 会在缺少 Form relation 时产生假校验和假方法。",
+      "继续保留 description/error 别名会让 help/message/status 出现冲突组合。"
+    ]
+  },
+  "impact": {
+    "files": ["field/field.js", "field/field.json", "field/field.wxml", "field/field.wxss", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/FIELD.md", "_example/miniprogram/pages/components/index.json", "_example/miniprogram/pages/components/index.wxml", "scripts/test-field.js"],
+    "dependencies": ["pui-icon", "pui-input", "Form future relation", "theme behavior", "slot projection"]
+  },
+  "verification": {
+    "tests": ["scripts/test-field.js", "scripts/test-form-field-composition.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run precheck", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "labelAlign=top/left/right、contentAlign=left/right 和 labelWidth=240 的 Grid/Flex 计算结果与 API 一致；390px 下自动纵向收敛且无横向溢出。",
+      "status=default/success/warning/error 分别呈现完整反馈，error 使用 alert，其余状态使用 status；required 仅显示标记。",
+      "Field 没有 active、selected、disabled、readonly、loading、empty、error-retry、业务事件或实例方法；这些状态由 Slot 子控件或 Form 所有，官网没有伪造。"
+    ],
+    "deviceRisks": [
+      "微信 rpx 下 labelWidth、箭头基线、五类 Slot 投影与读屏顺序仍需合法 AppID 真机确认。",
+      "Field 与 Form 的规则注册、错误聚合、滚动定位和提交顺序尚未建立；本轮明确不承诺这组能力。"
+    ]
+  },
+  "ai": {
+    "summary": "Field 是共享 field-row 的可编辑形态，只组合标签、控件、帮助与反馈，不接管 Slot 子控件值和 Form 校验。",
+    "rules": [
+      "禁止给 Field 传 disabled/readonly/loading 期待它递归控制 Slot；必须把状态显式传给真实子控件。",
+      "required 只显示标记，不等于 Form 规则，也不自动阻断提交。",
+      "在真实 Form relation 完成前禁止生成 rules、showErrorMessage、validate 或假校验事件。",
+      "普通文字优先 label/help/message，复杂组合才使用对应 slot 哨兵值和具名 Slot。"
+    ],
+    "tags": ["field", "form-item", "api", "tdesign", "slots", "validation-boundary", "disabled"]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0140",
+  "title": "Sticky H5 属性面板把有效的 zIndex=0 错误夹紧为 1",
+  "scope": "component",
+  "components": ["sticky", "preview-site", "usage-code"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "受控 Props 面板必须真实覆盖 0、false、空字符串等边界值，不能把源码认可的值在 H5 层改写。",
+  "environment": {
+    "surfaces": ["h5-preview", "property-panel", "usage-code"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Sticky 源码公开 zIndex:Number，专项运行时测量已证明 zIndex=0 会原样进入组件样式。",
+    "旧 H5 范围控件最小值为 1，stickyPreviewConfig 与 WXML 代码生成也使用 Math.max(1, ...)，导致用户无法在官网验证 0。"
+  ],
+  "expected": "属性控件、预览样式和复制出的非默认 WXML 都保留 zIndex=0；非法值才回退到默认 99。",
+  "actual": "H5 把 0 误判为缺失值并夹紧为 1，与真实小程序组件合同不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求 Props 覆盖 0、false、空字符串等边界，并明确授权后续组件在完整证据后自主验收。"},
+    {"kind": "file", "ref": "sticky/sticky.js", "note": "zIndex 是无最小值限制的 Number Props，运行时可保留 0。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "修复前两处控制定义和展示/代码生成使用 min:1 或 Math.max(1)。"},
+    {"kind": "test", "ref": "scripts/test-sticky.js", "note": "固定 zIndex=0 的源码行为和 H5 合同均由专项断言覆盖。"}
+  ],
+  "rootCause": "预览层复用了浮层类组件的 z-index 下界，且以 || 判断数值，错误把 0 当作空值。",
+  "decision": {
+    "outcome": "Sticky 的范围下界改为 0；预览和用法代码使用 Number.isFinite 区分非法值与 0，并将 0 原样输出。",
+    "rationale": "H5 是真实组件调用的教学与验收界面，不能收窄源码公开的数值域。",
+    "alternativesRejected": [
+      "把源组件 zIndex 改为最小 1 会无依据地改变既有公开合同。",
+      "仅在文档中说明 0 不可调会保留预览与源码的不一致。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-sticky.js"],
+    "dependencies": ["shared property panel", "shared usage-code generator"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sticky.js"],
+    "commands": ["node scripts/test-sticky.js", "npm run site:build", "npm run check"],
+    "browser": ["2026-07-20 在真实 Props 面板输入 zIndex=0，控件值与 Sticky header 计算 z-index 均为 0；重置后回到 99。"],
+    "deviceRisks": ["微信 z-index 层叠与 fixed 定位需在合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "公开数值 Props 必须保留 0；不能用 || 或通用浮层下界把它重写。",
+    "rules": [
+      "数值 Props 的 0、false 和空字符串必须分别判定，禁止用 || 作为默认值判断。",
+      "H5 控件、预览和 WXML 生成器必须共享同一个公开数值域。"
+    ],
+    "tags": ["sticky", "z-index", "zero-boundary", "preview-parity"]
+  }
+}

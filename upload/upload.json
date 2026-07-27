@@ -1,0 +1,11 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "pui-button": "../button/button",
+    "pui-icon": "../icon/icon",
+    "pui-image": "../image/image",
+    "pui-progress": "../progress/progress",
+    "pui-tag": "../tag/tag"
+  }
+}

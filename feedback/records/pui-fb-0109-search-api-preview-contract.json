@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0109",
+  "title": "Search 公开合同和 H5 演示混入重复事件与业务结果语义",
+  "scope": "component",
+  "components": ["search", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Search 要像 TDesign 的组件文档一样分区展示常见用法，同时 API 克制、基础 WXML 最小、所有 Props 和文字完整可读。",
+  "environment": {
+    "surfaces": ["h5-preview", "props-panel", "api-reference", "wxml-copy"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开旧 Search 页面，旧合同同时公开 input/change、duration/easing，并在 H5 中展示小程序源码不存在的目录结果块。",
+    "把 value 从 false 或 0 切回 null，旧 H5 resetDemoRuntime 会删除运行值，无法证明 controlled → uncontrolled 连续性。",
+    "检查 Search 输入 Surface 的计算样式，旧镜像未提供共享 PUI Input 动效变量，焦点过渡计算为 0s。"
+  ],
+  "expected": "Search 只负责搜索文本和操作意图，官网按基础、形状、操作与长度、状态与受控分区；17 Props/6 Events/1 Slot/0 Methods 与源码一致，基础 WXML 零 bind，180ms/1ms 与全部外观真实生效。",
+  "actual": "重复事件和私有动效扩大 API，业务结果块制造能力错觉，退控历史与 PUI Input 动效在 H5 中不完整。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件无需逐项确认，由 agent 在完整证据后自主连续验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增 Search snapshot/markup/runtime，复用 inputControlSample、buttonSample 与统一 WXML 真相源。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "公开合同固定为 17 Props、6 Events、1 Slot、0 Methods，并按四组完整展示。"},
+    {"kind": "file", "ref": "docs/components/SEARCH.md", "note": "记录组件定位、受控边界、事件、动效、H5、TDesign 取舍与禁止项。"},
+    {"kind": "test", "ref": "scripts/test-search.js", "note": "专项合同覆盖源码、H5、metadata、API、示例、dist 与安装产物。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/search", "note": "390px 下实际操作全部 Props、严格值、清空、Enter、取消、焦点/失焦、外观与 API 全文。"}
+  ],
+  "rootCause": "旧 Search 在多轮补丁中把浏览器演示需求、Input 重复别名和业务列表一起塞进公共合同；H5 运行态清理又误删了受控历史，且未把固定动效变量传给共享 Input。",
+  "decision": {
+    "outcome": "对照 TDesign 1.15.3 重建 Search 为 17 Props/6 Events/1 Slot/0 Methods；删除业务结果、重复 input、duration/easing，补齐严格退控、字符上限、分区演示与固定 500ms/1ms。",
+    "rationale": "搜索结果属于消费者业务；基础组件应只表达输入、清空、确认和取消，同时保留 PoemUI 已真实闭环的受控、只读、辅助与低动效能力。",
+    "alternativesRejected": [
+      "照搬 TDesign resultList 会把业务数据结构绑定到基础输入。",
+      "保留 input/change 双事件会迫使消费者去重。",
+      "公开 duration/easing 会为固定状态反馈增加无必要配置面。",
+      "用静态提示文字替代事件与父级回写不构成真实交互。"
+    ]
+  },
+  "impact": {
+    "files": ["search/search.js", "search/search.wxml", "search/search.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/SEARCH.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-search.js", "feedback/records/pui-fb-0109-search-api-preview-contract.json"],
+    "dependencies": ["inputControlSample", "buttonSample", "iconButtonSample", "makeUsageCode"]
+  },
+  "verification": {
+    "tests": ["scripts/test-search.js", "scripts/test-design-contracts.js", "scripts/test-input-composition-coverage.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["node scripts/test-search.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "390px 下四个分区共 8 个 Search 示例；document scrollWidth/clientWidth 为 375/375。",
+      "value=0、false、空字符串为受控值；value=null 退控继续最后一次受控值；maxcharacter=6 将 AB中😀C 安全规整为 AB中😀。",
+      "正常动效计算为 0.18s，reduceMotion 为 0.001s；外部聚焦后 blur 真实发布并移除 is-focused。",
+      "深色、阴影、毛玻璃、大圆角、渐变和边框关闭组合得到深色半透明 Surface、18px blur、14px 圆角、真实阴影、透明中性边界和渐变设备底；恢复浅色标准组合后无阴影/毛玻璃。",
+      "API 完整展示 17 Props、6 Events、1 Slot，所有可见单元格为 14px、自然换行，无 ellipsis、nowrap、裁切或页面横向溢出；浏览器日志为空。"
+    ],
+    "deviceRisks": [
+      "微信软键盘搜索键、focus Prop、清空按钮触摸顺序、rpx 焦点中间帧、样式隔离、系统低动效和读屏仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Search 只承担查询输入与操作意图，业务结果和异步状态必须由消费者组合。",
+    "rules": [
+      "基础 Search WXML 不展示 bind 事件；事件全集只进入 API Events。",
+      "H5 必须复用 PUI Input/Button/Icon 并保持受控、退控和字符规整同源。",
+      "不得恢复 resultList、重复 input、duration/easing 或假搜索结果。",
+      "API 表格必须完整换行展示真实上限，Props 面板的演示滑块范围不得冒充组件 API 上限。"
+    ],
+    "tags": ["search", "tdesign", "api-contract", "controlled", "preview-parity", "motion"]
+  }
+}

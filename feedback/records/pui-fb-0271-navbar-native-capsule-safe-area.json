@@ -1,0 +1,95 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0271",
+  "title": "Navbar 未为微信原生胶囊保留真实安全区",
+  "scope": "component",
+  "components": ["navbar", "preview-site", "example", "documentation"],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-24",
+  "userGoal": "微信小程序自定义导航栏要与右上原生胶囊样式和空间对齐，右侧不得再放业务内容，H5 预览也必须真实表达这一边界。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390px", "custom-navigation page"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 navigationStyle=custom 的微信页面使用旧 Navbar。",
+    "旧三列固定使用 112rpx 左右轨，未读取系统菜单胶囊矩形，右侧 Slot 还展示发布业务按钮。",
+    "H5 预览只展示普通右侧 Button，没有表达微信系统胶囊与其不可占用的安全区域。"
+  ],
+  "expected": "默认 Navbar 保留并对齐微信真实右上胶囊：小程序根据实际菜单矩形计算安全轨，H5 只显示不可交互镜像；默认右侧不存在业务操作。",
+  "actual": "修复前 Navbar 假定固定等宽轨并鼓励 right Slot 业务操作，不能在不同设备的原生胶囊位置上保持标题和操作边界。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求查询微信原生胶囊规则、右侧不放内容并添加对齐样式。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/app.json",
+      "note": "真实应用 window.navigationStyle 为 custom。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/components/navigation-bar/navigation-bar.js",
+      "note": "既有页面导航已用 getMenuButtonBoundingClientRect 与 windowWidth 计算右侧留白。"
+    },
+    {
+      "kind": "file",
+      "ref": "https://developers.weixin.qq.com/miniprogram/dev/reference/configuration/app.html",
+      "note": "微信官方规则说明 custom 导航栏保留右上角胶囊按钮。"
+    },
+    {
+      "kind": "file",
+      "ref": "https://developers.weixin.qq.com/miniprogram/dev/api/ui/menu/wx.getMenuButtonBoundingClientRect.html",
+      "note": "微信官方 API 提供原生菜单胶囊边界矩形。"
+    },
+    {
+      "kind": "file",
+      "ref": "navbar/navbar.js",
+      "note": "capsule=true 时读取完整原生矩形、窗口宽度和状态栏高度，写入 safe/content/inset/width/reserve 运行时 Token。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 只输出 aria-hidden 的胶囊镜像，默认不渲染 right Slot。"
+    }
+  ],
+  "rootCause": "旧 Navbar 合同把 TDesign capsule Slot 视为暂不支持的平台结构，同时允许 right Slot 承载业务操作，没有将微信 custom 导航栏仍保留系统胶囊的真实平台事实纳入几何合同。",
+  "decision": {
+    "outcome": "默认 capsule=true。原生端以 windowWidth-left 生成左右对称标题轨，以 windowWidth-right 和 width 建立左操作镜像区，并用 top/bottom/height/statusBarHeight 计算纵向内容高度；H5 同步镜像左操作位置与不可交互 88px×32px 胶囊。仅 capsule=false 渲染 right Slot。",
+    "rationale": "系统胶囊的真实位置会随设备变化，动态测量才能保护标题居中和右上系统命中区；H5 需要表达空间边界但不能伪造成微信菜单。",
+    "alternativesRejected": [
+      "写死胶囊宽度、顶距或机型型号，无法覆盖不同微信设备。",
+      "在 PUI 内再画一个可点击胶囊，会与微信系统控件重复并产生假能力。",
+      "继续默认使用 right Slot 业务按钮，会与系统胶囊争抢同一右上区域。"
+    ]
+  },
+  "impact": {
+    "files": ["navbar/navbar.js", "navbar/navbar.wxml", "navbar/navbar.wxss", "common/style/theme.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/NAVBAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/UI_DESIGN_CONTRACT.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-navbar.js"],
+    "dependencies": ["wx.getMenuButtonBoundingClientRect", "wx.getWindowInfo", "微信 custom navigation", "PUI Button", "PUI Icon", "PUI Loading"]
+  },
+  "verification": {
+    "tests": ["scripts/test-navbar.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["node scripts/test-navbar.js 通过。", "npm run feedback:generate && npm run feedback:check 通过。", "npm run site:build 通过。", "npm run check 通过。", "npm run example:install 通过。", "npm run pack:check 通过。"],
+    "browser": ["使用 site:dev 的真实 H5 路由 #/components/navbar，以 390×844 视口验证：页面无横向溢出，首个预览 clientWidth=scrollWidth=349。", "capsule=true 时镜像为 aria-hidden=true、pointer-events=none、88×32px；内容网格为 95px 147px 95px，标题位于 x=114 至 261。", "属性页实际点击 capsule 开关后，6 个预览均移除 has-capsule 与胶囊镜像且页面仍无横向溢出；随后点击重置按钮恢复 capsule=true。", "浏览器控制台 error/warning 均为空。"],
+    "deviceRisks": ["需使用合法 AppID 真机确认不同设备的 getMenuButtonBoundingClientRect、原生胶囊触摸命中、fixed/安全区、rpx 三列、样式隔离、读屏和系统低动效。", "touristappid 或未生成 miniprogram_npm 不能作为微信构建成功证据。"]
+  },
+  "ai": {
+    "summary": "微信 custom Navbar 的系统胶囊是平台所有的真实安全区，PUI 只能测量并镜像其几何，不能占用或伪造它。",
+    "rules": [
+      "capsule=true 时，right Slot 必须不渲染，H5 镜像必须 aria-hidden 且 pointer-events:none。",
+      "必须读取菜单矩形 left/right/top/bottom/width/height 与 windowWidth/statusBarHeight；只计算 windowWidth-left 不能证明左操作与系统胶囊对称。",
+      "左操作以 windowWidth-right 为外边距，并在 width 对应的镜像区域内居中；导航内容按胶囊相对状态栏的上下等距计算。",
+      "任何例外必须显式 capsule=false，并同步说明其不是 custom-navigation 默认布局。"
+    ],
+    "tags": ["navbar", "wechat", "native-capsule", "safe-area", "h5-parity", "api-contract"]
+  }
+}

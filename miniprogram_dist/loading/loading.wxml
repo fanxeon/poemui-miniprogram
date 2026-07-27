@@ -1,0 +1,27 @@
+<view
+  wx:if="{{mounted}}"
+  class="{{rootClass}} {{active ? 'pui-loading--active' : 'pui-loading--inactive'}}"
+  style="{{rootStyle}}"
+  role="status"
+  aria-live="polite"
+  aria-label="{{semanticLabel}}"
+  aria-hidden="{{!active}}"
+>
+  <view wx:if="{{fullscreen}}" class="pui-loading__touch-blocker" catchtouchmove="blockTouchMove"></view>
+  <view wx:if="{{indicator}}" class="pui-loading__indicator">
+    <view wx:if="{{normalizedTheme === 'circular'}}" class="pui-loading__spinner pui-loading__spinner--circular"></view>
+    <view wx:elif="{{normalizedTheme === 'spinner'}}" class="pui-loading__spinner pui-loading__spinner--spinner">
+      <view wx:for="{{spinnerDots}}" wx:key="index" class="pui-loading__spinner-dot pui-loading__spinner-dot-{{index}}"></view>
+    </view>
+    <view wx:else class="pui-loading__dots">
+      <view class="pui-loading__dot"></view>
+      <view class="pui-loading__dot" style="animation-delay:{{dotDelayOne}}ms"></view>
+      <view class="pui-loading__dot" style="animation-delay:{{dotDelayTwo}}ms"></view>
+    </view>
+    <slot name="indicator"></slot>
+  </view>
+  <view wx:if="{{text}}" class="pui-loading__text">{{text}}</view>
+  <slot name="text"></slot>
+  <slot></slot>
+  <view wx:if="{{showProgressValue}}" class="pui-loading__progress">{{progressValue}}%</view>
+</view>

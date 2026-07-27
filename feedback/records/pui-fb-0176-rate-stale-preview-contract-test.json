@@ -1,0 +1,58 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0176",
+  "title": "Rate 专项测试仍断言已删除的受控提示文案",
+  "scope": "component",
+  "components": ["rate", "preview-site"],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "DropdownMenu 完整门禁不能被与本组件无关的过期 Rate 文案断言阻断，同时不能修改 Rate 的真实运行能力。",
+  "environment": {
+    "surfaces": ["test-suite", "h5-preview"],
+    "platforms": ["node"],
+    "viewports": ["not-applicable"],
+    "themes": ["not-applicable"]
+  },
+  "reproduction": [
+    "执行 npm run check，在 Rate 专项测试中断言 preview/app.js 必含旧字符串 `受控评分；null 切换为非受控`。",
+    "当前 Rate 概览已经按真实结构改为 value=0 的受控评分、只读评分和禁用评分，受控/非受控状态机仍由 ratePreviewState 与 requestRatePreview 实现。"
+  ],
+  "expected": "专项测试应锁定当前真实的 value=0 受控示例和受控回写路径，而不是锁定已删除的展示文案。",
+  "actual": "过期字符串断言使全库 check 在 DropdownMenu 的无关位置失败，且无法证明当前 Rate 行为。",
+  "evidence": [
+    {"kind": "test", "ref": "scripts/test-rate.js", "note": "2026-07-20 npm run check 在旧文案 includes 断言处失败。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "rateShowcase 真实渲染 rateStaticProps({ value: 0 })，ratePreviewState/requestRatePreview 保留受控判断与父级回写。"}
+  ],
+  "rootCause": "Rate 概览分区改写后，专项测试没有同步从静态提示文案改为真实受控示例合同。",
+  "decision": {
+    "outcome": "仅将断言改为当前 value=0 受控 Rate 示例；不修改 Rate 源码、API、WXML 或浏览器行为。",
+    "rationale": "0 是该组件必须保留的关键受控边界，直接断言真实示例比文案更稳定也更贴近行为合同。",
+    "alternativesRejected": [
+      "把已删除提示文案写回 preview/app.js，会制造无业务价值的展示噪音。",
+      "跳过 Rate 测试或只忽略 npm run check，会掩盖全库门禁。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/test-rate.js"],
+    "dependencies": ["rateShowcase", "ratePreviewState", "requestRatePreview"]
+  },
+  "verification": {
+    "tests": ["scripts/test-rate.js"],
+    "commands": ["npm run check"],
+    "browser": ["未改变 Rate H5 运行实现；本次仅校正阻断全库门禁的静态专项断言。"],
+    "deviceRisks": []
+  },
+  "ai": {
+    "summary": "专项测试应断言真实状态与行为合同，不要锁定会随演示文案变化的旧字符串。",
+    "rules": [
+      "全库门禁被无关组件阻断时，先核验源码与断言是否同源；只修复过期测试，不回填已删除 UI。",
+      "涉及受控组件时优先覆盖 0、false、空字符串等真实边界，而不是提示文案。"
+    ],
+    "tags": ["rate", "test-contract", "stale-assertion", "release-gate"]
+  }
+}

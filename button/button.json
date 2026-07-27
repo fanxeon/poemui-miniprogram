@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "pui-loading": "../loading/loading",
+    "pui-icon": "../icon/icon"
+  }
+}

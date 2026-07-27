@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0081",
+  "title": "属性分组在任一 Prop 回写后被工作区重建折叠",
+  "scope": "global",
+  "components": ["preview-site", "props-workspace", "documentation"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "属性页应支持连续调整同一分组中的多个 Prop，不应每改一项就迫使用户重新展开分组。",
+  "environment": {
+    "surfaces": ["props-workspace", "element-inspector"],
+    "platforms": ["browser"],
+    "viewports": ["desktop", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 Input 属性页并展开外观与状态分组。",
+    "将 status 从 default 改为 error。",
+    "handlePropsPanelInput 先 renderInspector 、再 renderStage；后者整段替换 Props 工作区，新 panel 无法从已删除 DOM 读取 open，分组立即折叠，tips 输入失去上下文。"
+  ],
+  "expected": "分组开合属于当前组件的工作区 UI 状态；Prop 回写、预览重建和焦点恢复均不改变用户已展开的分组。",
+  "actual": "展开状态只存在可替换 DOM 上，整段 renderStage 后丢失，导致连续筛选属性的动线被打断。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续组件由 agent 完整实测、自主决策并连续验收；本记录依该授权收口共享修复。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/input", "note": "修复前选择 status=error 后 tipsCount=0、分组 open=false；修复后 open 属性保留、tipsCount=1 且可直接继续输入。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "state.propGroupOpen 按组件 ID 保存 Set，details toggle 实时写入，renderPropsPanel 在替换前合并已挂载 DOM 状态。"},
+    {"kind": "test", "ref": "scripts/test-preview-prop-group-persistence.js", "note": "专项锁定独立状态存储、组件作用域、稳定分组 ID、open/close 写入与重渲染恢复。"}
+  ],
+  "rootCause": "属性分组的开合状态被错误托管给会被 innerHTML 整段替换的 details DOM，没有进入站点运行态真相源。",
+  "decision": {
+    "outcome": "新增按 previewId 隔离的 propGroupOpen Set；capture toggle 事件保存明确展开/关闭，渲染前采集当前已挂载分组作为同步保险，新 DOM 按同一集合恢复 open。",
+    "rationale": "展开状态是工作区交互状态，必须跨局部 DOM 替换存续，同时又不应在组件路由之间串扰。",
+    "alternativesRejected": [
+      "将所有 details 永久 open 会让长 Props 页失去分组浏览价值。",
+      "只在 renderPropsPanel 中查询当前 DOM 无法穿越后续 renderStage 对整个 panel 的替换。",
+      "用 localStorage 持久每个分组会把短期工作状态扩张为跨会话偏好，没有产品必要。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-preview-prop-group-persistence.js", "package.json"],
+    "dependencies": ["Props workspace", "PUI Select", "PUI Input", "PUI Switch", "renderStage"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-prop-group-persistence.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node scripts/test-preview-prop-group-persistence.js", "npm run check", "npm run site:build"],
+    "browser": [
+      "Input 外观与状态分组展开后修改 status=error，details 继续保留 open 且 tips 输入继续可见。",
+      "连续设置 size=large、align=right、bordered=false 和内容 Slot 时，多个已展开分组均保留。"
+    ],
+    "deviceRisks": []
+  },
+  "ai": {
+    "summary": "Props 分组 open 是按组件隔离的工作区状态，不能只存在可替换 DOM。",
+    "rules": [
+      "任何会整段重建 Props workspace 的路径都必须从 state.propGroupOpen 恢复分组。",
+      "details 的明确展开和关闭都必须通过 toggle 写入，禁止只记录 open 而无法保存 close。",
+      "分组状态必须按 previewId 隔离，切换组件不得复用另一个组件的分组 ID。"
+    ],
+    "tags": ["props", "details", "state", "rerender", "usability", "preview-site"]
+  }
+}

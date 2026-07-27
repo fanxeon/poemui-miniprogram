@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0204",
+  "title": "Dialog H5 预览把流式触发内容贴到设备边缘",
+  "scope": "component",
+  "components": ["dialog", "preview-site", "preview-device"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "Dialog 官网预览既要保持真实全屏遮罩，也要让触发内容和浮层在 PreviewDevice 内有一致、可读的安全间距。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice"],
+    "platforms": ["browser"],
+    "viewports": ["desktop", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 `#/components/dialog`，点击“打开 Dialog”。",
+    "修复前桌面实拍中，遮罩正确覆盖 PreviewDevice，但“基础用法”等四个流式分区从 viewport 左上角开始，触发内容贴住设备边缘；Dialog layer 只保留 8px 边界。"
+  ],
+  "expected": "流式内容必须消费统一的 panel inset 与 section gap；遮罩及其定位舞台仍须 `inset:0` 覆盖完整 PreviewDevice，不能以缩小遮罩换取留白。",
+  "actual": "`.pui-dialog-showcase` 同时承担流式内容与绝对浮层舞台，预览根 edge-to-edge 后没有单独的内容安全区；`.pui-dialog-layer` 误用了 8px content gap。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-22 当前任务对话", "note": "用户要求检查 Dialog 打开态预览是否具有间距。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/dialog", "note": "桌面实点打开截图显示触发分区贴边，Dialog 与遮罩本身正常可操作。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增透明内容层；保留 stage inset:0。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "将 layer 安全内距对齐 preview panel token。"},
+    {"kind": "test", "ref": "scripts/test-dialog.js", "note": "静态合同锁定内容安全区、18px 分区 gap、14px panel inset 与全屏 stage。"}
+  ],
+  "rootCause": "edge-to-edge 规则被错误套用到演示流内容；它本应只约束遮罩/浮层的定位层。",
+  "decision": {
+    "outcome": "拆出透明 `pui-dialog-showcase__content` 承担流式分区的 14px 内距与 18px 间距，stage 保持全屏；Dialog layer 也使用 14px 安全内距。",
+    "rationale": "这样既不会裁掉或缩小真实遮罩，又能让默认阅读和触发路径遵循 PreviewDevice 的可读性间距。",
+    "alternativesRejected": [
+      "给全屏遮罩舞台加边距，会让遮罩不能覆盖完整 PreviewDevice。",
+      "仅给四个 section 加私有 margin，会分散规则、遗漏首尾安全边距并在视觉开关下漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-dialog.js", "docs/components/DIALOG.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0204-dialog-preview-safety-spacing.json"],
+    "dependencies": ["PreviewDevice", "Popup", "PUI Button"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project \"/Users/fanx/Documents/poemUI 小程序组件库/_example\""],
+    "browser": ["桌面实点打开：content padding=14px、section gap=18px、layer padding=14px，stage 仍为 391×620px 的全屏层；触发入口从设备左侧 14px 开始。", "390px 实测 document client/scroll width=375/375，PreviewDevice layer=349×620px、触发入口左侧=14px；Cancel 真实关闭，Confirm 保持开启。", "实点切换深色后 Panel 为 rgb(24,24,27)、文字为 rgb(250,250,250)，安全间距保持 14px；随后恢复浅色。"],
+    "deviceRisks": ["微信 CLI 已实启，但示例 `touristappid` 被平台以 code 10 拒绝，未生成也未伪造 miniprogram_npm。合法 AppID 真机仍需复核 Popup 遮罩、安全区、触摸穿透、Slot 投影、读屏和系统低动效。"]
+  },
+  "ai": {
+    "summary": "screen-attached 浮层的 edge-to-edge 只属于遮罩与定位舞台；同页的流式演示内容必须有独立、透明且 token 化的安全区。",
+    "rules": [
+      "不要把全屏遮罩层的 edge-to-edge 规则扩展到触发内容或说明分区。",
+      "浮层 Preview 同时有流内容和绝对层时，拆出透明 content layer 与 full-viewport stage，分别验证。",
+      "Panel 进入 PreviewDevice 裁切边界时，使用共享 panel inset，不要以 8px 紧密内容 gap 代替安全边距。"
+    ],
+    "tags": ["dialog", "h5-preview", "spacing", "preview-device", "overlay", "regression"]
+  }
+}

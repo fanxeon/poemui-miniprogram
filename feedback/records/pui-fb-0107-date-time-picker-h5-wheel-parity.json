@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0107",
+  "title": "DateTimePicker H5 使用 date/time input 无法镜像统一草稿与动态列",
+  "scope": "component",
+  "components": ["date-time-picker", "picker", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "官网必须真实演示 DateTimePicker 的点击、键盘、滚轮、拖动、确认、取消和 Props 变化，不能用浏览器原生输入框冒充。",
+  "environment": {
+    "surfaces": ["h5-preview", "props-panel", "code-copy"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开旧 DateTimePicker H5 路由，页面分别渲染 input type=date 与 input type=time。",
+    "尝试验证闰年、月份联动、分钟步长、周几、统一 confirm/cancel、内联滚轮和受控 visible，旧镜像均无法表达。",
+    "检查原生控件边界清单，旧 dateTimePickerShowcase:input 被允许，导致跨端差异长期未被门禁发现。"
+  ],
+  "expected": "H5 复用 Picker 的滚轮与 Popup，日期列随选择实时联动；pick 只改草稿，confirm 才提交，cancel 回滚；点击、键盘、wheel 和 Pointer drag 均可真实操作。",
+  "actual": "浏览器 date/time input 使用系统独立面板和立即值变更，无法验证多列联动、事件顺序、显隐受控或 Picker 中间帧。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件无需逐项确认，由 agent 在完整证据后自主连续验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增 dateTimePickerH5Model、动态列、Popup/内联和 date-time 专用 action/runtime，复用 pickerH5Panel。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "删除旧 pui-date-time-picker-preview 输入框 Surface，仅共享 Picker 滚轮与 Popup 样式。"},
+    {"kind": "test", "ref": "scripts/test-preview-native-control-boundaries.js", "note": "移除 dateTimePickerShowcase:input 允许项，阻止原生输入框回归。"},
+    {"kind": "test", "ref": "scripts/test-date-time-picker.js", "note": "专项合同覆盖 H5 函数、文档、示例和安装产物一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/date-time-picker", "note": "首次打开发现 DateTimePicker 未进入 edge-to-edge 分类，Popup 面板落到长 showcase 底部并越出 PreviewDevice；加入统一浮层分类后修复。"}
+  ],
+  "rootCause": "旧 H5 以浏览器原生日期和时间输入框独立维护，没有共享 Picker 的列模型、草稿、Popup、受控显隐和事件生命周期。",
+  "decision": {
+    "outcome": "删除 date/time input 镜像，DateTimePicker H5 直接调用 Picker 滚轮渲染与交互路径，新增四个能力分区，并将组件纳入统一 edge-to-edge PreviewDevice 布局。",
+    "rationale": "只有同一滚轮模型才能证明动态日列、步长、严格边界、草稿回滚、事件顺序和跨端外观一致性。",
+    "alternativesRejected": [
+      "保留原生 input 作为简化演示会继续隐藏 Popup 和多列能力。",
+      "静态绘制六列不能验证键盘、滚轮、拖动或父级回写。",
+      "滚动即提交 change 会破坏 Picker 的确认合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-preview-native-control-boundaries.js", "scripts/test-date-time-picker.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0107-date-time-picker-h5-wheel-parity.json"],
+    "dependencies": ["pickerH5Panel", "buttonSample", "iconComponent"]
+  },
+  "verification": {
+    "tests": ["scripts/test-date-time-picker.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node --check preview/app.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "修复 edge-to-edge 后 Popup layer 与 PreviewDevice viewport 同高 620px，面板 bottom 与 viewport bottom 同为 951.5px，不再越界。",
+      "390px 下 document scrollWidth 与 clientWidth 均为 375px；API 6 张表、40 行、170 个单元格均为 14px，最大横向裁切为 0，未出现 ellipsis/nowrap。",
+      "深色、阴影、毛玻璃、大圆角、边框关闭和渐变同时开启时，Popup 计算为深色半透明 Surface、18px blur、20px 顶部圆角、真实阴影和透明中性边界；随后恢复标准浅色配置。",
+      "浏览器控制台日志为空。"
+    ],
+    "deviceRisks": [
+      "H5 Pointer/wheel 与微信 picker-view 的原生惯性曲线不同，只承诺能力和事件镜像，不承诺物理曲线像素级一致。"
+    ]
+  },
+  "ai": {
+    "summary": "DateTimePicker H5 必须复用真实滚轮与 Popup，不得退化为 date/time input。",
+    "rules": [
+      "H5 必须覆盖点击、键盘、wheel 和 drag，并保持 pick/confirm/cancel 草稿边界。",
+      "日期列必须随年份、月份、范围和 steps 动态重算。",
+      "dateTimePickerShowcase:input 不得重新加入原生控件允许清单。"
+    ],
+    "tags": ["date-time-picker", "h5", "wheel", "popup", "preview-parity"]
+  }
+}

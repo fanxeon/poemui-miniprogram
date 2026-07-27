@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0155",
+  "title": "NoticeBar 公开面混入历史关闭、过程事件与命令式能力",
+  "scope": "component",
+  "components": ["notice-bar", "preview-site", "usage-code", "example", "metadata"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "以联网 TDesign、固定版本包和真实源码为依据逐项收敛 NoticeBar；基础 WXML 保持最小，组件不能伪造关闭、跳转、成功或生命周期。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "api-reference", "usage-code", "example", "miniprogram-dist"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390px browser", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 NoticeBar 公开 21 个 Props、8 个 Events 和 3 个 Methods；closable、wrap、pauseOnTouch、custom*、生命周期/跑马事件与 open()/close() 混入公告组件合同，基础调用也容易被 bind:* 干扰。",
+    "2026-07-20 已联网访问 TDesign NoticeBar 页面、官方仓库，并读取 tdesign-miniprogram@1.15.3 的 miniprogram_dist/notice-bar/{props.js,type.d.ts,notice-bar.js,notice-bar.wxml,notice-bar.wxss}。固定包公开 content/direction/interval/marquee/operation/prefixIcon/suffixIcon/theme/visible/defaultVisible，vertical change 与区域 click，以及四个具名 Slot；无公开 Methods。"
+  ],
+  "expected": "PoemUI 只公开 12 Props、change/click 两个 Events、prefix-icon/content/operation/suffix-icon 四个具名 Slot与零 Methods；基础 WXML 为最小调用且不含 bind:*。",
+  "actual": "旧合同将业务关闭、导航、跑马过程、私有动效和命令式控制包装为组件能力，源码、H5、示例和文档会引导调用方把公告误当成可自行完成业务的反馈系统。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续 battle 在完整审计、浏览器、专项测试、文档、Ledger 与构建门禁后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/notice-bar", "note": "2026-07-20 在线访问，作为公告用法分区和交互语义对照。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/notice-bar", "note": "2026-07-20 在线核验官方 NoticeBar 源码位置；固定 npm 包用于可复现公开面判断。"},
+    {"kind": "file", "ref": "notice-bar/notice-bar.js", "note": "当前精确声明 12 Props；只通过 triggerEvent 发布 vertical change 与区域 click。"},
+    {"kind": "test", "ref": "scripts/test-notice-bar.js", "note": "专项合同锁定 Props、无 Methods、受控 false、vertical change、区域 click、真实 SelectorQuery 跑马与文档/示例同源。"}
+  ],
+  "rootCause": "历史实现把 H5 演示诊断、关闭便利、旧视觉开关和跑马过程扩大成公共 API，未以真实 WXML、TDesign 固定包与公告的父级业务边界重新审计。",
+  "decision": {
+    "outcome": "收敛为 12 Props、2 Events、4 Slots、0 Methods；visible 仅在非 null 时受控，suffix-icon 与 operation 只发布 click，业务关闭/跳转完全由父级回写。defaultVisible 保持 PoemUI 的 true，以便最小调用能作为页内公告可见；此差异明确记录而非伪装成 TDesign 默认值。",
+    "rationale": "公告负责内容、区域和可访问语义，不负责业务完成。ariaLabel/reduceMotion 是全库横向一致性补充；其余旧字段没有独立且可验证的组件责任。",
+    "alternativesRejected": [
+      "保留 closable 或 close 事件会把父级的 visible 回写伪装成组件自动关闭。",
+      "保留跑马生命周期事件与 restartMarquee() 会让内部视觉实现成为不稳定的业务依赖。",
+      "在基础 WXML 展示所有 bind:* 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["notice-bar/notice-bar.js", "notice-bar/notice-bar.json", "notice-bar/notice-bar.wxml", "notice-bar/notice-bar.wxss", "metadata/components.js", "metadata/shadcn.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/NOTICEBAR.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-notice-bar.js"],
+    "dependencies": ["theme behavior", "PUI Button", "PUI Icon", "shared usage-code generator", "TDesign NoticeBar reference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-notice-bar.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["2026-07-20 node scripts/test-notice-bar.js：通过", "2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install、npm run feedback:generate/check：通过", "2026-07-20 微信 CLI build-npm：touristappid 不存在，code 10，未生成 miniprogram_npm；源码/dist/示例安装/tarball 的 NoticeBar 四件套 SHA256 一致。"],
+    "browser": ["真实点击 operation 后父级 content 回写为“父级已收到查看详情请求；是否继续由页面业务决定。”；suffix-icon 在非受控演示中由父级将 visible 写为 false。", "属性面板真实设置 visible=false 后基础公告卸载，设置 true 后恢复；API 显示 12 Props、2 Events、4 Slots、零 Methods，基础代码复制为零 bind。"],
+    "deviceRisks": ["微信真机仍需用合法 AppID 验证 swiper、SelectorQuery、rpx、Slot 投影、样式隔离、读屏与系统低动效。"]
+  },
+  "ai": {
+    "summary": "NoticeBar 是页面内公告，不是自动关闭的 Message/Toast，也不是业务成功或队列系统。",
+    "rules": [
+      "先用在线 TDesign 页面、固定 npm 包和真实 WXML 三者交叉确定公开面。",
+      "基础 WXML 只给最小调用；没有真实业务事件时不得机械展示 bind:*。",
+      "suffix-icon 与 operation 只发布区域 click；任何 visible、导航或成功结果必须由父级实现。"
+    ],
+    "tags": ["notice-bar", "tdesign", "api-contract", "controlled", "usage-code", "no-fake-success"]
+  }
+}

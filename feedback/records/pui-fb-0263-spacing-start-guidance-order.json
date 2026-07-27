@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0263",
+  "title": "Spacing 应位于开始与规范并紧跟编号 05",
+  "scope": "global",
+  "components": ["spacing", "preview-site", "metadata", "documentation"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Spacing 是设计规范入口，应归入开始与规范，并紧跟现有编号 05 Style Utilities 成为编号 06。",
+  "environment": {
+    "surfaces": ["h5-preview", "site-shell", "component-catalog", "global-search"],
+    "platforms": ["browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "读取 metadata/components.js 的 navigationGroupByTaxonomyId，Spacing 被映射到 layout。",
+    "生成目录后开始与规范只有 01 至 05，Spacing 位于布局并显示为 14。",
+    "左侧导航和 Ctrl/⌘+K 搜索都读取同一 metadata，因此错误归属会同时出现在两个入口。"
+  ],
+  "expected": "开始与规范依次显示 01 Getting Started、02 ConfigProvider、03 Theme Tokens、04 Color、05 Style Utilities、06 Spacing；布局不再重复出现 Spacing。",
+  "actual": "Spacing 位于布局分区并显示为编号 14，开始与规范在 05 后直接结束。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 当前任务对话", "note": "用户要求把 Spacing 放到 05 后面，并明确其属于开始与规范。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "Spacing taxonomy 映射改为 getting-started；开始与规范使用显式顺序并把 spacing 放在 style-utilities 后。"},
+    {"kind": "test", "ref": "scripts/test-preview-navigation-search.js", "note": "专项合同锁定开始与规范六项精确顺序、Spacing 唯一归属和反馈编号 06。"}
+  ],
+  "rootCause": "此前根据空间布局职责把 Spacing 归到布局；最新信息架构把它定义为用户开始使用 PoemUI 时需要先理解的设计规范。",
+  "decision": {
+    "outcome": "Spacing 从布局移动到开始与规范，固定排列在 Style Utilities 后，目录编号由统一 metadata 顺序自动生成并显示为 06。",
+    "rationale": "Spacing 是 Token 与 utility 使用规范，不是独立布局组件；与 Theme、Color、Style Utilities 连续陈列更符合设计系统学习路径。",
+    "alternativesRejected": [
+      "在开始与规范和布局各保留一条入口：会破坏每个路由唯一归属并让搜索重复。",
+      "只在页面上写死编号 06：筛选、搜索和后续重排会导致编号漂移。",
+      "仅修改生成文件 preview/components-data.js：下次 catalog:generate 会被 metadata 覆盖。"
+    ]
+  },
+  "impact": {
+    "files": ["metadata/components.js", "preview/components-data.js", "scripts/test-preview-navigation-search.js", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0202-preview-catalog-task-taxonomy.json", "feedback/records/pui-fb-0263-spacing-start-guidance-order.json"],
+    "dependencies": ["catalog generator", "left navigation", "global search", "feedback ordinal"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-navigation-search.js", "scripts/test-component-catalog-pruning.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["2026-07-23 在 http://127.0.0.1:4179/?refresh=nav9#/foundation/spacing 实测：桌面开始与规范依次为 01 Getting Started、02 ConfigProvider、03 Theme Tokens、04 Color、05 Style Utilities、06 Spacing，布局只有 5 项且无 Spacing。快速搜索输入 spacing 仅有 1 条“Spacing 间距，开始与规范”，布局结果为 0。390x844 下前三组顺序与编号不变，document/body clientWidth=375、scrollWidth=375。"],
+    "deviceRisks": ["本次只修改官网目录信息架构和文档，不改变小程序组件、Token、工具类或 npm API。"]
+  },
+  "ai": {
+    "summary": "Spacing 当前属于开始与规范，固定紧跟 Style Utilities 为编号 06。",
+    "rules": [
+      "Spacing 只在开始与规范出现一次，不得重新放回布局或建立第二入口。",
+      "开始与规范顺序固定为 Getting Started、ConfigProvider、Theme Tokens、Color、Style Utilities、Spacing。",
+      "反馈编号必须从完整 metadata 顺序派生，禁止页面写死编号。",
+      "目录归属调整必须同步专项测试、生成物、信息层级文档、Ledger 和真实浏览器搜索验证。"
+    ],
+    "tags": ["spacing", "preview-site", "catalog", "start-guidance", "ordering", "feedback-number"]
+  }
+}

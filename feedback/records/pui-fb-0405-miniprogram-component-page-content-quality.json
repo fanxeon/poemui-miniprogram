@@ -1,0 +1,183 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0405",
+  "title": "六个小程序分区的独立组件页缺少代表场景与统一内容质量门禁",
+  "scope": "global",
+  "components": [
+    "miniprogram",
+    "layout",
+    "navigation",
+    "form",
+    "data-display",
+    "feedback",
+    "advanced"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "除开始与规范、基础组件、浮层外，逐个验证并修缮每个小程序独立组件页，让示例的代表性、可读性、重要性和完整性更突出，并由 Agent 自主完成一轮验收。",
+  "environment": {
+    "surfaces": [
+      "wechat-miniprogram",
+      "component-detail-page",
+      "documentation",
+      "quality-gate"
+    ],
+    "platforms": [
+      "wechat-devtools",
+      "wechat-miniprogram",
+      "node"
+    ],
+    "viewports": [
+      "390px simulator"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "多个表单页只展示一个孤立控件，缺少只读、禁用、错误、取消等关键状态。",
+    "Collapse、Bubble、Collapsible、Swiper、Table 等页面存在自闭合空分区，页面标题仍使用通用“基础用法”或工程术语。",
+    "Grid/List 的 retry 自动清除 error，BackTop 调用 ScrollArea 未公开实例方法，Cell 仍按旧 checked 字段读取选择状态。",
+    "PullRefresh、VirtualList、Watermark 虽有路由，但内容仍偏诊断数据，无法清楚说明真实用户任务。"
+  ],
+  "expected": "59 个小程序独立组件页均真实挂载自身组件，以用户任务作为视觉中心，并覆盖至少一个重要状态或关键边界；滚动所有权、错误恢复、状态回写和深浅色表现都有可重复验证证据。",
+  "actual": "修复前页面质量依赖人工记忆，旧测试还在锁定自动恢复、未公开实例方法和 H5 同名分区标题，无法阻止空分区、技术文案或弱示例重新出现。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "docs/MINIPROGRAM_COMPONENT_PAGE_ACCEPTANCE.md",
+      "note": "逐页记录 59 个页面的代表场景、重要状态和关键边界，并明确 Chart 的 H5 文档型例外。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-component-page-quality.js",
+      "note": "逐页锁定真实组件、共享页面壳、滚动所有权、空分区、平台原生控件和通用标题退化。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/input/index.wxml",
+      "note": "表单页以填写组件名称为核心任务，并增加只读和禁用状态。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/table/index.wxml",
+      "note": "数据页以可选择、可排序的组件验收结果替代空的第二分区。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/pull-refresh/index.wxml",
+      "note": "高级页以最近更新长列表承载真实下拉刷新，刷新中才显示显式结束入口。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/watermark/index.wxml",
+      "note": "水印页在覆盖层下提供真实 PUI Button，并通过运行态点击验证操作未被拦截。"
+    }
+  ],
+  "rootCause": "首次批量迁移以路由、页面壳和 API 覆盖为主要目标，缺少逐页内容编辑标准；通用分区标题、诊断文案和旧行为断言被当作页面合同，导致“有页面”没有进一步收敛为“有代表性且可理解的示例”。",
+  "decision": {
+    "outcome": "完整重写六个分区的 59 个独立页内容，统一采用任务标题、代表场景和关键状态；修正 Group 语义、retry 恢复边界、BackTop 公开 scroll-top、Cell selected 等错误；新增逐页验收矩阵与全量质量测试并纳入 npm run check。",
+    "rationale": "逐页内容矩阵让示例选择可审查，自动门禁负责阻止结构和命名退化；组件专项测试继续锁定真实事件与状态边界，两层证据共同避免静态假成功。",
+    "alternativesRejected": [
+      "只替换标题和说明，无法修复错误恢复、无效 API 与缺失状态。",
+      "为所有页面机械增加第二分区，会让单一强示例变成重复卡片，并破坏滚动所有者。",
+      "给 shadcn-chart 创建静态小程序页，会把 H5 文档型示例伪装成已迁移组件。",
+      "只依赖开发者工具成功编译，无法阻止空分区、工程术语和不代表真实任务的内容。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/components/",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-component-page-quality.js",
+      "scripts/test-miniprogram-layout-pages.js",
+      "scripts/test-miniprogram-navigation-pages.js",
+      "scripts/test-miniprogram-data-pages.js",
+      "scripts/test-miniprogram-feedback-pages.js",
+      "scripts/appearance-contract-matrix.js",
+      "scripts/test-appearance-contract-matrix.js",
+      "docs/MINIPROGRAM_COMPONENT_PAGE_ACCEPTANCE.md",
+      "docs/APPEARANCE_CONTRACT_MATRIX.md",
+      "docs/MINIPROGRAM_LAYOUT_PAGES.md",
+      "docs/MINIPROGRAM_NAVIGATION_PAGES.md",
+      "docs/MINIPROGRAM_FORM_PAGES.md",
+      "docs/MINIPROGRAM_DATA_PAGES.md",
+      "docs/MINIPROGRAM_FEEDBACK_PAGES.md",
+      "docs/MINIPROGRAM_ADVANCED_PAGES.md",
+      "package.json"
+    ],
+    "dependencies": [
+      "component-page",
+      "component-page-navbar",
+      "component-page-section",
+      "PUI ScrollArea",
+      "visualConfig"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-component-page-quality.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-layout-pages.js",
+      "scripts/test-miniprogram-navigation-pages.js",
+      "scripts/test-miniprogram-form-pages.js",
+      "scripts/test-miniprogram-data-pages.js",
+      "scripts/test-miniprogram-feedback-pages.js",
+      "scripts/test-miniprogram-advanced-pages.js",
+      "scripts/test-appearance-contract-matrix.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-component-page-quality.js",
+      "node scripts/test-miniprogram-component-pages.js",
+      "node scripts/test-miniprogram-layout-pages.js",
+      "node scripts/test-miniprogram-navigation-pages.js",
+      "node scripts/test-miniprogram-form-pages.js",
+      "node scripts/test-miniprogram-data-pages.js",
+      "node scripts/test-miniprogram-feedback-pages.js",
+      "node scripts/test-miniprogram-advanced-pages.js",
+      "node scripts/test-appearance-contract-matrix.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "微信开发者工具 build-npm"
+    ],
+    "browser": [
+      "微信开发者工具依次编译并打开 59 个页面，59/59 返回 success=true。",
+      "浅色模式采集布局、导航、表单、数据、反馈和高级代表页截图；联系表检查未发现空白页、第二页面底色或主要内容横向溢出。",
+      "深色模式实际回写 visualConfig.theme=dark，并检查 Tabs、Input、Table、Alert、VirtualList、Watermark 六个代表页；文字、Surface 和状态色保持可读，完成后恢复 light。",
+      "运行态触发 Dialog 删除确认后 dialogVisible=true；触发 Toast 成功示例后状态为“保存结果提示已显示”；触发 PullRefresh refresh 后 pullRefreshing=true；点击 Watermark 下方“标记为已阅读”后状态真实更新。"
+    ],
+    "deviceRisks": [
+      "尚未在 iOS/Android 真机验证键盘顶起、Picker/Calendar 遮罩、SwipeCell/Swiper/下拉刷新手势、虚拟列表惯性和安全区。",
+      "读屏、系统字体放大、系统低动效和弱网/权限拒绝仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "小程序独立组件页的完成标准不是路由和控件存在，而是以真实任务解释组件、覆盖关键状态并能在运行态闭环。",
+    "rules": [
+      "独立页标题必须使用用户任务语言，不得以“基础用法”、Props、Slot、value 或事件日志作为视觉中心。",
+      "每页必须真实挂载自身 PUI 组件并覆盖至少一个重要状态或关键边界；禁止空分区和静态假结果。",
+      "retry 只提出请求，不能自动清除 error；恢复必须由页面在真实数据准备好后明确回写。",
+      "滚动所有者不得再嵌套同方向 ScrollArea；BackTop 只使用公开 scroll-top，不调用未公开实例方法。",
+      "Checkbox/Radio 应使用 Group 呈现多选与单选语义；Cell 使用 selectable/selected，不回退旧 checked 字段。",
+      "逐页质量测试、分区专项测试、微信开发者工具运行态和逐页验收文档必须同批更新。"
+    ],
+    "tags": [
+      "miniprogram",
+      "component-page",
+      "example-quality",
+      "content-design",
+      "no-fake-success",
+      "390px"
+    ]
+  }
+}

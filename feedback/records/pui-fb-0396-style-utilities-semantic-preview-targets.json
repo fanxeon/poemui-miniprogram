@@ -1,0 +1,81 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0396",
+  "title": "快速样式预览必须按 utility 语义命中真实目标",
+  "scope": "component",
+  "components": ["style-utilities", "preview-site", "miniprogram"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式页应以紧凑、准确的单一当前效果预览不同类型的 utility；尺寸类不能留下大片空白，定位、隐藏、比例和 viewport 类不能破坏页面或逃出预览，并且用户可以恢复当前分类默认状态。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "h5 style utilities browser"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/styles/index 的尺寸分类，应用 aspect、height、full-height 等 utility。",
+    "旧实现将当前分类所有 class 拼到整个预览根；固定尺寸、定位、隐藏或 viewport 类会直接改变基础设施根。",
+    "结果出现预览高度过大、大片空白、内容逃逸、不可见或无法辨别变化。"
+  ],
+  "expected": "每个 utility 由生成器声明 previewKind、previewTarget、previewSafety、previewTheme 与必要脚手架；小程序使用 120rpx 单一当前效果，把类只挂到适格目标，并对 viewport、fixed、hidden、safe-area 等结果进行有界裁切或状态追踪；恢复只清空当前分类。H5 读取同一份生成数据与从公开 WXSS 转换的 scoped CSS，点击示例后计算样式必须真实变化，恢复后回到默认。",
+  "actual": "旧预览只有按分类写死的容器，未表达 utility 应该作用于布局根、子项、媒体、测量块、外层、Surface、集合或文本；一个共享 class 串无法安全覆盖 530 种语义。首次 H5 同步只输出 data 属性并把代表 class 挂到统一 mini 根，且没有加载完整 utility CSS，导致 pui-w-full 无效、pui-text-headline 污染整个预览。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 当前任务截图", "note": "尺寸页预览占据大量高度，示例下方出现大片无意义空白，用户要求重新设计以适配不同样式。"},
+    {"kind": "file", "ref": "scripts/style-utilities-preview-schema.js", "note": "单一分类器为全部 530 个 utility 生成 kind、target、safety、theme 与 scaffold。"},
+    {"kind": "file", "ref": "scripts/generate-miniprogram-style-utilities-catalog.js", "note": "同一次生成同时输出小程序目录、H5 style-utilities-data.js 与限定在 utility-doc 的 530 类 px CSS。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "固定单一当前效果结构提供 layout/item/target/media/measure/outer/surface/items/text 九个目标和分类级恢复按钮。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "选择状态按 previewKind 互斥并分发到对应目标；预览几何不再依赖被 utility 改写的 DOM。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 分类样例读取生成语义，点击示例后把当前 class 只分发到 layout/measure/surface/text 等适格节点，恢复清空本分类。"},
+    {"kind": "file", "ref": "preview/style-utilities.css", "note": "由公开 WXSS 自动生成、限定在 Style Utilities 文档范围且完成 rpx 到 px 转换的全部 530 类浏览器规则。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "锁定 530 条完整语义、目标枚举、关键风险类映射、互斥与 120rpx 几何。"},
+    {"kind": "test", "ref": "scripts/test-style-utilities.js", "note": "锁定 H5 数据与小程序目录逐项一致、530 类 scoped CSS 覆盖、目标分发、单一当前效果与恢复动作。"}
+  ],
+  "rootCause": "预览系统按目录分类而非 CSS 作用对象建模，把 utility 当作可随意附加到同一节点的装饰类；但布局、子项、媒体、尺寸、间距、文字和主题类具有不同命中边界，部分还会改变定位、可见性或 viewport 几何。",
+  "decision": {
+    "outcome": "建立由 utilities.wxss 目录生成链驱动的语义预览 Schema；小程序使用固定 120rpx、透明、无面板的单一当前效果，只在指定目标挂载 class，并以 PUI 圆形恢复按钮清空当前分类。viewport/fixed/hidden/safe-area 等使用有界裁切或 trace，不改变页面布局。H5 加载同一份生成数据和 scoped px CSS，使用固定 64px 单一当前效果，示例点击与分类级恢复都是真实交互。",
+    "rationale": "目标级路由能让 530 个类共享一个稳定渲染器，同时保留真实 CSS 应用；单一当前效果减少重复内容和横向压缩，分类级恢复提供明确回退，又为目录释放首屏空间。",
+    "alternativesRejected": [
+      "继续把所有 class 拼到预览根：会让基础设施被 width、height、position、display 和 overflow 污染。",
+      "为 530 个类逐条手写 WXML：不可维护，且 H5 与小程序必然漂移。",
+      "H5 只输出 data 属性和 class 名、但不生成浏览器 CSS：计算样式不变，仍属于假同步。",
+      "只显示 class 名和说明：没有真实应用结果，属于静态演示而非预览。",
+      "对 fixed、hidden、screen size 类禁用点击：会让发布能力不可验证。",
+      "保留 baseline/result 双栏：重复占用有限预览宽度，不符合用户确认的最新交互。",
+      "恢复时清空全部分类：会破坏用户已在其他分类建立的组合。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/style-utilities-preview-schema.js", "scripts/generate-miniprogram-style-utilities-catalog.js", "miniprogram/common/data/style-utilities-catalog.js", "miniprogram/pages/styles/index.js", "miniprogram/pages/styles/index.wxml", "miniprogram/pages/styles/index.wxss", "preview/style-utilities-data.js", "preview/style-utilities.css", "preview/index.html", "preview/app.js", "preview/styles.css", "scripts/test-miniprogram-style-utilities-page.js", "scripts/test-style-utilities.js", "docs/STYLE_UTILITIES.md", "docs/MINIPROGRAM_HOME.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/UI_DESIGN_CONTRACT.md"],
+    "dependencies": ["utilities.wxss", "pui-icon", "pui-cell", "pui-tabs", "pui-scroll-area"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js", "scripts/test-style-utilities.js", "scripts/test-wxss-universal-selector-compatibility.js", "scripts/test-layout-contracts.js", "scripts/test-spacing-token-contract.js"],
+    "commands": ["npm run styles:catalog:generate", "node scripts/test-miniprogram-style-utilities-page.js", "node scripts/test-style-utilities.js", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具 cli build-npm"],
+    "browser": [
+      "2026-07-26 早先 H5 390x844 baseline/result 数据属于已被用户最新决策废弃的结构，只保留为历史证据，不能作为单一当前效果的运行验收。",
+      "2026-07-26 H5 390x844 单一当前效果实测：默认 measure 128.5px，点击 pui-w-full 后为 257px，恢复后回到 128.5px；恢复尺寸后布局 pui-block 仍保留。5 个预览均为 64px，浅色且 shadow/frost/large-radius/equal-spacing 全开时 document clientWidth/scrollWidth=375/375，恢复按钮为 36x36px、999px 圆角；测试后恢复 dark、border-on、shadow/frost/equal-off 偏好。",
+      "2026-07-26 微信开发者工具现有窗口配置为 iPhone 12/13 (Pro)、390x844、DPR 3，真实 AppID 为 wx23aa017375535746；CLI build-npm 成功且 warnings=[]。本次未重启 IDE，simulator_open_page 已成功编译并打开 pages/styles/index；simulator_screenshot 在有无 waitForSelector 两种方式下均因 DevTools 内部 pageMeta/rawPath 为空而失败，无法取得截图、元素几何或真实点击证据，因此不能标记为微信模拟器视觉通过。"
+    ],
+    "deviceRisks": [
+      "微信模拟器仍需验证单一当前效果、分类级恢复、五类切换、120rpx/8rpx 几何、长目录滚动、BackTop 显隐/点击/平滑回顶、极端类有界裁切与页面无横向溢出。",
+      "iOS/Android 真机仍需验证 object-fit、fixed containment、screen size 裁切、safe-area、长目录惯性和 BackTop 动画。"
+    ]
+  },
+  "ai": {
+    "summary": "Utility 预览必须命中语义目标，不能把发布类应用到页面、滚动区、Tabs 或预览基础设施根。",
+    "rules": [
+      "新增 utility 时必须由同一生成 Schema 给出 previewKind、previewTarget、previewSafety、previewTheme 与 scaffold，并同时生成小程序目录、H5 数据与 scoped CSS。",
+      "尺寸、定位、display、overflow、主题和可见性类不得作用于预览基础设施根。",
+      "预览固定使用单一当前效果；选中 utility 只挂到适格目标，恢复只清空当前分类；H5 必须读取计算样式证明点击与恢复都真实生效。",
+      "viewport、fixed、hidden、safe-area 与状态类必须有界裁切或留下可读 trace，不能逃出预览或制造空白。",
+      "构建通过不等于视觉完成；必须分别记录 H5 390px、微信模拟器和 iOS/Android 真机验证状态。"
+    ],
+    "tags": ["style-utilities", "semantic-preview", "target-routing", "single-preview", "reset", "miniprogram", "h5"]
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0050",
+  "title": "ConfigProvider 基础示例混入高级 Store 且 H5 未执行全局优先级",
+  "scope": "component",
+  "components": ["config-provider", "visual-config"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "ConfigProvider 的基础示例保持最小可用，同时官网必须真实表达局部 Props 与全局 visualConfig 的优先级和视觉结果。",
+  "environment": {
+    "surfaces": ["component-source", "h5-preview", "api-documentation", "npm-package", "example-miniprogram"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark", "auto"]
+  },
+  "reproduction": [
+    "打开旧 ConfigProvider 概览，基础代码同时展示 visualConfig Store 和每页 Provider，基础任务与高级跨页接入没有分层。",
+    "在属性页启用 useGlobalConfig 后修改局部 theme、shadow、frostedGlass、largeRadius 或 bordered，旧 H5 仍直接读取局部 Props，没有镜像真实 Provider 的全局 Store 优先级。",
+    "旧 API metadata 未完整列出 customClass/customStyle，themechange 的触发条件也没有被专项合同锁定。"
+  ],
+  "expected": "基础用法只展示最小 Provider WXML且没有 bind；高级 Store 接入进入独立配置作用域；useGlobalConfig=true 时 H5 与小程序都读取全局配置，themechange 只在解析后的真实主题变化时触发。",
+  "actual": "基础示例混入高级 Store，H5 的局部视觉 Props 会覆盖全局配置，API 少列样式入口，事件语义没有去重保证。",
+  "evidence": [
+    { "kind": "user-report", "ref": "当前任务对话", "note": "用户明确授权当前 Goal 后续组件由 agent 在完整门禁后自主验收；本记录依据该授权完成 ConfigProvider 验收。" },
+    { "kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/config-provider", "note": "固定参考 TDesign 1.15.3 官方文档与安装包源码；其 Provider 加响应式 Store 的分发结构值得借鉴，但 globalConfig/themeVars 不对应 PoemUI 的视觉配置任务。" },
+    { "kind": "file", "ref": "preview/app.js", "note": "基础代码生成器只输出最小 Provider；H5 showcase 在 useGlobalConfig=true 时读取站点全局视觉状态并忽略局部视觉 Props。" },
+    { "kind": "file", "ref": "config-provider/config-provider.js", "note": "主题事件统一经 emitThemeChange 去重，只在 attached 后解析主题真实变化时发出。" },
+    { "kind": "test", "ref": "scripts/test-config-provider.js", "note": "专项静态与 VM 运行时合同覆盖 8 Props、API 分组、事件、Slot、最小 WXML、本地/全局优先级、总效果开关和事件去重。" },
+    { "kind": "browser", "ref": "http://127.0.0.1:4179/#/components/config-provider", "note": "桌面与 390px 真实点击和输入验证局部/全局模式、auto/light/dark、五项外观、customClass/customStyle、API 完整换行、复制内容和零横向溢出；控制台无告警错误。" },
+    { "kind": "build", "ref": "npm run pack:check", "note": "npm 包检查通过，324.6kB、解包 1.8MB、545 files、shasum 4c9ee944329250a00bb1512f4bd2f79daf692661；源码、dist 与示例 node_modules 中 ConfigProvider/Store 逐字节一致。" }
+  ],
+  "rootCause": "官网把安装指南和基础组件任务维护在同一示例，同时 H5 showcase 直接消费 Props，没有抽象与小程序 Store 订阅一致的有效配置层；事件也在每次属性更新时直接触发。",
+  "decision": {
+    "outcome": "ConfigProvider 公开 8 Props、1 Event、1 Slot；基础 WXML 只保留 theme=auto 和默认 Slot，高级跨页配置单独展示；H5 增加有效配置解析，useGlobalConfig 时由全局视觉状态接管；小程序 themechange 按解析结果去重。",
+    "rationale": "局部 Provider 与跨页 Store 是不同学习层级；同一有效配置规则能保证 H5、WXML 和真实安装端一致，事件去重避免视觉开关更新被误报为主题变化。",
+    "alternativesRejected": [
+      "照搬 TDesign 的 globalConfig/themeVars 会扩大为任意对象和任意 Token API，缺少 PoemUI 当前独立用户任务。",
+      "在基础 WXML 绑定 themechange 会违反基础零 bind 合同并制造无必要样板代码。",
+      "让 useGlobalConfig 与局部视觉 Props 混合优先级会产生跨页面视觉漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["config-provider/config-provider.js", "miniprogram_dist/config-provider/config-provider.js", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/CONFIG-PROVIDER.md", "docs/components/README.md", "docs/COMPONENT_API.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "scripts/test-config-provider.js", "scripts/test-component-semantic-contracts.js", "scripts/test-button.js"],
+    "dependencies": ["visual-config", "button", "cell", "tag", "preview-device"]
+  },
+  "verification": {
+    "tests": ["scripts/test-config-provider.js", "scripts/test-component-semantic-contracts.js", "scripts/test-button.js", "scripts/test-design-contracts.js", "scripts/test-layout-contracts.js"],
+    "commands": ["node scripts/test-config-provider.js", "npm run catalog:generate", "npm run miniprogram:build", "npm run pack:check", "npm run site:build", "npm run check", "npm run example:install", "微信 CLI build-npm"],
+    "browser": [
+      "API 显示 8 Props、1 Event、1 Slot；全部 45 个单元格 white-space normal、text-overflow clip、overflow visible，桌面和 390px 均无内容裁切。",
+      "局部模式 dark + shadow/frost/radius on + bordered off 得到 rgba(24,24,27,.72)、blur(13px)、0 3px 9px rgba(0,0,0,.24)、14px radius 与透明中性边界；切换全局模式后局部相反值不再改变预览。",
+      "390px 覆盖下 document 375/375、PreviewDevice 351x622、组件组 285/285，无页面级横向溢出；auto 随全局主题真实切换；复制基础代码准确且无 bind，浏览器日志为空。"
+    ],
+    "deviceRisks": [
+      "当前机器微信开发者工具 Service Port 关闭，example:install 清理后的 miniprogram_npm 尚无法重建，因此本轮状态保留 pending-cli；不得把源码/dist/node_modules 一致性当作微信安装产物完成。",
+      "多个真实 Page 并行订阅、wx storage 异常、系统 auto 主题回调和样式隔离继承仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "ConfigProvider 基础任务与跨页 Store 分层，useGlobalConfig 采用全局优先级，主题事件只报告真实主题变化。",
+    "rules": [
+      "ConfigProvider 基础 WXML 只放最小 Provider 和内容，不生成 Store 代码或 bind。",
+      "useGlobalConfig=true 时忽略局部 theme/shadow/frostedGlass/largeRadius/bordered，由 visualConfig 唯一接管。",
+      "customClass/customStyle 只作用 Provider 根，不绕过语义 Token 修改子组件内部几何。",
+      "themechange 只在解析后的 light/dark 真值变化时触发，视觉开关更新不得重复发出。",
+      "不为对齐 TDesign 数量自动加入 globalConfig/themeVars；新增公共配置必须先证明独立用户任务。"
+    ],
+    "tags": ["config-provider", "visual-config", "tdesign", "preview-parity", "minimal-wxml", "theme-event"]
+  }
+}

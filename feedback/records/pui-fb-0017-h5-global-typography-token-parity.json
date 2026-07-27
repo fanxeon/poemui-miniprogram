@@ -1,0 +1,106 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0017",
+  "title": "H5 官网字体指标绕过 PUI Typography Token",
+  "scope": "global",
+  "components": ["preview-site", "typography", "style-utilities", "dialog", "tabs"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "全部页面使用统一、清晰且可维护的 PUI 字体族、字号层级和行高；H5 不能与小程序或 Style Utilities 各自维护一套字体数值。",
+  "environment": {
+    "surfaces": ["h5-preview", "miniprogram", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计 common/style/theme.wxss，确认小程序已提供 10 档角色字号/行高、5 档字重和系统字体 Token。",
+    "扫描 preview/styles.css，发现 661 处直接数字字号、320 处直接数字行高、227 处直接数字字重；根字体还使用与小程序不同的 Segoe 栈。",
+    "检查 common/style/utilities.wxss，leading-none/tight/normal/relaxed 仍重复写死比例值，没有读取主题 Token。"
+  ],
+  "expected": "H5 使用与小程序同名的 PUI Typography Token，按 1px≈2rpx 精确镜像；所有预览字体族、字号、行高和字重声明均读取 Token，Caption 12px/17px 为最小可见角色，外观模式不得改变字体指标。",
+  "actual": "旧 H5 虽有 Typography 文档演示，但全局组件样式仍大量写死数字并维护另一套根字体，因此文档、Style Utilities 与标准组件可能发生字体漂移，测试也只阻止小于 12px 的值而不能阻止重复实现。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "新增与小程序同名的 H5 Typography Token；661 处字号、320 处行高、227 处字重和全部字体族声明均已迁入 Token。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "新增 none/tight/normal/relaxed 比例行高 Token，并由公开 utilities 消费。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-typography-contract.js",
+      "note": "锁定双端 1px≈2rpx 映射、字体族、比例行高和全官网零数字字体声明。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/foundation/style-utilities",
+      "note": "390x844 实测 Style Utilities 551 个可见文本节点最小为 12px、低于 12px 为 0，页面、标题和正文使用同一 PingFang/系统字体栈且 document=375/375。"
+    }
+  ],
+  "rootCause": "小程序主题较早建立了完整 Typography Token，但 H5 预览按页面和组件逐步追加 CSS，只建立了少量文档字号变量和最小字号检查，没有把全局计算样式接回同名 Token，也没有扫描数字字重、行高和字体族。",
+  "decision": {
+    "outcome": "在 H5 根节点精确镜像公开 PUI Typography Token，所有官网字体声明统一改为 Token；比例行高进入主题并驱动 Style Utilities，同时新增全局扫描门禁。",
+    "rationale": "同名 Token 让小程序、H5、文档和工具类拥有单一事实源；扫描整个样式表比逐页抽样更能阻止后续组件重新写死字体指标。",
+    "alternativesRejected": [
+      "只修 Style Utilities 页的 font-family 会让其他 82 个组件继续漂移。",
+      "只保留不低于 12px 的阈值检查，仍允许数百处数字复制并长期分叉。",
+      "为 H5 新建一套 preview-only 字体角色名，会扩大双端映射成本。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/style/theme.wxss",
+      "common/style/utilities.wxss",
+      "preview/styles.css",
+      "preview/index.html",
+      "scripts/test-preview-typography-contract.js",
+      "scripts/test-style-utilities.js",
+      "package.json",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/TYPOGRAPHY.md",
+      "docs/DESIGN_TOKENS.md",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0017-h5-global-typography-token-parity.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["theme-tokens", "style-utilities", "typography"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-typography-contract.js", "scripts/test-style-utilities.js", "scripts/test-design-contracts.js", "scripts/test-layout-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "390x844 下 Style Utilities body 为 14px、标题为 20/28px，551 个可见文本节点最小 12px且无低于 12px 节点；页面与文档正文统一为 PingFang/系统字体，document=375/375。",
+      "Typography 十角色计算值依次为 display 32/40/800、headline 24/32/700、title 20/28、18/25、16/23、body 16/23、14/20、13/19、label 13/18、caption 12/17px，与小程序 rpx Token 精确镜像。",
+      "Button 概览/API/PROP/概览切换后 Tabs 文档 top 均为 510.5px，两级导航继续保持 40px + 8px + 36px；各视图可见文字最小 12px、document=375/375。",
+      "Dialog Header→Content、Content→Footer 均为 18px；标题 16/20/700、Close Icon 中心偏差 0/0。dark+shadow+frost+large-radius 下字体指标不变，Dialog 24px 圆角且有真实 blur/shadow；刷新持久化后已恢复 light/off/off/normal。"
+    ],
+    "deviceRisks": [
+      "系统字体的实际字形、基线和动态字体设置由设备决定；双端 Token 与构建产物已一致，微信真机回退字体和自定义组件样式隔离仍需合法 AppID 复核。"
+    ]
+  },
+  "ai": {
+    "summary": "PoemUI 小程序与 H5 使用同名 Typography Token；官网禁止重新写死字体族、字号、行高和数字字重。",
+    "rules": [
+      "新增或修改官网文字样式时必须选择现有 PUI 字体角色 Token，禁止直接写 px 字号、固定数字行高或数字字重。",
+      "Caption 24rpx/34rpx（H5 12px/17px）是最小可见角色；辅助信息只能弱化颜色，不能继续缩小。",
+      "小程序与 H5 的同名字体 Token 必须保持 1px≈2rpx；深浅色、阴影、毛玻璃和大圆角不得改变字体指标。",
+      "比例行高工具必须读取主题 Token，不能在 Utilities 或组件页复制 none/tight/normal/relaxed 数值。",
+      "字体全局改动必须复验 390px 页面宽度、标准页固定 Tabs、Dialog 三区和四项外观持久化。"
+    ],
+    "tags": ["global", "typography", "font-family", "font-size", "line-height", "font-weight", "style-utilities", "preview-parity", "readability", "390px"]
+  }
+}

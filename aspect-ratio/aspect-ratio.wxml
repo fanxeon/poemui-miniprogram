@@ -1,0 +1,1 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{rootStyle}}padding-top:{{paddingTop}}%"><view class="pui-aspect-ratio__content"><slot></slot></view></view>

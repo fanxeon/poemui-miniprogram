@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0418",
+  "title": "Calendar 月份导航右箭头被自定义组件宿主推离可见区域",
+  "scope": "component",
+  "components": ["calendar", "button", "icon", "miniprogram", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Calendar 月份栏必须同时清楚显示上一月和下一月箭头。",
+  "environment": {
+    "surfaces": ["calendar component page", "h5 component preview"],
+    "platforms": ["wechat-miniprogram", "h5-preview"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "进入 Calendar 独立页。",
+    "月份栏左箭头可见，右箭头完全不见。",
+    "两个 PUI Button 位于 space-between Flex 中，但未声明 icon-only，微信自定义组件宿主参与宽度分配。"
+  ],
+  "expected": "月份文字严格居中，左右两个 72rpx IconButton 轨都位于 Calendar Surface 内并可见。",
+  "actual": "Flex 与自定义组件宿主的宽度投影把右侧 Button 推离可见轨，只留下左箭头。",
+  "evidence": [
+    {"kind": "file", "ref": "calendar/calendar.wxml", "note": "上一月和下一月均使用 icon-only PUI Button。"},
+    {"kind": "file", "ref": "calendar/calendar.wxss", "note": "月份栏使用 72rpx/minmax/72rpx 固定三列轨。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 镜像使用 36px/minmax/36px 同义轨。"},
+    {"kind": "test", "ref": "scripts/test-calendar.js", "note": "锁定两个 icon-only 入口和双端固定轨。"},
+    {"kind": "browser", "ref": "/tmp/poemui-calendar-after-1.png", "note": "390x844 微信模拟器确认 2026 年 7 月左右箭头同时可见。"},
+    {"kind": "browser", "ref": "/tmp/poemui-calendar-dark-after-4.png", "note": "390x844 深色模式确认左右箭头、月份标题与日期选择态完整可读。"}
+  ],
+  "rootCause": "月份导航依赖 Flex 自动分配自定义 Button 宿主宽度，并且纯图标操作未声明 icon-only，导致微信运行态宿主几何不稳定。",
+  "decision": {
+    "outcome": "月份栏改为固定三列 Grid；左右 Button 明确使用 icon-only，H5 使用同义 36px 轨。",
+    "rationale": "让两个操作和月份标题共享唯一稳定坐标，同时继续复用 PUI Button/Icon 的尺寸、主题与可访问语义。",
+    "alternativesRejected": [
+      "给右箭头加负 margin 只能针对当前截图补丁。",
+      "使用字符箭头会绕过 PUI Icon 与 Button。",
+      "绝对定位会增加另一套 Header 坐标和窄屏碰撞。"
+    ]
+  },
+  "impact": {
+    "files": ["calendar/calendar.wxml", "calendar/calendar.wxss", "preview/styles.css", "scripts/test-calendar.js", "docs/components/CALENDAR.md"],
+    "dependencies": ["PUI Button", "PUI Icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-calendar.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具 390x844 浅色与深色截图确认左右箭头、月份标题和日期网格完整。"],
+    "deviceRisks": ["iOS/Android 真机的箭头触摸命中、禁用色、读屏和字体缩放仍需复核。"]
+  },
+  "ai": {
+    "summary": "Calendar 月份导航必须使用两个真实 IconButton 和固定对称三列轨。",
+    "rules": [
+      "纯图标月份操作必须声明 icon-only。",
+      "小程序月份栏固定为 72rpx/1fr/72rpx，H5 固定为 36px/1fr/36px。",
+      "不得依赖 Flex 自动分配自定义 Button 宿主宽度。"
+    ],
+    "tags": ["calendar", "icon-button", "grid", "wechat-runtime"]
+  }
+}

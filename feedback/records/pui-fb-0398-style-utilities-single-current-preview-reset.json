@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0398",
+  "title": "快速样式只保留当前效果并提供分类级恢复",
+  "scope": "component",
+  "components": ["style-utilities", "button", "preview-site", "miniprogram"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式不需要基准与结果比较，只显示最新选择后的当前效果，同时提供一个可以恢复默认状态的按钮。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "h5 style utilities browser"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入快速样式页，旧预览同时显示 baseline、比较箭头和 result。",
+    "在窄屏选择 utility 后，两栏重复占用有限宽度，页面没有针对当前分类的显式恢复入口。"
+  ],
+  "expected": "每个分类只显示一个当前效果；点击 utility 后立即更新该效果。右侧 default / text / small / circle / icon-only PUI Refresh Button 以低存在感呈现，无选择时禁用，点击后只清空当前分类并恢复默认示例，其他分类选择保持不变。小程序与 H5 使用同一语义。",
+  "actual": "旧结构固定渲染 baseline/result 双栏和箭头；只能再次点击已选项逐个取消，没有明确的一键恢复。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 当前任务对话", "note": "用户明确中断原比较方案，要求只保留最新样式并增加恢复按钮。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "唯一 styles-page__preview-current 与 default / text / small 圆形 PUI IconButton 替代双栏和箭头。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "onResetPreview 只删除 activeGroup 前缀的选择并重建当前语义模型。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 示例按钮维护各分类最新 utility，utility-example-reset 只删除目标分类。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "覆盖无旧双栏、恢复按钮禁用态、当前分类清空以及其他分类保留。"},
+    {"kind": "test", "ref": "scripts/test-style-utilities.js", "note": "覆盖 H5 单一当前效果、示例动作、恢复动作与双栏删除。"}
+  ],
+  "rootCause": "前一版以差异辨识为中心设计 baseline/result，但用户的真实任务是快速查看当前组合；双栏增加认知和空间成本，又缺少明确回退动作。",
+  "decision": {
+    "outcome": "小程序固定 120rpx、H5 固定 64px，只保留单一当前效果；恢复入口复用 default / text / small / circle / icon-only 的 PUI Refresh Button，位于独立右侧网格轨道并保持低存在感。恢复范围固定为 activeGroup，不改变其他分类。",
+    "rationale": "唯一结果与用户的“当前选择”心智一致；独立恢复按钮可一次回到分类默认，同时保留跨分类组合上下文。",
+    "alternativesRejected": [
+      "继续保留 baseline/result：窄屏重复占用空间，且不是用户需要的主要任务。",
+      "只允许再次点击逐项取消：缺少明确的一键回退。",
+      "全局清空全部分类：会误删用户在其他分类保留的组合。",
+      "把恢复按钮绝对覆盖在预览上：可能遮挡正在验证的语义目标。",
+      "使用 primary 实底圆形 IconButton：恢复是次要回退动作，视觉权重过高。",
+      "使用带常驻“恢复”文案的普通 Button：扩大右侧轨道并抢占当前效果预览宽度。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/styles/index.js", "miniprogram/pages/styles/index.wxml", "miniprogram/pages/styles/index.wxss", "preview/app.js", "preview/styles.css", "scripts/test-miniprogram-style-utilities-page.js", "scripts/test-style-utilities.js", "docs/STYLE_UTILITIES.md", "docs/STYLE_UTILITIES_TAB_PLAN.md", "docs/UI_DESIGN_CONTRACT.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/MINIPROGRAM_HOME.md", "docs/SPACING.md", "docs/COMPONENT_RULES_INDEX.md"],
+    "dependencies": ["pui-button", "pui-icon", "style utility preview schema"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js", "scripts/test-style-utilities.js"],
+    "commands": ["node scripts/test-miniprogram-style-utilities-page.js", "node scripts/test-style-utilities.js"],
+    "browser": [
+      "2026-07-26 H5 390x844：初始 5 类均只有一个 64px 当前效果且旧 side/baseline/result 节点为 0；pui-w-full 令尺寸目标由 128.5px 变为 257px，恢复回 128.5px并重新禁用按钮。",
+      "跨分类验证：同时选择布局 pui-block 和尺寸 pui-w-full，恢复尺寸后 layoutClass 仍为 pui-block、sizeClass 为空；证明恢复范围只命中当前分类。",
+      "浅色、边框、阴影、毛玻璃、大圆角、等距全开组合下，5 个预览高度仍为 64px，document clientWidth/scrollWidth=375/375；最终 default / text / small / circle / icon-only 恢复按钮实测为 36x36px、999px 圆角、无阴影，启用态背景 rgba(0,0,0,0)，禁用态使用 muted Surface。真实点击 pui-block 后按钮启用，点击恢复后 data-utility-preview-class 回到空字符串并重新禁用，页面仍为 375/375 无横向溢出。结束后已恢复所有分类默认状态。",
+      "微信开发者工具复用现有窗口并依靠热重载验证 pages/styles/index，全程未重启或关闭 IDE。最终截图 /tmp/poemui-styles-low-presence-reset-final.png 显示无 primary 实底的低对比圆形刷新按钮；automator 读取宿主几何为 37x37px、内部 WXML 为 default/text/small/circle/icon-only。调用 onUtilityTap 后 previewHasSelection=true，再从按钮宿主触发 click 事件后变为 false，证明页面 bind:click 恢复链路生效。"
+    ],
+    "deviceRisks": [
+      "微信 390px 模拟器已确认视觉、37x37px 几何、禁用态与 click 事件恢复；automator 的物理 tap 无法穿透自定义组件宿主，iOS/Android 真机仍需确认真实手指命中、按压反馈与跨分类状态保留。"
+    ]
+  },
+  "ai": {
+    "summary": "Style Utilities 只显示最新当前效果，恢复仅作用于当前分类。",
+    "rules": [
+      "不得恢复 baseline/result、比较箭头或两份语义样例。",
+      "选中 utility 必须直接更新唯一当前效果，并继续使用生成的 target/scaffold 路由。",
+      "恢复按钮必须复用 default / text / small / circle / icon-only 的 PUI Refresh Button，未选择时禁用，不能改成 primary 实底、常驻文案或绝对覆盖语义目标。",
+      "恢复只删除 activeGroup 的 group:previewKind 选择，其他分类必须保留。",
+      "小程序与 H5 必须同步交互和固定高度，并分别做 390px 真实验收。"
+    ],
+    "tags": ["style-utilities", "single-preview", "reset", "miniprogram", "h5"]
+  }
+}

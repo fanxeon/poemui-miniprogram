@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0310",
+  "title": "首页 Tabbar 应使用 normal 全宽与微分隔变体",
+  "scope": "component",
+  "components": ["tabbar", "miniprogram-home"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页底部导航要采用既有 Tabbar 的全宽短横选中态，并在四个图标目的地之间保留细微分隔，不要使用圆角卡片或弱色标签面。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "wechat-component"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页并观察底部四项纯图标 Tabbar。",
+    "此前首页组合了 theme=tag 与 shape=round，虽属现有组件 API，但与用户指定的全宽短横和微分隔视觉不符。"
+  ],
+  "expected": "首页通过 Tabbar 已有 theme=normal、shape=normal、split=true 组合呈现全宽导航；四等分、短横选中态、微分隔、安全区和禁用语义继续由组件承担。",
+  "actual": "首页使用 tag/round 卡片组合，活动项为弱色面，外层还增加了仅服务圆角卡片的页面内距。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务截图与对话", "note": "用户给出全宽短横选中态、四等分和微分隔参考，并确认组件已有对应变体。"},
+    {"kind": "file", "ref": "docs/components/TABBAR.md", "note": "合同定义 normal 主题短横活动指示器、normal 全宽形态和 split 内嵌分隔线。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "首页显式使用 normal/normal/split，并保持非 fixed 与安全区。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项测试锁定首页组合，禁止页面私有视觉替代。"}
+  ],
+  "rootCause": "此前为解决视觉偏好错误选择了 tag/round 组合；用户最新参考明确要求的是组件另一组既有变体，而不是共享组件缺少能力。",
+  "decision": {
+    "outcome": "首页改用 theme=normal、shape=normal、split=true，并移除圆角卡片专用的页面边距。",
+    "rationale": "三项均为已公开、已有双端合同的 Tabbar Props；页面只选择变体，不复制选中态或分隔线。",
+    "alternativesRejected": [
+      "在 tag/round 上新增页面私有短横或分隔线会重复组件视觉能力。",
+      "为页面偏好修改 Tabbar API 或共享样式没有必要。",
+      "继续依赖 split 默认值会使首页意图不清晰。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.wxml", "miniprogram/pages/index/index.wxss", "scripts/test-miniprogram-home.js", "docs/MINIPROGRAM_HOME.md", "feedback/records/pui-fb-0310-home-tabbar-normal-split-composition.json"],
+    "dependencies": ["pui-tabbar theme=normal", "pui-tabbar shape=normal", "pui-tabbar split"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js", "scripts/test-tabbar.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "node scripts/test-tabbar.js", "npm run feedback:generate", "npm run feedback:check", "微信开发者工具热重载"],
+    "browser": [],
+    "deviceRisks": ["iOS/Android 真机仍需确认实际 safe area、四项触摸热区、rpx 分隔线、外观切换和读屏。"]
+  },
+  "ai": {
+    "summary": "页面视觉偏好应优先选择 Tabbar 已有 theme、shape、split 变体；页面不得手写短横或条目分隔。",
+    "rules": [
+      "用户指定全宽短横和微分隔时，首页使用 theme=normal、shape=normal、split=true。",
+      "Tabbar 的活动态、分隔、等分和安全区均属于共享组件职责，页面只组合 Props。",
+      "改变页面组合不改变共享行为时，不要虚构 H5 首页同步。"
+    ],
+    "tags": ["tabbar", "normal", "split", "miniprogram-home", "visual-composition"]
+  }
+}

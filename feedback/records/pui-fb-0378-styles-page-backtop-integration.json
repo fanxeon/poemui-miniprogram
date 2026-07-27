@@ -1,17 +1,17 @@
 {
   "$schema": "../schema.json",
   "id": "PUI-FB-0378",
-  "title": "快速样式页面集成回到顶部功能",
+  "title": "快速样式页漏注册 BackTop 导致不可见且不可点击",
   "scope": "component",
-  "components": ["button", "scroll-area"],
-  "type": "capability-gap",
-  "severity": "low",
+  "components": ["back-top", "scroll-area", "style-utilities"],
+  "type": "bug",
+  "severity": "high",
   "status": "resolved",
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-26",
   "updatedAt": "2026-07-26",
-  "userGoal": "快速样式页面内容较多，需要一个快速回到顶部的入口。",
+  "userGoal": "快速样式页面的 BackTop 默认隐藏，滑过阈值后出现，并且点击后真实回到唯一 ScrollArea 顶部。",
   "environment": {
     "surfaces": ["miniprogram styles page"],
     "platforms": ["wechat-miniprogram"],
@@ -19,46 +19,57 @@
     "themes": ["light", "dark"]
   },
   "reproduction": [
-    "进入快速样式页面，滚动到底部。",
-    "旧版没有回到顶部的快捷方式，需要手动滑动。"
+    "进入快速样式页面并将内容向下滚动超过 200px。",
+    "页面 WXML 已声明 pui-back-top，但 index.json 没有注册该自定义组件。",
+    "继续滚动或点击标签位置，BackTop 都不会产生可见、可操作的组件实例。"
   ],
-  "expected": "页面右下角显示回到顶部按钮，点击后滚动回顶部。",
-  "actual": "页面缺少回到顶部的快捷入口。",
+  "expected": "初始 scrollTop=0 时 BackTop 隐藏；唯一 ScrollArea 滑过 200px 后显示；点击后 ScrollArea 定位至 styles-top-anchor，scrollTop 恢复为 0。",
+  "actual": "页面具备 scrollTop、scrollIntoView、scroll/to-top 处理和 BackTop WXML，但 usingComponents 漏掉 pui-back-top，微信运行时未创建组件，所以既不显示也不能点击。",
   "evidence": [
-    {"kind": "user-report", "ref": "2026-07-26 用户要求引入 BackTop 组件", "note": "用户明确要求在快速样式页面集成回到顶部功能"},
-    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "添加 PUI Button 作为回到顶部按钮和顶部锚点"},
-    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "添加 scrollIntoView 状态和 onBackToTop 方法"}
+    {"kind": "user-report", "ref": "2026-07-26 当前任务对话", "note": "用户确认快速样式 BackTop 不显示、滑动后不出现且无法点击。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.json", "note": "修复前 usingComponents 缺少 pui-back-top；修复后注册 npm BackTop。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "ScrollArea 发布 scroll，BackTop 消费 scrollTop 并通过 to-top 请求页面回顶。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "onScrollAreaScroll 回写真正坐标，onBackToTop 定位唯一 ScrollArea 的顶部锚点。"},
+    {"kind": "file", "ref": "back-top/back-top.wxss", "note": "fixed 根为可选层级 Token 提供 1000 fallback，避免安装端未声明变量时丢失层级与点击命中。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "锁定组件注册、事件绑定、240px 阈值后的回写和顶部锚点定位。"}
   ],
-  "rootCause": "快速样式页面内容较多，缺少快速导航回顶部的能力。",
+  "rootCause": "页面实现 BackTop 交互链时只修改了 WXML/JS，漏在页面 JSON 的 usingComponents 注册 pui-back-top；此前专项测试也没有把 WXML 使用的 BackTop 加入必需组件清单。BackTop fixed 根还引用了安装端未必声明且没有 fallback 的 --pui-z-index-fixed，注册后仍存在被页面内容覆盖的风险。",
   "decision": {
-    "outcome": "使用 PUI Button + scrollIntoView 契约，在 scroll-area 内容顶部添加锚点元素，点击按钮时设置 scrollIntoView 滚动到锚点。",
-    "rationale": "scroll-area 组件不允许向外抛出滚动事件，无法获取 scrollTop 来控制 BackTop 显隐。改用 PUI Button 始终显示在右下角，点击时通过 scrollIntoView 滚动到顶部。",
+    "outcome": "注册真实 pui-back-top，使用 ScrollArea 已公开的 scroll 事件驱动 scrollTop 与 200px 显隐阈值；点击 to-top 后由页面通过 scrollIntoView 定位同一 ScrollArea 的 styles-top-anchor。BackTop fixed 层级增加 1000 fallback，确保普通页面内可见可点且仍低于业务浮层。",
+    "rationale": "BackTop 组件已具备阈值显隐和 PUI FAB 交互；消费者只需提供真实局部滚动坐标并处理局部回顶，无需复制普通 Button 或新增滚动上下文。",
     "alternativesRejected": [
-      "修改 scroll-area 组件添加 triggerEvent 会违反组件设计约束。",
-      "使用页面级滚动会失去 scroll-area 的渐变遮罩效果。"
+      "常驻普通 Button 不符合滑动后出现的 BackTop 语义，也会复制 FAB 的显隐和可访问性合同。",
+      "只调用 wx.pageScrollTo 不会滚动页面内部的 ScrollArea。",
+      "新增第二个滚动容器会破坏 Tabs、粘性预览和渐变遮罩的唯一滚动上下文。"
     ]
   },
   "impact": {
     "files": [
       "miniprogram/pages/styles/index.json",
       "miniprogram/pages/styles/index.js",
-      "miniprogram/pages/styles/index.wxml"
+      "miniprogram/pages/styles/index.wxml",
+      "back-top/back-top.wxss",
+      "docs/components/BACKTOP.md",
+      "scripts/test-miniprogram-style-utilities-page.js",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
     ],
-    "dependencies": ["pui-button", "pui-scroll-area"]
+    "dependencies": ["pui-back-top", "pui-scroll-area", "pui-fab"]
   },
   "verification": {
-    "tests": ["scripts/test-miniprogram-style-utilities-page.js"],
-    "commands": ["npm run check", "npm run pack:check"],
-    "browser": ["390px 下验证回到顶部按钮显示在正确位置，点击后滚动回顶部"],
-    "deviceRisks": ["真机仍需复核 scrollIntoView 的平滑滚动效果"]
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js", "scripts/test-back-top.js"],
+    "commands": ["node scripts/test-miniprogram-style-utilities-page.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 CLI build-npm"],
+    "browser": ["微信开发者工具 iPhone 12/13 Pro 模拟器：顶部无 BackTop；滚动超过 200px 后出现可访问名称“回到顶部”的按钮；点击后回到首项 pui-absolute，按钮再次隐藏。"],
+    "deviceRisks": ["iOS/Android 真机仍需复核 scroll 事件频率、fixed FAB 与底部 Tabbar 的距离、触摸命中和安全区；本轮只完成微信模拟器交互验收。"]
   },
   "ai": {
-    "summary": "快速样式页面使用 PUI Button 实现回到顶部功能，通过 scrollIntoView 契约滚动到顶部锚点。",
+    "summary": "页面使用 pui-back-top 前必须在 usingComponents 注册，并以唯一 ScrollArea 的真实 scrollTop 驱动显隐与局部回顶。",
     "rules": [
-      "使用 scroll-area 的 scrollIntoView 属性滚动到顶部锚点，不使用 wx.pageScrollTo",
-      "使用 PUI Button 而不是 BackTop 组件，因为 scroll-area 不允许向外抛出滚动事件",
-      "按钮使用绝对定位固定在滚动区域右下角"
+      "WXML 新增 PUI 自定义组件时，页面 JSON 和专项必需组件清单必须同步注册。",
+      "BackTop 初始隐藏，只有真实 scrollTop 达到 visibilityHeight 后显示。",
+      "局部 ScrollArea 回顶由消费者响应 to-top 并写入 scrollIntoView；不能仅调用 wx.pageScrollTo。",
+      "不得用常驻普通 Button 替代 BackTop 的 FAB、阈值显隐和可访问性合同。"
     ],
-    "tags": ["button", "scroll-area", "styles-page", "navigation", "miniprogram"]
+    "tags": ["back-top", "scroll-area", "styles-page", "registration", "miniprogram"]
   }
 }

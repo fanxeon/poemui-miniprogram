@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0102",
+  "title": "Picker H5 退化为原生 select 且无法镜像滚轮交互",
+  "scope": "component",
+  "components": ["picker", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "官网 Picker 必须对应真实 picker-view 能力并能实际点击、键盘、滚轮和拖动，不能用原生 select 或提示文字代替。",
+  "environment": {
+    "surfaces": ["h5-preview", "props-panel", "code-copy"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开旧 Picker H5 路由，预览使用原生 select，只能修改单个值。",
+    "尝试二维 columns、children 级联、草稿取消、指针拖动和键盘方向键，旧预览均无对应交互。",
+    "检查原生控件边界清单，旧 Picker select 被当作允许例外而掩盖跨端不一致。"
+  ],
+  "expected": "H5 使用与 WXML 同源的滚轮列模型，支持点击、Arrow/Home/End、wheel 和 pointer drag；pick 只改草稿，confirm 才提交。",
+  "actual": "原生 select 只能表达单列立即变更，无法证明多列、级联、草稿、事件顺序或严格值。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件由 agent 完成证据闭环后自主连续验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增 pickerH5Model/Snapshot/Wheel/Select/Commit 与真实事件处理，删除旧 picker-select 分支。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "新增滚轮轨道、选中指示、Popup/内联和四态样式。"},
+    {"kind": "test", "ref": "scripts/test-preview-native-control-boundaries.js", "note": "Picker 不再把页面原生 select 列为允许边界。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/picker", "note": "真实拖动得到 source=drag，ArrowDown 得到 source=keyboard；点击级联父项后子列更新。"}
+  ],
+  "rootCause": "H5 演示长期独立维护为浏览器原生 select，没有共享 Picker 的列归一化、草稿与提交模型。",
+  "decision": {
+    "outcome": "删除原生 select 镜像，重建可交互 H5 滚轮；所有运行态均复用 columns/keys/value/defaultValue 语义。",
+    "rationale": "只有真实滚轮交互才能验证与 picker-view 一致的列路径、事件来源、草稿回滚和边界值。",
+    "alternativesRejected": [
+      "保留 select 作为简化 H5 会掩盖多列和级联能力。",
+      "只显示静态滚轮截图无法验证拖动、键盘和父级回写。",
+      "滚动时直接更新 committed value 会破坏 confirm/cancel 合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-preview-native-control-boundaries.js", "scripts/test-picker.js", "docs/H5_PREVIEW_COMPATIBILITY.md"],
+    "dependencies": ["buttonSample", "iconComponent", "loadingComponent", "emptySample"]
+  },
+  "verification": {
+    "tests": ["scripts/test-picker.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node --check preview/app.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "真实指针拖动、点击和键盘方向键均改变草稿并记录准确 source。",
+      "确认顺序为 confirm → change → visible-change → close，取消丢弃草稿且不触发 change。",
+      "error 优先于 loading；Retry 保留 error 并明确等待父级真实加载。"
+    ],
+    "deviceRisks": [
+      "H5 pointer/wheel 与微信 picker-view 原生惯性曲线不同，官网只声明能力和事件镜像，不声明像素级物理一致。"
+    ]
+  },
+  "ai": {
+    "summary": "Picker H5 必须是可操作滚轮，不得退化为 select 或静态占位。",
+    "rules": [
+      "Picker H5 必须覆盖点击、键盘、wheel 和 drag，并标记真实 source。",
+      "滚轮只更新 draft 并触发 pick；confirm 后才写回 value。",
+      "原生 select 不得重新加入 Picker 的 preview control allowlist。"
+    ],
+    "tags": ["picker", "h5", "wheel", "drag", "keyboard", "preview-parity"]
+  }
+}

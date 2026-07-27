@@ -1,0 +1,25 @@
+<view class="{{rootClass}} {{customClass}}" style="{{rootStyle}}{{customStyle}}">
+  <view
+    wx:if="{{mounted}}"
+    class="pui-skeleton__placeholder {{active ? 'pui-skeleton__placeholder--active' : ''}}"
+    role="status"
+    aria-live="polite"
+    aria-label="{{semanticLabel}}"
+    aria-hidden="{{!active}}"
+  >
+    <view class="pui-skeleton__rows">
+      <view wx:for="{{rows}}" wx:key="key" class="pui-skeleton__row">
+        <view
+          wx:for="{{item.items}}"
+          wx:for-item="part"
+          wx:key="key"
+          class="pui-skeleton__part pui-skeleton__part--{{part.type}}"
+          style="{{part.style}}"
+        ></view>
+      </view>
+    </view>
+  </view>
+  <view class="pui-skeleton__content {{contentActive ? 'pui-skeleton__content--active' : ''}}" aria-hidden="{{!contentActive}}">
+    <slot></slot>
+  </view>
+</view>

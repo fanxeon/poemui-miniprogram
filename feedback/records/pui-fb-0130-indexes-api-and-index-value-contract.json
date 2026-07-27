@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0130",
+  "title": "Indexes 公开合同混入重复值、页面框架和命令式定位能力",
+  "scope": "component",
+  "components": ["indexes", "cell", "badge", "button", "loading", "empty", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Indexes 应参考成熟小程序索引组件，只承担长分组内容、侧栏定位、滚动联动和条目请求；基础调用克制，分组 index 保留严格原始值，页面搜索和框架由消费者组合。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Indexes 同时公开 value/defaultValue、value/current 别名、索引显隐和分组标题开关、Header/Footer Slot、8 类重复事件及 4 个命令式方法。",
+    "旧 index-click/scroll-index/input/change/scroll/click/select 把侧栏请求、滚动活动值和条目点击混为多套语义，父级难以确定唯一回写路径。",
+    "旧值归一化允许数字 0 与字符串 \"0\" 发生碰撞，并可能把 Boolean、对象、空白字符串转换成伪分组。",
+    "TDesign MiniProgram 1.15.3 Indexes/IndexesAnchor 以 current/defaultCurrent、indexList、showFullIndex、sticky/stickyOffset 与 select/change 为主干。"
+  ],
+  "expected": "Indexes 只公开跨微信与 H5 可真实一致的 20 Props、4 Events、0 Slots、0 Methods；严格区分数字 0 与字符串 \"0\"；基础 WXML 只保留 items/current/aria-label 且零 bind。",
+  "actual": "旧公共面把索引集合、页面框架、重复事件、命令式控制和私有动效揉在一起，原始 index 身份、受控所有权与事件顺序都不稳定。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API、按用法分区、基础示例不展示全部 bind，并授权完整证据后自主验收。"},
+    {"kind": "file", "ref": "indexes/indexes.js", "note": "最终 20 Props、严格 String/Number index、受控与非受控连续性、select/change/item-click/retry 四事件和固定 180/1ms。"},
+    {"kind": "file", "ref": "indexes/indexes.wxml", "note": "正文组合 PUI Cell/Badge，侧栏组合 PUI Button，状态组合 PUI Loading/Empty；无 Header/Footer Slot。"},
+    {"kind": "file", "ref": "docs/components/INDEXES.md", "note": "记录 TDesign 1.15.3 的保留、拒绝、严格值、事件顺序、消费者职责与修改闭环。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "VM 与静态合同覆盖 20/4/0/0、严格边界值、受控等待、状态优先级、PUI 组合和三层产物。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/indexes", "note": "390px 真实点击、滚动和连续拖动验证 select→change、source=scroll/touch、父级回写、数字 0 与字符串 0、readonly/disabled 和 retry。"}
+  ],
+  "rootCause": "旧实现按演示覆盖面持续扩张顶层能力，没有先限定索引组件与页面框架的职责，也没有分离侧栏选择、活动组变化、条目请求和父级受控所有权。",
+  "decision": {
+    "outcome": "收敛为 items/current/defaultCurrent/indexList/showFullIndex/height/sticky/stickyOffset/indexPosition/clickable/readonly/disabled/loading/loadingText/error/errorText/retryText/emptyText/ariaLabel/reduceMotion；只保留 select/change/item-click/retry；0 Slots；0 Methods。",
+    "rationale": "索引集合需要稳定的分组数据、当前活动值、侧栏定位、内容状态和值所有权；页面 Header、搜索、统计、Footer 和命令式流程应由消费者组合。",
+    "alternativesRejected": [
+      "保留 value/defaultValue 别名会制造两套受控真相源。",
+      "保留 index-click/scroll-index/input/scroll/click 会重复表达 select、change 和 item-click。",
+      "保留 Header/Footer Slot 与搜索开关会让组件承担页面框架。",
+      "保留 scrollTo/reset/measureGroups 和公开 duration/easing 会扩大跨端不可验证的命令式与调参面。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.js", "indexes/indexes.json", "indexes/indexes.wxml", "indexes/indexes.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/INDEXES.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-indexes.js", "scripts/test-core-state-composition.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0130-indexes-api-and-index-value-contract.json"],
+    "dependencies": ["pui-cell", "pui-badge", "pui-button", "pui-loading", "pui-empty", "TDesign MiniProgram 1.15.3 Indexes/IndexesAnchor"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js", "scripts/test-component-semantic-contracts.js", "scripts/test-core-state-composition.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node scripts/test-indexes.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "侧栏点击 C 固定发布 select→change 并把受控 current 从 ★ 回写为 C；重复当前只发 select，手动滚到底只发 source=scroll 的 change。",
+      "连续 Pointer 拖动从 ★ 到 C 发布 source=touch；边界实例从数字 0 切到字符串 0 后 current 为字符串且事件显示 0→\"0\"。",
+      "readonly 把条目降为 listitem 但保留侧栏定位；disabled 后 5 个侧栏 Button 全部禁用且条目无交互根。",
+      "error Retry 保持 is-error 并只记录等待父级重新请求；loading/empty 使用共享 PUI 状态层。"
+    ],
+    "deviceRisks": [
+      "微信 scroll-view 惯性、scroll-into-view、SelectorQuery、touchmove 连续命中、sticky、rpx 排版、样式隔离、系统低动效和读屏需合法 AppID 真机复核。",
+      "微信 build-npm 已被项目 touristappid 不存在以内部 code 10 阻断，必须保留 pending-cli，不得手工生成产物冒充成功。"
+    ]
+  },
+  "ai": {
+    "summary": "Indexes 只负责分组集合、侧栏定位、滚动活动值和条目请求；页面框架归消费者，分组 index 与父级所有权必须严格保留。",
+    "rules": [
+      "Indexes 不得恢复 value/defaultValue 别名、Header/Footer Slot、scrollTo/reset/measureGroups 或页面搜索统计。",
+      "current/defaultCurrent/indexList 必须严格区分数字 0 与字符串 0；Boolean、对象、空字符串和空白字符串不得成为分组 index。",
+      "侧栏操作固定 select→change，重复当前只发 select，手动滚动只发 change，条目只发 item-click。",
+      "error 优先 loading，retry 只通知父级；不得伪造加载成功或注入假分组。"
+    ],
+    "tags": ["indexes", "tdesign", "api-contract", "controlled", "strict-value"]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0255",
+  "title": "Popup 移除拖拽手柄保持紧凑 Header",
+  "scope": "component",
+  "components": ["popup", "preview-site"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Popup 保持紧凑的 Header 排版，不展示拖拽手柄，也不让基础浮层承担拖拽关闭语义。",
+  "environment": {
+    "surfaces": ["Popup 小程序组件", "Popup H5 预览", "Popup API 文档"],
+    "platforms": ["browser", "wechat-miniprogram-source"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Popup 底部预览，Header 中间会渲染拖拽手柄。",
+    "观察标题、描述与手柄的垂直关系，Header 视觉密度不足。"
+  ],
+  "expected": "Popup 只保留 Header、Content、Footer；标题与描述紧凑排列，不渲染拖拽手柄，拖拽关闭使用 Sheet。",
+  "actual": "Popup 原生、H5、Props、文档和示例仍包含 showHandle/draggable 与 drag 事件语义。",
+  "evidence": [
+    {"kind": "user-report", "ref": "current conversation", "note": "用户明确要求 Popup 不再装拖手，认为布局排版不够紧凑。"},
+    {"kind": "file", "ref": "popup/popup.wxml", "note": "已移除拖拽手柄节点与 touch drag 绑定。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "已移除 Popup 拖拽 Props、演示开关与 Pointer Events 绑定。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项测试锁定 Popup 不暴露拖拽能力。"}
+  ],
+  "rootCause": "Popup 早期扩展了 Sheet 风格拖拽能力，导致基础浮层 Header 增加无必要的交互入口和布局负担。",
+  "decision": {
+    "outcome": "从 Popup 源码、生成物、预览、metadata、API、兼容说明、示例和测试中移除拖拽手柄与拖拽关闭能力；Sheet 继续承载完整拖拽语义。",
+    "rationale": "Popup 保持轻量基础浮层边界，避免与 Sheet 的拖拽、阈值和状态优先级重复。",
+    "alternativesRejected": [
+      "仅把 showHandle 默认改为 false：会保留不可见但可调用的半残 API。",
+      "保留隐藏拖拽入口：用户无法理解入口，且仍会改变组件交互边界。"
+    ]
+  },
+  "impact": {
+    "files": ["popup/popup.js", "popup/popup.wxml", "popup/popup.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/POPUP.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-popup.js"],
+    "dependencies": ["Popup visible-change", "Sheet drag contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["Popup 预览不再出现手柄或拖拽开关，五向打开、遮罩关闭和 Header 三列仍保持真实交互。"],
+    "deviceRisks": ["合法 AppID 真机仍需确认移除手柄后 Header Slot 投影、样式隔离和字体回流。"]
+  },
+  "ai": {
+    "summary": "Popup 是基础浮层，不承载拖拽手柄或拖拽关闭；需要拖拽面板时使用 Sheet。",
+    "rules": [
+      "不要给 Popup 增加 showHandle、draggable 或 drag 事件；这些能力属于 Sheet。",
+      "删除能力时必须同步移除源码、H5、metadata、API、兼容说明、示例、专项测试和生成物。"
+    ],
+    "tags": ["popup", "remove-drag", "header", "sheet", "design-boundary"]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0065",
+  "title": "Image H5 lazy、源码默认重置与真实资源状态未完整对齐",
+  "scope": "component",
+  "components": ["image", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Image 官网的每个 Props 都必须真实作用于预览，重置应回到安装端默认值，资源事件、外观和 390px 布局应能在网页中直接验收。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "浏览器切换 lazy=true 后，旧 H5 <img> 没有 loading=lazy，Props 和 WXML 改变但实际浏览器加载策略不变。",
+    "通用重置删除 state.props 后重新读取演示初值，使 Image 回到示例图片和尺寸而不是源码 src/width/height 空值；WXML 默认过滤也错误引用演示初值。",
+    "旧概览以单张诊断卡和 Image 自身 button 呈现，不能分区核对真实 load/error、裁切、形状、覆盖内容与宿主门禁。"
+  ],
+  "expected": "H5 的 lazy、尺寸、裁切、形状、状态和菜单策略都真实作用；重置回到源码 14 Props 默认值并生成 <pui-image />；概览分区展示真实资源生命周期和外层交互。",
+  "actual": "旧镜像存在面板值已变但浏览器行为未变、源码默认与演示初值混用，以及概览结构不足以验收的三类漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "imageNode 现为真实 img loading=lazy/eager、真实 load/error、固定 180ms/1ms、四段 showcase 和外层 Button；usage/reset 使用源码默认值。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Image Surface 消费共享 border/shadow/blur/radius Token，并为状态完成态提供明确 hidden 规则。"},
+    {"kind": "test", "ref": "scripts/test-image.js", "note": "专项覆盖 H5 native loading 属性、源码默认重置、资源状态、视觉 Token 和无原生 Image button 边界。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/image", "note": "lazy/webp/menu 后 WXML 同步且实际 img loading=lazy；reset 后 current=empty、无 img、代码为 <pui-image />，视觉偏好保持不变。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/image", "note": "390px inner=390、document/main=375/375、Device=349/349、showcase=282/282；API 单元格无裁切，dark+全部效果计算样式真实变化。"}
+  ],
+  "rootCause": "H5 helper、Props 演示初值、源码默认值和标准概览曾由不同路径维护，没有以真实浏览器属性、重置后 WXML 和计算样式做端到端合同。",
+  "decision": {
+    "outcome": "H5 img 根据 lazy 写入 native loading=lazy/eager；Image 与 Avatar/Badge 一样使用源码默认值过滤和重置；概览重建为基础用法、加载与失败、裁切模式、形状与覆盖内容；状态、Slot 和宿主均调用共享 PUI helper。",
+    "rationale": "演示可以用非默认资源帮助理解，但复制和重置必须读取安装端事实源；浏览器原生属性是验证 lazy 真正生效的最低证据。",
+    "alternativesRejected": [
+      "只在 WXML 代码中显示 lazy 会造成可见预览与调用代码不一致。",
+      "把演示图片当组件默认值会让 reset、API 默认值和源码三者持续漂移。",
+      "用状态切换按钮模拟 load/error 无法验证缓存资源、真实失败和事件时机。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "scripts/test-image.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/IMAGE.md"],
+    "dependencies": ["loadingComponent", "buttonSample", "tagSample", "iconComponent", "visualConfig", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-image.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-design-contracts.js"],
+    "commands": ["node --check preview/app.js", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "有效、失败、空、外部 loading/error 与释放重载均通过真实 Props 操作；缓存图片完成态为 loaded。",
+      "非法 calc(100%)/-1px 回退 324x198px，合法 240x120px 生效；top right/circle/Slot/文本 0/1ms 均即时回写。",
+      "元素选择模式展示 5 个内容字段和 9 个设置字段；API 14/2/1 全文无省略号。",
+      "边框关闭、阴影/毛玻璃/大圆角/渐变/深色开启后 Image 为透明边线、真实 shadow/blur，页面无横向溢出；结束后恢复标准浅色。"
+    ],
+    "deviceRisks": [
+      "H5 img loading/object-fit/px/contextmenu 与微信 lazy-load/mode/rpx/长按菜单只是语义镜像，真实解码与布局仍需合法 AppID 设备复核。",
+      "微信开发者工具 Service Port 关闭时无法更新 miniprogram_npm，发布产物门禁必须保留 pending-cli。"
+    ]
+  },
+  "ai": {
+    "summary": "Image Props 必须改变真实浏览器属性或计算样式；演示初值不能冒充源码默认值，资源结果只能来自真实 img 事件。",
+    "rules": [
+      "lazy 必须映射 H5 img loading=lazy/eager，不能只更新 WXML 文本。",
+      "Image reset 和默认 Prop 过滤必须读取 componentPropDefaults.image，重置代码应为最小 <pui-image />。",
+      "真实 load/error 同时覆盖缓存 complete/naturalWidth，禁止用按钮或计时器伪造资源结果。",
+      "390px 和外观验收必须读取 Image、PreviewDevice 与 API 单元格计算样式和 scrollWidth。"
+    ],
+    "tags": ["image", "preview", "lazy", "reset", "motion", "appearance", "390px"]
+  }
+}

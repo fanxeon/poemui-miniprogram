@@ -1,0 +1,87 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0047",
+  "title": "Button 属性页兼容说明仍展示已删除的主题与 dashed 变体",
+  "scope": "component",
+  "components": ["button", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Button 网页属性页、目录说明和架构文档必须与已经收敛的真实 API 完全一致，不能继续教用户使用已删除的主题或 dashed。",
+  "environment": {
+    "surfaces": ["h5-preview", "property-reference", "catalog-metadata", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Button 路由并进入属性页，读取 H5 兼容的视觉与动效说明。",
+    "页面实际显示五类主题和 base/outline/dashed/text，但真实 button.js 只接受 default/primary/danger 与 base/outline/text/ghost。",
+    "继续搜索目录 metadata 与架构文档，可发现相同旧合同仍会进入生成目录或指导组合组件。"
+  ],
+  "expected": "所有面向使用者的 Button 说明逐字列出当前三类主题和四种变体，并拒绝已删除的 dashed、旧主题与重复别名。",
+  "actual": "Button 本体、API 和演示已收敛，但属性页兼容说明、目录 metadata 与架构示例仍在传播旧合同。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户在 Button battle 报告后明确确认验收。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "真实属性页在修复前显示五类主题、base/outline/dashed/text，与当前 Props 面板和源码枚举矛盾。"
+    },
+    {
+      "kind": "file",
+      "ref": "button/button.js",
+      "note": "syncState 只接受 default/primary/danger 与 base/outline/text/ghost。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-button.js",
+      "note": "专项测试新增官网兼容文案、目录 metadata 与架构示例的正反向断言。"
+    }
+  ],
+  "rootCause": "Button API 收敛时只同步了组件源码、API 主文档和演示，旧的 H5 兼容描述与目录说明属于第二套手写文本，未被专项测试覆盖。",
+  "decision": {
+    "outcome": "官网属性页、目录 metadata、生成兼容表与架构示例统一改为 default/primary/danger 和 base/outline/text/ghost，并由 Button 专项测试锁定。",
+    "rationale": "兼容说明和目录同样会被用户与 AI 当成公开合同，任何旧枚举都可能生成实际回退到默认值的无效代码。",
+    "alternativesRejected": [
+      "只修属性页会让目录与架构文档继续传播 dashed。",
+      "保留旧文案并依赖组件静默回退会隐藏错误且无法解释实际视觉。",
+      "把历史旧合同重新加回组件会违背已经确认的 API 收敛原则。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "metadata/shadcn.js",
+      "preview/components-data.js",
+      "docs/SHADCN_COMPATIBILITY.md",
+      "docs/ARCHITECTURE.md",
+      "docs/components/BUTTON.md",
+      "scripts/test-button.js"
+    ],
+    "dependencies": ["catalog generator", "Button property compatibility renderer", "AI documentation"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js"],
+    "commands": ["node scripts/test-button.js", "npm run catalog:generate", "npm run site:build"],
+    "browser": ["刷新 Button 属性页后，视觉与动效说明完整显示三类主题、四种变体、四种尺寸和四种形状，不再出现 dashed。"],
+    "deviceRisks": ["此问题属于官网说明一致性；微信真机仍需分别验证 open-type 和平台事件，但不影响主题与变体枚举结论。"]
+  },
+  "ai": {
+    "summary": "Button 的全部使用者说明必须与真实三主题、四变体合同一致，任何旧枚举都会生成无效代码。",
+    "rules": [
+      "生成 Button 只能使用 default/primary/danger 与 base/outline/text/ghost。",
+      "修改 Button 枚举时必须同步属性兼容说明、目录 metadata、架构示例、API、合同和专项测试。",
+      "禁止依赖非法枚举静默回退，也不得在兼容说明中保留 dashed 或已删除主题。"
+    ],
+    "tags": ["button", "preview-parity", "documentation", "metadata", "variant", "tdesign"]
+  }
+}

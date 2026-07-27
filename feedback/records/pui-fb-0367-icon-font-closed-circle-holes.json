@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0367",
+  "title": "Icon Font 闭口圆形被错误填成实心",
+  "scope": "component",
+  "components": ["icon", "preview-site", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "PoemUI Roundline 中表达圆环、头像、轨道节点等闭口圆形的描边必须保持镂空，不能在转换为 Icon Font 后被填成实心。",
+  "environment": {
+    "surfaces": ["icon-font-generator", "h5-icon-library", "miniprogram-icon-page", "npm-package"],
+    "platforms": ["browser", "wechat-miniprogram-webview", "node", "npm"],
+    "viewports": ["20rpx", "32rpx", "56rpx", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 Icon Font 资源页查看 user、orbit、icon、circle 系列等含闭口圆形的图标。",
+    "源 SVG 仍是 fill=none 的圆线，但字体字形中的圆形中心被填实；user 头像头部和 orbit 圆环最容易观察。",
+    "审计全部 209 个源图标，旧轮廓算法在 194 个闭合描边中检测到 61 个同向内外轮廓，主要覆盖所有应镂空圆形。"
+  ],
+  "expected": "半径大于半描边宽度的闭口圆形在字体中必须拥有方向相反的外轮廓与内轮廓；省略号、Radio 中心点等几何上属于点的结构继续实心，不得产生针孔。",
+  "actual": "生成器以 Maker.js 默认 evenodd 路径导出描边轮廓，再交给使用非零填充的字体格式；内外轮廓同向时内腔被填满。Maker.js 对 360 度 Arc 的 nonzero 导出也未正确反转嵌套内环。",
+  "evidence": [
+    {"kind": "user-report", "ref": "codex-clipboard-2af4a558-b8f3-48e5-bd8a-f03c11512aee.png", "note": "用户截图指出圆形被画成实心，并明确要求所有闭口圆形保持镂空。"},
+    {"kind": "file", "ref": "scripts/generate-icons.js", "note": "描边展开现在按 nonzero 规则导出，并把 Maker.js 360 度 Arc 归一化为 Circle 后再计算嵌套绕向。"},
+    {"kind": "test", "ref": "scripts/test-icon-font-outlines.js", "note": "全量扫描 209 个生成源，锁定 59 个应镂空圆形具有相反绕向，同时保留 24 个省略号、Radio 内点等语义实心点。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/icons", "note": "390x844 实际字体渲染中 user 头部、user-add 头部、orbit 三个圆与 icon 圆形均恢复镂空；radio 外环镂空而中心语义点保持实心。"},
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161 / AppID wx23aa017375535746", "note": "复用现有主 WebView 热重载会话，在真实 Icon 页面筛选 orbit 与 user；圆环、头像头部均显示为镂空，209 个图标目录与三列网格保持正常。"}
+  ],
+  "rootCause": "SVG 描边使用 evenodd 也能显示孔洞，但 TrueType/WOFF2 glyph 依赖轮廓方向表达非零填充。旧生成器输出 Maker.js 默认 evenodd 轮廓并用 SVGPathCommander 整体 reverse 尝试补偿；该操作无法可靠处理由 360 度 Arc 表示的圆形内环，导致内外轮廓同向。",
+  "decision": {
+    "outcome": "字体生成统一使用 Maker.js nonzero 轮廓导出；导出前把完整 360 度 Arc 转为 Circle，使包含关系能够为内环分配相反绕向。仅当 circle 半径大于半描边宽度时保留内腔；不满足该几何条件的省略号、Radio 内点、Popover 锚点等继续作为语义实心点。",
+    "rationale": "字体格式本身没有 SVG evenodd fill-rule，必须在唯一生成链路中正确编码轮廓方向。区分圆环与语义点既修复用户看到的实心化，也避免给本应实心的微小点制造抗锯齿针孔。",
+    "alternativesRejected": [
+      "逐个重画 user、orbit 等图标只能遮住局部结果，下一次生成仍会复发。",
+      "在字体运行时叠加白色小圆会破坏 currentColor、深浅色和透明背景。",
+      "把所有小圆都强制挖孔会让省略号、Radio 中心点和锚点出现不可控针孔。",
+      "恢复 SVG 运行时会违反 H5 与小程序统一 Icon Font 的既定合同。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/generate-icons.js", "scripts/test-icon-font-outlines.js", "scripts/test-icon.js", "icon/icon-font.wxss", "preview/icon-font.css", "assets/icons-src/manifest.json", "docs/components/ICON.md", "docs/ICONS.md"],
+    "dependencies": ["makerjs", "svg-path-commander", "svg2ttf", "wawoff2"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon-font-outlines.js", "scripts/test-icon.js"],
+    "commands": ["npm run icons:generate", "node scripts/test-icon-font-outlines.js", "node scripts/test-icon.js", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": [
+      "H5 390x844 搜索 orbit：中心 r=3 与两个 r=2 圆均为镂空圆环。",
+      "H5 390x844 搜索 user：user 与 user-add 的头部均为镂空圆环。",
+      "H5 390x844 搜索 radio：外环保持镂空，中心 r=1 语义点继续实心。",
+      "微信开发者工具现有主 WebView 热重载会话：Icon 页面筛选 orbit 与 user 后，闭口圆形均为镂空；目录仍为 209 个图标、17 个分类，三列布局无回归。"
+    ],
+    "deviceRisks": ["iOS/Android 真机仍需确认 20rpx 下最小圆环内腔、字体抗锯齿、基线和首次 WOFF2 解析。"]
+  },
+  "ai": {
+    "summary": "Icon Font 的闭合描边必须以非零轮廓绕向表达孔洞；圆环保持镂空，几何上属于点的微小圆继续实心。",
+    "rules": [
+      "不得用运行时白色遮盖或逐图标补丁修复字体孔洞，必须修 SVG 描边到字体轮廓的唯一生成链路。",
+      "完整 360 度 Arc 在 nonzero 导出前必须归一化为 Circle，确保内外轮廓方向相反。",
+      "circle 半径大于半描边宽度时必须保留内腔；不大于该边界的省略号、Radio 内点等语义点不得制造针孔。",
+      "修改轮廓工具或字体生成算法后必须运行全量 topology 测试，并在 20rpx、32rpx、56rpx 与 390px 真实字体渲染中复核。"
+    ],
+    "tags": ["icon", "icon-font", "roundline", "circle", "hollow", "winding", "nonzero", "woff2"]
+  }
+}

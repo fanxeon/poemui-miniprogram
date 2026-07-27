@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0384",
+  "title": "快速样式页的 Tabs、预览与目录应有明确高度预算",
+  "scope": "component",
+  "components": ["style-utilities", "tabs", "scroll-area", "back-top", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式页不再使用 sticky；Tabs 与预览应固定在工作区，目录只在下方唯一滚动区滚动；预览不得过高，目录最后一行必须完整可见。",
+  "environment": {
+    "surfaces": ["miniprogram styles page"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/styles/index，观察首屏预览与当前分类的两列样式目录。",
+    "旧实现同时使用 Tabs sticky Header 与预览 sticky，二者依赖同一 ScrollArea 的 sticky 时序和固定 top 偏移。",
+    "在预览高度、分类内容或微信 WebView sticky 行为变化时，目录首行容易与预览重叠或出现不稳定定位；224rpx 的预览上限也会挤占 390px 首屏的可滚动目录。"
+  ],
+  "expected": "Tabs Header、预览和目录滚动区在 Navbar/Tabbar 之间具有明确的层级：Tabs 与预览 absolute，目录只有一个受控 ScrollArea，从 120rpx 单一当前效果后的 8rpx 关联间距开始；预览超出预算时裁切，目录末行可滚到渐变遮罩之外。",
+  "actual": "页面曾使用 sticky=true 和 preview sticky，预览的 top 仅假定 Tabs Header 高度，无法以真实预览边界约束目录可滚动区域；改为 absolute 后，224rpx 预览上限在 390px 下仍显著压缩目录首屏。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 当前任务对话", "note": "用户明确要求快速样式页不用 sticky，Tabs 与预览改为 absolute。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "工作区内 Tabs 设为 sticky=false；预览层和唯一目录 ScrollArea 分别使用 absolute 结构。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "SelectorQuery 只读取 Navbar、Tabbar 与 workspace；页面以 120rpx 预览、8rpx 关联间距和 520rpx 目录最小视口直接计算稳定几何。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "锁定无 sticky、唯一 ScrollArea、absolute 层结构、120rpx/8rpx/520rpx 预算以及不查询 preview DOM。"}
+  ],
+  "rootCause": "此前为保持 Tabs 与预览可见而叠加两个 sticky 层；它们与微信 ScrollView 的布局时序耦合。absolute 收口后又让目录位置依赖 preview DOM 测量，并沿用较大的旧预览预算；当 utility 改变预览根几何时，测量与布局会互相污染。",
+  "decision": {
+    "outcome": "保留既有 Tabs、ScrollArea 与 BackTop API，但把页面中间区改为 absolute workspace：Tabs 根填充工作区，页面关闭 Tabs content swipe；Header 下方固定 120rpx 单一当前效果预览，目录以 8rpx 关联间距紧随其后，且至少保留 520rpx 可视高度。页面不再查询 preview DOM，utility 只作用于内部语义目标；唯一目录 ScrollArea 继续为末行预留渐变遮罩与底部 inset。",
+    "rationale": "页面级几何责任留在页面，既去除 sticky 的平台时序依赖，也优先为真实目录保留可连续滚动的首屏高度，同时保持真正的横向 Tabs、预览选择和受控平滑回顶。",
+    "alternativesRejected": [
+      "继续堆叠 Tabs sticky 和 preview sticky：无法消除两个 sticky 参与同一 ScrollView 时的边界耦合。",
+      "为目录再增加一个外层滚动容器：会破坏 BackTop 的唯一 scrollTop 真相源并产生嵌套滚动。",
+      "继续测量 preview DOM：尺寸、定位、隐藏类会改变被测节点本身，导致目录抖动或大片空白。",
+      "让预览按内容自然增高：530 类中的 viewport、aspect、fixed 与 overflow 语义会破坏页面预算。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/styles/index.js", "miniprogram/pages/styles/index.wxml", "miniprogram/pages/styles/index.wxss", "scripts/test-miniprogram-style-utilities-page.js", "docs/MINIPROGRAM_HOME.md"],
+    "dependencies": ["pui-tabs", "pui-scroll-area", "pui-back-top", "微信 SelectorQuery"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具普通编译"],
+    "browser": ["代码与专项测试已验证 120rpx/8rpx/520rpx 预算、无 preview DOM 查询与目标级裁切；微信开发者工具 390×844 的热重载、长目录触摸惯性与 BackTop 回顶仍待本轮手动复验。"],
+    "deviceRisks": ["iOS/Android 真机仍需验证横向 Tabs 惯性、唯一 ScrollArea 惯性、BackTop 动画和安全区。"]
+  },
+  "ai": {
+    "summary": "快速样式页固定层属于页面工作区，不应以 Tabs 或预览组件的 sticky API 模拟。",
+    "rules": [
+      "快速样式页的 Tabs 必须 sticky=false；Tabs、预览和目录分别使用清晰的 absolute 层。",
+      "含有唯一纵向 ScrollArea 的快速样式 Tabs 必须关闭 content swipe；分类切换只通过 Header 点击，不能和目录纵向手势竞争。",
+      "只保留一个目录 ScrollArea 和一个 scrollTop 真相源，BackTop 不得切到页面滚动或嵌套容器。",
+      "目录 top/height 必须由稳定的工作区预算计算，消费 120rpx 单一当前效果、8rpx 关联间距和 520rpx 最小目录视口；不得查询会被 utility 改写的 preview DOM。",
+      "预览窗口必须裁切预算外内容；带渐变遮罩的目录 Slot 必须在内容末尾预留遮罩高度和底部 inset，不能让最后一行停在遮罩下。",
+      "小程序与 H5 必须共享生成的 previewKind/previewTarget/previewSafety 语义，不得各自手写类别判断。"
+    ],
+    "tags": ["style-utilities", "absolute-layout", "tabs", "scroll-area", "back-top", "miniprogram"]
+  }
+}

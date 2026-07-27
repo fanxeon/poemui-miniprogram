@@ -1,0 +1,90 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0269",
+  "title": "Indexes 默认侧栏未按页面 fixed 浮动",
+  "scope": "component",
+  "components": ["indexes", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Indexes 默认索引入口应固定浮动在页面视口中央，内容滚动时侧栏保持可见且不随列表内容流移动。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-device", "native-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开第 18 号 Indexes 组件并滚动正文。",
+    "旧原生 WXSS 使用 position:absolute，侧栏只相对 Indexes 根定位，不是页面 fixed 浮层。",
+    "对照 TDesign 1.15.3 固定包，Indexes sidebar 使用 position:fixed、right、top:50% 和 translateY(-50%)。",
+    "用户明确要求默认 fixed 浮动在页面上。"
+  ],
+  "expected": "真实小程序侧栏默认 fixed 垂直居中于页面视口；H5 预览在 PreviewDevice 内模拟同一视觉语义，不能让页面级 fixed 越出设备边界。",
+  "actual": "原生侧栏仅 absolute 在组件卡片内部；H5 也按组件根绝对定位，未记录真实页面 fixed 语义。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确指出默认侧栏应 fixed 浮动在页面上。"
+    },
+    {
+      "kind": "file",
+      "ref": "indexes/indexes.wxss",
+      "note": "修复前 pui-indexes__bar 为 position:absolute、top/bottom 内部边界。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/navigation/indexes",
+      "note": "H5 预览侧栏改为 PreviewDevice 内垂直居中的固定视觉层，未使用页面级 fixed 越出设备。"
+    },
+    {
+      "kind": "file",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/indexes",
+      "note": "固定包 sidebar 规则明确 position:fixed、right、top:50%、translateY(-50%)。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-indexes.js",
+      "note": "专项断言锁定原生 fixed、top 50% 与 H5 PreviewDevice 边界模拟。"
+    }
+  ],
+  "rootCause": "PoemUI 初版把 TDesign 页面级 sidebar 改成了组件内部 absolute，以适配嵌入式固定高度；但没有同时保留页面 fixed 的默认语义。",
+  "decision": {
+    "outcome": "原生 pui-indexes__bar 改为 fixed、top:50%、左右边界和垂直居中；H5 保持 absolute 但改为 PreviewDevice 内 top:50% 的边界受限 fixed 视觉镜像。",
+    "rationale": "小程序必须复现页面级可持续可见的 Indexes 入口，官网则不能让 fixed 逃出手机预览设备；两端在各自运行时保留同一产品语义。",
+    "alternativesRejected": [
+      "继续 absolute 会让侧栏随页面滚动离开，直接违背用户目标。",
+      "H5 直接使用浏览器 position:fixed 会跑出 PreviewDevice 并遮挡官网其他内容。",
+      "新增 fixed Prop 会把本应固定的默认产品语义变成不必要的 API 分叉。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.wxss", "preview/styles.css", "scripts/test-indexes.js", "docs/components/INDEXES.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["TDesign Indexes sidebar baseline", "PreviewDevice clipping", "Indexes touch bar measurement"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["2026-07-23 node scripts/test-indexes.js：通过", "2026-07-23 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过；npm pack 522 files / 297.8 kB / shasum 5707e44e3a58aca87b4bb5fefe5a0861b1e76cf4", "2026-07-23 微信 CLI build-npm：IDE server 已启动，但 touristappid 不存在（code 10）；未生成或伪造 miniprogram_npm"],
+    "browser": [
+      "桌面浏览器真实点击定位到 C 后，活动项为 C，侧栏中心与 PreviewDevice 中心差值为 0px，正文滚动不改变其中心；H5 侧栏 position:absolute 仅用于设备边界内的 fixed 视觉镜像。",
+      "390px（390×844）真实浏览器验证：document clientWidth/scrollWidth 均为 375px，侧栏位于 PreviewDevice 边界内，中心差值为 0px。"
+    ],
+    "deviceRisks": [
+      "微信真机仍需验证页面 fixed 与页面滚动、系统安全区、横竖屏、touchmove 和样式隔离的组合行为。"
+    ]
+  },
+  "ai": {
+    "summary": "TDesign Indexes 的 sidebar 默认是页面 fixed；嵌入式 H5 预览只能在 PreviewDevice 内做同语义边界模拟。",
+    "rules": [
+      "对照 TDesign 时要分别确认 sidebar 和 anchor 的定位语义，不能把页面 fixed 简化成组件 absolute。",
+      "小程序 fixed 组件必须检查页面滚动、安全区和 touch 命中，H5 fixed 预览必须检查设备裁切。",
+      "固定定位改变属于 API/预览合同变化，必须同步原生 WXSS、H5 CSS、专项测试、Ledger 和产物。"
+    ],
+    "tags": ["indexes", "fixed", "sidebar", "tdesign", "preview-parity"]
+  }
+}

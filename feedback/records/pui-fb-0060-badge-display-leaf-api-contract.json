@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0060",
+  "title": "Badge 纯展示职责被 27 Props 和 5 Events 过度扩张",
+  "scope": "component",
+  "components": ["badge", "grid", "radio", "navigation-menu", "documentation"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Badge 应像成熟小程序组件库一样快速表达数量和红点，不把宿主点击、显隐状态机、重复别名和视觉总开关暴露成徽标自身 API。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Badge properties：公开 count/content/value/text 四套内容入口、visible、四角 position、standalone/useContentSlot、clickable/disabled、三类颜色、ariaLive 和私有动效参数，共 27 Props。",
+    "审计旧事件和方法：Badge 自身发布 click/show/hide/after-show/after-hide 并维护计时器，宿主 Button、Cell、Tabs、Tabbar 的交互职责被重复提升到展示叶子。",
+    "对照 tdesign-miniprogram@1.15.3 安装包 badge/props.js、type.d.ts 与 WXML：其核心为 9 Props、默认/count Slot 和 0 Events，点击由宿主承担。"
+  ],
+  "expected": "Badge 只保留数量、红点、零值、上限、语义外观、固定右上角偏移和辅助名称；复杂宿主与徽标正文通过两个 Slot 组合，交互回到真实宿主。",
+  "actual": "旧合同同时承担内容别名解析、受控显隐、点击门禁、定位系统、动画生命周期和多颜色入口，调用者难以判断 Badge 与宿主的职责边界。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项对照 TDesign，精简不必要 API，并授权完整 battle 后自主连续验收。"},
+    {"kind": "file", "ref": "badge/badge.js", "note": "最终固定 12 Props、无 triggerEvent、无计时器，只规整 count、外观、安全颜色和偏移。"},
+    {"kind": "file", "ref": "badge/badge.wxml", "note": "默认 Slot 承接宿主，count=null 显式选择 count Slot，状态正文使用 polite status。"},
+    {"kind": "test", "ref": "scripts/test-badge.js", "note": "专项合同锁定 12 Props、0 Events、0 业务 Methods、0/false/空/null、上限、dot、安全值和内部消费者迁移。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/badge", "note": "真实 Props 操作验证 false 与空字符串隐藏、null 显示 Pro count Slot、8/maxCount=5 显示 5+、dot 无正文且保持圆形。"}
+  ],
+  "rootCause": "旧设计以覆盖全部可配置细节和演示诊断为目标，没有把 Badge 定义为宿主旁的纯展示叶子，也没有采用组合优先的 API 取舍。",
+  "decision": {
+    "outcome": "公开合同收敛为 count/content/dot/maxCount/showZero/theme/variant/shape/size/color/offset/ariaLabel 12 Props、default/count 2 Slots、0 Events、0 业务 Methods；删除 15 个 Props 和全部生命周期事件。",
+    "rationale": "数量与红点是 Badge 唯一稳定用户任务；宿主内容、交互和业务状态由 PoemUI 组合完成，可减少重复真相源并保持跨端可预测。",
+    "alternativesRejected": [
+      "机械照搬 TDesign 9 Props 会删除 PoemUI 已有语义 theme/variant 和明确辅助名称。",
+      "保留 clickable/disabled 会让同一点击同时存在 Badge 与宿主两套门禁。",
+      "保留 visible 和 show/hide 生命周期会把简单条件渲染包装成没有独立用户目标的状态机。"
+    ]
+  },
+  "impact": {
+    "files": ["badge/badge.js", "badge/badge.wxml", "badge/badge.wxss", "grid/grid.wxml", "radio/radio.wxml", "navigation-menu/navigation-menu.wxml", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/BADGE.md", "scripts/test-badge.js"],
+    "dependencies": ["pui-button", "pui-cell", "pui-icon", "pui-tabs", "pui-tabbar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-badge.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run precheck", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "通过属性工作区真实输入 0、false、空字符串、null、8，并切换 showZero、dot、maxCount、五类外观属性和安全 color/offset。",
+      "元素选择模式选中 Badge 根后只显示 5 个可输入字段和 7 个设置字段，count=7 实时回写到预览。",
+      "组合区真实点击消息 Button，内容不被 Badge 自行递增；禁用宿主保持 disabled。"
+    ],
+    "deviceRisks": [
+      "微信 WXML 的 :empty 邻接选择器、动态 Slot 宽度、读屏 status 播报和极端字体回流仍需合法 AppID 真机复核。",
+      "使用已删除 value/text/visible/position/standalone/clickable 或生命周期事件的旧消费者需要迁移到 count、条件渲染、offset 与宿主事件。"
+    ]
+  },
+  "ai": {
+    "summary": "Badge 只表达数量或红点；content/default Slot 是宿主，count/null Slot 是徽标正文，交互和业务状态永远属于宿主。",
+    "rules": [
+      "禁止恢复 value/text 内容别名、visible 状态机、四角 position、standalone 开关或 Badge 自身 click/disabled。",
+      "count=0 遵循 showZero，false、空白和对象隐藏，count=null 是选择 count Slot 的唯一入口。",
+      "没有宿主时自动独立布局，有宿主时固定右上角；特殊位置只使用安全 offset 或调整宿主结构。",
+      "需要点击、选择、loading、disabled、error 或 retry 时组合 Button、Cell、Tabs、Tabbar 等真实宿主。"
+    ],
+    "tags": ["badge", "api", "tdesign", "display-leaf", "slot", "composition"]
+  }
+}

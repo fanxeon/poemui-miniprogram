@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0073",
+  "title": "Table 官网分区宽度、边线属性与动效被全站样式覆盖",
+  "scope": "component",
+  "components": ["table", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Table 官网应按常见能力分区，所有 Props 真实作用于同一表格，基础 WXML、API、390px、主题和外观开关与小程序合同一致。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "把旧单块工程预览改成四个用法分区后，article 的默认 min-width:auto 采用表格最小内容宽度，1280px 下 Table 从 PreviewDevice 右侧溢出到页面外。",
+    "全站外观层在组件规则之后统一写 border-color，导致 Table bordered=false 仍显示边线。",
+    "全站 Surface 统一使用 500ms transition，覆盖 Table 已收敛的固定 500ms；浏览器计算样式显示 0.22s。"
+  ],
+  "expected": "四个分区始终收缩在 PreviewDevice；bordered、180ms/1ms、主题和视觉开关各自真实生效，Table 内横滚不能扩张页面。",
+  "actual": "分区 Grid 的最小内容宽度、后置全站边线和过渡规则覆盖了 Table 自身几何与公开 Props，静态源码和构建均无法暴露。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "概览按基础用法、边线与固定列、选择与排序、加载空错误四区展示，基础 WXML专用生成且零 bind。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "分区子项强制 width:100%/min-width:0，borderless 使用后置同层选择器，Table 生命周期在全站外观层之后恢复 180ms/1ms。"},
+    {"kind": "test", "ref": "scripts/test-table.js", "note": "专项新增分区收缩、bordered 优先级与 Table 生命周期不被全站样式覆盖的回归断言。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/table", "note": "修复前桌面 Device right=1233 而 Table right=1347；修复后 390px Device=351px、Table=282px、document/body=375/375，横滚仅在 Table 内 max=131px。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/table", "note": "bordered=false 计算边线透明；普通过渡为0.18s、reduceMotion为0.001s；深色、边框、阴影、毛玻璃、大圆角、渐变均逐项实点并刷新保持。"}
+  ],
+  "rootCause": "Table 分区首次把宽内容放入 Grid article，但子项没有显式 min-width:0；同时全站视觉归一规则的后置选择器比组件自身 border 和 transition 规则更晚生效。",
+  "decision": {
+    "outcome": "保留四分区并让每个 section 显式收缩；在全站外观层之后恢复 Table borderless 和固定生命周期；缩短演示固定列宽，确保窄屏可见区域可以真实点击排序列。",
+    "rationale": "Table 的横向溢出只能存在于自身 scroll 容器，组件 Prop 和生命周期必须比外观装饰规则更权威；演示列仍覆盖左右 fixed，但不能形成不可点击的遮挡。",
+    "alternativesRejected": [
+      "给 PreviewDevice 增加 overflow:hidden 只能裁掉问题，不能让 Table viewport 获得正确宽度。",
+      "删除固定右列会失去固定列 battle 覆盖，缩短演示列宽能保留能力并恢复点击空间。",
+      "接受全站220ms会直接违反 Table 已公开的固定180ms合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-table.js"],
+    "dependencies": ["PreviewDevice", "visualConfig", "buttonSample", "checkboxSample", "loadingComponent", "emptySample", "API Reference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-table.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-theme-coverage.js"],
+    "commands": ["node --check preview/app.js", "npm run precheck", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "390px document/body均375/375，PreviewDevice351px、Table282px，四个操作按钮各137.5px且没有页面级横向溢出。",
+      "真实滚到最右得到 scrollLeft=max=131px；选择 false 后仍保持页面宽度，固定左右列不遮挡 priority 表头点击。",
+      "API 展示4个Props分组加Events/Slots/Methods共7张表，行数8/9/7/2/7/1/9，单元格 clipped=0、ellipsis=0。",
+      "最小源码重置精确得到 <pui-table /> 且零 bind；浏览器 warning/error 日志为空。"
+    ],
+    "deviceRisks": [
+      "H5 overflow/px/CSS sticky 只镜像微信 scroll-view/rpx/WXSS sticky，目标基础库的固定层叠和触摸惯性仍需合法 AppID 复核。",
+      "微信开发者工具 Service Port 关闭或历史 miniprogram_npm 缺失时，安装产物门禁必须保持 pending-cli。"
+    ]
+  },
+  "ai": {
+    "summary": "Table 四分区必须收缩在 PreviewDevice，组件边线和180ms生命周期不得被全站外观样式覆盖。",
+    "rules": [
+      "包含宽内容的 Grid 分区子项必须 width:100%且min-width:0，不能依赖外层裁切掩盖溢出。",
+      "全站视觉规则之后必须保留 Table bordered=false 和固定180ms/1ms的权威覆盖。",
+      "演示固定列宽必须给中间列留下可点击区域，并在390px实测真实横滚和排序。",
+      "Table 基础 WXML不得包含 bind、默认 Props、自由 Slot或方法注释。"
+    ],
+    "tags": ["table", "preview", "390px", "overflow", "bordered", "motion", "api-reference"]
+  }
+}

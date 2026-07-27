@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0067",
+  "title": "Tag H5 默认值、安全宽度和元素选择入口未完整对齐",
+  "scope": "component",
+  "components": ["tag", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Tag 官网每个 Props 都要真实作用于预览，重置回安装端默认值，并能在元素选择、外观模式和 390px 页面中完整验收。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 helper 用 props.content || 标签，使空字符串和 0 被静默替换，不能验证真实边界值。",
+    "旧 maxWidth 直接参与 style，既没有 rpx 镜像也缺少注入式字符串门禁。",
+    "Tag 分区展示根漏掉标准 demo-section，进入元素选择模式后没有可选标记，双侧 Inspector 完全不出现。",
+    "通用重置与 WXML 过滤曾读取演示初值，不能恢复源码 content/icon/maxWidth 空值。"
+  ],
+  "expected": "H5 保留空值与 0，安全映射 px/rpx/%，重置生成最小源码默认 WXML；Tag 本体可被元素选择器识别，外观和窄屏不破坏几何与可读性。",
+  "actual": "旧镜像会替换合法边界值、信任宽度字符串、混用演示默认值，并因缺少标准预览根而让 Inspector 失效。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "tagSample、tagPreviewMaxWidth、源码默认过滤、真实父级 close 回写和四段 showcase 现在共享同一 Props 路径。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Tag 完整镜像尺寸、主题、变体、形状、截断和 border/shadow/blur/radius Token。"},
+    {"kind": "test", "ref": "scripts/test-tag.js", "note": "专项覆盖安全 maxWidth、空内容、源码默认、标准 demo-section、外观选择器和无假事件。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tag", "note": "修复前元素选择标记为 0；修复后 42 个语义候选，Tag 本体打开 Inspector 并显示 3 个内容字段与 6 个设置字段。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tag", "note": "390px inner=390、document/main=375/375、Device=349/349、四区=293/293；65 个 API 单元格无溢出或省略。"}
+  ],
+  "rootCause": "H5 helper、源码默认、预览选择器和展示结构曾由不同路径维护，没有以真实输入、可选标记和计算样式形成端到端合同。",
+  "decision": {
+    "outcome": "H5 以显式空值逻辑渲染 content，校验并映射 maxWidth；Tag 使用源码默认过滤/重置；概览根接入标准 demo-section 并分为基础、主题与变体、尺寸与形状、关闭与长文本四区。",
+    "rationale": "边界值、宽度、选择器和 WXML 必须由同一真实 Props 驱动；标准预览根是元素级编辑能力的结构合同，不是装饰类名。",
+    "alternativesRejected": [
+      "仅修 WXML 文案而不修真实 Tag DOM 会继续产生面板与预览漂移。",
+      "允许任意 maxWidth 字符串会把 Props 变成 CSS 注入入口。",
+      "为 Tag 私有适配元素选择器会重复全局标准，正确做法是恢复统一 demo-section 根。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "scripts/test-tag.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/TAG.md"],
+    "dependencies": ["buttonSample", "iconComponent", "PreviewDevice", "element inspector", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tag.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node --check preview/app.js", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "初始基础代码为 <pui-tag>标签</pui-tag>，重置后为空源码默认 <pui-tag></pui-tag>，刷新只恢复运行态。",
+      "非法 100px;color:red 不进入 style；120rpx 转为 60px，长文本 ellipsis 且 Close 保持 14x14 居中。",
+      "元素选择模式的 Tag 主体映射全部 9 Props；嵌套 Content 仍只暴露内容字段，不触发业务关闭。",
+      "dark、边框关闭、阴影、毛玻璃、大圆角、渐变同时开启后 Tag 得到透明边线、真实 shadow/blur、9px 方形圆角，round 仍为 999px；刷新持久化，结束恢复标准浅色。",
+      "390px 页面和四个演示分区无横向溢出；API 9/1/1 全文换行，无 nowrap、ellipsis 或裁切；浏览器日志为空。"
+    ],
+    "deviceRisks": [
+      "H5 的 px/rpx 映射和浏览器键盘焦点不替代微信真机的触摸命中、字体度量和屏幕阅读器验证。",
+      "微信开发者工具 Service Port 关闭时无法更新 miniprogram_npm，发布产物门禁必须保留 pending-cli。"
+    ]
+  },
+  "ai": {
+    "summary": "Tag H5 必须保留真实边界值、安全映射宽度，并接入标准预览根；面板、WXML 和组件 DOM 只认同一 Props。",
+    "rules": [
+      "Tag content 只能按 null/undefined 与显式空值区分，禁止用 || 回退默认标签。",
+      "maxWidth 只接受非负数字或非负 px/rpx/%；非法值不得拼入 style。",
+      "Tag showcase 根必须保留 demo-section，否则元素选择模式无法建立语义候选。",
+      "Tag reset 与 WXML 默认过滤必须读取 componentPropDefaults.tag，不得使用演示初值。"
+    ],
+    "tags": ["tag", "preview", "max-width", "inspector", "appearance", "390px"]
+  }
+}

@@ -1,0 +1,4 @@
+<!-- Derived from Lucide square (1.24.0); see THIRD_PARTY_NOTICES.md -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-label="popover">
+  <g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-2.5L12 17l-2.5-3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/><circle cx="12" cy="20" r="1"/></g>
+</svg>

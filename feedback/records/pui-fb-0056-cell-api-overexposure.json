@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0056",
+  "title": "Cell 顶层 API 重复透传子组件能力并公开多条写入通道",
+  "scope": "component",
+  "components": ["cell", "navigation-menu", "documentation"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Cell 应提供稳定、克制的单元格内容、状态、选择和导航合同；复杂 Badge/Image 内容通过 PoemUI 组合表达，父级只有一条清晰的状态写回路径。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Cell properties：公开 45 Props，其中 imageMode/imageSize/imageShape、badge/badgeDot/badgeTheme/badgeVariant、arrowIcon 和 customMedia/customTitle/customDescription/customValue/customNote 都重复透传内部子组件或 Slot 能力。",
+    "审计旧事件和方法：right-click、navigate、navigate-complete 与 select/unselect/toggle/reset/navigate/getState 让同一选择或导航状态同时存在 Props、事件和实例方法写入通道。",
+    "对照 tdesign-miniprogram@1.15.3 的 Cell props.js/type.d.ts/WXML：其公开 13 Props、1 click 事件和 6 个内容 Slot，复杂内容不通过 Badge/Image 全量透传。"
+  ],
+  "expected": "Cell 只保留能表达独立用户意图的内容、视觉、选择、门禁、导航、可访问性和动效属性；受控/非受控只通过 selected/defaultSelected 与 input/change 闭环；复杂内容通过具名 Slot 组合。",
+  "actual": "旧合同把内部 Image、Badge、Arrow 和 Slot 显隐策略提升为 Cell 顶层 API，并公开多组可变方法与过程事件，调用者难以判断唯一状态来源。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求所有共有组件按 TDesign 逐项对照并克制公开 API，后续组件由 agent 完整 battle 后自主验收。"},
+    {"kind": "file", "ref": "cell/cell.js", "note": "Cell 最终固定 28 Props，选择只保留受控/非受控数据流，导航只转发真实 success/fail。"},
+    {"kind": "file", "ref": "cell/cell.wxml", "note": "内部只组合固定语义的 Icon/Image/Loading；Badge、Tag、Button 等复杂内容通过七个 Slot 承接。"},
+    {"kind": "file", "ref": "navigation-menu/navigation-menu.wxml", "note": "NavigationMenu 已从 Cell badge Props 迁移为 value Slot 内真实 pui-badge。"},
+    {"kind": "test", "ref": "scripts/test-cell.js", "note": "专项 VM/静态合同锁定 28 Props、7 Events、7 Slots、事件顺序、受控边界、真实导航和删除旧 API。"}
+  ],
+  "rootCause": "旧 Cell 以覆盖所有可配置细节为目标，把内部子组件参数、Slot 显隐开关、过程事件和诊断方法都当成公开能力，缺少组合边界和单一状态源约束。",
+  "decision": {
+    "outcome": "公开合同收敛为 28 Props、7 Events、7 Slots、0 业务实例方法；删除 17 个重复 Props、3 个过程事件和 6 个业务方法。Image 固定 72rpx round/aspectFill，Arrow 固定 chevron-right，Badge/Tag/Button 通过 Slot 组合。",
+    "rationale": "Cell 的核心任务是表达一行信息、选择或入口；固定内部视觉语义和唯一父级写回路径能降低误用，同时保留 PoemUI 组合能力。",
+    "alternativesRejected": [
+      "照搬 TDesign 13 Props 会删除 PoemUI 已有且真实闭环的受控选择、loading/readonly、视觉变体和低动效能力。",
+      "保留 badge/image 全量透传会让 Cell 随子组件 API 膨胀并产生重复真相源。",
+      "继续公开 select/toggle/reset 方法会绕过受控父级回写，制造状态竞争。"
+    ]
+  },
+  "impact": {
+    "files": ["cell/cell.js", "cell/cell.json", "cell/cell.wxml", "cell/cell.wxss", "navigation-menu/navigation-menu.wxml", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/CELL.md", "scripts/test-cell.js"],
+    "dependencies": ["pui-icon", "pui-image", "pui-loading", "pui-badge", "navigation-menu"]
+  },
+  "verification": {
+    "tests": ["scripts/test-cell.js", "scripts/test-navigation-menu.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run precheck", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "真实点击与 Enter 验证非受控选择；属性面板 selected=true/false 验证受控父级回写，allowUnselect=false 保持已选。",
+      "disabled/loading 移除 tabindex 并阻断操作；readonly 保留 click 入口但 selected 不变。",
+      "value=0、value=false 与 title 空字符串均真实保留；duration=400 和 reduceMotion=true 得到 1ms。"
+    ],
+    "deviceRisks": [
+      "微信 navigateTo/redirectTo/reLaunch/switchTab 的真实栈行为和 success/fail detail 仍需合法 AppID 真机确认。",
+      "旧消费者使用已删除 badge/image 透传、right-click、navigate-complete 或实例方法时需要迁移到 Slot、Props 和事件。"
+    ]
+  },
+  "ai": {
+    "summary": "Cell 顶层 API 只表达行内容、状态、选择和导航；子组件能力通过 Slot 组合，状态写回只有 Props 加事件一条路径。",
+    "rules": [
+      "禁止向 Cell 恢复 Badge/Image 的全量透传 Props；复杂内容使用 media/title/description/value/note/default/right Slot。",
+      "禁止公开 select/unselect/toggle/reset/navigate/getState 业务方法绕过受控父级。",
+      "selected 非 null 时只由父级回写；defaultSelected 只初始化非受控或退控状态。",
+      "disabled/loading 完全阻断，readonly 只回传 blocked click，H5 不伪造微信导航成功。"
+    ],
+    "tags": ["cell", "api", "tdesign", "slot", "controlled", "navigation", "composition"]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0321",
+  "title": "Popup Header 默认缺少常驻关闭按钮",
+  "scope": "component",
+  "components": ["popup", "button", "metadata", "preview-site"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Popup 的 Header 右侧应始终提供可见的圆形 PUI 关闭图标按钮，标题继续保持三列几何居中。",
+  "environment": {
+    "surfaces": ["miniprogram-component", "miniprogram-home", "h5-preview", "component-api"],
+    "platforms": ["wechat-devtools", "browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "使用 `<pui-popup show-header>` 而不显式传入 `close-btn`。",
+    "Popup 源码的 `closeBtn` 默认值为 `false`，右侧轨道因此为空，和 Header 的常驻关闭设计不一致。"
+  ],
+  "expected": "showHeader=true 时默认显示右侧灰色底圆形 iconOnly PUI Button + close Icon；调用方仅在显式传入 close-btn=false 时才隐藏默认控件，close-btn Slot 仍可提供等价替换。",
+  "actual": "小程序 Popup 的默认值为 closeBtn=false；官网预览已使用 true，导致跨端默认行为和 API 文档发生漂移。开发者工具进一步显示：即使页面不传同名属性，只要 Popup 接收默认 Content Slot，嵌在命名 close-btn Slot 内的 fallback Button 仍不会出现在 Header 右轨。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务对话", "note": "用户指出 Popup Header 右侧关闭圆形图标按钮应常驻。"},
+    {"kind": "file", "ref": "popup/popup.js", "note": "closeBtn 的默认值改为 true，默认 Header 保持关闭入口。"},
+    {"kind": "file", "ref": "popup/popup.wxml", "note": "默认 pui-button 移到命名 Slot 外部，并以 icon-only 和 Button/radius Token 固定原生根几何，避免微信抑制 fallback 或拉成长胶囊。"},
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161 / iPhone 12/13 390px", "note": "Icon 外观 Popup 打开时，修复前 Header 右轨为空，复现命名 Slot fallback 被抑制。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Popup H5 默认 Props 已为 closeBtn=true，现与小程序同源。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项测试锁定小程序默认值、显式 false 兼容开关和 H5 默认值。"}
+  ],
+  "rootCause": "Popup 三段 Header 重构时，H5 的示例默认值已设为 true，但小程序 properties 与 API 文档仍保留早期可选关闭按钮的 false 默认值；默认 Button 又错误作为命名 close-btn Slot fallback 实现，当前微信渲染在存在默认 Content Slot 时会抑制该 fallback。",
+  "decision": {
+    "outcome": "将 closeBtn 的小程序默认值改为 true，并将默认关闭 Button 移为 Header 右轨独立的 iconOnly 节点；用 Button 尺寸和 round radius Token 固定其原生根几何，移除消费者中与 close-btn Slot 同名的冗余属性，并把合同、API 与 Slot 描述明确为 Header 右侧默认常驻关闭控件。需要自定义 Slot 时，调用方以 closeBtn=false 关闭默认节点后再提供替换控件。",
+    "rationale": "默认 Header 必须提供可发现、可访问且在微信默认 Content Slot 组合下真实可见的退出入口，同时保留已有调用方在少数受限流程中显式隐藏默认控件并以 Slot 替换的能力；三列轨道和标题几何不变。",
+    "alternativesRejected": [
+      "只修改首页 Popup：会让其他 Popup 和 H5 默认行为继续不一致。",
+      "移除 closeBtn API：会破坏已存在的显式关闭控件配置。",
+      "用透明文字按钮替代图标按钮：不符合 Popup 的 PUI Button + Icon 组合合同。"
+    ]
+  },
+  "impact": {
+    "files": ["popup/popup.js", "popup/popup.wxml", "metadata/components.js", "miniprogram/pages/index/index.wxml", "miniprogram/pages/components/icon/index.wxml", "docs/components/POPUP.md", "docs/COMPONENT_API.md", "scripts/test-popup.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "miniprogram_dist/popup/popup.js", "miniprogram_dist/popup/popup.wxml"],
+    "dependencies": ["pui-button", "pui-icon", "popup-header", "h5-preview"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js"],
+    "commands": ["node scripts/test-popup.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": [],
+    "deviceRisks": ["仍需在合法 AppID 的 390px 开发者工具及 iOS/Android 真机确认 Header 默认关闭按钮、close-btn Slot、触摸命中区、Slot 投影和读屏表现。"]
+  },
+  "ai": {
+    "summary": "Popup 的 Header 默认必须保留右侧圆形 PUI 关闭按钮，不能让历史 false 默认值掏空关闭轨道。",
+    "rules": [
+      "修改 Popup Header 时同时核对小程序 properties、H5 默认 Props、元数据、API、合同与专项测试。",
+      "showHeader=true 的默认状态必须提供默认圆形关闭 Button；仅显式 closeBtn=false 才隐藏其 fallback。",
+      "close-btn Slot 可替换默认控件，但必须提供等价关闭交互与可访问名称。"
+    ],
+    "tags": ["popup", "header", "close-button", "api-default", "cross-platform"]
+  }
+}

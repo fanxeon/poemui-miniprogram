@@ -1,0 +1,74 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}}{{customStyle}}"
+  role="region"
+  aria-label="{{semanticLabel}}"
+>
+  <view class="pui-tabs__header" style="{{stickyStyle}}">
+    <scroll-view
+      class="pui-tabs__scroller"
+      scroll-x
+      scroll-into-view="{{scrollIntoView}}"
+      scroll-with-animation="{{!reduceMotion}}"
+      enable-flex
+      enhanced
+      show-scrollbar="{{false}}"
+    >
+      <view class="pui-tabs__row" role="tablist" aria-label="{{semanticLabel}}">
+        <view
+          wx:for="{{normalizedItems}}"
+          wx:key="id"
+          id="{{item.id}}"
+          class="pui-tabs__item {{item.active ? 'pui-tabs__item--active' : ''}}"
+          role="tab"
+          aria-selected="{{item.active}}"
+          aria-disabled="{{item.disabled}}"
+        >
+          <pui-button
+            custom-class="pui-tabs__button"
+            theme="default"
+            variant="text"
+            surface="transparent"
+            size="small"
+            block
+            disabled="{{item.disabled}}"
+            aria-label="{{item.ariaLabel}}"
+            reduce-motion="{{reduceMotion}}"
+            color-scheme="{{colorScheme}}"
+            data-index="{{index}}"
+            bind:click="onSelect"
+          >
+            <view class="pui-tabs__label">
+              <pui-icon wx:if="{{item.icon}}" name="{{item.icon}}" size="26" color-scheme="{{colorScheme}}" />
+              <text class="pui-tabs__label-text">{{item.label}}</text>
+              <pui-badge
+                wx:if="{{item.badge !== ''}}"
+                custom-class="pui-tabs__badge"
+                count="{{item.badge}}"
+                show-zero
+                size="small"
+                aria-label="{{item.label}}徽标"
+                color-scheme="{{colorScheme}}"
+              />
+            </view>
+            <view
+              wx:if="{{item.active && showBottomLine && variant !== 'tag' && variant !== 'pills'}}"
+              class="pui-tabs__indicator"
+              aria-hidden="true"
+            ></view>
+          </pui-button>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+  <view
+    class="pui-tabs__content"
+    role="tabpanel"
+    aria-label="{{activeLabel || semanticLabel}}"
+    bindtouchstart="onTouchStart"
+    bindtouchend="onTouchEnd"
+    bindtouchcancel="onTouchCancel"
+  >
+    <slot></slot>
+  </view>
+</view>

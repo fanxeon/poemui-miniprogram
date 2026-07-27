@@ -1,0 +1,202 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}};{{customStyle}}"
+  role="navigation"
+  aria-label="{{ariaLabel}}"
+  aria-disabled="{{disabled}}"
+  aria-readonly="{{readonly}}"
+  aria-busy="{{loading}}"
+  aria-invalid="{{error}}"
+>
+  <scroll-view
+    class="pui-navigation-menu__trigger-scroll"
+    scroll-x="{{normalizedDirection === 'horizontal' && scrollable && !wrap}}"
+    scroll-y="{{normalizedDirection === 'vertical' && scrollable}}"
+    enable-flex
+    enhanced
+    show-scrollbar="{{false}}"
+    bindscroll="onRootScroll"
+  >
+    <view class="pui-navigation-menu__triggers" role="menubar">
+      <block wx:for="{{rootItems}}" wx:key="key">
+        <navigation-trigger
+          wx:if="{{customTrigger}}"
+          item="{{item.raw}}"
+          value="{{item.value}}"
+          active="{{item.selected}}"
+          expanded="{{item.expanded}}"
+          disabled="{{disabled || item.disabled}}"
+          loading="{{item.loading}}"
+          data-index="{{index}}"
+          bind:click="onRootTap"
+        />
+        <pui-button
+          wx:else
+          custom-class="pui-navigation-menu__trigger {{item.selected ? 'pui-navigation-menu__trigger--selected' : ''}} {{item.expanded ? 'pui-navigation-menu__trigger--expanded' : ''}}"
+          content="{{item.label}}"
+          icon="{{showIcon ? item.icon : ''}}"
+          theme="{{item.theme}}"
+          variant="text"
+          size="{{normalizedSize}}"
+          shape="round"
+          loading="{{item.loading}}"
+          disabled="{{disabled || item.disabled}}"
+          aria-label="{{item.label}}"
+          reduce-motion="{{reduceMotion}}"
+          data-index="{{index}}"
+          bind:click="onRootTap"
+        >
+          <view slot="suffix" class="pui-navigation-menu__trigger-suffix">
+            <pui-badge wx:if="{{showBadge && (item.badgeDot || item.badge !== null)}}" count="{{item.badge}}" dot="{{item.badgeDot}}" show-zero size="small" theme="{{item.theme}}" />
+            <pui-icon wx:if="{{showIndicator && item.hasChildren}}" custom-class="pui-navigation-menu__indicator {{item.expanded ? 'pui-navigation-menu__indicator--expanded' : ''}}" name="{{indicatorIcon}}" size="26" />
+          </view>
+        </pui-button>
+      </block>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{panelRendered}}" class="pui-navigation-menu__layer {{panelEntered ? 'pui-navigation-menu__layer--entered' : ''}}" aria-hidden="{{!panelEntered}}" catchtouchmove="noop">
+    <view wx:if="{{showOverlay}}" class="pui-navigation-menu__overlay" catchtap="onOverlayTap"></view>
+    <view class="pui-navigation-menu__panel pui-navigation-menu__panel--{{stateType}} {{panelEntered ? 'pui-navigation-menu__panel--entered' : ''}}" role="menu" aria-label="{{currentTitle || ariaLabel}}" aria-busy="{{stateType === 'loading'}}" aria-invalid="{{stateType === 'error'}}" catchtap="noop">
+      <view wx:if="{{showHeader}}" class="pui-navigation-menu__header">
+        <view wx:if="{{customHeader}}" class="pui-navigation-menu__custom-header">
+          <slot name="header"></slot>
+        </view>
+        <block wx:else>
+          <view wx:if="{{!canBack}}" class="pui-navigation-menu__header-spacer" aria-hidden="true"></view>
+          <pui-button
+            wx:else
+            custom-class="pui-navigation-menu__header-action"
+            custom-style="--pui-button-size:56rpx;"
+            variant="base"
+            shape="circle"
+            size="small"
+            icon="chevron-left"
+            icon-only
+            disabled="{{disabled}}"
+            aria-label="返回上一级"
+            reduce-motion="{{reduceMotion}}"
+            bind:click="onBackTap"
+          />
+          <view class="pui-navigation-menu__heading">
+            <view class="pui-navigation-menu__title">{{currentTitle}}</view>
+            <view wx:if="{{showDescription && currentDescription}}" class="pui-navigation-menu__description">{{currentDescription}}</view>
+          </view>
+          <pui-button
+            custom-class="pui-navigation-menu__header-action"
+            custom-style="--pui-button-size:56rpx;"
+            variant="base"
+            shape="circle"
+            size="small"
+            icon="close"
+            icon-only
+            disabled="{{disabled}}"
+            aria-label="关闭导航菜单"
+            reduce-motion="{{reduceMotion}}"
+            bind:click="onCloseTap"
+          />
+        </block>
+      </view>
+
+      <view class="pui-navigation-menu__body">
+        <view class="pui-navigation-menu__state pui-navigation-menu__state--content {{stateType === 'content' ? 'pui-navigation-menu__state--active' : ''}}">
+          <slot wx:if="{{customContent}}"></slot>
+          <scroll-view wx:else class="pui-navigation-menu__content-scroll" scroll-y enable-flex enhanced show-scrollbar="{{false}}" bindscroll="onPanelScroll">
+            <view class="pui-navigation-menu__content-stack {{contentActive ? 'pui-navigation-menu__content-stack--active' : ''}} pui-navigation-menu__content-stack--{{contentDirection}}">
+              <view wx:if="{{outgoingGroups.length}}" class="pui-navigation-menu__menu-layer pui-navigation-menu__menu-layer--outgoing">
+                <view wx:for="{{outgoingGroups}}" wx:key="key" wx:for-item="group" class="pui-navigation-menu__group">
+                  <view wx:if="{{group.showSeparator}}" class="pui-navigation-menu__separator" aria-hidden="true"></view>
+                  <view wx:if="{{group.showHeading}}" class="pui-navigation-menu__group-heading">
+                    <view class="pui-navigation-menu__group-title">{{group.heading}}</view>
+                    <view wx:if="{{showDescription && group.description}}" class="pui-navigation-menu__group-description">{{group.description}}</view>
+                  </view>
+                  <block wx:for="{{group.items}}" wx:key="key" wx:for-item="entry">
+                    <view wx:if="{{entry.type === 'separator' || entry.showSeparator}}" class="pui-navigation-menu__separator" aria-hidden="true"></view>
+                    <pui-cell
+                      wx:elif="{{entry.type !== 'separator'}}"
+                      custom-class="pui-navigation-menu__item pui-navigation-menu__item--{{entry.theme}}"
+                      title="{{entry.label}}"
+                      description="{{showDescription ? entry.description : ''}}"
+                      value="{{showShortcut ? entry.shortcut : ''}}"
+                      left-icon="{{showIcon ? entry.icon : ''}}"
+                      arrow="{{entry.showArrow}}"
+                      clickable="{{false}}"
+                      selectable="{{entry.selectable}}"
+                      selected="{{entry.checked}}"
+                      disabled="{{true}}"
+                      readonly="{{true}}"
+                      loading="{{entry.loading}}"
+                      size="{{normalizedSize}}"
+                      variant="soft"
+                      bordered="{{false}}"
+                      duration="{{duration}}"
+                      easing="{{easing}}"
+                      reduce-motion="{{reduceMotion}}"
+                    >
+                      <pui-badge wx:if="{{showBadge && (entry.badgeDot || entry.badge !== null)}}" slot="value" count="{{entry.badge}}" dot="{{entry.badgeDot}}" show-zero theme="{{entry.theme}}" size="small" />
+                    </pui-cell>
+                  </block>
+                </view>
+              </view>
+              <view class="pui-navigation-menu__menu-layer pui-navigation-menu__menu-layer--current">
+                <view wx:for="{{currentGroups}}" wx:key="key" wx:for-item="group" wx:for-index="groupIndex" class="pui-navigation-menu__group">
+                  <view wx:if="{{group.showSeparator}}" class="pui-navigation-menu__separator" aria-hidden="true"></view>
+                  <view wx:if="{{group.showHeading}}" class="pui-navigation-menu__group-heading">
+                    <view class="pui-navigation-menu__group-title">{{group.heading}}</view>
+                    <view wx:if="{{showDescription && group.description}}" class="pui-navigation-menu__group-description">{{group.description}}</view>
+                  </view>
+                  <block wx:for="{{group.items}}" wx:key="key" wx:for-item="entry" wx:for-index="itemIndex">
+                    <view wx:if="{{entry.type === 'separator' || entry.showSeparator}}" class="pui-navigation-menu__separator" aria-hidden="true"></view>
+                    <navigation-item
+                      wx:if="{{entry.type !== 'separator' && customItem}}"
+                      item="{{entry.raw}}"
+                      value="{{entry.value}}"
+                      checked="{{entry.checked}}"
+                      disabled="{{disabled || entry.disabled}}"
+                      loading="{{entry.loading}}"
+                      data-group-index="{{groupIndex}}"
+                      data-item-index="{{itemIndex}}"
+                      bind:click="onItemTap"
+                    />
+                    <pui-cell
+                      wx:elif="{{entry.type !== 'separator'}}"
+                      custom-class="pui-navigation-menu__item pui-navigation-menu__item--{{entry.theme}}"
+                      title="{{entry.label}}"
+                      description="{{showDescription ? entry.description : ''}}"
+                      value="{{showShortcut ? entry.shortcut : ''}}"
+                      left-icon="{{showIcon ? entry.icon : ''}}"
+                      arrow="{{entry.showArrow}}"
+                      clickable="{{true}}"
+                      selectable="{{entry.selectable}}"
+                      selected="{{entry.checked}}"
+                      disabled="{{disabled || entry.disabled}}"
+                      readonly="{{readonly}}"
+                      loading="{{entry.loading}}"
+                      size="{{normalizedSize}}"
+                      variant="soft"
+                      bordered="{{false}}"
+                      aria-label="{{entry.label}}"
+                      duration="{{duration}}"
+                      easing="{{easing}}"
+                      reduce-motion="{{reduceMotion}}"
+                      data-group-index="{{groupIndex}}"
+                      data-item-index="{{itemIndex}}"
+                      bind:click="onItemTap"
+                    >
+                      <pui-badge wx:if="{{showBadge && (entry.badgeDot || entry.badge !== null)}}" slot="value" count="{{entry.badge}}" dot="{{entry.badgeDot}}" show-zero theme="{{entry.theme}}" size="small" />
+                    </pui-cell>
+                  </block>
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+        <view class="pui-navigation-menu__state {{stateType === 'loading' ? 'pui-navigation-menu__state--active' : ''}}"><pui-loading loading="{{stateType === 'loading'}}" text="{{loadingText}}" duration="{{duration}}" easing="{{easing}}" reduce-motion="{{reduceMotion}}" /></view>
+        <view class="pui-navigation-menu__state pui-navigation-menu__state--error {{stateType === 'error' ? 'pui-navigation-menu__state--active' : ''}}"><pui-empty description="{{errorText}}" icon="error-circle" reduce-motion="{{reduceMotion}}" /><pui-button theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" reduce-motion="{{reduceMotion}}" bind:click="onRetryTap">{{retryText}}</pui-button></view>
+        <view class="pui-navigation-menu__state {{stateType === 'empty' ? 'pui-navigation-menu__state--active' : ''}}"><slot wx:if="{{customEmpty}}" name="empty"></slot><pui-empty wx:else description="{{emptyText}}" icon="inbox" reduce-motion="{{reduceMotion}}" /></view>
+      </view>
+
+      <view wx:if="{{customFooter}}" class="pui-navigation-menu__footer"><slot name="footer"></slot></view>
+    </view>
+  </view>
+</view>

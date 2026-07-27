@@ -1,0 +1,90 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0277",
+  "title": "Sidebar 默认组合压缩为不可读窄列且尾部 Badge 被裁切",
+  "scope": "component",
+  "components": ["sidebar", "badge", "button", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Sidebar 预览必须像真实可用的同层导航一样完整可读，不能把默认的图标、描述和徽标压成无法辨识的窄列。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "393x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 #/components/sidebar 的概览，使用默认展示的图标、描述和 Badge。",
+    "修复前 H5 的 Sidebar 根宽为 112px、高为 320px；条目扣除图标、尾部状态和内边距后，文字区仅为 63px。",
+    "修复前尾部 Badge 没有默认 Slot 宿主却未使用内联形态，右上角绝对定位越出 trailing 容器后被 overflow:hidden 裁切。"
+  ],
+  "expected": "默认 Sidebar 宽度足以呈现默认图标、正文与辅助文字；官网基础示例填满可用预览高度并左侧贴合导航语义；尾部 Badge 作为内联状态完整展示。",
+  "actual": "默认富信息组合被压缩为 112px 窄列，标题、描述和徽标难以阅读，且徽标出现右侧和顶部裁切。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户指出整个 Sidebar 预览区属于不可阅读状态。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/sidebar",
+      "note": "修复前 390px 实测 root=112×320px、首条文字区=63×35px；Badge 0 的范围越出 trailing 右边界并被裁切。"
+    },
+    {
+      "kind": "file",
+      "ref": "sidebar/sidebar.js",
+      "note": "原默认宽度为200rpx，却默认同时开启图标、描述和徽标。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 示例原始宽度为224rpx、高度为640rpx，并将无宿主尾部 Badge 作为绝对定位徽标输出。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 Sidebar 条目使用12px标题并在窄列中叠加图标、描述和尾部状态。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/sidebar",
+      "note": "修复后 390px 实测 Sidebar=180×564px、首条文字区=108×38px、Badge 无裁切祖先；点击基础项后 current 回写为 foundation 且 aria-pressed=true。"
+    }
+  ],
+  "rootCause": "Sidebar 的默认宽度按极简导航设置，却默认同时展示图标、两行文案和徽标；H5 四区示例继续把宽度和高度压缩，Badge helper 也遗漏了无宿主时的内联语义。",
+  "decision": {
+    "outcome": "Sidebar 原生默认宽度调整为360rpx；H5 基础示例使用360rpx × 1128rpx可读基线，其余分区改为单列且不再使用窄列尺寸；标题使用正文中号 Token；尾部 Badge 显式 standalone。",
+    "rationale": "360rpx 在默认富信息组合下保留足够的文字宽度，1128rpx 让官网预览能展示真实局部滚动；窄宽度仍作为调用者显式选择，用于只显示短标题的场景。",
+    "alternativesRejected": [
+      "只缩小文字或继续用省略号会掩盖默认组合的空间不足。",
+      "只在 H5 给 Badge 加负边距不能修正其错误的绝对定位语义。",
+      "把右侧消费者内容做成 Sidebar 的 Slot、Prop 或组件内部业务面板会让导航组件承担页面框架，违反既有组件职责。"
+    ]
+  },
+  "impact": {
+    "files": ["sidebar/sidebar.js", "sidebar/sidebar.wxss", "preview/app.js", "preview/styles.css", "scripts/test-sidebar.js", "docs/components/SIDEBAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0277-sidebar-readable-preview-and-inline-badge.json"],
+    "dependencies": ["PUI Button default Slot", "PUI Badge standalone layout", "PUI Icon", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sidebar.js"],
+    "commands": ["node scripts/test-sidebar.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["390px 下基础 Sidebar 的可读空间、Badge 几何和真实选择回写已复测；light/dark 实点后 Sidebar 背景与文字分别为 rgb(244,244,245)/rgb(9,9,11) 和 rgb(24,24,27)/rgb(250,250,250)，页面横向 overflow 为0。阴影、毛玻璃和大圆角由 card 主题与全局外观组合承接，未把默认连续导航条目错误提升为悬浮卡片。"],
+    "deviceRisks": ["微信 scroll-view 惯性、sticky、rpx 实际排版、Button 触摸命中、样式隔离和读屏仍需合法 AppID 真机复核。"]
+  },
+  "ai": {
+    "summary": "默认同时开启图标、描述和 Badge 的 Sidebar 必须使用可读宽度；无 Badge 宿主的尾部状态必须内联。",
+    "rules": [
+      "先按默认开启的内容计算文字可用宽度，不能以窄列加省略号当作可读布局。",
+      "官网四区示例不得为了同屏排列把 Sidebar 压成不可读的多列。",
+      "Badge 位于 Sidebar trailing 时必须使用 standalone，继续复用 badgeSample。",
+      "Sidebar 只提供导航本体；官网可在组件外组合右侧消费者内容，但不得把它新增为 Sidebar API、Slot 或业务面板职责。"
+    ],
+    "tags": ["sidebar", "badge", "390px", "readability", "preview-layout", "standalone"]
+  }
+}

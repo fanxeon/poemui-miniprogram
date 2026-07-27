@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0045",
+  "title": "Button H5 加载态未使用默认 Slot 生成可访问名称",
+  "scope": "component",
+  "components": ["button", "loading", "preview-site"],
+  "type": "accessibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Button 使用默认 Slot 且进入 loading 时，H5 与小程序都必须保留真实按钮内容，并给辅助技术稳定、可理解的加载名称。",
+  "environment": {
+    "surfaces": ["h5-preview", "usage-code", "component-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["375x667", "393x852", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "保持 Button 默认 content 属性为空，使用默认 Slot 文本“按钮”，然后在属性页开启 loading。",
+    "旧 H5 当前按钮只把 props.content 传给 buttonSample，忽略 defaultSlot；可见内容和 aria-label 会退回泛化名称，与 WXML 的默认 Slot 不一致。",
+    "静态加载示例同时把“提交中”传给 Loading text 和 Button 内容，还会视觉重复同一文案。"
+  ],
+  "expected": "H5 按真实默认 Slot 传入“按钮”，loading 可访问名称为“按钮加载中”；静态示例只有一个可见“提交中”。",
+  "actual": "H5 属性驱动镜像没有把默认 Slot 作为内容真相源，加载时可访问名称和可见文本可能退化；静态示例重复加载文字。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户在 Button battle 报告后明确确认验收。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "当前 Button 使用 props.content 或默认“按钮”作为 defaultSlot；静态 Loading 只把“提交中”作为 ariaLabel，不再重复可见正文。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "真实浏览器开启 loading 后按钮 aria-label 为“按钮加载中”，基础 WXML 仍为 `<pui-button loading>按钮</pui-button>`；静态加载按钮只显示一次“提交中”。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-button.js",
+      "note": "专项测试锁定 defaultSlot 回退和 Loading 可访问名称组合。"
+    }
+  ],
+  "rootCause": "H5 当前效果镜像把 content Prop 误当成唯一内容源，没有按 Button 合同组合默认 Slot；Loading text 又同时承担视觉正文和辅助名称，造成重复。",
+  "decision": {
+    "outcome": "当前按钮始终把 content 或默认“按钮”送入 defaultSlot，并由 buttonSample 组合 loading 可访问名称；静态加载示例只保留一个视觉正文，Loading 使用 ariaLabel。",
+    "rationale": "默认 Slot 是 Button 最基础的内容入口，H5 必须与 WXML 使用同一真相源；视觉文字和辅助名称各司其职可避免重复。",
+    "alternativesRejected": [
+      "强制所有示例填写 content Prop 会破坏默认 Slot 作为基础入口的合同。",
+      "把 aria-label 固定为“加载中”会丢失按钮任务上下文。",
+      "隐藏重复文字但继续维护两份内容源会留下后续漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "docs/components/BUTTON.md", "scripts/test-button.js"],
+    "dependencies": ["buttonSample", "loadingComponent", "default slot"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js"],
+    "commands": ["node scripts/test-button.js", "npm run check"],
+    "browser": ["loading=true 时当前按钮 aria-label 为“按钮加载中”、aria-busy=true、disabled=true；静态加载示例文本为单个“提交中”。"],
+    "deviceRisks": ["微信开发者工具和真机对自定义组件内原生 button 的 aria-label 朗读仍需 VoiceOver/TalkBack 实测。"]
+  },
+  "ai": {
+    "summary": "Button 默认 Slot 是内容真相源，loading 可访问名称必须保留任务文字并避免视觉重复。",
+    "rules": [
+      "H5 Button 镜像必须通过 defaultSlot 传递基础内容，不得只读取 content Prop。",
+      "loading 可访问名称应包含按钮任务上下文，例如“保存加载中”，不能只说“加载中”。",
+      "Loading text 与 Button 正文不得重复渲染同一视觉文案。"
+    ],
+    "tags": ["button", "loading", "accessibility", "default-slot", "preview-parity"]
+  }
+}

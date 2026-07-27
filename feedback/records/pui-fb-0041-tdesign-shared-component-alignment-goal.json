@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0041",
+  "title": "共有组件缺少统一的 TDesign 对照治理流程",
+  "scope": "global",
+  "components": ["all-components", "documentation", "agent-workflow"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "把 Button 已验证的 API 收敛和演示分区规则推广到 PoemUI 与 TDesign 共有的全部组件；仍逐组件真实审计和浏览器 battle，但 Button 后续无需逐项等待用户确认，由 agent 按完整证据自主连续验收。",
+  "environment": {
+    "surfaces": ["component-source", "h5-preview", "api-documentation", "agent-workflow"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查现有组件开发流程，Button 的核心/平台 Props 分组、Events 独立展示和基础 WXML 零 bind 决策只存在于 Button 专属合同，其他共有组件没有统一迁移顺序。",
+    "对照 TDesign 微信小程序组件目录与 PoemUI 的 82 个安装组件，可确认 55 个同名或明确同义的公开组件，但此前没有固定版本、映射和逐项状态清单。",
+    "新 Agent 只阅读通用 UI 合同时，无法判断 TDesign 只应作为参考还是应追求 API 数量一致，也无法知道哪些近似名称不得强行映射。"
+  ],
+  "expected": "所有共有组件读取同一份固定版本对照清单，逐项记录保留、借鉴、收敛、拒绝与真机风险；一次只处理一个组件。Button 由用户确认，后续组件在完整门禁后由 agent 自主接受或阻断并连续推进。",
+  "actual": "此前只有 Button 建立了明确取舍，其余组件缺少统一队列、交集边界和演示/API 信息架构基线，容易被批量照搬或继续暴露过量能力。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求对照 TDesign，把双方都有的组件逐条改动并开启 Goal 持续完成；随后确认 Button，并授权后续组件无需逐项确认，由 agent 直接跑完和自主决定。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "note": "文档固定 TDesign 1.15.3 参考基线、55 个共有组件、取舍规则、验收闭环和顺序队列。"
+    },
+    {
+      "kind": "file",
+      "ref": "AGENTS.md",
+      "note": "全局规则要求后续 Agent 阅读对照文档，并继承基础用法零 bind 与 Events 独立展示原则。"
+    }
+  ],
+  "rootCause": "组件 battle 原本按单个用户点名推进，没有把 Button 暴露出的 API 信息架构问题提升为跨组件、可持续执行的版本化治理计划。",
+  "decision": {
+    "outcome": "新增唯一执行文档，固定 TDesign 1.15.3 为本轮参考版本，列出 55 个确认共有组件和暂缓候选；把 Button 原则写入 AGENTS 与新会话提示词。仍保持一次一个组件；Button 由用户明确验收，后续组件依据用户范围化授权，在完整证据和门禁后由 agent 自主接受或阻断并连续推进。",
+    "rationale": "版本化清单既能利用成熟组件库的公开合同减少盲区，也能防止把外部历史 API、external-classes 或不适合 PoemUI 的能力批量复制进来。",
+    "alternativesRejected": [
+      "一次批量改完所有 metadata 无法证明真实源码、事件和 H5 行为一致，也违反逐组件 battle 门槛。",
+      "直接追求与 TDesign Props 数量相同会忽略 PoemUI 的 Slot、组合、Token 和受控模型。",
+      "只把计划留在对话中无法约束新 Agent，也不能追踪版本和验收状态。"
+    ]
+  },
+  "impact": {
+    "files": ["docs/TDESIGN_COMPONENT_ALIGNMENT.md", "AGENTS.md", "docs/NEW_SESSION_PROMPT.md"],
+    "dependencies": ["component battle workflow", "TDesign MiniProgram 1.15.3", "Feedback Ledger"]
+  },
+  "verification": {
+    "tests": ["scripts/test-feedback-ledger.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check"],
+    "browser": ["本记录只建立治理合同；每个组件仍必须分别完成真实浏览器 battle，不能用总纲代替组件验收。"],
+    "deviceRisks": ["TDesign 与 PoemUI 的真机事件 detail、基础库要求和样式隔离可能不同，必须在每个组件记录中逐项保留，不能由共有名称推断兼容。"]
+  },
+  "ai": {
+    "summary": "共有组件按固定 TDesign 版本逐个对照，但只采用符合 PoemUI 用户目标和真实闭环的能力。",
+    "rules": [
+      "处理共有组件前必须阅读 docs/TDESIGN_COMPONENT_ALIGNMENT.md，并记录实际参考页面、版本和源码。",
+      "每项能力必须做保留、借鉴、收敛、拒绝或待真机决策，禁止按 Props 数量追平 TDesign。",
+      "一次只允许一个共有组件处于 in-progress；默认等待用户确认，当前 Goal 后续组件按用户范围化授权在完整门禁后自主验收并连续推进。",
+      "基础用法使用最小 WXML 且不得出现 bind:*；完整事件只进入 API Events。"
+    ],
+    "tags": ["tdesign", "alignment", "component-battle", "api-governance", "agent-workflow"]
+  }
+}

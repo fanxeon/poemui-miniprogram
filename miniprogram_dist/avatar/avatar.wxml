@@ -1,0 +1,19 @@
+<view
+  wx:if="{{visible}}"
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}} {{rootStyle}}"
+  role="img"
+  aria-label="{{semanticLabel}}"
+>
+  <view wx:if="{{useSlot}}" class="pui-avatar__fallback pui-avatar__slot"><slot /></view>
+  <view wx:elif="{{icon}}" class="pui-avatar__fallback"><pui-icon name="{{icon}}" size="{{iconSize}}" /></view>
+  <view wx:else class="pui-avatar__fallback"><text>{{fallbackText}}</text></view>
+  <image
+    wx:if="{{displaySrc && !imageFailed}}"
+    class="pui-avatar__image {{imageLoaded ? 'pui-avatar__image--loaded' : ''}}"
+    src="{{displaySrc}}"
+    mode="aspectFill"
+    bindload="onImageLoad"
+    binderror="onImageError"
+  />
+</view>

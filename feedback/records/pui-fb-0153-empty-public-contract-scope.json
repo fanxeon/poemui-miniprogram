@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0153",
+  "title": "Empty 公开面混入历史操作、状态与视觉配置",
+  "scope": "component",
+  "components": ["empty", "preview-site", "usage-code", "example", "state-composition"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "按联网 TDesign 对照逐组件收敛 Empty，只保留真实空状态的图形、说明和消费者可组合入口，基础 WXML 必须是最小调用。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "usage-code", "api-reference", "example", "miniprogram-dist"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390px browser", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "历史 Empty 公开 21 个 Props，把 title、尺寸/主题、图片模式、内部 action Button、loading/disabled、私有动效和 action/load/error 事件混入展示组件；基础 WXML 展示了不属于基础调用的 bind:*。",
+    "2026-07-20 已联网访问 TDesign Empty 页面、官方仓库和 npm 发布页，并读取 tdesign-miniprogram@1.15.3 的 miniprogram_dist/empty/{props.js,type.d.ts,empty.js,empty.wxml,empty.wxss}。固定包公开 description/icon/image、image/description/action 三个具名 Slot，零 Events、零 Methods。"
+  ],
+  "expected": "PoemUI 只保留 description/icon/image/ariaLabel/reduceMotion 五项 Props、image/description/action 三个具名 Slot、零 Events、零 Methods；基础 WXML 为 <pui-empty description=\"暂无内容\" />。",
+  "actual": "历史 API 将父级业务操作和预览调试状态误暴露为 Empty 合同，调用方会把空态 action、资源事件或视觉切换误解为组件能力。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已确认后续组件无需逐项确认，授权 agent 在完整审计、浏览器、专项测试、文档、Ledger 与构建门禁后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/empty", "note": "2026-07-20 在线访问官方动态页，作为空状态语义和演示分区来源。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "2026-07-20 在线访问官方仓库；固定 npm 包用于可复现公开 API 判断。"},
+    {"kind": "file", "ref": "empty/empty.js", "note": "当前实现仅声明五项 Props；配套 WXML 图形严格 image、icon、image Slot 优先，未调用 triggerEvent。"},
+    {"kind": "test", "ref": "scripts/test-empty.js", "note": "专项合同锁定五项 Props、三具名 Slot、零 Events/Methods、空字符串、图形优先级、H5 分区、示例和生成产物。"}
+  ],
+  "rootCause": "历史实现把父级的错误/重试/成功流程、H5 演示便利和视觉调节扩大为公共 API，未按真实 WXML、固定 TDesign 包和展示型组件边界复核。",
+  "decision": {
+    "outcome": "收敛为五项 Props、三个具名 Slot、零 Events/Methods；图片由内部 PUI Image 管理，action Slot 中的 PUI Button 只由消费者处理，错误重试改为 Empty 的兄弟 Button 或 action Slot 内容。",
+    "rationale": "Empty 的职责是表达无内容和提供组合位置，不拥有请求、资源生命周期或业务导航。ariaLabel/reduceMotion 是 PoemUI 全库可访问性一致性补充，其余字段没有独立组件职责。",
+    "alternativesRejected": [
+      "保留内部 action Button 会把父级业务成功和失败处理伪装为 Empty 事件。",
+      "保留 load/error 转发会与 PUI Image 的真实资源事件重复并扩大跨端差异。",
+      "在基础 WXML 列出 bind:* 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["empty/empty.js", "empty/empty.json", "empty/empty.wxml", "empty/empty.wxss", "metadata/components.js", "metadata/shadcn.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/EMPTY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-empty.js", "scripts/test-grid.js", "scripts/test-collapse.js", "scripts/test-indexes.js", "scripts/test-sidebar.js", "scripts/test-overlay-state-composition.js", "scripts/test-collection-state-composition.js", "scripts/test-core-state-composition.js", "scripts/test-collapsible.js"],
+    "dependencies": ["PUI Image", "PUI Icon", "PUI Button", "shared emptySample", "shared usage-code generator", "state composition consumers"]
+  },
+  "verification": {
+    "tests": ["scripts/test-empty.js", "scripts/test-design-contracts.js", "scripts/test-api-reference-readability.js", "scripts/test-overlay-state-composition.js", "scripts/test-collection-state-composition.js", "scripts/test-core-state-composition.js"],
+    "commands": ["2026-07-20 npm run feedback:generate && npm run feedback:check：通过（154 records）", "2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过", "2026-07-20 微信 CLI build-npm：IDE server 启动后 touristappid 被拒绝为不存在的 AppID（code 10），未生成 miniprogram_npm、未冒充通过"],
+    "browser": ["真实 H5 点击 action Slot 内“重新筛选”后父级说明变为“父级已回写筛选条件；Empty 没有 action 事件。”，不是组件伪事件。", "真实键盘清空 description 后基础 WXML 移除该 Prop；输入对象 icon、成功图片与不存在图片 URL 分别走 PUI Icon、PUI Image 成功和真实图片失败回退。", "实际验证 180ms/1ms、代码复制、五项 Props/三 Slots/零 Events/Methods、light/dark 与 border/shadow/frost/large-radius/gradient；390px 下 document/body 375px、PreviewDevice 349px、图形网格 282px 无页面横向溢出。"],
+    "deviceRisks": ["微信真机仍需使用合法 AppID 确认 rpx、图片解码与域名、具名 Slot 投影、样式隔离、读屏和系统低动效。", "touristappid 无效导致 miniprogram_npm 未生成，不能以 H5 或 tarball 替代微信开发者工具产物验收。"]
+  },
+  "ai": {
+    "summary": "Empty 是无内容展示和组合锚点，不是请求、重试或资源生命周期控制器。",
+    "rules": [
+      "先以在线 TDesign 页面、固定版本 npm 包和真实 WXML 三者交叉确定公开面。",
+      "基础 WXML 只保留最小调用；没有 Events 或 Methods 时不得为了演示添加 bind:* 或日志。",
+      "错误、重试和成功必须由父级用 Empty 与真实 PUI Button 组合，不能恢复 Empty 内部 action。"
+    ],
+    "tags": ["empty", "tdesign", "api-contract", "no-fake-success", "usage-code"]
+  }
+}

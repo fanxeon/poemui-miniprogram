@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0299",
+  "title": "首页搜索入口需要圆形 Combobox 与可选背景模糊遮罩",
+  "scope": "global",
+  "components": ["combobox", "overlay", "miniprogram-home", "preview-site", "theme"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页左上搜索入口打开居中的圆形 pui-combobox，并通过 pui-overlay 隔离背景；当前不接入业务搜索，Overlay 必须让调用方显式选择 blur。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "首页原先在 ScrollArea 内条件渲染 pui-search，并在页面层直接维护基础组件筛选。",
+    "pui-combobox 的 Trigger 没有公开圆形形状，pui-overlay 只提供颜色遮罩，无法由消费者声明需要背景模糊。"
+  ],
+  "expected": "首页点击搜索只真实打开或关闭受控 Overlay，居中 Combobox Trigger 使用 round 形状；Overlay blur=true 使用共享 Token 模糊背景，false 保持纯颜色遮罩，且不改变默认 Slot、click 事件或滚动阻断合同。",
+  "actual": "原首页把 pui-search 和筛选结果放进内容滚动区，Overlay 没有 blur Prop，Combobox 不能声明满圆 Trigger。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确将首页入口从 pui-search 改为 pui-combobox + pui-overlay，要求先完成浮层，不实装业务搜索，并让 Overlay 提供 blur。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/overlay", "note": "2026-07-24 查阅官方 Overlay 页面，TDesign 主干保持受控遮罩、背景色、时长、滚动阻断和层级。"},
+    {"kind": "browser", "ref": "https://registry.npmjs.org/tdesign-miniprogram/-/tdesign-miniprogram-1.15.3.tgz", "note": "2026-07-24 读取固定 tdesign-miniprogram@1.15.3 的 miniprogram_dist/overlay props.js、overlay.wxml、overlay.wxss；其无 blur Prop。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "首页使用 pui-overlay 的默认 Slot 包含 pui-combobox；不再引用 pui-search。"},
+    {"kind": "file", "ref": "combobox/combobox.js", "note": "shape 规整为 rectangle/round，并只通过根 class 影响 Trigger。"},
+    {"kind": "file", "ref": "overlay/overlay.js", "note": "blur 是受控视觉 Prop，只切换同一遮罩根的 class。"}
+  ],
+  "rootCause": "原首页的内联 pui-search 不符合新浮层入口路径；Combobox 和 Overlay 的既有 API 也无法表达圆形搜索入口与显式背景模糊。",
+  "decision": {
+    "outcome": "Combobox 新增 shape=rectangle|round，round 只作用于 Trigger；Overlay 新增 blur:Boolean，固定消费 --pui-overlay-blur。首页以 searchOverlayVisible 受控 Overlay，不保存查询词、不筛选目录、不伪造搜索结果。",
+    "rationale": "将形状与模糊收敛为组件公开能力，首页只组合既有组件和状态，避免页面穿透修改 PUI 子组件几何或用私有 backdrop-filter 复制遮罩。",
+    "alternativesRejected": [
+      "继续使用 pui-search 会把搜索入口留在 ScrollArea 内，且提前实现本轮未授权的业务筛选。",
+      "在首页 WXSS 穿透修改 Combobox Trigger 圆角会破坏组件几何所有权。",
+      "用页面私有 backdrop-filter 或固定黑色遮罩无法让所有 Overlay 消费者选择 blur。"
+    ]
+  },
+  "impact": {
+    "files": ["combobox/combobox.js", "combobox/combobox.wxss", "overlay/overlay.js", "overlay/overlay.wxss", "common/style/theme.wxss", "miniprogram/pages/index/index.js", "miniprogram/pages/index/index.wxml", "miniprogram/pages/index/index.wxss", "miniprogram/pages/index/index.json", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/COMBOBOX.md", "docs/components/OVERLAY.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-combobox.js", "scripts/test-overlay.js", "scripts/test-miniprogram-home.js"],
+    "dependencies": ["pui-combobox", "pui-overlay", "pui-config-provider", "--pui-overlay-blur"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js", "scripts/test-overlay.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": ["微信开发者工具 RC 2.02.2607161、合法 AppID wx23aa017375535746、iPhone 12/13 390px 模拟器：普通编译后点击 Navbar 搜索，实测 Overlay 覆盖首页、背景出现 blur、居中 Combobox Trigger 为 round；点击遮罩空白区后返回完整首页。"],
+    "deviceRisks": ["微信真机仍需确认 fixed Overlay、backdrop-filter 性能与支持度、catchtouchmove、Slot 投影、系统低动效和读屏。"]
+  },
+  "ai": {
+    "summary": "首页需要圆形浮层搜索入口时，使用 pui-combobox shape=round 与 pui-overlay blur；不要退回页面私有搜索控件或私有模糊遮罩。",
+    "rules": [
+      "Combobox 的 round 只改变 Trigger，Panel 继续使用语义圆角。",
+      "Overlay blur 必须是显式 Boolean Prop，并消费共享 --pui-overlay-blur Token。",
+      "Overlay 不因 blur 增加第二事件、关闭策略、业务状态或第二个 Surface。",
+      "未授权业务搜索时，页面只管理 Overlay 显隐，不创建筛选结果、假入口或成功提示。"
+    ],
+    "tags": ["miniprogram-home", "combobox", "overlay", "blur", "api-contract", "search-entry"]
+  }
+}

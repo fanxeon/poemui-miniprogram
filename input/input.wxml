@@ -1,0 +1,76 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="group"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{!interactive}}"
+  aria-busy="{{loading}}"
+  aria-invalid="{{invalidState}}"
+>
+  <view wx:if="{{label || required}}" class="pui-input__label">
+    <slot wx:if="{{label === 'slot'}}" name="label"></slot>
+    <text wx:else>{{label}}</text>
+    <text wx:if="{{required}}" class="pui-input__required" aria-hidden="true">*</text>
+  </view>
+  <view class="pui-input__field">
+    <view wx:if="{{prefix}}" class="pui-input__prefix">
+      <slot wx:if="{{prefix === 'slot'}}" name="prefix"></slot>
+      <text wx:else>{{prefix}}</text>
+    </view>
+    <view wx:if="{{prefixIcon}}" class="pui-input__prefix">
+      <slot wx:if="{{prefixIcon === 'slot'}}" name="prefix-icon"></slot>
+      <pui-icon wx:else name="{{prefixIcon}}" size="32" color-scheme="{{colorScheme}}" />
+    </view>
+    <input
+      class="pui-input__control"
+      name="{{name}}"
+      value="{{innerValue}}"
+      placeholder="{{placeholder}}"
+      placeholder-class="pui-input__placeholder"
+      type="{{inputType}}"
+      password="{{inputPassword}}"
+      maxlength="{{nativeMaxlength}}"
+      disabled="{{!interactive}}"
+      focus="{{inputFocus}}"
+      confirm-type="{{confirmTypeValue}}"
+      cursor-spacing="{{cursorSpacing}}"
+      adjust-position="{{adjustPosition}}"
+      hold-keyboard="{{holdKeyboard}}"
+      confirm-hold="{{confirmHold}}"
+      aria-label="{{semanticLabel}}"
+      aria-required="{{required}}"
+      aria-invalid="{{invalidState}}"
+      bindinput="onInput"
+      bindfocus="onFocus"
+      bindblur="onBlur"
+      bindconfirm="onConfirm"
+    />
+    <pui-button
+      wx:if="{{clearable && innerValue && interactive}}"
+      custom-class="pui-input__clear"
+      theme="default"
+      variant="text"
+      size="extra-small"
+      shape="square"
+      icon="close-circle"
+      aria-label="清空{{semanticLabel}}"
+      reduce-motion="{{reduceMotion}}"
+      color-scheme="{{colorScheme}}"
+      catch:click="onClear"
+    />
+    <pui-loading wx:if="{{loading}}" loading size="28rpx" aria-label="{{semanticLabel}}加载中" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
+    <view wx:if="{{suffix}}" class="pui-input__suffix">
+      <slot wx:if="{{suffix === 'slot'}}" name="suffix"></slot>
+      <text wx:else>{{suffix}}</text>
+    </view>
+    <view wx:if="{{suffixIcon}}" class="pui-input__suffix-icon">
+      <slot wx:if="{{suffixIcon === 'slot'}}" name="suffix-icon"></slot>
+      <pui-icon wx:else name="{{suffixIcon}}" size="32" color-scheme="{{colorScheme}}" />
+    </view>
+  </view>
+  <view wx:if="{{tips}}" class="pui-input__tips">
+    <slot wx:if="{{tips === 'slot'}}" name="tips"></slot>
+    <text wx:else>{{tips}}</text>
+  </view>
+  <slot name="extra"></slot>
+</view>

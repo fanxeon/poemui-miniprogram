@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0336",
+  "title": "小程序组件详情页需要共享标题、子标题、描述与宽松分区节奏",
+  "scope": "global",
+  "components": ["miniprogram", "button", "divider", "icon", "scroll-area"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Divider 独立页的分区应有更充足的上下空间，并让所有当前组件独立页复用标题、子标题与描述的信息结构。",
+  "environment": {
+    "surfaces": ["miniprogram-component-page", "documentation"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Button、Divider、Icon 三个详情页；每页都在 WXML 中复制 component-page__section-header。",
+    "Divider 三段仅以 content gap 连接标题和示例，阅读分区缺少上下呼吸空间。",
+    "Icon 另维护 intro/group 标题结构，无法保证后续详情页的信息层级一致。"
+  ],
+  "expected": "所有当前独立详情页都用同一个透明布局组件呈现 title、subtitle、description 与默认 Slot；Divider 使用 Token 化的宽松分区，长图标目录可在同一组件中选择较紧但仍语义化的密度；不新增卡片、边框或阴影。",
+  "actual": "页面各自维护标题结构，Divider 空间偏紧，Icon 的标题样式与 Button/Divider 分叉。",
+  "evidence": [
+    { "kind": "file", "ref": "miniprogram/components/component-page-section/component-page-section.wxml", "note": "共享 title/subtitle/description 顺序与默认 Slot。" },
+    { "kind": "file", "ref": "miniprogram/components/component-page-section/component-page-section.wxss", "note": "spacious 和 regular 都只消费 PUI section/content/space Token，不建立 Surface，也不使用不受组件 WXSS 支持的宿主选择器。" },
+    { "kind": "file", "ref": "miniprogram/app.wxss", "note": "全屏页面根规则只保留在 App WXSS，详情页导入的共享样式不再含 page 标签选择器。" },
+    { "kind": "file", "ref": "miniprogram/pages/components/divider/index.wxml", "note": "三段 Divider 用法均复用共享分区并传入可读子标题。" },
+    { "kind": "file", "ref": "miniprogram/pages/components/button/index.wxml", "note": "Button 全部用法同步复用共享分区。" },
+    { "kind": "file", "ref": "miniprogram/pages/components/icon/index.wxml", "note": "图标资源与分类目录复用同一结构，长目录使用 regular 密度。" },
+    { "kind": "test", "ref": "scripts/test-miniprogram-component-pages.js", "note": "锁定共享注册、字段、默认 Slot、Token、无私有 section-header 和 Divider 三段子标题。" }
+  ],
+  "rootCause": "首版详情页只统一了 Navbar、ScrollArea 与外观入口，没有把正文信息结构抽到共享层；不同页面分别复制标题规则，Divider 的内容 gap 被误当成分区节奏。",
+  "decision": {
+    "outcome": "新增仅供 miniprogram 页面组合使用的 component-page-section，不提升为 npm PUI 组件；默认 spacious 为独立组件用法提供 section/content Token 的上下节奏，regular 只供图标等高密度长目录使用。",
+    "rationale": "把正文层级统一到透明共享布局可消除复制并提升 Divider 阅读节奏，又不把页面信息架构误做成新的视觉控件或 Surface。",
+    "alternativesRejected": [
+      "只给 Divider 写私有 padding 会继续让三个页面的标题结构漂移。",
+      "在每个分区外套 Card 或 Panel 会制造多余 Surface，并与无边框默认外观冲突。",
+      "修改 H5 Divider 概览不能解决小程序独立页的重复布局，且本次没有共享组件 API 变化。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/components/component-page-section",
+      "miniprogram/app.wxss",
+      "miniprogram/styles/component-page.wxss",
+      "miniprogram/pages/components/button/index.json",
+      "miniprogram/pages/components/button/index.wxml",
+      "miniprogram/pages/components/divider/index.json",
+      "miniprogram/pages/components/divider/index.wxml",
+      "miniprogram/pages/components/icon/index.json",
+      "miniprogram/pages/components/icon/index.wxml",
+      "miniprogram/pages/components/icon/index.wxss",
+      "docs/MINIPROGRAM_HOME.md"
+    ],
+    "dependencies": ["pui-config-provider", "pui-scroll-area", "pui-divider", "pui-button", "pui-search", "pui-icon"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-divider.js",
+      "scripts/test-scroll-area.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-component-pages.js",
+      "node scripts/test-miniprogram-home.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run check"
+    ],
+    "browser": [],
+    "deviceRisks": [
+      "合法 AppID 的 390px 模拟器、iOS/Android 真机尚未确认宽松分区下的字体回流、ScrollArea 惯性和深浅色外观组合。",
+      "默认 Slot 的页面组合及透明布局不会改变 PUI API，但仍需确认微信 WebView 的组件样式隔离与语义阅读顺序。"
+    ]
+  },
+  "ai": {
+    "summary": "独立页面的内容层级要复用透明共享布局；分区留白使用语义 Token，不用页面私有 padding 或卡片包装。",
+    "rules": [
+      "当前组件独立页必须通过 component-page-section 提供 title、subtitle、description 与默认 Slot，不得复制 section-header。",
+      "spacious 用于组件用法分区，regular 只用于图标库等长目录；两者都必须消费现有 PUI Token。",
+      "共享分区组件是透明布局，不得加入背景、边框、阴影、毛玻璃或页面私有颜色。",
+      "只改变小程序页面组合时不要虚构 H5 页面；共享 PUI API、Token 或行为没有变化就不启动 H5 同步。"
+    ],
+    "tags": ["miniprogram", "component-page", "divider", "spacing", "information-hierarchy", "reuse"]
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0055",
+  "title": "Divider 概览混入工程状态且 API 与兼容说明缺少真实边界",
+  "scope": "component",
+  "components": ["divider", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Divider 官网应像成熟组件文档一样按真实用法分区，基础示例保持最小，完整展示 7 个 Props、Slot 和无事件边界，不用工程诊断内容冒充产品示例。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Divider 概览，旧示例展示“构建结果、npm 包检查已通过、发布状态、分割线参数”等工程诊断 Cell，而不是用户可筛选的分割线用法。",
+    "旧 H5 纵向示例给 Divider 外包裹带背景、边框和圆角的私有 Surface，改变了展示原语的真实视觉边界。",
+    "检查 API 与属性页：默认 API 没有 Slots 区，Props 说明多为通用占位；H5 兼容说明错误宣称 Divider 使用 click/input 和 triggerEvent。",
+    "测量预览分区，直接 demo-section 全局规则把后续标题间距覆盖为 8px，三个分区层级不够清楚。"
+  ],
+  "expected": "概览固定为基础用法、文字与对齐、布局与线型三段；第一条由真实 Props 驱动，基础 WXML 为零 bind 的最小 Divider。API 完整显示 7 Props、1 Slot、0 Events，兼容说明明确纯展示边界，后续分区间距为共享 18px。",
+  "actual": "旧概览主要表达构建状态，纵向线被私有卡片包装；Slots、真实说明和无事件边界缺失，分区只有 8px，无法快速比较常用能力。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户已确认按 TDesign 对照规则持续整治，并授权后续组件由 agent 无需逐项确认、自主完成和验收。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "dividerShowcase 现在按三段真实用法输出；旧工程 Cell 已删除，H5 helper 统一镜像内容、方向、ARIA 和回退。"
+    },
+    {
+      "kind": "file",
+      "ref": "metadata/components.js",
+      "note": "Divider 固定 7 个 Props、无 Events，并登记 1 个 default Slot 的完整说明。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/divider",
+      "note": "API 实测为 7 Props/1 Slots，全部说明自然换行无截断；属性页明确没有 click/input、实例方法或动画。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/divider",
+      "note": "390px innerWidth=390/clientWidth=375，document/body/main/shell 均为 375/375，API clipped=[]，PreviewDevice 349/349、Showcase 293/293。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-divider.js",
+      "note": "专项合同锁定三段标题、删除工程诊断、API/Slot/无 bind、兼容说明与 18px 高优先级分区规则。"
+    }
+  ],
+  "rootCause": "旧预览以发布回归场景搭建 Divider，缺少用户用法信息架构；API 依赖通用描述和旧静态目录，兼容说明也没有根据无事件组件分支。全局 component-only gap 规则随后覆盖了组件分区 Token。",
+  "decision": {
+    "outcome": "重建 Divider 概览为三段用法，第一项接受完整 Props，固定示例用于比较；纵向线与 PUI Tag 直接组合。补齐 Slot、专属 Props 文案、静态行为兼容说明、基础/文字/Slot 文档与 18px 分区优先级。",
+    "rationale": "分割线是简单展示原语，清晰比较方向、内容、对齐和线型比发布状态卡更接近用户任务；API 明确不适用状态也能避免 Agent 为覆盖清单伪造交互。",
+    "alternativesRejected": [
+      "继续显示构建结果会把项目门禁误当 Divider 产品能力。",
+      "把所有示例塞进一个基础 WXML 会重复 Button 已淘汰的过度展示问题。",
+      "为匹配 TDesign 强制改成命名 content Slot 会破坏现有 PoemUI 默认 Slot 调用。",
+      "只增加 CSS margin 而不修高优先级 component-only 规则，浏览器计算间距仍会停留在 8px。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "preview/components-data.js", "docs/COMPONENT_API.md", "docs/components/DIVIDER.md", "_example/miniprogram/pages/components/index.wxml", "scripts/test-divider.js"],
+    "dependencies": ["tagSample", "makeUsageCode", "API reference renderer", "compatibility notes", "catalog generator"]
+  },
+  "verification": {
+    "tests": ["scripts/test-divider.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-code-copy.js", "scripts/test-layout-contracts.js"],
+    "commands": ["npm run catalog:generate", "npm run precheck", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "三段标题为基础用法、文字与对齐、布局与线型；计算 row-gap 和相邻 title gap 均为 18px。",
+      "通过真实属性控件输入章节内容、清空到空字符串、开启 showContent、切换 left/right、vertical、dashed、decorative 与 ariaLabel，预览和 WXML 同步回写。",
+      "复制当前效果进入 success，剪贴板包含 6 个非默认 Props、usingComponents 与视觉环境注释，零虚构 bind。",
+      "API 7 Props/1 Slot/0 Events，390px 所有表格单元 clipped=[]；兼容说明明确展示组件无 click/input、受控状态、方法或动画。",
+      "light/dark、阴影、毛玻璃、大圆角、渐变和边框关闭组合后 Divider 几何始终为 293x28px；深色线色更新，边框关闭后中性线条透明，Esc 恢复外观入口焦点。"
+    ],
+    "deviceRisks": [
+      "默认 Slot 的 content 后备覆盖顺序依赖微信小程序 Slot 语义，需微信开发者工具和真机再次确认。",
+      "微信 build-npm 仍因开发者工具 Service Port 关闭无法生成 miniprogram_npm，本记录保持安装端 pending-cli 风险。"
+    ]
+  },
+  "ai": {
+    "summary": "Divider 文档只展示真实分割线用法，API 明确 7 Props、1 Slot、0 Events 和不适用状态。",
+    "rules": [
+      "Divider 概览固定按基础、文字与对齐、布局与线型分区，禁止工程构建状态 Cell。",
+      "第一项必须由当前 Props 驱动，固定示例只用于比较，不能覆盖用户调参结果。",
+      "基础 WXML 只输出 pui-divider 且零 bind；Slot、虚线和对齐进入各自示例。",
+      "无事件组件的兼容说明不得套用 click/input 或 triggerEvent 通用文案。",
+      "后续分区标题必须实测 18px 共享 section gap，不能只检查源码 Token。"
+    ],
+    "tags": ["divider", "preview", "api", "slot", "compatibility", "section-gap", "390px", "tdesign"]
+  }
+}

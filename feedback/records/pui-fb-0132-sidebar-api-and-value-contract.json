@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0132",
+  "title": "Sidebar 公开合同混入页面框架、重复事件与宽松值身份",
+  "scope": "component",
+  "components": ["sidebar", "button", "badge", "icon", "loading", "empty", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Sidebar 应参考成熟小程序 SideBar，只承担同层垂直导航、严格选值、分组与集合状态；基础调用克制，页面 Header、Footer 和业务内容由消费者在外部组合。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "393x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Sidebar 同时公开 customHeader/customFooter、duration/easing、click/select/input/change/scroll 和 select/selectIndex/scrollTo/scrollToIndex/reset，组件职责越过同层导航本身。",
+    "旧值归一化会把 Boolean、对象和不同原始类型压进同一可比较路径，数字0、字符串0与空字符串边界不稳定。",
+    "旧错误、加载和空态由 Sidebar 自行重复拼装，未使用共享 PUI Loading/Empty；H5 与原生子组件组合不一致。",
+    "TDesign MiniProgram 1.15.3 的 SideBar 根以 value/defaultValue/change 为主干，SideBarItem 以 badgeProps/disabled/icon/label/value 表达条目。"
+  ],
+  "expected": "Sidebar 只公开跨微信与 H5 可真实一致的24 Props、2 Events、0 Slots、0 Methods；value 只接受 String/Number并严格区分数字0、字符串0与空字符串；基础 WXML 零 bind。",
+  "actual": "旧公共面把页面框架、重复事件、命令式控制、私有动效和宽松值转换混在同一个组件，调用者难以确定唯一父级回写路径。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考TDesign收敛API、按用法分区、基础示例不展示全部bind，并授权后续组件在完整证据后自主验收。"},
+    {"kind": "file", "ref": "sidebar/sidebar.js", "note": "最终24 Props、严格String/Number值、受控与非受控连续性、change/retry和固定180/1ms。"},
+    {"kind": "file", "ref": "sidebar/sidebar.wxml", "note": "条目组合PUI Button/Badge/Icon，状态组合PUI Loading/Empty；无Header/Footer Slot。"},
+    {"kind": "file", "ref": "docs/components/SIDEBAR.md", "note": "记录TDesign 1.15.3的保留、拒绝、严格值、状态优先级、消费者职责和修改闭环。"},
+    {"kind": "test", "ref": "scripts/test-sidebar.js", "note": "VM与静态合同覆盖24/2/0/0、严格边界值、受控等待、状态优先级、PUI组合和安装产物。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-sidebar", "note": "390px真实点击、键盘、父级回写、数字0/字符串0/空字符串、readonly/disabled/loading/error/retry/empty和reduceMotion。"}
+  ],
+  "rootCause": "旧实现按演示覆盖面持续扩张顶层能力，没有先限定Sidebar与页面布局的职责，也没有以原始类型稳定标识选值。",
+  "decision": {
+    "outcome": "收敛为items/value/defaultValue/theme/bordered/width/height/showGroupTitle/sticky/stickyOffset/showIcon/showDescription/showBadge/clickable/readonly/disabled/loading/loadingText/error/errorText/retryText/emptyText/ariaLabel/reduceMotion；只保留change/retry；0 Slots；0 Methods。",
+    "rationale": "同层侧边导航需要稳定数据、当前值、局部滚动、集合状态与父级所有权；页面品牌、标题、辅助操作、右侧内容和命令式流程应由消费者组合。",
+    "alternativesRejected": [
+      "保留click/select/input会让一次选值重复表达多套事件。",
+      "保留Header/Footer Slot会让Sidebar承担页面框架。",
+      "保留五个实例方法和公开duration/easing会扩大跨端不可验证的命令式与调参面。",
+      "把Boolean/Object转成字符串会破坏严格值身份并制造重复项。"
+    ]
+  },
+  "impact": {
+    "files": ["sidebar/sidebar.js", "sidebar/sidebar.json", "sidebar/sidebar.wxml", "sidebar/sidebar.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/SIDEBAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-sidebar.js", "scripts/test-core-state-composition.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0132-sidebar-api-and-value-contract.json"],
+    "dependencies": ["pui-button", "pui-badge", "pui-icon", "pui-loading", "pui-empty", "TDesign MiniProgram 1.15.3 SideBar/SideBarItem"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sidebar.js", "scripts/test-component-semantic-contracts.js", "scripts/test-core-state-composition.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node scripts/test-sidebar.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "受控基础实例点击与Enter键分别把value真实回写为foundation与form，change只触发一次并标明source=tap/keyboard。",
+      "边界实例从数字0切到字符串0再切到空字符串，当前值与事件文本保持严格身份；Boolean false不生成条目。",
+      "readonly、disabled、loading和error均阻止选择；error Retry只发布retry并保持错误态，empty由items=[]真实产生。",
+      "reduceMotion在真实属性回写后为组件根增加is-reduced-motion，专项合同锁定1ms样式。"
+    ],
+    "deviceRisks": [
+      "微信scroll-view惯性、scroll-into-view、sticky、rpx排版、Button触摸、样式隔离、系统低动效和读屏需合法AppID真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Sidebar只负责同层垂直导航、严格选值、局部滚动和集合状态；页面框架归消费者，change是唯一选值事件。",
+    "rules": [
+      "Sidebar不得恢复customHeader/customFooter、click/select/input/scroll、五个实例方法或公开duration/easing。",
+      "value/defaultValue与item.value只接受String/Number，必须严格区分数字0、字符串0与空字符串。",
+      "受控选择只发change并等待父级回写；重复当前项和所有阻断态静默。",
+      "error优先loading，retry只通知父级；不得伪造加载成功或注入假条目。"
+    ],
+    "tags": ["sidebar", "tdesign", "api-contract", "controlled", "strict-value"]
+  }
+}

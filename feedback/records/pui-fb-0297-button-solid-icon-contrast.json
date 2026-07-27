@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0297",
+  "title": "实色主要与危险 Button 的内置 Icon 对比度不足",
+  "scope": "component",
+  "components": ["button", "icon", "miniprogram"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "design-review",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Button 独立页面与外观 Popup 的主要图标按钮应与 H5 概览一致，在浅色和深色下都清晰可读。",
+  "environment": {
+    "surfaces": ["miniprogram-component-page", "h5-preview", "component-contract"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 390×844 小程序 Button 页面查看组件类型中的主要圆形新增按钮。",
+    "打开小程序外观 Popup，查看标题栏左侧的黑色圆形重置按钮。",
+    "按钮文字色使用反色 Token，但 Icon Font 迁移后的 pui-icon 根仍写死 --pui-text-primary，覆盖了 Button 传下来的反色前景。",
+    "refresh 字形、码点与字体产物均存在，H5 资源页也能显示；小程序中形成黑底黑图标，因此视觉上只剩空圆按钮。"
+  ],
+  "expected": "主要/危险 base 实色 Button 内置单色 Icon 与正文共享反色对比；outline/text/ghost 和独立 Icon 保持各自原色合同。",
+  "actual": "小程序 pui-icon 根把组合宿主的反色前景重置为正文黑色，refresh 落在黑色主要 Button 上不可见；页面若私自补白会掩盖共享组件缺陷。",
+  "evidence": [
+    {"kind": "browser", "ref": "/var/folders/2t/hbgcrd2n58n2j587pvlrr3gr0000gn/T/codex-clipboard-8ce90433-3e10-4b4b-8fb7-a27ba5ee657e.png", "note": "用户提供的小程序截图显示外观 Popup 左侧黑色圆形重置 Button 中没有可见 refresh。"},
+    {"kind": "browser", "ref": ".audit/refresh-visible-wechat-390.png", "note": "微信开发者工具 iPhone 12/13 Pro 主 WebView 热重载后，重置 Button 内白色 refresh 清晰可见；真实点击重置后字形仍保持可见。"},
+    {"kind": "file", "ref": "icon/icon.wxss", "note": "Icon 根默认改为 color: inherit，使 Font Glyph 的 currentColor 继续继承 Button 反色前景。"},
+    {"kind": "file", "ref": "assets/icons-src/action/refresh.svg", "note": "refresh 的 Roundline SVG 真源完整存在，问题不在绘制或生成缺失。"},
+    {"kind": "test", "ref": "scripts/test-icon.js", "note": "专项测试禁止 Icon 根重新写死正文 Token，并锁定默认继承消费方前景。"},
+    {"kind": "test", "ref": "scripts/test-button.js", "note": "专项测试锁定 Button + Icon 组合必须保留实色 Button 的反色前景。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 Icon 已使用 currentColor；390px 资源页中的 refresh 字形可见。"}
+  ],
+  "rootCause": "Icon Font 迁移后，小程序字形已经支持 currentColor，但 icon/icon.wxss 的根节点仍保留旧的正文色默认值，覆盖了 Button 的 --pui-text-inverse 继承链，造成黑底黑图标。原有记录只约束了旧图片渲染分支，没有测试 Font 运行时的继承链。",
+  "decision": {
+    "outcome": "将小程序 Icon 根的默认颜色改为 inherit，由同一 Font Glyph 的 currentColor 继承页面或 Button 组合宿主前景；显式 color Prop 仍通过内联样式覆盖。不新增 Button 私有颜色，不在外观 Popup 写补丁。",
+    "rationale": "Icon 是展示叶子，默认颜色应属于消费方语义；inherit 同时覆盖 primary/danger Button、Navbar 与其他组合宿主，且与 H5 currentColor 运行时一致。",
+    "alternativesRejected": [
+      "详情页私有覆盖只修一处截图，其他主要图标 Button 仍不可读。",
+      "在外观 Popup 单独给 refresh 传白色只修一个入口，其他实色图标 Button 仍会黑底黑图标。",
+      "在 Button WXML 判断 theme/variant 并硬传白色会复制视觉状态机，破坏 Token 和 currentColor 继承。",
+      "把主要图标按钮改成 outline 会偏离 H5 概览真相源并掩盖组件组合缺陷。"
+    ]
+  },
+  "impact": {
+    "files": ["icon/icon.wxss", "docs/components/ICON.md", "docs/components/BUTTON.md", "scripts/test-icon.js", "scripts/test-button.js", "miniprogram_dist/icon/icon.wxss", "feedback/records/pui-fb-0297-button-solid-icon-contrast.json"],
+    "dependencies": ["pui-icon Icon Font currentColor renderer", "Button primary/danger base variants", "component-page-navbar appearance Popup", "H5 currentColor mirror"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-button.js", "scripts/test-miniprogram-component-pages.js"],
+    "commands": ["node scripts/test-icon.js", "node scripts/test-button.js", "node scripts/test-miniprogram-component-pages.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": [
+      "390×844 H5 Icon 资源页已确认 refresh 的字体轮廓完整可见，排除 SVG、码点和 WOFF2 字形缺失。",
+      "H5 Button helper 保持 currentColor 路径；小程序 Icon 根同步改为 inherit，未增加页面私有颜色或第二套 API。",
+      "微信开发者工具 Stable 2.01.2510290 使用 AppID wx23aa017375535746；iPhone 12/13 Pro 主 WebView 热重载后，外观 Popup 的 refresh 为清晰白色圆箭头。",
+      "真实点击“恢复默认外观”后全局开关发生回写，refresh 在变化后的 Button 前景中仍可见，调试器显示 0 errors。"
+    ],
+    "deviceRisks": [
+      "开发者工具截图不能替代 iOS/Android 真机对 Icon Font currentColor 继承和字形抗锯齿的视觉复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Font Icon 默认必须继承组合宿主前景；实色 Button 内的黑底黑图标不能由 Popup 私有补白掩盖。",
+    "rules": [
+      "primary/danger base Button 的内置单色 Icon 必须与反色正文保持一致。",
+      "只对实色 base 变体应用反色；outline、text、ghost 和独立 Icon 不得被全局反色。",
+      "Icon 根不得把消费方的 currentColor 重置为 --pui-text-primary；显式 color Prop 才能覆盖继承色。",
+      "发现 H5 currentColor 与小程序 Font 运行时差异时，应先核对字形是否存在，再检查组合前景继承链，并同步合同、测试、Ledger 和安装产物。"
+    ],
+    "tags": ["button", "icon", "refresh", "current-color", "contrast", "h5-parity", "wechat-miniprogram"]
+  }
+}

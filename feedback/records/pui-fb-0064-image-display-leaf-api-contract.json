@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0064",
+  "title": "Image 把展示资源、宿主交互和私有动效混成过量公开 API",
+  "scope": "component",
+  "components": ["image", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Image 应以少而明确的 API 展示真实图片资源和状态，不把点击、禁用、私有动画参数或诊断事件塞进基础图片组件。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 image/image.js：公开 17 Props，其中 clickable/disabled/duration/easing 把宿主交互和全局动效重复暴露给展示叶子。",
+    "旧 WXML 根据 clickable 把 Image 根改为 button 语义并发布 click，基础示例同时绑定 click/load/error，掩盖最小图片调用。",
+    "对照 tdesign-miniprogram@1.15.3 的 image/props.js、type.d.ts、WXML/WXSS 与官方文档：核心为 11 Props、load/error 和资源状态 Slot，没有 Image 自身 click/disabled。"
+  ],
+  "expected": "Image 只承担图片地址、微信解码能力、安全尺寸、裁切、形状、资源状态、覆盖内容、语义和低动效；点击、禁用、选择与业务重试由外层 PUI Button/Cell 承担。",
+  "actual": "旧合同把展示资源、宿主点击门禁、私有动效和三类基础绑定合并在一个组件中，API 与用户任务都过重。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API，基础用法保持基础，并授权完整 battle 后自主连续验收。"},
+    {"kind": "file", "ref": "image/image.js", "note": "最终固定 14 Props，只发布真实 load/error，根节点没有 tap 方法。"},
+    {"kind": "file", "ref": "image/image.wxml", "note": "根固定 role=img，原生 image 透传 lazy-load、webp、长按菜单，并组合 PUI Loading/Icon 与默认 Slot。"},
+    {"kind": "test", "ref": "scripts/test-image.js", "note": "专项锁定 14 Props、2 Events、1 Slot、0 业务 Methods，并禁止恢复 click/clickable/disabled/duration/easing。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/image", "note": "概览确认 Image 根为 span role=img；两个实际按钮来自外层 PUI Button，禁用宿主保持 disabled。"}
+  ],
+  "rootCause": "旧设计以配置数量和演示诊断覆盖为目标，没有先固定 Image 是资源展示叶子的职责边界。",
+  "decision": {
+    "outcome": "公开合同收敛为 src/mode/width/height/shape/lazy/webp/loading/error/text/showMenuByLongpress/showSlot/ariaLabel/reduceMotion 14 Props、load/error 2 Events、default 1 Slot、0 业务 Methods；删除 click/clickable/disabled/duration/easing。",
+    "rationale": "图片的独立任务是可靠展示资源；外部 loading/error 仍能表达真实请求状态，微信 webp 是真实平台能力，固定 500ms/1ms 动效足以维持跨端一致。",
+    "alternativesRejected": [
+      "机械复制 TDesign 的字符串 loading/error 与两个具名 Slot 会和 PoemUI 统一状态文案、Loading/Icon 组合形成第二套内容入口。",
+      "保留 Image click/disabled 会制造嵌套交互根并和外层 Button/Cell 重复门禁。",
+      "保留 duration/easing 只会让同一淡入动画产生组件私有配置与全局 Token 两个事实源。"
+    ]
+  },
+  "impact": {
+    "files": ["image/image.js", "image/image.json", "image/image.wxml", "image/image.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/IMAGE.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-image.js"],
+    "dependencies": ["pui-loading", "pui-icon", "pui-button", "pui-tag", "theme behavior"]
+  },
+  "verification": {
+    "tests": ["scripts/test-image.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "真实有效资源进入 loaded，缺失资源触发 error，空 src 显示 empty；外部 error > loading > empty > 资源状态。",
+      "外层 PUI Button 点击后自身标签回写为原图已打开，禁用宿主保持 disabled，Image 根没有 button 或 click。",
+      "API 完整展示 14 Props、2 Events、1 Slot，基础 WXML 零 bind，390px 无字段裁切或页面横向溢出。"
+    ],
+    "deviceRisks": [
+      "微信 webp 解码、lazy-load 触发时机、长按菜单、widthFix/heightFix 和辅助技术仍需合法 AppID 真机复核。",
+      "旧消费者若使用 clickable/disabled/click/duration/easing，需要迁移到外层 PUI Button/Cell 和固定 Token 动效。"
+    ]
+  },
+  "ai": {
+    "summary": "Image 是资源展示叶子，只负责真实图片状态；点击、禁用、选择和业务重试永远交给外层交互组件。",
+    "rules": [
+      "禁止恢复 Image 自身 click/clickable/disabled 或私有 duration/easing。",
+      "基础用法只写最小 pui-image，不绑定 load/error；完整事件只进入 API 或真实事件专项示例。",
+      "loading/error 只表示调用者真实状态，不得伪造资源完成或业务重试成功。",
+      "需要可点击图片时使用外层 PUI Button/Cell，覆盖 Slot 的事件属于消费者。"
+    ],
+    "tags": ["image", "api", "tdesign", "display-leaf", "composition"]
+  }
+}

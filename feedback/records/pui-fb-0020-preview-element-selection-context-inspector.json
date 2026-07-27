@@ -1,0 +1,137 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0020",
+  "title": "官网预览缺少元素选择与上下文 Props 编辑模式",
+  "scope": "global",
+  "components": ["preview-site", "button", "input", "select", "switch", "slider", "textarea", "icon", "dialog"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "官网预览提供可切换的常规和元素选择两种操作模式；选择预览中的不同对象时，在 PreviewDevice 左右两侧同时浮出等高等宽的工具面板，左侧编辑可自由输入的内容值，右侧编辑 Boolean、枚举、范围及其余相关 Props，并可真实调参。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件页的概览。",
+    "旧页面只有所见即所得交互；点击 Header、Content、Footer、Close 或组件主体都会直接执行组件业务动作。",
+    "要修改与某个局部元素相关的参数，必须切到 PROP 后从完整字段列表中自行查找，预览与 Prop 所属关系没有可视化入口。",
+    "首版元素选择模式把整个 PreviewDevice 和所有可选元素都设为 crosshair，容易被理解为坐标或像素拾取工具，与语义化组件选择不一致。"
+  ],
+  "expected": "概览提供常规模式与元素选择模式。常规模式执行真实业务交互；元素选择模式只选中和高亮语义元素，不触发业务操作，并在 PreviewDevice 左右两侧浮出等高等宽的可编辑面板。左侧只承接 text/json/nullable-number 等自由输入内容值，右侧承接 Boolean、枚举、范围及其余设置；两侧复用完整 PROP 的 PUI 控件、校验与回写，具有方向相反的进退场动画，且不改变固定预览设备尺寸。",
+  "actual": "旧预览只有单一交互模式，没有元素到公开 Props 的语义映射、选中高亮、上下文调参面板或业务点击隔离；完整 Props 只能在独立 PROP 视图中使用。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求设计常规和元素选择两套预览模式，点击对象时在预览右侧显示该对象相关 Props 的浮动工具面板。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户要求替换元素选择状态下的十字指针；最终采用空白区 default、可选择语义元素 pointer。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户要求把单侧 Inspector 改为 PreviewDevice 左右两侧同时弹出：左侧放文本等内容输入，右侧放 Checkbox、Switch 等其余配置；两张卡片必须等高等宽并具有明确动画。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "新增模式状态、语义角色分类、元素标记、捕获阶段选择门禁、上下文 Prop 过滤及与完整 PROP 共用的 helper/writeback。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "新增不改变几何的 hover/selected outline、桌面左右双侧 Inspector、共享宽高 Token、双向进退场、窄屏底部等宽双栏覆盖与独立滚动边界。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-element-inspector.js",
+      "note": "专项合同锁定两种模式、PUI 组合、业务点击隔离、公开 Prop 过滤、共享回写、固定设备和响应式面板。"
+    }
+  ],
+  "rootCause": "官网此前只区分概览/API/PROP 三类阅读任务，没有在概览内部建立交互模式，也没有把实时 DOM 语义元素映射到父组件公开 Prop 定义；首版上下文 Inspector 又把不同交互形态的字段混在单个右侧长列表中，内容输入与开关/枚举无法快速区分。若直接复用旧 Inspector，则还会重新引入常驻第三列和完整 Props 重复维护。",
+  "decision": {
+    "outcome": "在标准概览内部增加复用 PUI Button/Icon 的常规与元素选择模式，并将模式组放在 PreviewDevice 上方透明工具栏左侧；机型、刷新和重置在同一栏右侧整组右对齐。选择模式在捕获阶段接管设备内 pointer/click 与 Enter/Space，按组件主体、Header、标题、Content、Footer、Close、主次操作、输入、遮罩、条目和组合子组件等语义分类并高亮。上下文 Inspector 只从当前组件公开 Prop 定义中过滤相关字段，再把 text/json/nullable-number 等自由输入内容值放入左卡片，把 Boolean、Select、Range 及其余设置放入右卡片；两侧继续复用完整 PROP 的 PUI 表单 helper、解析、错误边界和写回，没有字段时显示 PUI Empty。桌面双卡片绝对浮在固定设备左右两侧并共享 286×560px Token，间距共同使用 14px；窄屏变为预览底部等宽双栏覆盖。首次选中从设备两侧向外展开，关闭反向收回，切换元素轻量过渡，输入回写不重播入场，系统低动效为 1ms；整个浮层不建立第三列、不影响 PreviewDevice 几何。",
+    "rationale": "两种模式把看效果与查元素职责分开；左右分流又把自由输入内容与离散/布尔设置按真实操作方式分开，用户不用在一个长列表里交叉查找。捕获阶段门禁避免选择 Close、按钮或输入时意外改变业务状态，共用 Prop 定义与控件路径避免形成第二套调参系统，只暴露父级公开 API 则能保持组件封装边界。",
+    "alternativesRejected": [
+      "选择模式全区使用 crosshair 会把语义元素 Inspector 错误表达成坐标或像素拾取工具；改为空白区 default、可选择元素 pointer。",
+      "常规点击后再推断选择会同时触发关闭、提交、切换等业务操作，无法稳定检查元素。",
+      "恢复常驻第三列并复制完整 Props 会违反既有信息架构并产生双份状态。",
+      "为每个 DOM 子节点临时造内部字段会穿透组件封装，也无法同步到 WXML 或真实父级 API。",
+      "让 Inspector 参与主栏 Grid 宽度会挤压或改变固定手机预览尺寸。",
+      "继续把全部字段混在设备右侧单卡片中会弱化内容编辑与外观/行为设置的任务边界，也无法形成围绕当前预览对象的双侧操作关系。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-element-inspector.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-style-utilities.js",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0013-component-page-tabs-information-architecture.json",
+      "feedback/records/pui-fb-0020-preview-element-selection-context-inspector.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["button", "icon", "input", "select", "switch", "slider", "textarea", "empty", "tag", "badge"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-element-inspector.js", "scripts/test-preview-infrastructure-composition.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "1280×720 桌面实测：393×622px PreviewDevice 左右分别显示 286×560px Inspector，顶部与设备对齐，两侧间距均为 14px，两卡片宽高完全一致，document 横向溢出为 0。",
+      "Dialog 标题选择实测自动分流为左侧 title/description/content/ariaLabel 四个自由输入字段与右侧 customTitle Switch；title 连续输入真实更新组件标题、保持输入焦点，Mount 不出现 is-entering/is-switching，证明输入回写未重播入场动画。",
+      "选择组合 Tag 时左右两侧分别显示“没有内容字段”和“没有其他设置”的 PUI Empty；两卡片仍保持等高。",
+      "深色与边框关闭、阴影、毛玻璃、大圆角、渐变同时开启时，两侧面板计算样式完全一致：22px 圆角、相同 shadow/blur/边框和中性色主题；验收后已恢复 light/border-on/shadow-off/frost-off/radius-normal/gradient-off。",
+      "Dialog 选择模式实测：PreviewDevice viewport 计算光标为 default，16 个 data-preview-selectable 元素全部为 pointer，页面 crosshair 计算样式数量为 0；点击标题后高亮与上下文 Inspector 正常出现，验收后恢复常规模式。",
+      "Dialog 选择模式共标记 16 个可选择语义元素；Header 显示 title/description/showClose/customTitle，Content 与 Footer 只显示各自相关公开字段。",
+      "选择 Close 时 Dialog 保持打开，证明业务关闭被阻断；在上下文面板关闭再恢复 showClose 时，真实 Close 节点与选中高亮同步更新。",
+      "选择组合 Tag 时面板不创建假字段，而显示没有父组件 Props 的 PUI Empty 边界说明。",
+      "切回常规模式后点击 Close 真实关闭 Dialog并显示重新打开入口，证明业务交互恢复。",
+      "Button 根节点优先识别为 Button 组件主体并显示完整 34 个公开 Props；点击查看完整 PROP 后进入独立 PROP 视图，模式控件和上下文面板退出。",
+      "Input 根节点识别为组件主体，上下文 placeholder 改为“请输入组件名称”后真实输入框立即更新，面板保持打开；页面刷新后组件 Props 按既有非持久运行态重置。",
+      "深色、阴影、毛玻璃、大圆角与渐变背景五项同时开启后 Inspector、Input 与 PreviewDevice 均保留；刷新后五项本地偏好全部恢复，验收结束再次刷新确认已恢复 light/off/off/normal/off。",
+      "完整 feedback:generate/check、site:build、83 组件 check、example:install 与 pack:check 通过；npm 包 325.0kB/解包 1.8MB/549 files，shasum aa44ea995f22e6ec9367562816dc21bd6b0c5d59。"
+    ],
+    "deviceRisks": [
+      "元素语义分类和上下文 Inspector 只属于 H5 官网，不改变小程序组件公开 API 或 WXML。",
+      "390px 底部等宽双栏覆盖已有静态响应式合同与横向溢出约束；当前内置浏览器不提供视口缩放接口，移动浏览器软键盘、触摸命中、极窄双栏可读性和辅助技术仍需目标设备复核。",
+      "复杂消费者 Slot 无法可靠映射父级公开 API 时会明确显示无可编辑 Props，不允许穿透编辑子组件内部状态。"
+    ]
+  },
+  "ai": {
+    "summary": "标准概览使用常规/元素选择双模式；选择模式只选中语义元素，并用等高等宽的左右双侧 Inspector 分别承接自由输入内容值与其余相关父组件公开 Props，复用完整 PROP 控件且不恢复第三列。",
+    "rules": [
+      "常规模式必须保持所见即所得和真实业务交互；元素选择模式必须阻断设备内点击、Enter 和 Space 的业务副作用。",
+      "元素选择是语义化组件选择：空白区使用 default，可选择元素使用 pointer；不得用 crosshair 暗示坐标或像素拾取。",
+      "可选择对象按组件公开结构语义分类，不能依赖页面坐标或为单张截图硬编码选择区。",
+      "上下文 Inspector 只能从当前父组件公开 Prop 定义中过滤字段，并复用完整 PROP 的 PUI helper、校验和回写路径。",
+      "组合子组件没有父级公开映射时只显示边界说明，禁止伪造 Prop、直接改子节点样式或穿透私有状态。",
+      "上下文 Inspector 是概览内按需浮层而非常驻第三列；桌面必须分别浮在 PreviewDevice 左右两侧，窄屏使用底部等宽双栏覆盖，两种布局都不得改变固定设备尺寸。",
+      "左侧只放 text/json/nullable-number 等自由输入内容值；Boolean、Select、Range 及其余设置放右侧。两侧无字段时必须显示真实 PUI Empty，不得移动字段或制造假字段填满卡片。",
+      "左右卡片必须共享宽、高、间距、内距与 Surface Token，保持等高等宽；首次选中、切换元素、关闭分别使用可逆方向动效，输入回写不得重播入场，低动效统一为 1ms。",
+      "完整 Props、元信息、WXML 和兼容说明只存在于 PROP；上下文面板只提供跳转入口，不复制这些内容。",
+      "关闭面板、退出选择模式、切换组件、执行组件重置或进入 API/PROP 时必须清除选择和高亮。",
+      "模式按钮、关闭、完整 PROP 跳转、表单和空状态必须继续复用 PUI Button/Icon/Input/Select/Switch/Slider/Textarea/Empty 等现有组件。",
+      "模式切换必须位于概览透明工具栏左侧；机型、刷新和重置位于同栏右侧并整组右对齐，工具栏本体不得建立 Surface。"
+    ],
+    "tags": ["preview-site", "interaction-mode", "element-selection", "context-inspector", "dual-panel", "prop", "pui-composition", "responsive", "motion", "accessibility"]
+  }
+}

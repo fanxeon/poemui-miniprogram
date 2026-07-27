@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0167",
+  "title": "Popover 删除 Loading 状态后共享几何覆盖名单仍保留旧依赖",
+  "scope": "component",
+  "components": ["popover", "build-tooling", "preview-site"],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "API 收敛后，专项与全库合同必须反映真实 WXML 依赖，不能为了通过旧测试把已经删除的 Loading/业务状态能力伪造回来。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "contract-test", "miniprogram-dist"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 375px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Popover 收敛后 WXML 不再组合 <pui-loading>，H5 也不再渲染 Loading。",
+    "执行 npm run check 时，scripts/test-shared-subcomponent-geometry.js 的 loadingCoverage 仍把 popover 映射为 popoverShowcase，导致 native Loading 目录集合与旧覆盖名单不一致。"
+  ],
+  "expected": "共享 Loading 几何合同只能列出当前真实 WXML 仍组合 <pui-loading> 的组件；Popover 不应为了名单一致性恢复 Loading 状态。",
+  "actual": "全量检查断言每个 Popover 都有 H5 Loading 镜像，和已收敛的 10 Props/零业务状态合同冲突。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授权后续组件范围化自主验收，但要求逐项保留真实浏览器、Ledger、构建和安装产物证据。"},
+    {"kind": "build", "ref": "npm run check", "note": "2026-07-20 首次最终门禁报 every native PUI Loading composition must have an H5 contract；expected 名单含 popover，actual 原生 WXML 集合不含 popover。"},
+    {"kind": "file", "ref": "popover/popover.wxml", "note": "当前真实 WXML 只包含 reference、外部点击层、content Slot 和文本，无 pui-loading。"},
+    {"kind": "file", "ref": "scripts/test-shared-subcomponent-geometry.js", "note": "删除 loadingCoverage 中 popover 的过时 H5 Loading 映射后，覆盖集合重新从真实 WXML 推导。"},
+    {"kind": "test", "ref": "scripts/test-shared-subcomponent-geometry.js", "note": "修复后专项和完整 npm run check 均通过。"}
+  ],
+  "rootCause": "旧 Popover 的业务状态容器曾组合 Loading；API/WXML 收敛时已移除该能力，但共享依赖覆盖名单没有同步删除。",
+  "decision": {
+    "outcome": "从 Loading 覆盖名单移除 popover，保留集合与真实 WXML 的自动比对。",
+    "rationale": "测试应约束真实依赖，而不是把历史状态壳作为发布能力反向强加回组件。",
+    "alternativesRejected": [
+      "重新加入 Loading Prop、WXML 和 H5 状态树会违反 Popover 的最小锚点气泡职责。",
+      "放宽集合一致性断言会削弱其他真实 Loading 组合的跨端几何保护。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/test-shared-subcomponent-geometry.js", "scripts/test-popover.js", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["shared loadingComponent mirror", "Popover minimal contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-shared-subcomponent-geometry.js", "scripts/test-popover.js"],
+    "commands": ["2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过。"],
+    "browser": ["Popover H5 保持真实内容气泡和 PUI Button 入口，不出现伪 Loading 状态。"],
+    "deviceRisks": ["真机风险不因测试名单修复变化；仍需合法 AppID 验收 rpx、fixed、Slot、触摸和低动效。"]
+  },
+  "ai": {
+    "summary": "组件移除 PUI 子组件依赖时，必须同步删除共享覆盖名单中的旧 H5 映射，但不能放宽真实依赖集合断言。",
+    "rules": [
+      "新增或移除原生 pui-loading 组合时，同步审计 H5 Loading 覆盖名单和所有状态组合专项。",
+      "测试与新合同冲突时，先以真实 WXML 和用户可调用 API 判断；不得为了绿灯把已删除的假能力恢复。"
+    ],
+    "tags": ["popover", "loading", "test-contract", "no-fake-state"]
+  }
+}

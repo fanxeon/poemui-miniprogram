@@ -1,0 +1,152 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0315",
+  "title": "Navbar 与 Tabbar 默认可见边界破坏无边首页节奏",
+  "scope": "component",
+  "components": [
+    "navbar",
+    "tabbar",
+    "preview-site",
+    "miniprogram-home"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Navbar 底边和 Tabbar 顶边默认不渲染；需要边界的消费者仍可显式开启，不影响 Tabbar 项目之间的微分隔。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "miniprogram-home",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-devtools",
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "以不传 bordered 的 pui-navbar 和 pui-tabbar 组合固定三行小程序首页。",
+    "旧默认值均为 true，Navbar 底部和 Tabbar 顶部渲染中性 1rpx 分割线；即使页面并未要求分区边界，仍会出现视觉断层。"
+  ],
+  "expected": "两种屏幕附着导航在 bordered=false 时不渲染外边界，normal Tabbar 保留 item-wrap 的内收 split；消费者传入 bordered=true 时才恢复各自中性外边界。",
+  "actual": "透明 1rpx 外边界虽然不可见，仍保留非必要盒模型，用户明确要求默认状态直接无边框。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求 Navbar 下边框和 Tabbar 上边框改为默认透明。"
+    },
+    {
+      "kind": "file",
+      "ref": "navbar/navbar.js",
+      "note": "bordered 默认值已设为 false，rootClass 仍在 bordered 与 borderless 间明确切换。"
+    },
+    {
+      "kind": "file",
+      "ref": "tabbar/tabbar.js",
+      "note": "bordered 默认值已设为 false，split 仍独立默认 true。"
+    },
+    {
+      "kind": "file",
+      "ref": "navbar/navbar.wxss",
+      "note": "transparent 1rpx 底线保留盒模型，bordered 类显式恢复中性分割线。"
+    },
+    {
+      "kind": "file",
+      "ref": "tabbar/tabbar.wxss",
+      "note": "根顶部边界默认透明，bordered 类只恢复顶线，split 伪元素未改动。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-navbar.js",
+      "note": "锁定 Navbar 默认透明边界和显式 bordered 恢复。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-tabbar.js",
+      "note": "锁定 Tabbar 默认无顶线、显式恢复和独立 split。"
+    }
+  ],
+  "rootCause": "两个组件曾将可选外部分区边界设为默认视觉；第一次修正虽设为透明，但仍保留了不必要的边框盒模型。",
+  "decision": {
+    "outcome": "Navbar 与 Tabbar 的 bordered 默认值统一为 false；bordered=false 两端均不渲染外边界，bordered=true 是唯一显示中性外边界的入口。",
+    "rationale": "默认无边布局不应携带不可见边框；需要分区的消费者可显式开启，Tabbar split 继续独立表达目的地之间的微分隔。",
+    "alternativesRejected": [
+      "在首页以私有 WXSS 覆盖边框只修复单一消费者，不能修复共享组件默认组合。",
+      "保留透明边框只维持不可见占位，不能满足默认状态直接无边框的产品要求。",
+      "关闭 split 会移除用户已要求保留的目的地微隔断，且与外边界不是同一语义。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "navbar/navbar.js",
+      "tabbar/tabbar.js",
+      "tabbar/tabbar.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/NAVBAR.md",
+      "docs/components/TABBAR.md",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "scripts/test-navbar.js",
+      "scripts/test-tabbar.js",
+      "feedback/records/pui-fb-0315-navbar-tabbar-transparent-default-boundaries.json"
+    ],
+    "dependencies": [
+      "PUI Navbar",
+      "PUI Tabbar",
+      "PUI Button",
+      "PUI ConfigProvider"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-navbar.js",
+      "scripts/test-tabbar.js",
+      "scripts/test-miniprogram-home.js"
+    ],
+    "commands": [
+      "npm run miniprogram:build",
+      "npm run example:install",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check",
+      "微信 CLI build-npm --project miniprogram"
+    ],
+    "browser": ["2026-07-24：保持已打开的微信开发者工具 RC 2.02.2607161，通过 CLI build-npm 后在 iPhone 12/13 (Pro) 390px WebView 模拟器热重载实看首页。Navbar 下方和 normal Tabbar 上方均未渲染边框占位；四项 Tabbar 仍保留内收微分隔与首页短横。"],
+    "deviceRisks": [
+      "iOS/Android 真机仍需确认安全区、深浅色、全局 bordered 开关、原生 Button hover 与 fixed 三行布局。"
+    ]
+  },
+  "ai": {
+    "summary": "Navbar 和 Tabbar 的外部边界是可选视觉，不是默认页面分区；bordered=false 不渲染边框，Tabbar split 不随 bordered 关闭。",
+    "rules": [
+      "不要用页面私有样式覆盖 Navbar/Tabbar 外边界来修复默认视觉，修改必须落在共享组件 Props 默认值。",
+      "bordered=false 不得保留透明边框或边框占位；显式 bordered=true 才建立对应外边界。",
+      "Tabbar split 是目的地间的独立微分隔，不能被 bordered 默认值或外边界开关一并移除。",
+      "修改共享屏幕附着组件时同步 H5、合同、API、专项测试、Ledger、dist、示例安装与微信 npm 产物。"
+    ],
+    "tags": [
+      "navbar",
+      "tabbar",
+      "bordered",
+      "split",
+      "miniprogram-home",
+      "h5-parity"
+    ]
+  }
+}

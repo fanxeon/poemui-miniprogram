@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0340",
+  "title": "组件 WXSS 导入全局主题会触发微信禁止选择器编译错误",
+  "scope": "global",
+  "components": ["popup", "config-provider", "theme", "miniprogram"],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "消除 Popup 在微信开发者工具中因不受组件 WXSS 支持的选择器导致的编译错误，并保证所有 PUI 组件沿用同一修复边界。",
+  "environment": {
+    "surfaces": ["miniprogram-index", "npm-component-package"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 miniprogram/pages/index/index.wxml 引入 pui-popup，并从微信开发者工具执行构建 npm。",
+    "编译器报出 popup/popup.wxss:2:1 的 Some selectors are not allowed in component wxss，指出 tag name、ID 或 attribute selector 不允许。",
+    "追踪 Popup 的主题导入链可见 popup/popup.wxss 直接导入 common/style/theme.wxss，而该文件以 page, .pui-theme--light 开头。"
+  ],
+  "expected": "PUI 组件 WXSS 不含也不导入微信组件作用域禁止的全局选择器；主题 Token 从消费者应用级 app.wxss 和页面根 ConfigProvider 继承，Popup 及其他组件继续使用同一 Token。",
+  "actual": "75 个组件样式直接导入含 page 默认 Token 的 common/style/theme.wxss，微信在编译任一使用这些组件的页面时将导入链归因到组件 WXSS 并拒绝该选择器。",
+  "evidence": [
+    { "kind": "user-report", "ref": "微信开发者工具错误：popup/popup.wxss:2:1", "note": "用户提供的真实编译错误指向 Popup 样式导入链。" },
+    { "kind": "file", "ref": "popup/popup.wxss", "note": "修复前直接导入 common/style/theme.wxss；修复后仅保留 Popup 自身 class 规则。" },
+    { "kind": "file", "ref": "common/style/theme.wxss", "note": "主题源含 page 默认 Token，合法边界是 App WXSS 而非组件 WXSS。" },
+    { "kind": "file", "ref": "miniprogram/app.wxss", "note": "真实小程序已从 npm theme/utilities.wxss 全局导入同一主题入口。" },
+    { "kind": "test", "ref": "scripts/test-wxss-universal-selector-compatibility.js", "note": "锁定所有发布组件不得直接导入全局主题，并锁定实际与示例 App 主题入口。" },
+    { "kind": "test", "ref": "scripts/test-popup.js", "note": "锁定 Popup 不再回归导入全局主题。" }
+  ],
+  "rootCause": "全局 Token 源和组件私有 WXSS 过去共用同一个导入文件。common/style/theme.wxss 合法地定义 page 默认值，但微信组件 WXSS 禁止该标签选择器；导入展开后该限制仍会生效。",
+  "decision": {
+    "outcome": "保留 common/style/theme.wxss 作为应用级主题源，删除 74 个发布组件对它的直接导入；消费者统一在 app.wxss 通过 poemui-miniprogram/theme/utilities.wxss 或 theme/theme.wxss 引入一次，组件从页面根 ConfigProvider 与全局级联继承 Token。",
+    "rationale": "真实工程与示例的 app.wxss 已是主题入口，且所有页面根都挂载 ConfigProvider。移除重复组件导入既修复 Popup 又消除同类组件的潜在编译错误，不需要手改 miniprogram_npm。",
+    "alternativesRejected": [
+      "只移除 Popup 的导入会让其他 PUI 组件继续触发相同编译错误。",
+      "从主题源删除 page 会破坏应用级默认 Token，且不能保证未包裹 Provider 的页面背景和变量回退。",
+      "直接编辑 miniprogram_npm 会在下一次 npm 构建后丢失，不能作为发布修复。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "popup/popup.wxss",
+      "config-provider/config-provider.wxss",
+      "button/button.wxss",
+      "overlay/overlay.wxss",
+      "scripts/test-wxss-universal-selector-compatibility.js",
+      "scripts/test-popup.js",
+      "README.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/components/POPUP.md",
+      "docs/COMPONENT_RULES_INDEX.md"
+    ],
+    "dependencies": ["common/style/theme.wxss", "theme/utilities.wxss", "pui-config-provider", "miniprogram/app.wxss"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-wxss-universal-selector-compatibility.js",
+      "scripts/test-popup.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run miniprogram:build",
+      "npm run example:install",
+      "npm run check",
+      "npm run pack:check",
+      "微信开发者工具：工具 -> 构建 npm"
+    ],
+    "browser": [],
+    "deviceRisks": [
+      "需在合法 AppID 的 390px 模拟器与 iOS/Android 真机确认主题 Token 在 component style isolation 下均从页面根 Provider 正确继承。",
+      "本记录不将开发者工具构建或静态测试等同于真机上传验收；真机与上传仍待用户或后续实机流程确认。"
+    ]
+  },
+  "ai": {
+    "summary": "微信组件 WXSS 不得导入含 page 等全局选择器的主题文件，主题入口只能落在消费者 app.wxss。",
+    "rules": [
+      "新增或修改 PUI 组件时，组件 WXSS 不得直接导入 common/style/theme.wxss。",
+      "安装文档和示例必须在 app.wxss 导入 poemui-miniprogram/theme/utilities.wxss 或 theme/theme.wxss。",
+      "遇到组件 WXSS 的禁止选择器报错时先追踪导入链，不要仅修改报错组件或手工编辑 miniprogram_npm。",
+      "H5 使用同名 Token 镜像，但不复制小程序 WXSS 的全局导入链。"
+    ],
+    "tags": ["wxss", "wechat-devtools", "theme", "popup", "component-style-isolation", "npm"]
+  }
+}
+
+

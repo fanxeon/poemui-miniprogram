@@ -1,0 +1,108 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0264",
+  "title": "Sticky 概览被四个重复滚动窗切碎且未填满可用空间",
+  "scope": "component",
+  "components": ["sticky", "preview-site", "cell"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Sticky 概览只展示基础用法，让真实滚动演示填满 PreviewDevice，并保留上下呼吸空间、Sticky 层级阴影、连续无间距的正文 Cell 和左右对称布局。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-device"],
+    "platforms": ["browser"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网第 15 号 Sticky 概览。",
+    "观察基础用法、顶部偏移、容器边界与禁用被拆成四个 260px 局部滚动窗。",
+    "滚动 PreviewDevice 后才能依次看到重复 Cell 和多个相似演示，单个演示没有使用完整可用高度。"
+  ],
+  "expected": "概览只有一个基础用法，真实局部滚动区域精确填满 PreviewDevice 完整宽高；内容上下有统一安全留白，Sticky Header 有层级阴影，正文 Cell 连续无间距且没有第二层卡片外壳；offsetTop、container、disabled 和 zIndex 通过属性页作用于同一预览。",
+  "actual": "概览重复渲染四个矮小滚动窗，大量 Cell 文案相同，核心吸顶效果难以聚焦。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求只展示基础用法并改为全宽高，随后要求保留上下边距、Sticky 阴影且 Cell 之间无间距。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "Sticky showcase 收敛为一份 current 预览，非容器模式使用 50 个连续 Cell 提供充足真实滚动距离。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "Sticky showcase 与局部滚动根填满 PreviewDevice；滚动内容提供上下安全留白，Sticky Header 使用共享阴影，正文 Cell 连续排列。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-sticky.js",
+      "note": "专项测试锁定单一基础分区、删除三类重复演示并要求滚动根全宽高。"
+    }
+  ],
+  "rootCause": "旧预览把 Props 枚举误当作概览内容，为每个参数场景复制独立局部滚动根，导致教学层级和 PreviewDevice 空间利用失衡。",
+  "decision": {
+    "outcome": "概览只保留一个填满完整宽高的基础滚动示例；隐藏不对称占位的局部滚动条，内容上下使用共享设备内距，Sticky Header 使用共享阴影，正文 Cell 取消间距和独立圆角；所有 Props 继续在属性页作用于该示例。",
+    "rationale": "Sticky 只需通过一次真实滚动说明吸顶关系；参数差异属于属性调试，不应复制组件主体。",
+    "alternativesRejected": [
+      "继续保留四个滚动窗会维持重复信息和较差的空间利用。",
+      "只放静态 Cell 或提示文字无法证明真实 sticky 行为。",
+      "移除局部滚动改用页面滚动会破坏固定 PreviewDevice 合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-sticky.js",
+      "docs/components/STICKY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["PreviewDevice", "PUI Cell H5 helper", "Sticky property inspector"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sticky.js"],
+    "commands": [
+      "node scripts/test-sticky.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check"
+    ],
+    "browser": [
+      "2026-07-23 在真实路由 #/layout/sticky 验证仅有 1 个 sticky-preview、0 个设备内分区标题和 13 个 Cell；桌面 PreviewDevice viewport、showcase 与局部滚动根均为 391×620px。",
+      "真实滚动局部区域至 scrollTop=274 后，Sticky Header top 与预览 top 同为 209px，position=sticky 且保持可见。",
+      "390×844 下 PreviewDevice 内容区、showcase 与局部滚动根均为约 349×620px，document/body clientWidth 与 scrollWidth 均为 375px；深浅色文字和 Surface 均可读。",
+      "滚动根计算样式为 border 0、radius 0、shadow none、backdrop none，不再形成设备内第二层卡片。",
+      "追加修复后滚动内容 paddingTop/paddingBottom 均为 14px；初始 Header top 比 Preview top 低 14px，滚动到 scrollTop=202 后 Header top 与 Preview top 同为 209px。",
+      "Sticky Header 计算阴影为 0 8px 22px rgba(0,0,0,.28)；正文 Cell 的相邻几何间距为 0px、borderRadius 为 0px，滚动到底后末项距 viewport 底部为 14px。",
+      "390×844 追加复核中上下 padding 均为 14px、Cell gap=0、radius=0，document/body clientWidth 与 scrollWidth 均为 375px。",
+      "扩充后真实 DOM 包含 50 个正文 Cell，Preview clientHeight=620px、scrollHeight=3140px、最大滚动距离=2520px；滚动至 1400px 和末端 2520px 时 Header 均保持吸顶。",
+      "滚动到第 50 项末端后，末项距 viewport 底部仍为 14px；390×844 下 50 项数量、3140px scrollHeight 和 2520px 最大滚动距离保持一致，无页面级横向溢出。",
+      "隐藏局部滚动条后 Preview 与普通 Cell 均为 391px 宽，Cell 距 Preview 左右边界均为 0px、中心偏差为 0px，clientWidth 与 offsetWidth 都为 391px。",
+      "实际滚动到 scrollTop=900 后 Header 继续吸顶；390×844 下 Cell 左右差值和中心偏差仍均为 0px，document/body clientWidth 与 scrollWidth 均为 375px。"
+    ],
+    "deviceRisks": [
+      "本轮只调整官网 H5 概览；微信 page scroll、SelectorQuery、container NodesRef、rpx 和样式隔离仍需合法 AppID 真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Sticky 概览用一份全宽高真实滚动示例说明吸顶，参数场景交给属性页。",
+    "rules": [
+      "Sticky 概览只能保留一个真实局部滚动根，禁止为 offset、container 或 disabled 复制演示窗。",
+      "Sticky 局部滚动根必须填满 PreviewDevice 的完整宽高，基础预览固定提供 50 项连续 Cell，内容上下消费共享设备内距。",
+      "Sticky Header 使用共享阴影表达浮起层级，正文 Cell 连续排列且不得保留独立间距或圆角卡片。",
+      "Sticky 局部滚动条不得占用单侧 gutter；保留真实滚动能力但保证列表左右几何对称。",
+      "全部公开 Props 必须作用于同一预览，不能只更新说明文字。"
+    ],
+    "tags": ["sticky", "preview", "full-height", "single-example", "scroll"]
+  }
+}

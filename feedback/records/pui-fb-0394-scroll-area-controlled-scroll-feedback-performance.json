@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0394",
+  "title": "ScrollArea 受控滚动回写不应抢占原生惯性",
+  "scope": "component",
+  "components": ["scroll-area", "back-top", "style-utilities", "miniprogram"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式目录必须能够自然纵向滚动，不能出现拖不动或明显发涩的感觉。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "scroll-area"],
+    "platforms": ["wechat-miniprogram", "h5 preview"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/styles/index，在两列样式目录上连续纵向拖动。",
+    "页面将每次 scroll 事件的 scrollTop 回写给受控 ScrollArea，以驱动 BackTop。",
+    "旧 ScrollArea 把 scrollTop 与 height、遮罩、主题等配置共用完整 syncState，回写会反复刷新根样式并重建渐变边缘观察器。即使拆出该同步后，父级每帧回写的当前位置仍会再次下发原生 scroll-top，抢占 enhanced scroll-view 的惯性。"
+  ],
+  "expected": "滚动事件只更新当前位置与阅读渐变边缘；父级对同一用户位置的回写是状态回声，不干扰连续手势；不同的受控目标仍能平滑定位。",
+  "actual": "每个 scrollTop 回写曾执行完整配置同步；拆分后仍可能每帧重设原生定位，目录滚动缺乏惯性并显得发涩。",
+  "evidence": [
+    {"kind": "file", "ref": "scroll-area/scroll-area.js", "note": "scrollTop 已从完整配置 observer 拆出，并忽略等于本次用户事件位置的回声，只有不同目标才重新定位。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 镜像同样忽略与真实 scrollTop 相同（1px 容差）的受控回写，避免浏览器端重启用户惯性。"},
+    {"kind": "test", "ref": "scripts/test-scroll-area.js", "note": "锁定回写不重建状态、不抢占惯性，且 BackTop 写回 0 仍会重新下发真实定位。"},
+    {"kind": "user-report", "ref": "2026-07-26 当前任务对话", "note": "用户在快速样式页反馈目录有难以滚动的感觉。"}
+  ],
+  "rootCause": "受控滚动位置与静态配置曾共用 observer；拆分后仍未把父级对当前用户位置的状态回写和新的程序化定位请求区分开。",
+  "decision": {
+    "outcome": "保留 ScrollArea 全部公开 Props、Events、Slots 与 H5 行为；小程序端将 scrollTop 同步拆出完整配置路径，并把等于最后一次用户事件位置的父级值作为回声忽略；不同目标才下发原生定位，回到初始 target 时内部重放当前位置后再请求目标。",
+    "rationale": "页面继续使用同一 scrollTop 真相源驱动 BackTop 与平滑回顶，同时避免用户手势期间被受控定位和无关配置同步反复抢占。",
+    "alternativesRejected": [
+      "停止页面回写 scrollTop：会破坏 BackTop 与受控平滑回顶的同一真相源。",
+      "只在快速样式页节流或改用页面私有滚动实现：无法修复其他 ScrollArea 消费者的同类受控回写。",
+      "增加新的公开节流或动画 Props：会无必要扩张 ScrollArea API。"
+    ]
+  },
+  "impact": {
+    "files": ["scroll-area/scroll-area.js", "preview/app.js", "scripts/test-scroll-area.js", "miniprogram/pages/styles/index.js", "scripts/test-miniprogram-style-utilities-page.js", "docs/components/SCROLL-AREA.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/MINIPROGRAM_HOME.md"],
+    "dependencies": ["微信 scroll-view", "pui-back-top"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js", "scripts/test-miniprogram-style-utilities-page.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["开发者工具 390×844 热重载确认页面仍加载；连续真实手势与真机惯性仍待用户/设备复验。H5 预览使用 passive 原生 scroll 边缘同步，不因该小程序 observer 优化改变 UI。"],
+    "deviceRisks": ["iOS/Android 真机仍需验证长目录惯性、BackTop 中间帧和增强 scroll-view 与渐变观察器的配合。"]
+  },
+  "ai": {
+    "summary": "受控 scrollTop 的用户回写是状态回声，不是重新定位或重建 ScrollArea 的信号。",
+    "rules": [
+      "用户滚动回写等于本次 scroll 事件位置时不得重新下发原生 scroll-top；不得重新设置根样式、重新测量或重建观察器。",
+      "不得为性能问题扩张 ScrollArea 的公开 API；继续保留唯一 scrollTop 真相源与内部 scroll-with-animation。",
+      "H5 镜像必须保留原生 passive scroll 驱动的渐变边缘；与当前真实位置相同的受控值也必须跳过，不能通过 scrollTo 重启用户惯性。"
+    ],
+    "tags": ["scroll-area", "controlled-scroll", "performance", "back-top", "miniprogram"]
+  }
+}

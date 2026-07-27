@@ -1,0 +1,29 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="group"
+  aria-label="{{semanticLabel}}"
+  aria-invalid="{{normalizedStatus === 'error'}}"
+>
+  <view class="pui-field__wrap">
+    <view wx:if="{{label || effectiveRequired}}" class="pui-field__label">
+      <text wx:if="{{effectiveRequired && normalizedRequiredMarkPosition === 'left'}}" class="pui-field__required" aria-hidden="true">*</text>
+      <slot wx:if="{{label === 'slot'}}" name="label"></slot>
+      <text wx:else>{{label}}</text>
+      <text wx:if="{{effectiveRequired && normalizedRequiredMarkPosition === 'right'}}" class="pui-field__required" aria-hidden="true">*</text>
+    </view>
+    <view class="pui-field__controls">
+      <view class="pui-field__content"><slot></slot></view>
+      <view wx:if="{{help}}" class="pui-field__help">
+        <slot wx:if="{{help === 'slot'}}" name="help"></slot>
+        <text wx:else>{{help}}</text>
+      </view>
+      <view wx:if="{{displayMessage}}" class="pui-field__message" role="{{normalizedStatus === 'error' ? 'alert' : 'status'}}">
+        <slot wx:if="{{displayMessageIsSlot}}" name="message"></slot>
+        <text wx:else>{{displayMessage}}</text>
+      </view>
+      <slot name="extra"></slot>
+    </view>
+    <pui-icon wx:if="{{arrow}}" custom-class="pui-field__arrow" name="chevron-right" size="32" color-scheme="{{colorScheme}}" />
+  </view>
+</view>

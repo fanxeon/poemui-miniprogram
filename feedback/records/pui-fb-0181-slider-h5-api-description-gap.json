@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0181",
+  "title": "Slider H5 API 缺少专属轨道与尺寸行为说明",
+  "scope": "component",
+  "components": ["slider", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "API 的每一项文字必须完整展示真实限制，不能在 H5 预览回退为无信息的泛化描述。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference"],
+    "platforms": ["Chrome", "Node.js"],
+    "viewports": ["390×844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 Slider 的 API 或属性视图，读取 trackColor、blockSize 等 Props 说明。",
+    "旧 `apiPropDescription` 没有 Slider 分支，尽管 Markdown API 已有完整说明，H5 表会回退到泛化文案；专项测试的旧文案断言因此失败。"
+  ],
+  "expected": "H5 API 与 Markdown API 对 Slider 全部 16 Props 使用同一真实边界、颜色校验和微信原生能力说明。",
+  "actual": "H5 缺少 Slider 专属说明映射，无法完整表达背景轨颜色、12–28 滑块尺寸及受控边界。",
+  "evidence": [
+    {"kind": "test", "ref": "scripts/test-slider.js", "note": "专项测试定位到 trackColor 说明缺失；修复后锁定完整 H5 专属描述。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "apiPropDescription 新增 Slider 16 Props 的 H5 API 文案映射。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "Slider Markdown API 已定义对应的真实颜色、尺寸和数值规范。"}
+  ],
+  "rootCause": "API 表渲染已调用共享说明函数，但 Slider 的专属描述映射在先前重构中遗漏。",
+  "decision": {
+    "outcome": "补齐 Slider 的 16 项 H5 专属 API 说明，并让专项测试锁定关键颜色与尺寸边界。",
+    "rationale": "保留一份对用户完整可见的 H5 说明，同时与现有 Markdown 事实源一致。",
+    "alternativesRejected": [
+      "只把测试改为接受泛化说明。",
+      "在 CSS 中截断或省略复杂说明。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-slider.js"],
+    "dependencies": ["Slider API Reference", "Props panel"]
+  },
+  "verification": {
+    "tests": ["scripts/test-slider.js"],
+    "commands": ["node scripts/test-slider.js", "npm run check"],
+    "browser": ["本记录来自全库 H5 API 门禁；Slider 完整浏览器 battle 不在当前 DropdownMenu 范围内。"],
+    "deviceRisks": ["无新增真机风险。"]
+  },
+  "ai": {
+    "summary": "当 Markdown API 已有精确边界时，H5 API 不能静默回退为泛化说明；必须补齐同源专属文案并允许自然换行。",
+    "rules": [
+      "新增或收敛组件 API 时，同时检查 apiPropDescription 的 H5 覆盖。",
+      "API 表的完整可见性包含说明语义完整，不能用泛化文案或截断替代。"
+    ],
+    "tags": ["slider", "api-reference", "h5-preview", "documentation"]
+  }
+}

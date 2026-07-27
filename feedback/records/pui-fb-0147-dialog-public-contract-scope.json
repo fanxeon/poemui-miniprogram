@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0147",
+  "title": "Dialog 公开合同混入旧状态机、重复 Slot 和预览私参",
+  "scope": "component",
+  "components": ["dialog", "popup", "preview-site", "usage-code"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "联网对照 TDesign 的真实公开能力，Dialog 的源码、H5、API、示例和安装产物必须只暴露可真实闭环的最小合同；用户已授权后续组件在完整证据后自主验收。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "usage-code", "api-reference", "example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Dialog 将请求状态、默认 Slot、历史 header-left、私有动效和 H5 诊断能力混入公开面，基础用法无法保持最小。",
+    "2026-07-20 在线访问 TDesign Dialog 页面、官方仓库和 npm 发布页，并读取 tdesign-miniprogram@1.15.3 的 miniprogram_dist/dialog/{props.js,type.d.ts,dialog.js,dialog.json,dialog.wxml,dialog.d.ts,index.d.ts}。"
+  ],
+  "expected": "PoemUI 保留 TDesign 14 项 Dialog 主干，加上全库 ariaLabel/reduceMotion：16 Props、5 Events、7 Slots、close()；基础 WXML 为零 bind 的 <pui-dialog id=\"delivery-dialog\"/>。",
+  "actual": "旧公开合同把不属于确认 Dialog 的业务状态、Slot 和调试参数暴露给调用方，WXML、API、H5 与示例难以保持同源。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求联网参考 TDesign、逐组件真实 battle，并授权后续组件由 agent 在完整证据后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/dialog", "note": "2026-07-20 访问 TDesign Dialog 动态在线页，作为用法与演示信息架构来源。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "2026-07-20 访问官方仓库，并用 npm 1.15.3 固定包核验公开 Props、事件、Slot 与 close()。"},
+    {"kind": "file", "ref": "dialog/dialog.js", "note": "当前 Dialog 仅公开 16 Props，confirm/action 不自动关闭。"},
+    {"kind": "test", "ref": "scripts/test-dialog.js", "note": "专项合同锁定 Props、Events、Slots、close、基础 WXML、边界值与产物一致性。"}
+  ],
+  "rootCause": "旧实现把历史 H5 调试状态、页面请求状态和容器布局参数直接外泄，未按在线 TDesign 与固定包源码重新划定公共边界。",
+  "decision": {
+    "outcome": "收敛为 visible/actions/buttonLayout/cancelBtn/closeBtn/closeOnOverlayClick/confirmBtn/content/overlayProps/preventScrollThrough/showOverlay/title/usingCustomNavbar/zIndex/ariaLabel/reduceMotion，5 Events、7 个具名 Slot 和 close()。",
+    "rationale": "保留确认、动作、遮罩与可组合内容的独立用户意图；ariaLabel/reduceMotion 是全库横向合同，其他旧字段均可由父级或 Slot 表达。",
+    "alternativesRejected": [
+      "保留 loading/error/retry 会把父级业务状态伪装成 Dialog 能力。",
+      "保留 default/header-left Slot 会宣传 WXML 不存在的投影点。",
+      "在基础用法罗列 bind:* 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["dialog/dialog.js", "dialog/dialog.json", "dialog/dialog.wxml", "dialog/dialog.wxss", "metadata/components.js", "preview/app.js", "docs/components/DIALOG.md", "docs/COMPONENT_API.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-dialog.js"],
+    "dependencies": ["popup", "button", "icon", "shared usage-code generator"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js", "scripts/test-api-reference-readability.js"],
+    "commands": ["2026-07-20 npm run site:build：通过", "2026-07-20 npm run check：通过", "2026-07-20 npm run pack:check：通过", "2026-07-20 npm run example:install：通过", "2026-07-20 npm run feedback:generate && npm run feedback:check：通过；微信 CLI build-npm 因 touristappid 返回内部 code 10，未生成 miniprogram_npm，未冒充通过"],
+    "browser": ["2026-07-20 实点基础打开、Close、Cancel、Confirm、actions、具名插槽和遮罩关闭；Confirm/action 保持可见，Cancel/Close/可关闭遮罩请求关闭。属性 title/actions/showOverlay/reduceMotion 真实回写，基础代码复制为零 bind。API 显示 16 Props、5 Events、7 Slots、close()，135 单元格均无省略或裁切。"],
+    "deviceRisks": ["微信 Popup/Overlay 层级、touchmove 阻止、rpx、安全区、具名 Slot 投影、读屏与系统低动效仍需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "Dialog 的公开面必须从 TDesign 固定包与真实 WXML 反推，不能把页面状态或预览私参公开化。",
+    "rules": ["每次变更 Dialog 先联网核对官方页面、仓库/NPM 和固定包源码。", "基础 WXML 只保留最小可安装调用，完整事件进入 API 或专项示例。", "confirm/action 不得自动关闭或写入业务成功；关闭由父级 visible 回写。"],
+    "tags": ["dialog", "tdesign", "api-contract", "usage-code", "no-fake-success"]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0179",
+  "title": "Search 专项测试仍依赖已移除的预览说明文案",
+  "scope": "component",
+  "components": ["search", "preview-site"],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "全库门禁应验证真实 Search 清空策略，不能被页面说明文字的删改阻断。",
+  "environment": {
+    "surfaces": ["h5-preview", "contract-test"],
+    "platforms": ["Node.js"],
+    "viewports": ["不适用"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "运行 `npm run check`。",
+    "旧断言检索一段已从预览实现删除的中文说明，而 Search 当前实现仍会归一化 `clearTrigger` 并按真实 focus 状态显示清空按钮。"
+  ],
+  "expected": "专项测试约束 clearTrigger 的实现行为：非法值回退 always，focus 策略只在内部输入聚焦时显示可清空入口。",
+  "actual": "测试把已经删除的说明性文案当作行为证据，导致全库门禁在真实实现正确时失败。",
+  "evidence": [
+    {"kind": "test", "ref": "scripts/test-search.js", "note": "旧精确中文文案断言失败；修复后断言 H5 的归一化与可清空条件。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "searchPreviewSnapshot 和 searchPreviewMarkup 使用 clearTrigger 与 focused 真实决定清空按钮。"},
+    {"kind": "file", "ref": "docs/components/SEARCH.md", "note": "合同明确 always 与 focus 的可见性语义。"}
+  ],
+  "rootCause": "先前将界面说明文本误当成行为合同，说明删除后没有同步专项测试。",
+  "decision": {
+    "outcome": "以 clearTrigger 归一化和 canClear 条件替换文案断言，Search 运行时代码保持不变。",
+    "rationale": "测试直接绑定真实逻辑分支，既不锁死文案，也能拦截策略回归。",
+    "alternativesRejected": [
+      "恢复无产品价值的隐藏说明文案。",
+      "删除 clearTrigger 相关校验。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/test-search.js"],
+    "dependencies": ["Search clearTrigger 合同", "npm run check"]
+  },
+  "verification": {
+    "tests": ["scripts/test-search.js"],
+    "commands": ["node scripts/test-search.js", "npm run check"],
+    "browser": ["本记录只修正测试合同；Search 完整浏览器 battle 不在当前 DropdownMenu 范围内。"],
+    "deviceRisks": ["无新增真机风险。"]
+  },
+  "ai": {
+    "summary": "专项测试应锁定真实状态分支和事件合同，不能把可删改的说明性中文文案当作唯一行为证据。",
+    "rules": [
+      "UI 说明改动后先确认断言是否应该指向实现分支。",
+      "当组件实现未变且测试只依赖已删除文案时，更新测试而不是恢复死文案。"
+    ],
+    "tags": ["search", "contract-test", "clear-trigger", "regression"]
+  }
+}

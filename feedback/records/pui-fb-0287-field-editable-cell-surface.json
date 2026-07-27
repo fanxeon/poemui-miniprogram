@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0287",
+  "title": "Field 默认纵向双层输入框不符合可编辑单元格语义",
+  "scope": "component",
+  "components": ["field", "input", "cell", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Field 的视觉应接近 Cell 的可编辑版本，而不是标签在上、输入框另起一层的普通表单布局。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "props-panel", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["iPhone 15 393px PreviewDevice", "390px browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 #/components/field，默认 labelAlign=top，标签、Input 和帮助文本纵向堆叠，Input 自己再建立背景、边框与圆角。",
+    "Field 虽然负责字段布局，但默认视觉没有采用 Cell 的左标签、右控件行级结构，用户无法把它识别为可编辑单元格。"
+  ],
+  "expected": "Field 默认是无外投影的可编辑 Cell：左标签、右控件、单一行级 Surface；普通 Input 透明嵌入，focus、readonly 与输入自身状态保留真实边界，top 仍可用于多行控件。",
+  "actual": "此前 Field 根透明且默认 top 布局，默认 Input 是第二个独立 Surface，形成纵向双层结构。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求 Field 在视觉上成为接近 Cell 的可编辑版本，并已授权后续组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "2026-07-23 联网确认 TDesign MiniProgram 官方组件库仍为当前对照来源；PoemUI 保留既有 FormItem API 边界，不复制额外 API。"},
+    {"kind": "file", "ref": "field/field.wxss", "note": "Field 根改为 Cell 同源背景、圆角与内距，默认 Slot 内 pui-input 普通态透明，外投影仍为 none。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 默认 labelAlign 改为 left，复用 inputControlSample 并传 bordered=false，不手写 input。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 行级 Surface 与嵌入 Input 透明规则同源，焦点与语义状态保留可见边界。"},
+    {"kind": "test", "ref": "scripts/test-field.js", "note": "专项测试锁定默认 left、Cell 式 Surface、嵌入 Input 扁平化与无外投影。"},
+    {"kind": "build", "ref": "npm run site:build && npm run example:install && npm run check && npm run pack:check", "note": "2026-07-23 全部通过；Field 四件套在源码、miniprogram_dist、示例 node_modules 的 SHA256 逐字节一致。"},
+    {"kind": "build", "ref": "微信开发者工具 cli build-npm", "note": "实际调用因 touristappid 不存在返回 code 10，miniprogram_npm 未生成且未手工伪造。"}
+  ],
+  "rootCause": "旧合同把 Field 绝对化为透明布局根，并将默认 top 误当作通用表单的安全选择，忽略了移动端设置页普遍使用的可编辑 Cell 路径。",
+  "decision": {
+    "outcome": "Field 保持 12 Props、0 Events、5 Slots、0 Methods；默认 labelAlign 改为 left，根承担唯一 Cell 式行级 Surface，默认 PUI Input 普通态透明，top 保留给多行内容。",
+    "rationale": "不扩大 API 或接管子控件值即可获得清晰、紧凑的设置行，同时避免 Cell 外壳与 Input 外壳叠加。",
+    "alternativesRejected": [
+      "仅把 Input 换色，仍会保留纵向结构与两层圆角。",
+      "继续让 Field 完全透明，无法表达可编辑单元格的层级。",
+      "让 Field 直接管理值和输入事件，会破坏 Slot 子控件的真实所有权。"
+    ]
+  },
+  "impact": {
+    "files": ["field/field.js", "field/field.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/FIELD.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-field.js", "feedback/records/pui-fb-0287-field-editable-cell-surface.json"],
+    "dependencies": ["pui-input", "pui-icon", "Cell spacing and surface tokens", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-field.js", "scripts/test-form-field-composition.js", "scripts/test-non-elevated-shadow-semantics.js", "scripts/test-design-contracts.js", "scripts/test-layout-contracts.js"],
+    "commands": ["node scripts/test-field.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "npm run feedback:check", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project _example"],
+    "browser": [
+      "实际输入当前 Field，文本框值变为 PoemUI Field 且焦点保持；不是提示文字伪回写。",
+      "属性面板将 labelAlign 切到 top 后，当前实例真实变为纵向 Grid；status=error 时行级边界为危险色而嵌入 Input 仍透明。",
+      "390px 浏览器 document 为 375/375px，Field 269/269px、内部 Input 147/147px、PreviewDevice ScrollArea 327/327px，无页面级横向溢出。",
+      "实点深色与浅色开关：Field 在深色为 rgb(24,24,27)，浅色为 rgb(255,255,255)，均无外阴影；完成后恢复原深色偏好与 Field 默认属性。"
+    ],
+    "deviceRisks": [
+      "合法 AppID 真机仍需复核 WXSS 共享样式隔离下 Input 扁平化、rpx 标签基线、focus/readonly 状态与五类 Slot。",
+      "微信 build-npm 仍受 touristappid code 10 阻断；未生成也不会伪造 miniprogram_npm。"
+    ]
+  },
+  "ai": {
+    "summary": "Field 默认是可编辑 Cell，而非透明纵向包装器；必须只有一个行级 Surface。",
+    "rules": [
+      "Field 默认 labelAlign=left；top 仅用于多行或长控件，不能把默认重新改回纵向堆叠。",
+      "Field 承担 Cell 式唯一 Surface 时，嵌入的默认 PUI Input 普通态必须透明；不要形成双层背景、边框、圆角或阴影。",
+      "Field 仍不接管 Slot 子控件的 value、disabled、readonly、loading、change 或 submit；这些能力只属于真实子控件或 Form。",
+      "Field 与 Cell 都是非 elevation 行级元素，shadow 开关不得添加外投影；error、focus 与 divider 只能使用状态边界。"
+    ],
+    "tags": ["field", "cell", "input", "single-surface", "visual-layout", "form"]
+  }
+}

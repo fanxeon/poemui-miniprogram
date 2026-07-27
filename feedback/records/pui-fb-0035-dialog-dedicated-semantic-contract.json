@@ -1,0 +1,94 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0035",
+  "title": "Dialog 规则缺少独立组件语义合同",
+  "scope": "component",
+  "components": ["dialog", "documentation"],
+  "type": "ai-usability",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "为 Dialog 建立一份后续 Agent 必须读取的专属文档，完整说明三区、间距、Slot、状态、预览和跨端规则，避免设计决策散落后被遗忘。",
+  "environment": {
+    "surfaces": ["documentation", "miniprogram", "h5-preview"],
+    "platforms": ["agent-workflow", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "准备修改 Dialog，并分别检索 AGENTS.md、COMPONENT_API.md、UI_DESIGN_CONTRACT.md、test-dialog.js 和 dialog 相关 Feedback Ledger。",
+    "确认 Header 三列、36/28/16rpx 间距、错误重试、Content 滚动、预览容器和跨端边界散落在多份文件中，没有一个面向单组件的最终语义入口。",
+    "用户明确担心后续 Agent 忘记 Dialog 规则，要求用独立文档或文段逐个描述组件。"
+  ],
+  "expected": "Dialog 有独立、可发现、非重复 API 的语义合同；Agent 入口强制要求修改前阅读，Dialog 专项测试锁定文档的关键分区、Token、Slot、状态、预览与禁止事项，后续结构变化必须同步源码、合同、Ledger 和测试。",
+  "actual": "旧规则虽然分别存在于全局合同、API、Ledger 和测试中，但缺少单组件的聚合语义入口；Agent 可能只读取某一份文件，遗漏其他已确认设计决策。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户要求为 Dialog 建立逐组件文档，明确表示担心 Agent 忘记已经确认的规则。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/components/DIALOG.md",
+      "note": "独立合同聚合组件定位、三区结构、Header、Token、Content、Footer、Slot、生命周期、外观、H5 预览、可访问性、禁止事项和修改闭环。"
+    },
+    {
+      "kind": "file",
+      "ref": "AGENTS.md",
+      "note": "全局 Agent 入口现在要求修改任何组件前检查并完整阅读 docs/components 对应合同，Dialog 路径被明确点名。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dialog.js",
+      "note": "Dialog 专项合同检查专属文档、索引和 Agent 入口，并锁定关键章节、四个 Token、状态/动作优先级、Slot、预览与禁止规则。"
+    }
+  ],
+  "rootCause": "项目此前按问题类型维护全局合同、API 和 Ledger，适合横向治理，但没有为复杂复合组件建立纵向聚合入口。Dialog 经过多轮 battle 后规则数量增加，单靠对话记忆或散落搜索不再可靠。",
+  "decision": {
+    "outcome": "新增 docs/components/README.md 作为组件语义合同索引，并新增 DIALOG.md 作为首份专属合同。AGENTS.md 强制修改前读取对应合同；README、CONTRIBUTING 和 COMPONENT_API 建立入口；test-dialog.js 把合同存在性与关键语义纳入自动门禁。后续 PUI-FB-0037 已把范围扩展为所有组件按修改即迁移建立合同，仍禁止批量空壳。",
+    "rationale": "API、Ledger 和语义合同职责分离：API 列能力，Ledger 记问题与决策证据，专属合同聚合当前不可破坏的最终规则。自动测试保证文档不是无人读取的孤岛，同时避免把全部组件细节继续堆进 AGENTS.md。",
+    "alternativesRejected": [
+      "继续只扩写 AGENTS.md 会让全局入口无限增长，且难以形成单组件完整上下文。",
+      "只在 COMPONENT_API.md 增加说明会把 API 清单与设计理由混在一起，后续难以维护。",
+      "只依赖 Feedback Ledger 查询要求 Agent 自行拼接多条历史记录，无法快速获得当前最终合同。",
+      "一次性为所有组件生成模板文档会产生大量空壳和未经 battle 验证的规则。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "docs/components/README.md",
+      "docs/components/DIALOG.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "docs/COMPONENT_API.md",
+      "scripts/test-dialog.js",
+      "CHANGELOG.md",
+      "feedback/records/pui-fb-0035-dialog-dedicated-semantic-contract.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["popup", "button", "icon", "loading", "empty", "preview-device"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js", "scripts/test-feedback-ledger.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "node scripts/test-dialog.js", "git diff --check"],
+    "browser": [],
+    "deviceRisks": [
+      "本次只增加治理文档和合同测试，不改变 Dialog WXML、WXSS、JS、H5 运行态或 npm 安装产物；真机风险沿用现有 Dialog Ledger。"
+    ]
+  },
+  "ai": {
+    "summary": "修改 Dialog 前必须完整阅读 docs/components/DIALOG.md；API、Ledger、源码、H5 镜像与专项测试必须和专属语义合同一致。",
+    "rules": [
+      "修改 Dialog 源码、H5 镜像、示例、元数据或 Token 前，先完整阅读 docs/components/DIALOG.md，再查询 dialog Feedback Ledger 原始记录。",
+      "Dialog 结构、Slot、Token、状态优先级、预览或跨端边界变化时，必须同时更新专属合同和 scripts/test-dialog.js。",
+      "专属合同只记录长期语义和禁止事项，不复制完整 Props 表；API 清单继续以 COMPONENT_API.md 为准。",
+      "所有组件合同按真实 battle 和修改即迁移逐个建立，禁止批量生成没有证据和测试的空壳文档。"
+    ],
+    "tags": ["dialog", "component-contract", "documentation", "agent-memory", "ai-usability", "semantic-anatomy", "governance", "contract-test"]
+  }
+}

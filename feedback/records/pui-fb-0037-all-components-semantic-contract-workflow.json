@@ -1,0 +1,96 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0037",
+  "title": "每个组件都需要可执行的专属语义合同",
+  "scope": "global",
+  "components": ["documentation", "agent-workflow", "all-components"],
+  "type": "ai-usability",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "让每个组件最终都有独立语义合同，并给新会话一段明确提示词，使后续 Agent 能找到全部规则、先审计再修改，而不是依赖对话记忆。",
+  "environment": {
+    "surfaces": ["documentation", "all-components"],
+    "platforms": ["agent-workflow", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "开启一个没有旧会话上下文的新 Agent 会话，并准备修改任意非 Dialog 组件。",
+    "检查 docs/components，原规则只要求复合组件按 battle 补充，缺少所有组件最终必须有合同的明确迁移约束。",
+    "检查仓库入口，没有一段可直接复制的新会话提示词，也没有通用合同模板和全局自动门禁。"
+  ],
+  "expected": "新 Agent 能从统一提示词进入 AGENTS、全局合同、目标组件合同和 Ledger 工作流；每个组件在下一次实质修改前完成真实审计并建立专属合同；模板和自动测试约束合同结构、索引和入口，不产生批量空壳。",
+  "actual": "只有 Dialog 已建立专属合同，规则仍表述为复合组件按 battle 补充；新会话需要维护者重复口头说明，其他组件也可能在没有聚合语义入口的情况下继续修改。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求以后每个组件都要有一份语义合同，并要求提供新会话提示词。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/NEW_SESSION_PROMPT.md",
+      "note": "可复制提示词串联 AGENTS、全局合同、目标组件合同、Ledger、实现规则、验证和最终报告。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/components/CONTRACT_TEMPLATE.md",
+      "note": "模板固定定位、结构、组合、Token、Slot、状态、交互、可访问性、跨端、视觉、禁止事项和闭环章节。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-component-semantic-contracts.js",
+      "note": "门禁检查全局入口、模板、提示词、文件命名、索引和已建立合同的基本可执行结构。"
+    }
+  ],
+  "rootCause": "项目先通过横向全局合同治理所有组件，之后才为 Dialog 建立纵向组件合同；规则没有及时升级为全组件覆盖，也缺少兼顾质量与迁移成本的建立机制和新会话入口。",
+  "decision": {
+    "outcome": "把 docs/components 升级为所有组件的合同目录，采用“修改即迁移”：旧组件下一次实质修改前先真实审计并建立合同。新增合同模板、新会话启动提示词和全局合同测试，并从 AGENTS、CONTRIBUTING、README 建立入口。",
+    "rationale": "立即批量生成 83 份合同会产生未经验证的空壳，完全等待未来又无法形成约束；修改即迁移让每份合同都由真实代码和 battle 支撑，同时保证被继续开发的组件不会再绕过合同。自动门禁把会话记忆变成仓库事实。",
+    "alternativesRejected": [
+      "只把提示词发在聊天中无法被后续会话稳定发现，也不能在 CI 中检查。",
+      "一次性为全部组件复制模板会制造大量表面完整但没有真实审计证据的合同。",
+      "继续只为复合组件写合同会让基础组件的状态、Token、平台根和可访问性规则仍然散落。",
+      "只扩写 AGENTS.md 会使全局入口不断膨胀，仍缺少单组件聚合语义。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "docs/components/README.md",
+      "docs/components/CONTRACT_TEMPLATE.md",
+      "docs/NEW_SESSION_PROMPT.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "scripts/test-component-semantic-contracts.js",
+      "package.json",
+      "CHANGELOG.md",
+      "feedback/records/pui-fb-0037-all-components-semantic-contract-workflow.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["feedback-ledger", "component-api", "h5-preview", "miniprogram"]
+  },
+  "verification": {
+    "tests": ["scripts/test-component-semantic-contracts.js", "scripts/test-feedback-ledger.js"],
+    "commands": ["node scripts/test-component-semantic-contracts.js", "npm run feedback:generate", "npm run feedback:check", "npm run check", "git diff --check"],
+    "browser": [],
+    "deviceRisks": [
+      "本记录只改变 Agent 治理、文档入口和自动检查，不直接改变组件运行时；各旧组件的真实设备风险会在其后续迁移合同与 Ledger 中逐个记录。"
+    ]
+  },
+  "ai": {
+    "summary": "每个 PoemUI 组件最终都必须有专属语义合同；目标组件无合同时，下一次实质修改前先真实审计并建立合同，禁止空壳。",
+    "rules": [
+      "新会话先使用 docs/NEW_SESSION_PROMPT.md，并完整阅读 AGENTS、全局合同、目标组件合同和命中的 Ledger 原始记录。",
+      "目标组件没有合同就先按 CONTRACT_TEMPLATE.md 审计并建立，再进行实质修改。",
+      "合同必须记录长期语义、取舍和禁止事项，不复制完整 API，也不批量生成未审计文档。",
+      "语义变化同步源码、H5、组件合同、相关全局文档、专项测试、Ledger 和安装产物。",
+      "新增合同必须进入 docs/components/README.md，并通过 scripts/test-component-semantic-contracts.js。"
+    ],
+    "tags": ["all-components", "component-contract", "agent-memory", "new-session", "prompt", "documentation", "migration-on-touch", "governance", "ai-usability"]
+  }
+}

@@ -1,0 +1,13 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{rootStyle}}" role="slider" aria-label="{{semanticLabel}}" aria-valuemin="0" aria-valuemax="{{stars.length}}" aria-valuenow="{{innerValue}}" aria-valuetext="{{semanticValueText}}" aria-disabled="{{disabled}}" aria-readonly="{{readonly}}">
+  <view class="pui-rate__stars" style="gap:{{starGap}}rpx;" bindtouchstart="onTouchStart" catchtouchmove="onTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
+    <view wx:for="{{stars}}" wx:key="index" class="pui-rate__star" style="width:{{starSize}}rpx;height:{{starSize}}rpx;">
+      <pui-icon name="star" size="{{starSize}}" />
+      <view wx:if="{{item.fill}}" class="pui-rate__fill" style="width:{{item.fill}}%;">
+        <pui-icon name="star" size="{{starSize}}" color="{{activeColor}}" />
+      </view>
+      <view wx:if="{{!disabled && !readonly && allowHalf}}" class="pui-rate__tap pui-rate__tap--left" data-value="{{item.index - 0.5}}" role="button" aria-label="{{item.index - 0.5}} 星" catchtap="onRateTap"></view>
+      <view wx:if="{{!disabled && !readonly}}" class="pui-rate__tap {{allowHalf ? 'pui-rate__tap--right' : 'pui-rate__tap--full'}}" data-value="{{item.index}}" role="button" aria-label="{{item.index}} 星" catchtap="onRateTap"></view>
+    </view>
+  </view>
+  <view wx:if="{{showText}}" class="pui-rate__text">{{text || innerValue}}</view>
+</view>

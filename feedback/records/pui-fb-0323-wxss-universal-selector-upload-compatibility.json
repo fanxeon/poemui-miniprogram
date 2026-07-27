@@ -1,0 +1,136 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0323",
+  "title": "发布组件的 WXSS 通配选择器阻断合法 AppID 上传",
+  "scope": "global",
+  "components": [
+    "action-sheet",
+    "calendar",
+    "dialog",
+    "navigation-menu",
+    "popover",
+    "sheet",
+    "swipe-cell",
+    "table",
+    "virtual-list",
+    "miniprogram"
+  ],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "合法 AppID 的小程序包必须能通过微信上传前 WXSS 编译，不能再因共享组件的通配选择器失败。",
+  "environment": {
+    "surfaces": [
+      "miniprogram_npm",
+      "upload"
+    ],
+    "platforms": [
+      "wechat-devtools",
+      "wechat-miniprogram"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "使用合法 AppID 上传 miniprogram 项目。",
+    "上传阶段编译 miniprogram_npm/poemui-miniprogram 的 10 个组件 WXSS。",
+    "编译器在低动效后代规则或 SwipeCell 的 Slot 子节点规则中报告 unexpected token '*'。"
+  ],
+  "expected": "发布源码与构建得到的 miniprogram_npm 均不含 WXSS 通配选择器；低动效仍由组件自身 1ms 时长 Token 和子组件的独立 reduceMotion 合同实现。",
+  "actual": "十个已发布组件沿用了 Web CSS 的 * 或 > * 选择器，当前微信 WXSS 编译器拒绝解析，上传被整体阻断。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-24 当前任务对话",
+      "note": "上传日志逐项报告十个 miniprogram_npm WXSS 文件在 * token 失败。"
+    },
+    {
+      "kind": "file",
+      "ref": "action-sheet/action-sheet.wxss",
+      "note": "十个组件中同类的低动效后代规则及 SwipeCell 的 > * Slot 规则均由源文件审计发现。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-wxss-universal-selector-compatibility.js",
+      "note": "递归扫描发布源码 WXSS 的 selector prelude，并接入 precheck/check 防止通配选择器回归。"
+    }
+  ],
+  "rootCause": "Popup 的单组件修复没有推广到其余共享组件；Web CSS 的后代通配写法既超出父组件的 Slot 职责，也不被当前微信 WXSS 编译器支持。",
+  "decision": {
+    "outcome": "删除九处不必要的后代低动效覆盖：组件根注入的 --pui-*-duration 已继承到自身内部动效，PUI 子组件继续接收各自 reduceMotion。SwipeCell 以明确的 content-inner 容器承担默认 Slot 的全宽几何。",
+    "rationale": "保持低动效、Slot 组合和布局职责，同时使所有 WXSS selector 可被微信编译器解析。",
+    "alternativesRejected": [
+      "直接编辑 miniprogram_npm：会绕过源包、dist 和发布产物的一致性，下一次构建仍会复发。",
+      "保留通配覆盖并在页面私有样式中规避：无法解除上传阶段对共享包的阻断。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "action-sheet/action-sheet.wxss",
+      "calendar/calendar.wxss",
+      "dialog/dialog.wxss",
+      "navigation-menu/navigation-menu.wxss",
+      "popover/popover.wxss",
+      "sheet/sheet.wxss",
+      "swipe-cell/swipe-cell.wxml",
+      "swipe-cell/swipe-cell.wxss",
+      "table/table.wxss",
+      "virtual-list/virtual-list.wxss",
+      "scripts/test-wxss-universal-selector-compatibility.js",
+      "package.json",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": [
+      "miniprogram_dist",
+      "miniprogram_npm",
+      "wechat-devtools"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-wxss-universal-selector-compatibility.js",
+      "scripts/test-action-sheet.js",
+      "scripts/test-swipe-cell.js",
+      "scripts/test-virtual-list.js"
+    ],
+    "commands": [
+      "npm run miniprogram:build",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "当前微信开发者工具构建 npm"
+    ],
+    "browser": [
+      "2026-07-24：只使用当前已打开的合法 AppID 微信开发者工具 RC 2.02.2607161 执行构建 npm，界面确认“完成构建。耗时 580 毫秒”。随后扫描生成的 miniprogram_npm，十个目标 WXSS 不含通配选择器，且与源码和 miniprogram_dist 的 SHA-256 三份一致。未点击上传。"
+    ],
+    "deviceRisks": [
+      "仍需由用户实际上传，并在 iOS/Android 真机确认 Slot 样式隔离、低动效和触摸表现。"
+    ]
+  },
+  "ai": {
+    "summary": "WXSS 不得使用通配选择器；共享组件的低动效仅缩短自身通过 Token 声明的动效，Slot 子树由其自身组件合同负责。",
+    "rules": [
+      "任何发布 WXSS 禁止 *、> * 与 *::before/after 选择器，并通过发布前门禁扫描。",
+      "默认 Slot 的布局应由明确内部容器或调用方 PUI Props 表达，不得用选择器穿透消费者节点。",
+      "修复上传阻断时必须更新源、dist、示例安装和真实开发者工具 npm 构建，不能手工修改 miniprogram_npm。"
+    ],
+    "tags": [
+      "wxss",
+      "wechat-devtools",
+      "upload",
+      "miniprogram-npm",
+      "compatibility"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PoemUI 月下成行">
+  <style>
+    .favicon__surface { fill: #18181b; }
+    .favicon__moon { fill: #fafafa; }
+    .favicon__lines { stroke: #fafafa; }
+    @media (prefers-color-scheme: dark) {
+      .favicon__surface { fill: #fafafa; }
+      .favicon__moon { fill: #09090b; }
+      .favicon__lines { stroke: #09090b; }
+    }
+  </style>
+  <rect class="favicon__surface" width="64" height="64" rx="14" />
+  <g transform="translate(8 8) scale(2)">
+    <path class="favicon__moon" fill="#fafafa" d="M18.05 2.85a5.35 5.35 0 1 0 2.78 10.08 6.08 6.08 0 0 1-2.78-10.08Z" />
+    <path class="favicon__lines" d="M4.7 14.15h9.6M7.1 17.35h6M4.7 20.55h8.35" fill="none" stroke="#fafafa" stroke-width="2.15" stroke-linecap="round" />
+  </g>
+</svg>

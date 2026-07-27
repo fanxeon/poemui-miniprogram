@@ -1,0 +1,1454 @@
+<pui-config-provider use-global-config bind:themechange="onGlobalThemeChange">
+  <view class="page pui-bg-gradient-flowing-gold-pink">
+    <pui-alert visible="{{alertVisible}}" title="原生 Alert 状态机" description="关闭会先请求父级回写，再保留退场帧。" theme="info" closable duration="180" bind:input="onAlertInput" bind:change="onAlertChange" bind:close="onAlertClose">
+      <pui-tag theme="primary" variant="outline">Alert + Tag slot</pui-tag>
+    </pui-alert>
+    <view class="alert-control">
+      <pui-button size="small" variant="outline" bind:click="openAlert">重新打开 Alert</pui-button>
+      <pui-cell title="Alert 状态" value="{{alertStatus}}" />
+    </view>
+    <pui-card title="Color npm 主题 Token" description="直接消费 theme.wxss 的品牌、语义、文本、背景和边框变量；不是静态 pui-color 组件。" custom-class="section-card">
+      <view class="color-token-example__primary">
+        <pui-icon name="palette" size="36" />
+        <view><text>Brand action</text><text>--pui-color-brand / --pui-text-inverse</text></view>
+      </view>
+      <view class="color-token-example__semantic">
+        <view class="color-token-example__state color-token-example__state--success"><pui-tag theme="success" variant="outline">Success</pui-tag><text>构建通过</text></view>
+        <view class="color-token-example__state color-token-example__state--warning"><pui-tag theme="warning" variant="outline">Warning</pui-tag><text>等待复核</text></view>
+        <view class="color-token-example__state color-token-example__state--danger"><pui-tag theme="danger" variant="outline">Danger</pui-tag><text>发布阻塞</text></view>
+        <view class="color-token-example__state color-token-example__state--info"><pui-tag theme="primary" variant="outline">Info</pui-tag><text>版本说明</text></view>
+      </view>
+      <pui-cell title="主题切换" description="ConfigProvider light/dark/auto 改变真实 WXSS Token；视觉开关不改写色值。" value="{{theme}}" left-icon="palette" />
+    </pui-card>
+    <pui-card title="Typography npm 字体角色" description="直接消费 utilities.wxss 的角色、字重、颜色和溢出类；不是静态 pui-typography 组件。" custom-class="section-card">
+      <view class="typography-token-example">
+        <view class="pui-text-headline pui-text-primary">原生组件，真实交付</view>
+        <view class="pui-text-body-md pui-text-secondary">正文使用固定角色 Token，承载产品信息和操作结果。</view>
+        <view class="typography-token-example__status">
+          <text class="pui-text-label">构建状态</text>
+          <pui-tag theme="success" variant="outline">passed</pui-tag>
+        </view>
+        <view class="pui-text-caption pui-text-secondary pui-text-truncate">这是一段会在明确宽度内真实单行省略的组件兼容说明。</view>
+        <view class="pui-font-mono pui-text-body-sm pui-tabular-nums">98.6% · 12:48:36 · 1,280</view>
+      </view>
+      <pui-cell title="字体入口" description="旧 small/medium/large 继续映射到 body 角色。" value="10 roles" left-icon="text" />
+    </pui-card>
+    <pui-card title="Spacing npm 间距节奏" description="直接消费 utilities.wxss 的 padding、gap 和 margin 类；不是静态 pui-spacing 组件。" custom-class="section-card">
+      <view class="spacing-token-example pui-p-lg">
+        <view class="pui-text-title-sm pui-text-primary">组件交付节奏</view>
+        <view class="pui-flex pui-items-center pui-flex-wrap pui-gap-sm">
+          <pui-tag variant="outline">源码</pui-tag>
+          <pui-tag variant="outline">预览</pui-tag>
+          <pui-tag theme="success" variant="outline">npm</pui-tag>
+        </view>
+        <pui-cell-group title="构建结果" description="CellGroup 统一标题、间距与可选卡片 Surface" card>
+          <pui-cell title="站点构建" value="passed" />
+          <pui-cell title="微信构建" value="passed" />
+        </pui-cell-group>
+      </view>
+      <pui-cell title="间距入口" description="normal 使用无后缀；不提供负间距工具类。" value="8 scales" left-icon="grid" />
+    </pui-card>
+    <pui-card title="Style Utilities utility-first 布局" description="直接消费 npm WXSS 的 grid、position、sizing、surface 和 safe-area 工具类；不是静态 pui-style 组件。" custom-class="section-card">
+      <view class="pui-grid-layout pui-grid-cols-3 pui-gap-sm pui-p-lg pui-bg-page pui-dark-bg-muted pui-border pui-border-solid pui-dark-border pui-radius-lg">
+        <view class="pui-col-span-2 pui-min-w-0">
+          <pui-cell title="源码与预览" description="minmax(0, 1fr) 在窄屏安全收缩" value="ready" left-icon="code" />
+        </view>
+        <view class="pui-flex pui-items-center pui-justify-center pui-min-w-0">
+          <pui-tag theme="success" variant="outline">npm</pui-tag>
+        </view>
+        <view class="pui-col-span-full pui-flex pui-flex-wrap pui-items-center pui-gap-x-sm pui-gap-y-xs pui-pt-sm pui-border-t">
+          <pui-tag variant="outline">Grid 1–6</pui-tag>
+          <pui-tag variant="outline">Dark 32</pui-tag>
+          <pui-tag variant="outline">Safe area</pui-tag>
+          <pui-tag variant="outline">Reduce motion</pui-tag>
+        </view>
+      </view>
+      <view class="pui-relative pui-mt-sm pui-p-lg pui-bg-container pui-border pui-border-solid pui-radius-md">
+        <view class="pui-absolute pui-top-0 pui-right-0 pui-px-xs pui-py-xxs pui-bg-brand pui-text-inverse pui-radius-full pui-z-10">NEW</view>
+        <view class="pui-text-title-sm pui-text-primary">真实 WXSS 组合</view>
+        <view class="pui-text-body-sm pui-text-secondary pui-dark-text-success pui-mt-xs">562 selectors · 32 curated colors · 32 dark variants · 9 Background Gradients</view>
+        <view class="pui-bg-blue-soft pui-border pui-border-solid pui-border-blue pui-radius-sm pui-p-sm pui-mt-sm">
+          <text class="pui-text-blue pui-font-semibold">Blue utility</text>
+          <text class="pui-text-secondary pui-ml-xs">主题感知柔和背景</text>
+        </view>
+      </view>
+      <pui-cell title="样式入口" description="@import theme/utilities.wxss" value="11 groups" left-icon="layers" />
+    </pui-card>
+    <pui-card title="AspectRatio 原生比例与组合" description="百分比占位会在比例更新时平滑变化，内容由真实 slot 铺满。" custom-class="section-card">
+      <pui-aspect-ratio bordered>
+        <view class="aspect-slot">
+          <pui-icon name="image" size="56" />
+          <pui-tag theme="primary" variant="outline">AspectRatio + Icon + Tag</pui-tag>
+        </view>
+      </pui-aspect-ratio>
+    </pui-card>
+    <view class="divider-demo">
+      <pui-divider />
+      <pui-divider content="组件状态" align="left" />
+      <pui-divider show-content dashed>
+        <pui-tag theme="primary" variant="outline">自定义内容</pui-tag>
+      </pui-divider>
+      <view class="badge-example">
+        <view class="badge-row">
+          <pui-badge count="128" max-count="99" aria-label="99 条以上未读消息">
+            <pui-icon name="bell" size="44" />
+          </pui-badge>
+          <pui-badge count="{{null}}" theme="success" variant="light" aria-label="Pro 构建状态">
+            <view slot="count" class="badge-content-slot"><pui-icon name="spark" size="20" /><text>Pro</text></view>
+          </pui-badge>
+          <pui-badge dot content="消息" aria-label="有新消息" />
+        </view>
+      </view>
+      <pui-cell title="发布状态" value="ready" />
+    </view>
+    <pui-card title="Bubble 消息表面与受控展开" description="Bubble 只负责正文、分组、回应与长文折叠；头像、时间、会话和发送状态由上层组合。" custom-class="section-card">
+      <view class="bubble-example-thread">
+        <pui-bubble content="先核对原生 WXML、WXSS、JS 和 JSON。" variant="secondary" group-position="first" />
+        <pui-bubble content="再检查 H5、API 文档与 npm 产物。" variant="muted" group-position="last" />
+        <pui-bubble content="验收通过后进入下一个组件。" align="end" />
+      </view>
+      <pui-bubble
+        id="delivery-bubble"
+        content="当前 Bubble 只负责消息表面，不伪造发送、已读或 AI 生成状态。长正文通过隐藏测量节点获得完整高度，父级回写 expanded 后再真实展开或收起。"
+        variant="secondary"
+        reactions="{{bubbleReactions}}"
+        collapsible
+        expanded="{{bubbleExpanded}}"
+        max-lines="3"
+        visible="{{bubbleVisible}}"
+        clickable
+        aria-label="组件交付状态消息"
+        aria-live="polite"
+        duration="180"
+        bind:click="onBubbleClick"
+        bind:longpress="onBubbleLongpress"
+        bind:reaction="onBubbleReaction"
+        bind:input="onBubbleExpandedInput"
+        bind:change="onBubbleExpandedChange"
+        bind:expand="onBubbleExpand"
+        bind:collapse="onBubbleCollapse"
+        bind:show="onBubbleShow"
+        bind:hide="onBubbleHide"
+        bind:after-show="onBubbleAfterShow"
+        bind:after-hide="onBubbleAfterHide"
+      />
+      <view class="bubble-example-actions">
+        <pui-button size="small" variant="outline" block bind:click="toggleBubbleExpandedWithMethod">toggle()</pui-button>
+        <pui-button size="small" variant="outline" block bind:click="toggleBubbleVisible">{{bubbleVisible ? '隐藏 Bubble' : '显示 Bubble'}}</pui-button>
+      </view>
+      <pui-cell title="Bubble 状态" description="回应只回传，不修改计数或 active。" value="{{bubbleStatus}}" />
+    </pui-card>
+    <pui-card title="Button 原生能力与组合" description="根节点是真实微信 button；loading/disabled 会阻断 click、form-type 和 open-type。" custom-class="section-card">
+      <form bindsubmit="onDeliveryButtonSubmit">
+        <pui-button
+          theme="primary"
+          block
+          icon="check"
+          form-type="submit"
+          loading="{{deliveryButtonLoading}}"
+          disabled="{{deliveryButtonDisabled}}"
+          aria-label="提交 Button 交付检查"
+          bind:click="onDeliveryButtonClick"
+        >
+          <text>提交交付检查</text>
+          <pui-tag slot="suffix" theme="success" variant="outline">ready</pui-tag>
+        </pui-button>
+      </form>
+      <view class="button-example-actions">
+        <pui-button size="small" variant="ghost" icon="loading-ring" bind:click="toggleDeliveryButtonLoading">{{deliveryButtonLoading ? '停止加载' : '加载态'}}</pui-button>
+        <pui-button size="small" variant="outline" icon="lock" bind:click="toggleDeliveryButtonDisabled">{{deliveryButtonDisabled ? '启用' : '禁用'}}</pui-button>
+        <pui-button size="small" variant="text" open-type="contact" icon="message" bind:click="onDeliveryButtonClick" bind:contact="onDeliveryButtonContact" bind:error="onDeliveryButtonError">联系平台客服</pui-button>
+      </view>
+      <pui-cell title="Button 状态" description="contact/error 只展示微信真实回调，不伪造平台成功。" value="{{deliveryButtonStatus}}" />
+    </pui-card>
+    <pui-card title="Checkbox 与 CheckboxGroup" description="Group 真实管理原始数组值、全选半选和禁用已选保留；单项 checked 由页面回写。" custom-class="section-card">
+      <pui-checkbox-group
+        options="{{deliveryCheckboxOptions}}"
+        value="{{deliveryCheckboxValue}}"
+        max="3"
+        name="release-checks"
+        aria-label="组件交付检查"
+        bind:change="onDeliveryCheckboxGroupChange"
+      />
+      <pui-checkbox
+        id="deliveryCheckbox"
+        checked="{{deliveryCheckboxChecked}}"
+        indeterminate="{{deliveryCheckboxIndeterminate}}"
+        value="release-terms"
+        label="同意组件发布规范"
+        content="提交前运行站点、组件和 npm 产物检查。"
+        name="release-terms"
+        block
+        aria-label="同意组件发布规范"
+        bind:change="onDeliveryCheckboxChange"
+      >
+        <pui-tag theme="primary" variant="outline">Checkbox + Tag</pui-tag>
+      </pui-checkbox>
+      <pui-checkbox
+        value="slot-copy"
+        label="Slot 组合"
+        content="具名 Slot 不需要 custom* 开关"
+        icon="line"
+        placement="right"
+        block
+        content-disabled
+        bind:change="onDeliveryCheckboxChange"
+      >
+        <view slot="label" class="checkbox-example__content"><text>PoemUI 组合标签</text><pui-tag theme="success" variant="outline">label slot</pui-tag></view>
+      </pui-checkbox>
+      <pui-cell title="Checkbox 状态" description="0、false 和空字符串保持严格身份；max/disabled/readonly 阻断不伪造 change。" value="{{deliveryCheckboxStatus}}" />
+    </pui-card>
+    <pui-card title="Collapsible 单区展开与组合" description="open 由页面真实回写；内容高度由 selector query 测量，节点在收起时保留以完成过渡。" custom-class="section-card">
+      <pui-collapsible
+        id="deliveryCollapsible"
+        open="{{deliveryCollapsibleOpen}}"
+        custom-trigger
+        custom-content
+        theme="primary"
+        loading="{{deliveryCollapsibleLoading}}"
+        error="{{deliveryCollapsibleError}}"
+        readonly="{{deliveryCollapsibleReadonly}}"
+        aria-label="发布设置"
+        duration="180"
+        bind:click="onDeliveryCollapsibleClick"
+        bind:input="onDeliveryCollapsibleInput"
+        bind:change="onDeliveryCollapsibleChange"
+        bind:open="onDeliveryCollapsibleOpen"
+        bind:close="onDeliveryCollapsibleClose"
+        bind:after-open="onDeliveryCollapsibleAfterOpen"
+        bind:after-close="onDeliveryCollapsibleAfterClose"
+        bind:retry="onDeliveryCollapsibleRetry"
+      >
+        <view slot="trigger" class="collapsible-example__trigger">
+          <pui-icon name="command" size="28" />
+          <text>发布设置</text>
+          <pui-tag theme="primary" variant="outline">trigger slot</pui-tag>
+        </view>
+        <view class="collapsible-example__content">
+          <pui-cell title="视觉策略" description="阴影、毛玻璃和圆角由 ConfigProvider 统一控制" value="ready" left-icon="palette" bordered="{{false}}" />
+          <view class="collapsible-example__content-actions">
+            <pui-tag theme="success" variant="outline">default slot</pui-tag>
+            <pui-button size="small" variant="outline" icon="check-circle" bind:click="onDeliveryCollapsibleContentAction">检查设置</pui-button>
+          </view>
+        </view>
+      </pui-collapsible>
+      <pui-button-group size="small" aria-label="Collapsible 实例方法" custom-class="collapsible-example__actions">
+        <pui-button variant="outline" bind:click="openDeliveryCollapsible">open</pui-button>
+        <pui-button variant="outline" bind:click="closeDeliveryCollapsible">close</pui-button>
+        <pui-button variant="text" bind:click="toggleDeliveryCollapsible">toggle</pui-button>
+        <pui-button variant="text" bind:click="measureDeliveryCollapsible">measure</pui-button>
+      </pui-button-group>
+      <pui-button-group size="small" aria-label="Collapsible 状态" custom-class="collapsible-example__actions">
+        <pui-button variant="text" icon="loading-ring" bind:click="toggleDeliveryCollapsibleLoading">{{deliveryCollapsibleLoading ? '停止加载' : '加载态'}}</pui-button>
+        <pui-button variant="text" icon="error-circle" bind:click="toggleDeliveryCollapsibleError">{{deliveryCollapsibleError ? '清除错误' : '错误态'}}</pui-button>
+        <pui-button variant="text" icon="lock" bind:click="toggleDeliveryCollapsibleReadonly">{{deliveryCollapsibleReadonly ? '取消只读' : '只读态'}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="Collapsible 状态" description="error > loading > content > empty；retry 只发请求，不伪造恢复。" value="{{deliveryCollapsibleStatus}}" />
+    </pui-card>
+    <pui-card title="Combobox 搜索、选择与组合" description="value、query、visible 由页面分别真实回写；分组、创建、多选上限和状态分支共用同一份原生合同。" custom-class="section-card">
+      <pui-combobox
+        id="deliveryCombobox"
+        options="{{deliveryComboboxOptions}}"
+        value="{{deliveryComboboxValue}}"
+        default-value="next"
+        query="{{deliveryComboboxQuery}}"
+        visible="{{deliveryComboboxVisible}}"
+        multiple="{{deliveryComboboxMultiple}}"
+        max-selected="2"
+        allow-create
+        custom-footer
+        loading="{{deliveryComboboxLoading}}"
+        error="{{deliveryComboboxError}}"
+        placeholder="选择框架"
+        search-placeholder="搜索框架或关键词"
+        aria-label="框架组合框"
+        duration="180"
+        bind:query-input="onDeliveryComboboxQueryInput"
+        bind:query-change="onDeliveryComboboxQueryChange"
+        bind:visible-input="onDeliveryComboboxVisibleInput"
+        bind:visible-change="onDeliveryComboboxVisibleChange"
+        bind:input="onDeliveryComboboxInput"
+        bind:change="onDeliveryComboboxChange"
+        bind:select="onDeliveryComboboxSelect"
+        bind:remove="onDeliveryComboboxRemove"
+        bind:clear="onDeliveryComboboxClear"
+        bind:create="onDeliveryComboboxCreate"
+        bind:exceed="onDeliveryComboboxExceed"
+        bind:open="onDeliveryComboboxOpen"
+        bind:close="onDeliveryComboboxClose"
+        bind:after-open="onDeliveryComboboxAfterOpen"
+        bind:after-close="onDeliveryComboboxAfterClose"
+        bind:reset="onDeliveryComboboxReset"
+        bind:retry="onDeliveryComboboxRetry"
+      >
+        <view slot="footer" class="combobox-example__footer">
+          <pui-tag variant="outline">Combobox + Tag</pui-tag>
+          <pui-button size="small" theme="primary" icon="check" bind:click="onDeliveryComboboxFooter">应用选择</pui-button>
+        </view>
+      </pui-combobox>
+      <pui-button-group size="small" aria-label="Combobox 实例方法" custom-class="combobox-example__actions">
+        <pui-button variant="outline" bind:click="openDeliveryCombobox">open</pui-button>
+        <pui-button variant="outline" bind:click="closeDeliveryCombobox">close</pui-button>
+        <pui-button variant="text" bind:click="clearDeliveryCombobox">clear</pui-button>
+        <pui-button variant="text" bind:click="resetDeliveryCombobox">reset</pui-button>
+      </pui-button-group>
+      <pui-button-group size="small" aria-label="Combobox 选择与焦点方法" custom-class="combobox-example__actions">
+        <pui-button variant="outline" bind:click="focusDeliveryCombobox">focus</pui-button>
+        <pui-button variant="outline" bind:click="selectNextDeliveryCombobox">select next</pui-button>
+        <pui-button variant="text" icon="layers" bind:click="toggleDeliveryComboboxMultiple">{{deliveryComboboxMultiple ? '单选' : '多选'}}</pui-button>
+      </pui-button-group>
+      <pui-button-group size="small" aria-label="Combobox 状态" custom-class="combobox-example__actions">
+        <pui-button variant="text" icon="loading-ring" bind:click="toggleDeliveryComboboxLoading">{{deliveryComboboxLoading ? '停止加载' : '加载态'}}</pui-button>
+        <pui-button variant="text" icon="error-circle" bind:click="toggleDeliveryComboboxError">{{deliveryComboboxError ? '清除错误' : '错误态'}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="Combobox 状态" description="error > loading > content > empty；retry 与 footer 均不伪造业务成功。" value="{{deliveryComboboxStatus}}" />
+    </pui-card>
+    <pui-card title="ButtonGroup 子按钮事件" description="组级 disabled 由遮罩阻断；点击仍由每个 pui-button 独立回传。" custom-class="section-card">
+      <pui-button-group size="small" aria-label="编辑操作">
+        <pui-button theme="default" variant="outline" icon="chevron-left" data-action="上一步" bind:click="onButtonGroupAction">上一步</pui-button>
+        <pui-button theme="primary" icon="copy" data-action="复制" bind:click="onButtonGroupAction">复制</pui-button>
+        <pui-button theme="default" variant="outline" icon="command" data-action="更多" bind:click="onButtonGroupAction">更多</pui-button>
+      </pui-button-group>
+      <pui-cell title="ButtonGroup 状态" value="{{buttonGroupStatus}}" />
+    </pui-card>
+    <pui-card title="Avatar 图片、回退与 slot" description="无图片时按 slot、Icon、text/alt 回退；头像本体只展示，操作由外层组件承担。" custom-class="section-card">
+      <view class="avatar-example-row">
+        <pui-avatar text="PoemUI" size="large" bordered aria-label="PoemUI 文本头像" />
+        <pui-avatar icon="profile" size="medium" shape="round" aria-label="个人图标头像" />
+        <pui-avatar use-slot size="medium" shape="square" aria-label="星光图标头像">
+          <pui-icon name="spark" size="36" />
+        </pui-avatar>
+        <pui-avatar src="/__poemui__/missing-avatar.png" text="F" aria-label="失败回退头像" bind:error="onAvatarError" />
+      </view>
+      <pui-tag theme="primary" variant="outline">Avatar + Icon slot</pui-tag>
+      <pui-cell title="Avatar 状态" value="{{avatarStatus}}" />
+    </pui-card>
+    <pui-card title="Image 资源状态与覆盖 slot" description="空 src 显示 empty；缺失资源由原生 image 触发 error。Image 本体只展示，操作应由外层组件承担。" custom-class="section-card">
+      <pui-image width="100%" height="220rpx" text="暂无封面" show-slot aria-label="组件封面">
+        <pui-tag theme="primary" variant="outline">Image + Tag slot</pui-tag>
+      </pui-image>
+      <pui-image src="/__poemui__/missing-image.png" width="100%" height="160rpx" text="图片加载失败" aria-label="失败图片" bind:error="onImageError" />
+      <pui-cell title="Image 状态" value="{{imageStatus}}" />
+    </pui-card>
+    <pui-card title="Grid 入口与真实重试" description="点击只发入口事件；错误态重试由页面接管，Grid 不伪造请求成功。" custom-class="section-card">
+      <pui-grid items="{{gridItems}}" column="3" gutter="12" error="{{gridError}}" loading="{{gridLoading}}" aria-label="示例功能入口" bind:click="onGridClick" bind:retry="onGridRetry" />
+      <view class="example-actions">
+        <pui-button size="small" variant="outline" icon="error-circle" bind:click="showGridError">模拟请求失败</pui-button>
+        <pui-button size="small" variant="outline" icon="refresh" bind:click="restoreGrid">父级恢复入口</pui-button>
+      </view>
+      <pui-cell title="Grid 状态" value="{{gridStatus}}" />
+    </pui-card>
+    <pui-card title="ScrollArea 目标定位" description="默认 slot 承载真实内容；顶底遮罩默认开启，父级可写回目标 id、颜色或高度。" custom-class="section-card">
+      <pui-scroll-area height="280rpx" scroll-into-view="{{scrollAreaTarget}}" gradient-overlay-color="#ffffff" gradient-overlay-size="lg" aria-label="构建日志滚动内容">
+        <view id="scroll-area-source"><pui-cell title="源码" description="组件四件套已同步" value="ready" /></view>
+        <view id="scroll-area-preview"><pui-cell title="预览" description="H5 与小程序使用同一定位语义" value="ready" /></view>
+        <view id="scroll-area-build"><pui-cell title="构建" description="npm 产物待校验" value="pending" /></view>
+        <view id="scroll-area-publish"><pui-cell title="发布" description="等待完整验收" value="review" /></view>
+        <pui-cell title="交付" description="slot 内容继续由业务组合" value="ready" />
+      </pui-scroll-area>
+      <pui-button size="small" variant="outline" data-target="scroll-area-source" bind:click="setScrollAreaTarget">定位源码</pui-button>
+      <pui-button size="small" data-target="scroll-area-build" bind:click="setScrollAreaTarget">定位构建</pui-button>
+      <pui-cell title="ScrollArea 状态" value="{{scrollAreaStatus}}" />
+    </pui-card>
+    <pui-card title="Card 具名 slot 与点击边界" description="内容区触发 Card click；footer 内的 Button 只触发自身 click。" show-footer clickable aria-label="发布检查卡片" bind:click="onExampleCardClick" custom-class="section-card">
+      <pui-tag slot="header" theme="primary" variant="outline">header slot</pui-tag>
+      <pui-cell title="内容 slot" description="组合 Cell、Tag 与 footer Button。" value="ready" />
+      <pui-tag theme="success" variant="outline">Card + Cell + Tag + Button</pui-tag>
+      <pui-button slot="footer" theme="primary" size="small" block bind:click="onExampleCardFooterClick">保存草稿</pui-button>
+      <pui-cell title="Card 状态" value="{{cardStatus}}" />
+      <pui-cell title="Footer 状态" value="{{cardFooterStatus}}" />
+    </pui-card>
+    <pui-card title="Progress 确定进度" description="页面真实回写 percentage；线形、饱满线形与环形共用确定进度合同。" custom-class="section-card">
+      <pui-progress
+        percentage="{{deliveryProgress}}"
+        theme="{{deliveryProgressType}}"
+        status="{{deliveryProgress >= 100 ? 'success' : 'active'}}"
+        label="组件发布"
+        aria-label="组件交付进度"
+      >
+        <pui-tag slot="label" theme="success" variant="outline">指标</pui-tag>
+      </pui-progress>
+      <pui-button-group size="small" aria-label="进度操作" custom-class="progress-example-actions">
+        <pui-button icon="add-circle" disabled="{{deliveryProgress >= 100}}" bind:click="advanceDeliveryProgress">推进 10%</pui-button>
+        <pui-button variant="outline" icon="refresh" disabled="{{deliveryProgress === 0}}" bind:click="resetDeliveryProgress">重置</pui-button>
+        <pui-button variant="outline" icon="progress" bind:click="toggleDeliveryProgressType">{{deliveryProgressType === 'line' ? '饱满线形' : deliveryProgressType === 'plump' ? '环形' : '线形'}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="Progress 状态" description="Progress 只显示父级真实进度，不以组件事件或循环动画伪造完成。" value="{{deliveryProgressStatus}}" />
+    </pui-card>
+    <pui-card title="Radio 基础与受控用法" description="基础组零 bind；事件示例只绑定唯一 change，并由页面真实回写标量值。" custom-class="section-card">
+      <view class="example-subsection">
+        <text class="example-subsection__title">基础用法</text>
+        <pui-radio-group options="{{deliveryRadioOptions}}" default-value="stable" />
+      </view>
+      <view class="example-subsection">
+        <text class="example-subsection__title">受控与 change</text>
+        <pui-radio-group
+          options="{{deliveryRadioOptions}}"
+          value="{{deliveryRadioValue}}"
+          aria-label="发布通道"
+          bind:change="onDeliveryRadioChange"
+        />
+        <pui-cell title="当前组选值" description="0、false 与空字符串保持原始类型。" value="{{deliveryRadioStatus}}" />
+      </view>
+    </pui-card>
+    <pui-card title="Skeleton 结构占位" description="loading 由页面真实回写；delay 只避免短请求闪烁，默认 Slot 承载就绪内容。" custom-class="section-card">
+      <pui-skeleton
+        loading="{{skeletonLoading}}"
+        row-col="{{skeletonRows}}"
+        theme="text"
+        animation="gradient"
+        delay="300"
+        aria-label="组件详情加载中"
+      >
+        <pui-cell title="组件详情已加载" description="这是 Skeleton 的真实默认 slot，不是预览占位文案。" value="ready" />
+        <pui-tag theme="success" variant="outline">Skeleton + Cell + Tag</pui-tag>
+      </pui-skeleton>
+      <pui-button size="small" variant="outline" icon="{{skeletonLoading ? 'check-circle' : 'refresh'}}" custom-class="skeleton-example-action" bind:click="toggleExampleSkeleton">{{skeletonLoading ? '显示真实内容' : '重新加载占位'}}</pui-button>
+    </pui-card>
+    <pui-card title="Empty 空状态组合" description="Empty 负责图形与说明；下一步入口由 action Slot 中的真实 PUI Button 组合。" custom-class="section-card">
+      <pui-empty
+        description="调整筛选条件，或创建一个新的 PoemUI 组件。"
+        icon="inbox"
+        aria-label="组件筛选空状态"
+      >
+        <pui-tag slot="description" theme="default" variant="outline">description Slot</pui-tag>
+        <pui-button slot="action" size="small" icon="add" bind:click="onEmptyAction">创建组件</pui-button>
+      </pui-empty>
+      <pui-cell title="Empty 状态" description="image 的加载与失败由内部 pui-image 呈现；Empty 本身不透传事件。" value="{{emptyStatus}}" />
+    </pui-card>
+    <pui-card title="NoticeBar 页面公告" description="横向公告只在真实溢出时跑马；纵向公告使用 swiper 轮播内容数组。" custom-class="section-card">
+      <pui-notice-bar content="组件目录与 API 文档已同步，请继续完成真机交互复核。" theme="info" />
+      <pui-notice-bar
+        visible="{{noticeVisible}}"
+        content="组件目录、API 文档和发布产物已同步。"
+        theme="info"
+        operation="查看 API"
+        prefix-icon="bell"
+        suffix-icon="close"
+        aria-label="组件目录更新通知"
+        bind:click="onNoticeClick"
+      >
+        <pui-tag slot="content" variant="outline">真机复核</pui-tag>
+      </pui-notice-bar>
+      <pui-notice-bar direction="vertical" content="{{noticeItems}}" interval="2000" theme="success" bind:change="onNoticeChange" />
+      <pui-button wx:if="{{!noticeVisible}}" size="small" variant="outline" icon="refresh" custom-class="notice-example-action" bind:click="openExampleNotice">重新显示通知</pui-button>
+      <pui-cell title="NoticeBar 状态" description="suffix-icon 只发布 click，由页面决定是否回写 visible。" value="{{noticeStatus}}" />
+    </pui-card>
+    <pui-card title="Result 结果状态" description="Result 只呈现流程结果；下一步由同级 Button、Cell 或页面容器处理。" custom-class="section-card">
+      <pui-result
+        theme="success"
+        title="发布检查通过"
+        description="组件源码、官网预览和 npm 产物已完成同步。"
+        aria-label="组件发布结果"
+      />
+      <pui-result icon="{{false}}" aria-label="自定义结果内容">
+        <pui-icon slot="image" name="component" size="96" />
+        <pui-tag slot="title" theme="primary" variant="outline">自定义标题</pui-tag>
+        <pui-cell slot="description" title="下一步" description="由页面容器提供真实操作。" value="待处理" />
+      </pui-result>
+    </pui-card>
+    <pui-card title="Navbar 标题与原生胶囊" description="默认预留微信右上原生胶囊区域；Navbar 不在该区域放置业务操作。" custom-class="section-card">
+      <pui-navbar
+        title="组件发布"
+        left-arrow
+        safe-area-inset-top="{{false}}"
+        aria-label="组件发布导航栏"
+        bind:left-click="onNavbarLeft"
+      />
+      <pui-cell title="Navbar 状态" description="组件不自动返回；微信原生胶囊不属于 Navbar 的业务操作区。" value="{{navbarStatus}}" />
+    </pui-card>
+    <pui-card title="Tabs 基础用法" description="同层内容分类；基础示例不绑定事件，业务需要父级回写时再按 API Events 绑定 change。" custom-class="section-card">
+      <pui-tabs items="{{tabsItems}}" default-value="base" aria-label="组件分类">
+        <pui-cell title="基础组件" description="当前分类内容由默认 Slot 承载。" />
+      </pui-tabs>
+    </pui-card>
+    <pui-card title="Breadcrumb 受控路径与组合" description="value 由页面真实回写；当前页默认不可重复点击，独立禁用项、前后缀 slot 和状态优先级均可组合。" custom-class="section-card">
+      <pui-breadcrumb
+        items="{{breadcrumbDisplayItems}}"
+        value="{{breadcrumbValue}}"
+        separator-icon="chevron-right"
+        size="medium"
+        wrap="{{false}}"
+        max-label-length="10"
+        custom-prefix
+        custom-suffix
+        loading="{{breadcrumbMode === 'loading'}}"
+        loading-text="加载组件路径"
+        error="{{breadcrumbMode === 'error'}}"
+        error-text="组件路径加载失败"
+        retry-text="重试"
+        empty-text="暂无组件路径"
+        aria-label="组件文档路径"
+        duration="180"
+        bind:input="onBreadcrumbInput"
+        bind:change="onBreadcrumbChange"
+        bind:click="onBreadcrumbClick"
+        bind:retry="onBreadcrumbRetry"
+      >
+        <pui-tag slot="prefix" theme="primary" variant="outline">Docs</pui-tag>
+        <pui-button slot="suffix" size="small" variant="text" shape="square" icon="more-horizontal" aria-label="路径更多操作" bind:click="onBreadcrumbSuffix" />
+      </pui-breadcrumb>
+      <pui-button-group size="small" aria-label="Breadcrumb 状态切换" custom-class="breadcrumb-example-actions">
+        <pui-button variant="outline" data-mode="content" disabled="{{breadcrumbMode === 'content'}}" bind:click="setBreadcrumbMode">内容</pui-button>
+        <pui-button variant="outline" data-mode="loading" disabled="{{breadcrumbMode === 'loading'}}" bind:click="setBreadcrumbMode">加载</pui-button>
+        <pui-button variant="outline" data-mode="error" disabled="{{breadcrumbMode === 'error'}}" bind:click="setBreadcrumbMode">错误</pui-button>
+        <pui-button variant="outline" data-mode="empty" disabled="{{breadcrumbMode === 'empty'}}" bind:click="setBreadcrumbMode">空</pui-button>
+      </pui-button-group>
+      <pui-cell title="Breadcrumb 状态" description="retry 只发出重试请求并进入 loading；不会伪造网络成功或自动恢复内容。" value="{{breadcrumbStatus}}" />
+    </pui-card>
+    <pui-card title="Tabbar 基础用法" description="应用一级目的地导航；完整 click/change 事件请查看 API Events。" custom-class="section-card">
+      <pui-tabbar
+        items="{{tabbarItems}}"
+        default-value="home"
+        fixed="{{false}}"
+        aria-label="应用主导航"
+      />
+    </pui-card>
+    <pui-card title="Steps 基础用法" description="展示流程进度；完整 change 事件与受控写回请查看 API Events。" custom-class="section-card">
+      <pui-steps
+        items="{{stepsItems}}"
+        default-current="develop"
+        aria-label="组件发布进度"
+      />
+    </pui-card>
+    <pui-card title="BackTop 基础用法" description="页面 onPageScroll 将真实滚动位置传入；完整 to-top 事件请查看 API Events。" custom-class="section-card">
+      <pui-back-top scroll-top="{{backTopScroll}}" />
+    </pui-card>
+    <pui-card title="Indexes 基础用法" description="长分组集合组合 Cell、Badge 和侧栏 Button，点击或滑过侧栏可快速定位。" custom-class="section-card">
+      <pui-indexes
+        items="{{indexesItems}}"
+        default-current="★"
+        height="520"
+        aria-label="PoemUI 组件索引"
+      />
+    </pui-card>
+    <pui-card title="Sidebar 基础用法" description="分组、图标与徽标都来自 items；事件只在业务确实需要父级回写时按需绑定。" custom-class="section-card">
+      <pui-sidebar
+        items="{{sidebarItems}}"
+        default-value="overview"
+        width="260"
+        height="520"
+        aria-label="PoemUI 示例侧边导航"
+      />
+    </pui-card>
+    <pui-card title="List 真实列表与分页状态" description="内部组合 Cell、Badge、Button、Empty、Loading；load/retry 只通知页面，不伪造成功或追加数据。" custom-class="section-card">
+      <pui-list
+        id="listExample"
+        items="{{listDisplayItems}}"
+        title="组件交付清单"
+        description="List + Cell + Badge + Button"
+        show-header
+        custom-header
+        show-icon
+        show-description
+        show-value
+        show-badge
+        show-arrow
+        clickable
+        bordered
+        divided
+        compact="{{listCompact}}"
+        show-footer
+        custom-empty
+        disabled="{{listDisabled}}"
+        loading="{{listMode === 'loading'}}"
+        load-text="加载更多"
+        loading-text="加载中"
+        finished="{{listMode === 'finished'}}"
+        finished-text="没有更多了"
+        error="{{listMode === 'error'}}"
+        error-text="加载失败，点击重试"
+        empty-text="暂无列表数据"
+        aria-label="PoemUI 示例列表"
+        duration="180"
+        easing="ease-out"
+        bind:click="onListClick"
+        bind:load="onListLoad"
+        bind:retry="onListRetry"
+      >
+        <view slot="header" class="list-example-header">
+          <pui-icon name="component" size="28" />
+          <view><text>组件交付清单</text><text>header slot</text></view>
+          <pui-tag theme="primary" variant="outline">List</pui-tag>
+        </view>
+        <view slot="empty" class="list-example-empty">
+          <pui-icon name="inbox" size="48" />
+          <text>empty slot：当前没有列表数据</text>
+          <pui-button size="small" variant="outline" icon="refresh" data-mode="content" disabled="{{listDisabled}}" bind:click="setListMode">恢复内容</pui-button>
+        </view>
+      </pui-list>
+      <pui-button-group size="small" aria-label="List 状态切换" custom-class="list-example-actions">
+        <pui-button variant="outline" data-mode="content" disabled="{{listMode === 'content'}}" bind:click="setListMode">内容</pui-button>
+        <pui-button variant="outline" data-mode="loading" disabled="{{listMode === 'loading'}}" bind:click="setListMode">加载</pui-button>
+        <pui-button variant="outline" data-mode="error" disabled="{{listMode === 'error'}}" bind:click="setListMode">错误</pui-button>
+        <pui-button variant="outline" data-mode="empty" disabled="{{listMode === 'empty'}}" bind:click="setListMode">空</pui-button>
+        <pui-button variant="outline" data-mode="finished" disabled="{{listMode === 'finished'}}" bind:click="setListMode">结束</pui-button>
+      </pui-button-group>
+      <pui-button-group size="small" aria-label="List 布局与方法" custom-class="list-example-actions">
+        <pui-button variant="outline" icon="chevron-down" bind:click="requestListLoad">loadMore()</pui-button>
+        <pui-button variant="outline" icon="layers" bind:click="toggleListCompact">{{listCompact ? '舒展' : '紧凑'}}</pui-button>
+        <pui-button variant="outline" icon="blocked" bind:click="toggleListDisabled">{{listDisabled ? '启用' : '禁用'}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="List 状态" description="消费者显式回写 items/loading/error/finished。" value="{{listStatus}}" />
+    </pui-card>
+    <view class="section">
+      <view class="section__title">可传参组件</view>
+      <pui-form
+        id="deliveryForm"
+        data="{{deliveryFormData}}"
+        rules="{{deliveryFormRules}}"
+        scroll-to-first-error="smooth"
+        aria-label="组件发布表单"
+        bind:validate="onDeliveryFormValidate"
+        bind:submit="onDeliveryFormSubmit"
+        bind:reset="onDeliveryFormReset"
+      >
+        <pui-field name="componentName" label="组件名称" help="由父级回写同一份 Form data。">
+          <pui-input
+            value="{{deliveryFormData.componentName}}"
+            name="componentName"
+            placeholder="请输入至少三个字符"
+            clearable
+            bind:change="onDeliveryFormNameChange"
+          />
+        </pui-field>
+        <pui-field name="publicRelease" label="公开发布" help="warning 会进入结果，但不会冒充 error。">
+          <pui-switch
+            value="{{deliveryFormData.publicRelease}}"
+            custom-value="{{[true, false]}}"
+            aria-label="公开发布"
+            bind:change="onDeliveryFormPublicChange"
+          />
+        </pui-field>
+        <pui-button-group size="small" aria-label="Form 原生操作">
+          <pui-button variant="outline" form-type="reset" icon="refresh">重置</pui-button>
+          <pui-button theme="primary" form-type="submit" icon="check">提交</pui-button>
+        </pui-button-group>
+        <pui-cell title="Form 状态" description="提交只报告校验结果，不伪造发布成功。" value="{{deliveryFormStatus}}" />
+      </pui-form>
+      <pui-field name="componentName" label="组件名称" help="Field 只负责标签与反馈，Input 负责真实值和事件。" required>
+        <pui-input
+          id="deliveryInput"
+          value="{{name}}"
+          name="componentName"
+          placeholder="输入一个名称"
+          prefix-icon="component"
+          suffix="slot"
+          clearable
+          required
+          aria-label="组件名称"
+          bind:change="onNameChange"
+          bind:clear="onNameClear"
+          bind:focus="onNameFocus"
+          bind:blur="onNameBlur"
+          bind:enter="onNameEnter"
+        >
+          <pui-tag slot="suffix" theme="success" variant="outline">controlled</pui-tag>
+          <pui-cell slot="extra" title="Input 状态" description="受控输入由页面真实回写 value" value="{{inputStatus}}" />
+        </pui-input>
+      </pui-field>
+      <pui-button-group size="small" aria-label="Input 实例方法">
+        <pui-button variant="outline" icon="focus" bind:click="focusNameInput">focus()</pui-button>
+        <pui-button variant="outline" icon="clear" bind:click="clearNameInput">clear()</pui-button>
+        <pui-button variant="outline" icon="refresh" bind:click="resetNameInput">reset</pui-button>
+        <pui-button variant="text" icon="info-circle" bind:click="readNameInput">getValue()</pui-button>
+      </pui-button-group>
+      <pui-textarea
+        id="deliveryTextarea"
+        value="{{textareaValue}}"
+        default-value="初始发布说明"
+        name="releaseNote"
+        label="slot"
+        placeholder="输入发布说明"
+        maxcharacter="160"
+        autosize="{{textareaAutosize}}"
+        indicator
+        bordered
+        clearable
+        loading="{{textareaLoading}}"
+        tips="ASCII 按 1 计数，中文与 emoji 按 2 计数"
+        required
+        confirm-type="done"
+        show-confirm-bar
+        cursor-spacing="24"
+        adjust-position
+        hold-keyboard
+        disable-default-padding
+        aria-label="发布说明文本域"
+        bind:change="onTextareaChange"
+        bind:clear="onTextareaClear"
+        bind:focus="onTextareaFocus"
+        bind:blur="onTextareaBlur"
+        bind:enter="onTextareaEnter"
+        bind:line-change="onTextareaLineChange"
+        bind:keyboardheightchange="onTextareaKeyboardHeightChange"
+      >
+        <view slot="label"><pui-icon name="edit" size="24" /> 发布说明</view>
+        <pui-tag slot="extra" theme="success" variant="outline">controlled</pui-tag>
+      </pui-textarea>
+      <pui-button-group size="small" aria-label="Textarea 实例方法">
+        <pui-button variant="outline" icon="focus" bind:click="focusTextarea">focus()</pui-button>
+        <pui-button variant="outline" icon="clear" bind:click="clearTextarea">clear()</pui-button>
+        <pui-button variant="text" icon="info-circle" bind:click="readTextareaValue">getValue()</pui-button>
+        <pui-button variant="text" icon="loading" bind:click="toggleTextareaLoading">{{textareaLoading ? '停止加载' : '加载态'}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="Textarea 状态" description="真实受控回写、平台事件和精简实例方法" value="{{textareaStatus}}" />
+      <pui-card title="Cell 单元格" description="基础、内容、选择、状态和 Slot 组合分区展示。" custom-class="section-card">
+        <pui-cell title="单行标题" />
+        <pui-cell title="多行标题" description="这里是一段可自然换行的说明文字。" note="补充信息" value="详情" left-icon="component" arrow />
+        <pui-cell title="可选择项目" description="input 事件由页面真实回写 selected" selectable clickable selected="{{deliveryCellSelected}}" bind:input="onDeliveryCellInput" />
+        <pui-cell title="页面入口" description="点击后调用真实 wx.navigateTo" value="进入" clickable hover arrow url="/pages/components/index" />
+        <pui-cell title="正在处理" description="loading 阻断点击和导航" clickable loading />
+        <pui-cell title="安全检查" description="复杂状态通过 Slot 组合" left-icon="shield-check" variant="outline" bordered="{{false}}">
+          <pui-tag slot="title" theme="primary" variant="outline">推荐</pui-tag>
+          <pui-badge slot="value" count="{{deliveryCellChecked ? '已检查' : 2}}" theme="{{deliveryCellChecked ? 'success' : 'danger'}}" show-zero size="small" />
+          <pui-button slot="right" size="small" variant="outline" icon="check-circle" bind:click="onDeliveryCellRightAction">{{deliveryCellChecked ? '已完成' : '检查'}}</pui-button>
+          <pui-tag variant="outline">组合内容</pui-tag>
+        </pui-cell>
+      </pui-card>
+      <pui-search value="{{componentSearch}}" placeholder="搜索组件" show-cancel aria-label="组件搜索" bind:change="onComponentSearchChange" bind:search="onComponentSearch" bind:cancel="onComponentSearchCancel" />
+      <pui-cell title="搜索关键词" value="{{componentSearch || '未输入'}}" />
+      <pui-button-group size="small" aria-label="Picker 实例方法">
+        <pui-button theme="primary" icon="chevron-down" bind:click="openDeliveryPicker">打开 Picker</pui-button>
+        <pui-button variant="outline" icon="refresh" bind:click="resetDeliveryPicker">reset()</pui-button>
+        <pui-button variant="text" icon="info-circle" bind:click="readDeliveryPicker">getValue()</pui-button>
+      </pui-button-group>
+      <pui-picker
+        id="deliveryPicker"
+        columns="{{deliveryPickerColumns}}"
+        value="{{deliveryPickerValue}}"
+        visible="{{deliveryPickerVisible}}"
+        default-value="{{deliveryPickerDefaultValue}}"
+        title="选择组件"
+        aria-label="组件滚轮选择器"
+        bind:visible-change="onDeliveryPickerVisibleChange"
+        bind:pick="onDeliveryPickerPick"
+        bind:confirm="onDeliveryPickerConfirm"
+        bind:change="onDeliveryPickerChange"
+        bind:cancel="onDeliveryPickerCancel"
+        bind:close="onDeliveryPickerClose"
+      />
+      <pui-cell title="Picker 状态" description="滚动只改草稿；确认后父级回写受控 value。" value="{{deliveryPickerStatus}}" />
+      <view class="stepper-example">
+        <pui-stepper value="{{stockCount}}" min="0" max="20" step="1" theme="outline" aria-label="可发布库存" bind:change="onStockCountChange" bind:overlimit="onStockCountOverlimit" />
+        <pui-tag theme="primary" variant="outline">件</pui-tag>
+      </view>
+      <pui-cell title="可发布库存" description="Stepper change 回写页面值；边界继续点击只触发 overlimit。" value="{{stockCountStatus}}" />
+      <pui-slider value="{{releaseProgress}}" name="releaseProgress" min="0" max="100" step="5" block-size="24" show-value show-min-max value-suffix="%" color="#2563eb" aria-label="发布进度" bind:changing="onReleaseProgressChanging" bind:change="onReleaseProgressChange" />
+      <pui-cell title="发布进度" description="拖动中 changing 实时回写，松手且值变化时只提交一次 change。" value="{{releaseProgressStatus}}" />
+      <view class="rate-example">
+        <pui-rate value="{{componentRating}}" count="5" gap="8" allow-half show-text texts="{{ratingTexts}}" aria-label="组件可用性评分" bind:change="onComponentRatingChange"></pui-rate>
+        <pui-tag theme="warning" variant="outline">已评价</pui-tag>
+      </view>
+      <pui-cell title="组件评分" description="Rate change 回写页面评分，半星由真实点击区域决定。" value="{{componentRatingStatus}}" />
+      <pui-button size="small" variant="outline" icon="attachment" bind:click="toggleUploadPicker">选择来源：{{uploadPickerText}}</pui-button>
+      <pui-upload
+        files="{{uploadFiles}}"
+        max="3"
+        picker="{{uploadPicker}}"
+        media-type="{{uploadMediaTypes}}"
+        message-type="all"
+        max-size="{{uploadMaxSize}}"
+        add-content="添加组件附件"
+        aria-label="选择组件附件"
+        bind:change="onUploadChange"
+        bind:add="onUploadAdd"
+        bind:reject="onUploadReject"
+        bind:error="onUploadError"
+      />
+      <pui-tag theme="primary" variant="outline">选择成功仅加入 ready 列表</pui-tag>
+      <pui-cell title="组件附件" description="按 picker 真实调用 wx.chooseMedia / wx.chooseMessageFile；change 回写受控 files。" value="{{uploadStatus}}" />
+      <view class="loading-example">
+        <pui-loading text="同步组件产物" progress="68" aria-label="组件产物同步状态">
+          <pui-tag theme="primary" variant="outline">同步中</pui-tag>
+        </pui-loading>
+      </view>
+      <view class="toast-example-action"><pui-button size="small" variant="outline" icon="bell" bind:click="openExampleToast">显示 Toast</pui-button></view>
+      <pui-cell title="Toast 状态" description="show() 展示后按 duration 自动收起；close 不代表业务成功。" value="{{toastStatus}}" />
+      <pui-cell title="基础开关" description="无需事件即可使用非受控初值。">
+        <pui-switch slot="right" default-value="{{true}}" />
+      </pui-cell>
+      <pui-cell title="发布通知" description="value 使用 enabled / disabled 原始值。">
+        <pui-switch
+          id="delivery-switch"
+          slot="right"
+          value="{{notificationValue}}"
+          custom-value="{{notificationValues}}"
+          label="{{['ON', 'OFF']}}"
+          icon="{{['check', 'close']}}"
+          aria-label="发布通知开关"
+          bind:change="onSwitchChange"
+        />
+      </pui-cell>
+      <pui-cell title="Switch 状态" description="change 只请求一次；页面真实回写 value。" value="{{switchStatus}}" />
+      <pui-cell title="当前名称" value="{{name || '未填写'}}" />
+      <view class="tag-row">
+        <pui-tag theme="primary">{{notification ? '通知已开启' : '通知已关闭'}}</pui-tag>
+        <pui-tag variant="outline">{{theme}}</pui-tag>
+      </view>
+    </view>
+
+    <pui-card title="选择与发布设置" description="Select、Switch、RadioGroup 与日期时间选择器均可按需引入。" custom-class="section-card">
+      <view class="select-label">发布渠道</view>
+      <pui-select options="{{channels}}" value="{{channel}}" bind:change="onChannelChange" />
+      <view class="setting-row setting-row--compact">
+        <view>
+          <view class="setting-row__title">公开发布</view>
+          <view class="setting-row__desc">Switch change 事件同步到页面。</view>
+        </view>
+        <pui-switch value="{{isPublic}}" aria-label="公开发布" bind:change="onPublicChange" />
+      </view>
+      <view class="select-label">发布范围</view>
+      <pui-radio-group options="{{publishScopes}}" value="{{publishScope}}" aria-label="发布范围" bind:change="onPublishScopeChange" />
+      <pui-cell title="当前范围" value="{{publishScope}}" />
+      <pui-button variant="outline" icon="calendar" bind:click="openDeliveryDateTimePicker">选择发布时间</pui-button>
+      <pui-date-time-picker
+        id="deliveryDateTimePicker"
+        value="{{publishAt}}"
+        visible="{{deliveryDateTimeVisible}}"
+        mode="{{deliveryDateTimeMode}}"
+        start="2026-01-01 09:00"
+        end="2026-12-31 18:00"
+        steps="{{deliveryDateTimeSteps}}"
+        title="发布时间"
+        aria-label="计划发布时间"
+        bind:visible-change="onDeliveryDateTimeVisibleChange"
+        bind:confirm="onDeliveryDateTimeConfirm"
+        bind:change="onDeliveryDateTimeChange"
+        bind:cancel="onDeliveryDateTimeCancel"
+      />
+      <pui-cell title="计划发布" description="{{publishAtStatus}}" value="{{publishAt || '未选择'}}" />
+      <pui-cell title="当前渠道" value="{{channel}}" />
+    </pui-card>
+
+    <pui-card title="Icon 原生着色与事件" description="color 通过小程序 Canvas 合成真实生效，点击和资源状态均写回页面。" custom-class="section-card">
+      <view class="icon-preview-row">
+        <pui-icon name="{{selectedIcon}}" color="{{iconColor}}" size="72" aria-label="{{selectedIcon}} 图标" bind:load="onIconLoad" bind:error="onIconError" />
+        <pui-cell title="当前图标" description="{{iconStatus}}" value="{{selectedIcon}}" />
+      </view>
+      <view class="icon-actions">
+        <pui-button size="small" data-icon="spark" bind:click="selectIcon">Spark</pui-button>
+        <pui-button size="small" variant="outline" data-icon="arrow-left" bind:click="selectIcon">Arrow</pui-button>
+        <pui-button size="small" variant="outline" data-icon="check-circle" bind:click="selectIcon">Check</pui-button>
+      </view>
+    </pui-card>
+
+    <pui-card title="Collapse 受控展开" description="严格原始值、互斥模式与 change 父级回写都来自 pui-collapse。" custom-class="section-card">
+      <pui-collapse
+        items="{{collapseItems}}"
+        value="{{collapseValue}}"
+        expand-mutex
+        aria-label="Collapse 组件说明"
+        bind:change="onCollapseChange"
+      />
+      <pui-cell title="Collapse 状态" value="{{collapseStatus}}" />
+    </pui-card>
+
+    <pui-card title="SwipeCell 基础用法" description="向左或向右滑动单元格，露出两侧操作。" custom-class="section-card">
+      <pui-swipe-cell
+        left="{{swipeLeftActions}}"
+        right="{{swipeRightActions}}"
+        aria-label="待处理消息操作"
+      >
+        <pui-cell title="待处理消息" description="左右滑动查看操作" left-icon="message" arrow />
+      </pui-swipe-cell>
+    </pui-card>
+
+    <pui-card title="CountDown 准确计时" description="目标时间校正漂移；基础事件只保留 change 与 finish，运行控制使用实例方法。" custom-class="section-card">
+      <view class="count-down-example">
+        <pui-count-down
+          id="countDownExample"
+          time="{{countDownTime}}"
+          format="mm:ss"
+          auto-start
+          theme="square"
+          aria-label="组件发布时间倒计时"
+          bind:change="onCountDownChange"
+          bind:finish="onCountDownFinish"
+        />
+      </view>
+      <pui-button-group size="small" aria-label="CountDown 实例方法" custom-class="count-down-example__actions">
+        <pui-button variant="outline" icon="play" disabled="{{countDownRunning}}" bind:click="startCountDown">开始</pui-button>
+        <pui-button variant="outline" icon="pause" disabled="{{!countDownRunning}}" bind:click="pauseCountDown">暂停</pui-button>
+        <pui-button variant="outline" icon="refresh" bind:click="resetCountDown">重置</pui-button>
+        <pui-button variant="text" icon="activity" bind:click="readCountDownTime">读取剩余</pui-button>
+      </pui-button-group>
+      <pui-cell title="CountDown 状态" description="{{countDownStatus}}" value="{{countDownState.formatted}}" />
+    </pui-card>
+
+    <pui-card title="Table 固定列、选择与排序" description="受控选择和排序由页面真实回写；横纵滚动、固定列、Tag 单元格和禁用行来自 pui-table。" custom-class="section-card">
+      <pui-table
+        id="deliveryTable"
+        columns="{{tableColumns}}"
+        data="{{tableRows}}"
+        row-key="id"
+        height="320"
+        stripe
+        selectable
+        selected-row-keys="{{tableSelectedRowKeys}}"
+        sortable
+        sort="{{tableSort}}"
+        aria-label="组件交付表格"
+        bind:row-click="onTableRowClick"
+        bind:cell-click="onTableCellClick"
+        bind:input="onTableInput"
+        bind:change="onTableChange"
+        bind:sort-change="onTableSortChange"
+        bind:scroll="onTableScroll"
+        bind:retry="onTableRetry"
+      />
+      <pui-button-group size="small" aria-label="Table 实例方法" custom-class="table-example__actions">
+        <pui-button variant="outline" icon="arrow-left" bind:click="tableScrollLeft">最左</pui-button>
+        <pui-button variant="outline" icon="arrow-right" bind:click="tableScrollRight">最右</pui-button>
+        <pui-button variant="text" icon="close" bind:click="tableClearSelection">清空选择</pui-button>
+        <pui-button variant="text" icon="refresh" bind:click="tableClearSort">清除排序</pui-button>
+      </pui-button-group>
+      <pui-cell title="Table 状态" value="{{tableStatus}}" />
+    </pui-card>
+
+    <pui-card title="Swiper 原生 swiper 与受控轮播" description="页面真实回写 0/false 原始 value；触摸、统一 Navigation、自动播放和状态均来自 pui-swiper。" custom-class="section-card">
+      <pui-swiper
+        id="deliverySwiper"
+        items="{{swiperDisplayItems}}"
+        value="{{swiperValue}}"
+        default-value="{{0}}"
+        height="360"
+        circular
+        navigation="{{swiperNavigation}}"
+        loading="{{swiperMode === 'loading'}}"
+        error="{{swiperMode === 'error'}}"
+        aria-label="PoemUI 组件能力轮播"
+        bind:click="onSwiperClick"
+        bind:input="onSwiperInput"
+        bind:change="onSwiperChange"
+        bind:animationfinish="onSwiperAnimationFinish"
+        bind:image-load="onSwiperImageLoad"
+        bind:image-error="onSwiperImageError"
+        bind:retry="onSwiperRetry"
+      />
+      <pui-button-group size="small" aria-label="Swiper 实例方法" custom-class="swiper-example__actions">
+        <pui-button variant="outline" icon="chevron-left" bind:click="swiperPrevious">prev()</pui-button>
+        <pui-button variant="outline" icon="chevron-right" bind:click="swiperNext">next()</pui-button>
+        <pui-button variant="text" icon="refresh" bind:click="swiperReset">reset()</pui-button>
+        <pui-button variant="text" icon="info-circle" bind:click="swiperGetState">getState()</pui-button>
+      </pui-button-group>
+      <pui-button-group size="small" aria-label="Swiper 状态切换" custom-class="swiper-example__states">
+        <pui-button variant="outline" data-mode="content" disabled="{{swiperMode === 'content'}}" bind:click="setSwiperMode">内容</pui-button>
+        <pui-button variant="outline" data-mode="loading" disabled="{{swiperMode === 'loading'}}" bind:click="setSwiperMode">加载</pui-button>
+        <pui-button variant="outline" data-mode="error" disabled="{{swiperMode === 'error'}}" bind:click="setSwiperMode">错误</pui-button>
+        <pui-button variant="outline" data-mode="empty" disabled="{{swiperMode === 'empty'}}" bind:click="setSwiperMode">空</pui-button>
+      </pui-button-group>
+      <pui-cell title="Swiper 事件" description="retry 只进入 loading，不伪造恢复成功" value="{{swiperStatus}}" />
+    </pui-card>
+
+    <pui-card title="NavigationMenu / Menubar 分层导航" description="页面真实回写五组受控 Props；根项、复选、单选、子菜单与微信导航回调均来自 pui-navigation-menu。" custom-class="section-card">
+      <pui-navigation-menu
+        id="deliveryNavigationMenu"
+        items="{{navigationMenuDisplayItems}}"
+        value="{{navigationMenuValue}}"
+        default-value="{{false}}"
+        expanded-value="{{navigationMenuExpanded}}"
+        default-expanded-value="components"
+        visible="{{navigationMenuVisible}}"
+        default-visible="{{false}}"
+        checked-values="{{navigationMenuChecked}}"
+        default-checked-values="{{navigationMenuDefaultChecked}}"
+        radio-values="{{navigationMenuRadio}}"
+        default-radio-values="{{navigationMenuDefaultRadio}}"
+        mode="{{navigationMenuMode}}"
+        direction="horizontal"
+        placement="bottom"
+        variant="outline"
+        block
+        scrollable
+        show-header
+        show-icon
+        show-description
+        show-badge
+        show-indicator
+        show-group
+        show-separator
+        show-shortcut
+        close-on-select
+        close-on-overlay-click
+        show-overlay
+        reset-submenu-on-close
+        auto-navigate="{{navigationMenuAutoNavigate}}"
+        custom-footer
+        readonly="{{navigationMenuReadonly}}"
+        loading="{{navigationMenuState === 'loading'}}"
+        error="{{navigationMenuState === 'error'}}"
+        loading-text="导航加载中"
+        error-text="导航加载失败"
+        retry-text="重试"
+        empty-text="暂无导航内容"
+        max-height="560"
+        aria-label="PoemUI 组件导航菜单"
+        bind:click="onNavigationMenuClick"
+        bind:item-click="onNavigationMenuItemClick"
+        bind:input="onNavigationMenuInput"
+        bind:change="onNavigationMenuChange"
+        bind:select="onNavigationMenuSelect"
+        bind:expanded-input="onNavigationMenuExpandedInput"
+        bind:expanded-change="onNavigationMenuExpandedChange"
+        bind:visible-input="onNavigationMenuVisibleInput"
+        bind:visible-change="onNavigationMenuVisibleChange"
+        bind:open="onNavigationMenuOpen"
+        bind:close="onNavigationMenuClose"
+        bind:after-open="onNavigationMenuAfterOpen"
+        bind:after-close="onNavigationMenuAfterClose"
+        bind:checked-input="onNavigationMenuCheckedInput"
+        bind:checked-change="onNavigationMenuCheckedChange"
+        bind:radio-input="onNavigationMenuRadioInput"
+        bind:radio-change="onNavigationMenuRadioChange"
+        bind:submenu-open="onNavigationMenuSubmenuOpen"
+        bind:submenu-close="onNavigationMenuSubmenuClose"
+        bind:navigate="onNavigationMenuNavigate"
+        bind:navigate-success="onNavigationMenuNavigateSuccess"
+        bind:navigate-error="onNavigationMenuNavigateError"
+        bind:overlay-click="onNavigationMenuOverlay"
+        bind:retry="onNavigationMenuRetry"
+        bind:scroll="onNavigationMenuScroll"
+        bind:reset="onNavigationMenuReset"
+      >
+        <view slot="footer" class="navigation-menu-example__footer">
+          <pui-tag variant="outline">{{navigationMenuMode}} · footer slot</pui-tag>
+          <pui-button size="small" variant="text" icon="undo" bind:click="navigationMenuReset">重置</pui-button>
+        </view>
+      </pui-navigation-menu>
+      <pui-button-group size="small" aria-label="NavigationMenu 显隐与钻取方法" custom-class="navigation-menu-example__actions">
+        <pui-button variant="outline" icon="chevron-up" bind:click="navigationMenuOpen">open()</pui-button>
+        <pui-button variant="outline" icon="chevron-down" bind:click="navigationMenuClose">close()</pui-button>
+        <pui-button variant="text" icon="refresh" bind:click="navigationMenuToggle">toggle()</pui-button>
+        <pui-button variant="text" icon="chevron-left" bind:click="navigationMenuBack">back()</pui-button>
+      </pui-button-group>
+      <pui-button-group size="small" aria-label="NavigationMenu 选值与读取方法" custom-class="navigation-menu-example__actions">
+        <pui-button variant="outline" icon="check" bind:click="navigationMenuSelectFalse">select(false)</pui-button>
+        <pui-button variant="outline" icon="chevron-right" bind:click="navigationMenuOpenSubmenu">openSubmenu(0)</pui-button>
+        <pui-button variant="text" icon="info-circle" bind:click="navigationMenuGetState">getState()</pui-button>
+        <pui-button variant="text" icon="undo" bind:click="navigationMenuReset">reset()</pui-button>
+      </pui-button-group>
+      <pui-button-group size="small" aria-label="NavigationMenu 状态切换" custom-class="navigation-menu-example__states">
+        <pui-button variant="outline" data-mode="content" disabled="{{navigationMenuState === 'content'}}" bind:click="setNavigationMenuState">内容</pui-button>
+        <pui-button variant="outline" data-mode="loading" disabled="{{navigationMenuState === 'loading'}}" bind:click="setNavigationMenuState">加载</pui-button>
+        <pui-button variant="outline" data-mode="error" disabled="{{navigationMenuState === 'error'}}" bind:click="setNavigationMenuState">错误</pui-button>
+        <pui-button variant="outline" data-mode="empty" disabled="{{navigationMenuState === 'empty'}}" bind:click="setNavigationMenuState">空</pui-button>
+      </pui-button-group>
+      <pui-button-group size="small" aria-label="NavigationMenu 模式与边界" custom-class="navigation-menu-example__states">
+        <pui-button variant="outline" icon="menu" bind:click="toggleNavigationMenuMode">{{navigationMenuMode === 'navigation' ? '切 Menubar' : '切 Navigation'}}</pui-button>
+        <pui-button variant="outline" icon="lock" bind:click="toggleNavigationMenuReadonly">{{navigationMenuReadonly ? '解除只读' : '只读'}}</pui-button>
+        <pui-button variant="outline" icon="route" bind:click="toggleNavigationMenuAutoNavigate">{{navigationMenuAutoNavigate ? '仅派发导航' : '启用真实导航'}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="NavigationMenu 事件" description="navigate-success/error 只来自微信 API；retry 不伪造恢复。" value="{{navigationMenuStatus}}" />
+    </pui-card>
+
+    <pui-card title="Calendar 受控范围与弹层" description="页面真实回写 value/visible；日期限制、事件与状态均来自 pui-calendar。" custom-class="section-card">
+      <pui-button theme="primary" icon="calendar" bind:click="openCalendar">打开日历</pui-button>
+      <pui-cell title="Calendar 状态" description="{{calendarStatus}}" value="{{calendarValue.length}} 个日期" />
+      <pui-calendar
+        value="{{calendarValue}}"
+        type="range"
+        visible="{{calendarVisible}}"
+        min-date="2026-07-01"
+        max-date="2026-08-31"
+        disabled-dates="{{calendarDisabledDates}}"
+        first-day-of-week="1"
+        max-range="14"
+        locale-text="{{calendarLocaleText}}"
+        auto-close
+        use-popup
+        aria-label="组件交付周期"
+        bind:change="onCalendarChange"
+        bind:limit="onCalendarLimit"
+        bind:panel-change="onCalendarPanelChange"
+        bind:visible-change="onCalendarVisibleChange"
+        bind:confirm="onCalendarConfirm"
+        bind:cancel="onCalendarCancel"
+        bind:retry="onCalendarRetry"
+      />
+    </pui-card>
+
+    <pui-card title="Dialog 受控确认与事件" description="页面在 input/change 中回写 visible，确认、取消和关闭来源都真实记录。" custom-class="section-card">
+      <pui-button theme="primary" block bind:click="openDialog">打开确认 Dialog</pui-button>
+      <pui-cell title="Dialog 状态" value="{{dialogStatus}}" />
+    </pui-card>
+
+    <pui-card title="Direction 子树阅读方向" description="显式 ltr/rtl、逻辑文本对齐和默认 slot 都由原生 Provider 生效；旧物理 left/right 与方向性图标不会被伪装成自动迁移。" custom-class="section-card">
+      <pui-direction
+        id="deliveryDirection"
+        direction="{{deliveryDirection}}"
+        language="{{deliveryDirectionLanguage}}"
+        fallback-direction="ltr"
+        text-align="start"
+        display="block"
+        aria-label="组件交付阅读方向示例"
+        duration="180"
+        bind:resolve="onDirectionResolve"
+        bind:ready="onDirectionReady"
+        bind:change="onDirectionChange"
+        bind:after-change="onDirectionAfterChange"
+      >
+        <view class="direction-example">
+          <pui-cell
+            title="{{deliveryDirection === 'rtl' ? 'مرحبا بكم في PoemUI' : 'Welcome to PoemUI'}}"
+            description="Direction + Cell + Button + Tag"
+            value="{{deliveryDirection === 'rtl' ? 'RTL' : 'LTR'}}"
+            left-icon="globe"
+          />
+          <view class="direction-example__actions">
+            <pui-button size="small" theme="primary" icon="refresh" bind:click="toggleDeliveryDirection">切换 LTR / RTL</pui-button>
+            <pui-button size="small" variant="outline" icon="globe" bind:click="refreshDeliveryDirection">refresh()</pui-button>
+            <pui-button size="small" variant="text" icon="code" bind:click="getDeliveryDirectionState">getState()</pui-button>
+          </view>
+          <pui-tag theme="primary" variant="outline">Provider 默认 slot 可自由组合</pui-tag>
+        </view>
+      </pui-direction>
+      <pui-cell title="Direction 状态" description="resolve 每次解析；change/after-change 只在真实方向变化时触发。" value="{{deliveryDirectionStatus}}" />
+    </pui-card>
+
+    <pui-card title="Popup 受控显隐" description="页面负责打开与 visible-change 回写；内容、表单和业务结果由默认 slot 组合。" custom-class="section-card">
+      <pui-button theme="primary" block bind:click="openPopup">打开 Popup</pui-button>
+      <pui-cell title="Popup 状态" description="关闭按钮或遮罩只请求关闭，受控页面决定是否写回 visible。" value="{{popupResult}}" />
+      <pui-button variant="text" block bind:click="goBack">返回主题页</pui-button>
+    </pui-card>
+
+    <pui-card title="Popover 受控锚点气泡层" description="默认 Slot 是触发元素，content Slot 承载组合内容；页面只回写 visible。" custom-class="section-card">
+      <pui-popover
+        id="deliveryPopover"
+        visible="{{popoverVisible}}"
+        placement="bottom"
+        content="点击外部区域会请求页面关闭。"
+        theme="dark"
+        aria-label="组件说明气泡层"
+        bind:visible-change="onPopoverVisibleChange"
+      >
+        <pui-button variant="outline" icon="more-horizontal" bind:click="openPopover">更多操作</pui-button>
+        <view slot="content" class="popover-example-content">
+          <pui-cell title="组件状态" description="content Slot 由消费者组合" value="ready" left-icon="component" />
+          <pui-tag theme="primary" variant="outline">可发布</pui-tag>
+        </view>
+      </pui-popover>
+      <pui-cell title="Popover 状态" description="外部点击仅发 visible-change，页面决定是否关闭。" value="{{popoverResult}}" />
+    </pui-card>
+
+    <pui-card title="Tooltip 受控触摸提示" description="默认 slot 作为 reference，content slot 组合 Icon 与 Tag；页面真实回写 visible，并可调用实例方法。" custom-class="section-card">
+      <view class="tooltip-example-stage">
+        <pui-tooltip
+          id="deliveryTooltip"
+          visible="{{tooltipVisible}}"
+          custom-content
+          trigger="tap"
+          placement="top"
+          align="center"
+          close-on-content-click
+          duration="0"
+          aria-label="组件交付提示"
+          motion-duration="180"
+          bind:input="onTooltipInput"
+          bind:change="onTooltipChange"
+          bind:show="onTooltipShow"
+          bind:hide="onTooltipHide"
+          bind:reference-click="onTooltipReferenceClick"
+          bind:reference-longpress="onTooltipReferenceLongpress"
+          bind:content-click="onTooltipContentClick"
+          bind:after-show="onTooltipAfterShow"
+          bind:after-hide="onTooltipAfterHide"
+        >
+          <pui-button variant="outline" icon="info-circle">查看交付提示</pui-button>
+          <view slot="content" class="tooltip-example-content">
+            <pui-icon name="info-circle" size="24" />
+            <text>Tooltip + Icon + Tag</text>
+            <pui-tag theme="primary" variant="outline">可组合</pui-tag>
+          </view>
+        </pui-tooltip>
+      </view>
+      <pui-button-group size="small" aria-label="Tooltip 实例方法">
+        <pui-button variant="outline" icon="add" bind:click="showTooltip">show()</pui-button>
+        <pui-button variant="outline" icon="close" bind:click="hideTooltip">hide()</pui-button>
+        <pui-button variant="outline" icon="refresh" bind:click="toggleTooltip">toggle()</pui-button>
+      </pui-button-group>
+      <pui-cell title="Tooltip 状态" description="duration=0 保持显示；点击内容按策略关闭。" value="{{tooltipResult}}" />
+    </pui-card>
+
+    <pui-card title="ActionSheet 受控动作面板" description="列表或宫格动作只表达选择和关闭请求；页面决定后续业务。" custom-class="section-card">
+      <pui-button-group size="small" aria-label="ActionSheet 显隐控制">
+        <pui-button theme="primary" icon="list" bind:click="openActionSheet">选择操作</pui-button>
+        <pui-button variant="outline" icon="close" bind:click="closeActionSheet">关闭面板</pui-button>
+      </pui-button-group>
+      <pui-cell title="ActionSheet 事件" description="selected → close → visible-change 的关闭顺序由组件真实触发。" value="{{actionSheetResult}}" />
+    </pui-card>
+
+    <pui-card title="DropdownMenu 页面筛选" description="一个 items 数组承载单选或多选筛选项；页面收到事件后真实回写 value。" custom-class="section-card">
+      <pui-cell title="DropdownMenu 事件" description="单选为 change → close；多选通过确认关闭，禁用项不会触发选择。" value="{{dropdownResult}}" />
+    </pui-card>
+
+    <pui-card title="Overlay 受控遮罩" description="页面持有 visible；点击遮罩或默认 Slot 内容后，由 click 请求父级回写关闭。" custom-class="section-card">
+      <pui-button theme="primary" icon="layers" bind:click="openOverlay">显示遮罩</pui-button>
+      <pui-cell title="受控回写" description="Overlay 只发出 click({ visible: false })，不自行改写页面状态。" value="click → visible=false" />
+    </pui-card>
+
+    <pui-card title="PullRefresh 内部滚动下拉刷新" description="组件自身承载 scroll-view；下拉只请求刷新，父级通过 value 回写结束，不伪造业务成功。" custom-class="section-card">
+      <pui-pull-refresh
+        id="deliveryPullRefresh"
+        custom-class="pull-refresh-example-viewport"
+        value="{{pullRefreshValue}}"
+        disabled="{{pullRefreshDisabled}}"
+        loading-bar-height="50"
+        max-bar-height="80"
+        loading-texts="{{pullRefreshTexts}}"
+        refresh-timeout="3000"
+        aria-label="组件交付下拉刷新区域"
+        bind:dragstart="onPullRefreshDragStart"
+        bind:dragging="onPullRefreshDragging"
+        bind:dragend="onPullRefreshDragEnd"
+        bind:change="onPullRefreshChange"
+        bind:refresh="onPullRefreshRequest"
+        bind:timeout="onPullRefreshTimeout"
+      >
+        <pui-cell slot="header" title="header Slot" description="刷新提示之后的补充内容" value="header" left-icon="layers" />
+        <pui-cell title="组件源码" description="WXML / WXSS / JS / JSON" value="ready" left-icon="component" />
+        <pui-cell title="滚动门禁" description="仅内部滚动区顶部接管向下主轴手势" value="top" left-icon="list" />
+        <pui-cell title="受控状态" description="change 由页面真实回写 value" value="{{pullRefreshValue ? 'refreshing' : 'idle'}}" left-icon="refresh" />
+        <pui-cell title="发布产物" description="npm + miniprogram_dist + build-npm" value="pending" left-icon="shield-check" />
+        <pui-cell title="低动效" description="正常回弹 180ms，reduceMotion 压缩至 1ms" value="ready" left-icon="spark" />
+      </pui-pull-refresh>
+      <pui-button-group size="small" aria-label="PullRefresh 父级回写与状态控制">
+        <pui-button variant="outline" icon="check-circle" bind:click="completePullRefresh">父级回写 value=false</pui-button>
+        <pui-button variant="outline" icon="lock" bind:click="togglePullRefreshDisabled">disabled: {{pullRefreshDisabled}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="PullRefresh 状态" description="事件来自组件内部滚动与真实触摸；业务结果由父级数据流处理。" value="{{pullRefreshStatus}}" />
+    </pui-card>
+
+    <pui-card title="VirtualList 固定行高窗口化列表" description="120 条数据只渲染 visible + overscan；受控选择、状态、泛型 item、滚动事件和实例定位均走真实合同。" custom-class="section-card">
+      <pui-virtual-list
+        id="deliveryVirtualList"
+        generic:virtual-item="virtual-list-item"
+        items="{{virtualListItems}}"
+        value="{{virtualListValue}}"
+        default-value="{{0}}"
+        multiple="{{virtualListMultiple}}"
+        selectable
+        item-key="value"
+        height="520"
+        item-height="96"
+        overscan="3"
+        scroll-with-animation
+        upper-threshold="40"
+        lower-threshold="40"
+        show-scrollbar
+        bordered
+        show-index
+        show-description
+        show-value
+        show-item-icon
+        show-item-badge
+        active-icon="check"
+        custom-header
+        custom-footer
+        custom-empty
+        custom-item
+        loading="{{virtualListLoading}}"
+        error="{{virtualListError}}"
+        loading-text="交付记录加载中"
+        error-text="交付记录加载失败"
+        retry-text="重新加载"
+        empty-text="暂无交付记录"
+        aria-label="组件交付虚拟列表"
+        duration="180"
+        easing="standard"
+        bind:item-click="onVirtualListItemClick"
+        bind:input="onVirtualListInput"
+        bind:change="onVirtualListChange"
+        bind:selection-change="onVirtualListSelectionChange"
+        bind:scroll="onVirtualListScroll"
+        bind:scrolltoupper="onVirtualListUpper"
+        bind:scrolltolower="onVirtualListLower"
+        bind:reach-start="onVirtualListUpper"
+        bind:reach-end="onVirtualListLower"
+        bind:scroll-to="onVirtualListScrollTo"
+        bind:retry="onVirtualListRetry"
+        bind:reset="onVirtualListReset"
+      >
+        <view slot="header" class="virtual-list-example-header"><pui-icon name="component" size="30" /><text>组件交付记录</text><pui-tag theme="primary" variant="outline">{{virtualListItems.length}} items</pui-tag></view>
+        <view slot="empty" class="virtual-list-example-empty"><pui-icon name="inbox" size="48" /><text>暂无交付记录</text><pui-tag theme="default" variant="outline">empty slot</pui-tag></view>
+        <view slot="footer" class="virtual-list-example-footer"><pui-button size="small" variant="outline" icon="undo" bind:click="resetVirtualListSelection">reset()</pui-button><pui-button size="small" variant="outline" icon="close" bind:click="clearVirtualListSelection">clearSelection()</pui-button></view>
+      </pui-virtual-list>
+      <pui-button-group size="small" aria-label="VirtualList 实例方法与状态控制">
+        <pui-button theme="primary" icon="arrow-up" bind:click="scrollVirtualListTop">scrollToTop()</pui-button>
+        <pui-button variant="outline" icon="navigation-pointer" bind:click="scrollVirtualListCenter">scrollToIndex(64)</pui-button>
+        <pui-button variant="outline" icon="focus" bind:click="scrollVirtualListFirstKey">scrollToKey(0)</pui-button>
+        <pui-button variant="outline" icon="list" bind:click="toggleVirtualListMultiple">multiple: {{virtualListMultiple}}</pui-button>
+        <pui-button variant="outline" icon="loading-ring" bind:click="toggleVirtualListLoading">loading: {{virtualListLoading}}</pui-button>
+        <pui-button variant="outline" icon="error-circle" bind:click="toggleVirtualListError">error: {{virtualListError}}</pui-button>
+        <pui-button variant="outline" icon="inbox" bind:click="toggleVirtualListEmpty">{{virtualListItems.length ? '显示 empty' : '恢复 items'}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="VirtualList 状态" description="error > loading > content > empty；retry 不伪造恢复。" value="{{virtualListStatus}}" />
+    </pui-card>
+
+    <pui-card title="Sticky 页面吸顶" description="默认 slot 会随页面滚动保持在顶部；fixed 后保留占位高度。" custom-class="section-card">
+      <view class="sticky-example-boundary">
+        <pui-sticky
+          offset-top="0"
+          z-index="1000"
+        >
+          <pui-cell title="默认 slot" description="Sticky + Cell" value="ready" left-icon="component" bordered="{{false}}" />
+        </pui-sticky>
+        <pui-cell wx:for="{{stickyRows}}" wx:key="value" title="{{item.title}}" description="{{item.description}}" value="{{item.value}}" left-icon="list" />
+      </view>
+    </pui-card>
+
+    <pui-card title="Watermark 内容水印" description="根据真实容器尺寸绘制图文水印；水印层不拦截默认 slot 的交互。" custom-class="section-card">
+      <pui-watermark
+        custom-class="watermark-example"
+        content="内部资料"
+        alpha="0.16"
+        width="240"
+        height="160"
+        x="24"
+        y="24"
+        layout="rectangular"
+        watermark-content="{{watermarkContent}}"
+        z-index="1"
+        aria-label="PoemUI 组件交付水印"
+        reduce-motion="{{false}}"
+      >
+        <view class="watermark-example-content">
+          <pui-cell title="受保护内容" description="Watermark + Cell；水印层不会截获内容操作。" value="内部" left-icon="shield-check" bordered="{{false}}" />
+        </view>
+      </pui-watermark>
+    </pui-card>
+
+    <pui-card title="Sheet 受控底部面板" description="真实下拉关闭、独立正文滚动、状态优先级和 footer slot；页面负责受控 visible 回写。" custom-class="section-card">
+      <pui-button-group size="small" aria-label="Sheet 显隐与状态控制">
+        <pui-button theme="primary" icon="add" bind:click="openSheet">open()</pui-button>
+        <pui-button variant="outline" icon="close" bind:click="closeSheet">close()</pui-button>
+        <pui-button variant="outline" icon="loading-ring" bind:click="toggleSheetLoading">{{sheetLoading ? '关闭 Loading' : '显示 Loading'}}</pui-button>
+        <pui-button variant="outline" icon="error-circle" bind:click="toggleSheetError">{{sheetError ? '清除 Error' : '显示 Error'}}</pui-button>
+        <pui-button variant="outline" icon="inbox" bind:click="toggleSheetEmpty">{{sheetEmpty ? '清除 Empty' : '显示 Empty'}}</pui-button>
+      </pui-button-group>
+      <pui-cell title="Sheet 状态" description="error > loading > empty > content；实例方法在 disabled 下仍可调用。" value="{{sheetResult}}" />
+    </pui-card>
+  </view>
+
+  <pui-popup
+    id="deliveryPopup"
+    visible="{{popupVisible}}"
+    placement="bottom"
+    show-handle
+    draggable
+    close-btn
+    aria-label="组件配置弹出层"
+    duration="240"
+    bind:visible-change="onPopupVisibleChange"
+  >
+    <pui-cell title="组件名称" description="Popup 默认 slot 可组合 Cell、Tag、Form 等 PUI 组件。" value="{{name || '未命名'}}" left-icon="component" />
+    <pui-tag theme="primary" variant="outline">{{notification ? '通知已开启' : '通知已关闭'}}</pui-tag>
+  </pui-popup>
+
+  <pui-action-sheet
+    id="deliveryActionSheet"
+    visible="{{actionSheetVisible}}"
+    description="选择动作后由页面处理真实业务。"
+    items="{{actionSheetItems}}"
+    aria-label="组件操作动作面板"
+    bind:visible-change="onActionSheetVisibleChange"
+    bind:close="onActionSheetClose"
+    bind:selected="onActionSheetSelected"
+    bind:cancel="onActionSheetCancel"
+  />
+
+  <pui-dropdown-menu
+    items="{{dropdownItems}}"
+    value="{{dropdownValue}}"
+    default-value="{{dropdownDefaultValue}}"
+    show-overlay
+    close-on-click-overlay
+    aria-label="组件筛选菜单"
+    bind:change="onDropdownChange"
+    bind:open="onDropdownOpen"
+    bind:close="onDropdownClose"
+    bind:confirm="onDropdownConfirm"
+    bind:reset="onDropdownReset"
+  >
+    <view class="dropdown-example-content">
+      <pui-cell title="补充内容" description="默认 Slot 由页面组合，不会被转成筛选结果。" value="default Slot" left-icon="component" />
+      <pui-button size="small" variant="outline" icon="check" bind:click="onDropdownContent">页面回调</pui-button>
+    </view>
+    <view slot="footer" class="dropdown-example-footer">
+      <pui-button size="small" theme="primary" icon="check" bind:click="applyDropdown">页面操作</pui-button>
+    </view>
+  </pui-dropdown-menu>
+
+  <pui-overlay
+    visible="{{overlayVisible}}"
+    blur
+    prevent-scroll-through
+    z-index="11000"
+    aria-label="组件交付遮罩层"
+    bind:click="onOverlayClick"
+  >
+    <view class="overlay-example-slot">
+      <pui-cell title="页面正在聚焦" description="这是 Overlay 的默认 Slot；点击这里同样会让遮罩根发出关闭请求。" left-icon="layers" />
+    </view>
+  </pui-overlay>
+
+  <pui-sheet
+    id="deliverySheet"
+    visible="{{sheetVisible}}"
+    title="组件交付操作"
+    description="向下拖动把手或点击关闭入口。"
+    show-footer
+    draggable
+    height="360"
+    loading="{{sheetLoading}}"
+    loading-text="Sheet 内容加载中"
+    error="{{sheetError}}"
+    error-text="Sheet 内容加载失败"
+    retry-text="重新请求"
+    empty="{{sheetEmpty}}"
+    empty-text="暂无交付动作"
+    aria-label="组件交付底部面板"
+    duration="180"
+    bind:input="onSheetInput"
+    bind:change="onSheetChange"
+    bind:open="onSheetOpen"
+    bind:close="onSheetClose"
+    bind:overlay-click="onSheetOverlayClick"
+    bind:retry="onSheetRetry"
+    bind:drag-start="onSheetDragStart"
+    bind:drag-end="onSheetDragEnd"
+    bind:scroll="onSheetScroll"
+    bind:after-open="onSheetAfterOpen"
+    bind:after-close="onSheetAfterClose"
+  >
+    <view class="sheet-example-content">
+      <pui-cell title="组件源码" description="WXML / WXSS / JS / JSON" value="ready" left-icon="component" />
+      <pui-cell title="发布门禁" description="check + pack:check + build-npm" value="pending" left-icon="check-circle" />
+      <pui-tag theme="primary" variant="outline">Sheet + Cell + Tag</pui-tag>
+    </view>
+    <view slot="footer" class="sheet-example-footer">
+      <pui-button size="small" variant="outline" bind:click="closeSheet">稍后</pui-button>
+      <pui-button size="small" theme="primary" bind:click="onSheetFooterPrimary">继续</pui-button>
+    </view>
+  </pui-sheet>
+
+  <pui-dialog
+    id="deliveryDialog"
+    visible="{{dialogVisible}}"
+    title="确认发布组件？"
+    content="确认只发出业务事件；关闭由页面在 close 中回写 visible。"
+    cancel-btn="取消"
+    confirm-btn="{{dialogConfirmBtn}}"
+    close-btn
+    close-on-overlay-click
+    aria-label="组件发布确认对话框"
+    bind:confirm="onDialogConfirm"
+    bind:cancel="onDialogCancel"
+    bind:close="onDialogClose"
+    bind:overlay-click="onDialogOverlayClick"
+  />
+
+  <pui-toast id="delivery-toast" bind:close="onToastClose">
+    <pui-tag slot="message" theme="primary" variant="outline">Toast + Tag slot</pui-tag>
+  </pui-toast>
+</pui-config-provider>

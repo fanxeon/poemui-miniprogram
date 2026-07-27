@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0086",
+  "title": "Switch 旧 28 Props 与多入口事件方法扩张公开合同",
+  "scope": "component",
+  "components": ["switch", "documentation", "example", "npm-dist"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Switch 应参考 TDesign 的常用开关主干，基础用法保持基础，公开合同只保留真实二元值、轨道内容、状态门禁、可访问性和低动效。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844 browser", "393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Switch 的 28 Props、4 Events、3 Slots、6 Methods，发现 value/checked、defaultValue/defaultChecked、label 与 activeText/inactiveText/showText、icon 与 activeIcon/inactiveIcon、布尔 Slot Props 与真实 Slot 重复。",
+    "旧 click/input/change/slot-click 同时暴露同一次二元请求，toggle/check/uncheck/reset/getValue/getState 又形成第二套命令式状态入口。",
+    "对照 TDesign Miniprogram 1.15.3 官方 Switch 文档、props.js、type.d.ts、switch.js 与 WXML，确认主干为 value/defaultValue、customValue、label/icon、size、disabled/loading 和单一 change。"
+  ],
+  "expected": "Switch 只有一个值所有权模型、一次 change 请求和明确的锁定边界；外部标题、说明、校验与表单归属交给 Cell、Field、Form 组合。",
+  "actual": "旧合同同时保留兼容别名、布尔 Slot 开关、视觉参数、重复事件和调试方法，使用户与 AI 无法判断推荐入口。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API、分区 demo、基础 WXML 不堆 bind，并授权剩余队列由 agent 自主验收。"},
+    {"kind": "file", "ref": "switch/switch.js", "note": "最终固定11 Props、1 Event、0 Slots、0 Methods，value/defaultValue 区分受控与非受控，customValue 保留原始标量。"},
+    {"kind": "file", "ref": "switch/switch.wxml", "note": "最终只有一个 role=switch 触摸根，内部仅组合 PUI Icon 与 Loading，不再创建 label/content 第二操作区。"},
+    {"kind": "test", "ref": "scripts/test-switch.js", "note": "专项锁定11/1/0/0、0/false/空字符串、退控连续性、锁定静默、事件 detail、源码/dist/示例和旧 API 禁入。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=switch7#/components/switch", "note": "属性页仅11项；value=0、false、空字符串和 customValue 原始值均真实往返，退控保持最后渲染态，API 为11 Props/1 Event且无 Slots/Methods。"}
+  ],
+  "rootCause": "旧实现按可枚举能力不断增加别名、Slot 开关、事件和方法，没有先定义二元输入的唯一值所有权、请求事件和组合边界。",
+  "decision": {
+    "outcome": "公开合同收敛为11 Props、1 Event、0 Slots、0 Methods；删除 checked/defaultChecked、外部标题说明、重复文案图标、Slot 开关、布局视觉参数、click/input/slot-click 与全部实例方法，只保留 change。",
+    "rationale": "Switch 本体只负责二元值和轨道；把标题、说明、校验与表单组合交还现有 Cell/Field/Form，可减少重复 Surface、操作区和状态真相源。",
+    "alternativesRejected": [
+      "继续保留28 Props 只在文档标注高级，仍会让重复入口成为公开推荐。",
+      "机械追平 TDesign 的 custom-style 等平台长尾字段，会把样式覆盖再次当成业务 API。",
+      "保留命令式 toggle/reset/getState 会与 value/defaultValue 声明式所有权冲突。"
+    ]
+  },
+  "impact": {
+    "files": ["switch/switch.js", "switch/switch.wxml", "switch/switch.wxss", "metadata/components.js", "metadata/shadcn.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/SWITCH.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-switch.js"],
+    "dependencies": ["pui-icon", "pui-loading", "cell", "field", "form", "parent controlled writeback"]
+  },
+  "verification": {
+    "tests": ["scripts/test-switch.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "11个 Props 均通过属性面板真实输入、选择或开关；基础 WXML 为 pui-switch 自闭合且零 bind。",
+      "disabled、readonly、loading 分别实点后均保持原值且不发布假 change；loading/disabled 使用 native disabled，readonly 保留 aria-readonly。",
+      "API 76个单元格均无 ellipsis、nowrap、scrollWidth 或 scrollHeight 裁切。"
+    ],
+    "deviceRisks": [
+      "微信自定义组件 property observer、受控父级 setData 时序、form-field 边界与辅助技术朗读仍需合法 AppID 真机复核。",
+      "icon 名称和 Loading 在不同基础库、字体缩放与样式隔离下的几何仍需目标设备确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Switch 使用11/1/0/0克制合同，唯一请求事件是 change，外部说明和校验由组合组件负责。",
+    "rules": [
+      "基础 Switch WXML 禁止 bind；事件只在 API Events 或事件专项示例按需绑定。",
+      "value 的0、false和空字符串都是合法受控原始值；退控必须保留最后渲染值。",
+      "disabled、readonly、loading 必须静默阻断，不发布 blocked click 或假 change。",
+      "禁止恢复 checked/defaultChecked、布尔 Slot 开关、外部标题说明、私有 duration/easing 或实例调试方法。"
+    ],
+    "tags": ["switch", "api", "tdesign", "controlled", "raw-value", "events"]
+  }
+}

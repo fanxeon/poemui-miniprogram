@@ -1,0 +1,85 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0001",
+  "title": "Style Utilities 缺少显式深色条件变体",
+  "scope": "component",
+  "components": ["style-utilities", "config-provider"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-17",
+  "updatedAt": "2026-07-17",
+  "userGoal": "像 Tailwind dark variant 一样，为同一节点组合默认样式与明确的深色覆盖，并能在文档中筛选查看。",
+  "environment": {
+    "surfaces": ["native-wxml", "h5-preview", "docs"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 ConfigProvider dark 范围内尝试为节点组合默认背景和仅深色生效的覆盖类。",
+    "检查 common/style/utilities.wxss 和文档分类，确认旧版只有普通 Token 类，没有 pui-dark-* 条件类。"
+  ],
+  "expected": "用户可以保留默认 utility，并追加 WXSS 安全的显式深色类；同一主题根节点和主题后代节点都应命中。",
+  "actual": "普通颜色类会跟随主题 Token，但无法表达只在 dark 范围覆盖某一组合的意图，文档也没有独立深色分类。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "feedback/records/pui-fb-0001-style-utilities-dark-variants.json",
+      "note": "用户明确指出 style-utilities 不支持所需深色模式。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/utilities.wxss",
+      "note": "修复后发布 32 个 pui-dark-* 条件变体，并覆盖同根与后代选择器。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-style-utilities.js",
+      "note": "精确检查 520 个选择器、32 个 dark variants 和两种主题上下文。"
+    }
+  ],
+  "rootCause": "旧设计把普通颜色 utility 读取深色 Token 等同于显式 conditional variant，没有为组合式覆盖建立独立合同。",
+  "decision": {
+    "outcome": "新增 32 个 pui-dark-* 文字、背景、边框和阴影变体，只在 .pui-theme--dark 同根或后代范围生效。",
+    "rationale": "保留 Token 自动主题能力，同时允许用户明确表达深色覆盖；命名静态、可打包、符合微信 WXSS 能力。",
+    "alternativesRejected": [
+      "只在文档说明普通类会自动变色，无法满足同一节点的显式条件组合。",
+      "运行时生成任意 dark 类，微信小程序没有可靠 JIT 样式链路。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/style/utilities.wxss",
+      "theme/utilities.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/STYLE_UTILITIES.md",
+      "scripts/test-style-utilities.js"
+    ],
+    "dependencies": ["config-provider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-style-utilities.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "wechat-cli build-npm"],
+    "browser": [
+      "390x844 下 dark canvas 为 rgb(39,39,42)，条目为 rgb(63,63,70)，success 文本为 rgb(74,222,128)。",
+      "实时 canvas 位于 .pui-theme--dark 范围并实际挂载 pui-dark-* 类。"
+    ],
+    "deviceRisks": [
+      "ConfigProvider slot、自定义组件 custom-class 和样式隔离边界仍需合法 AppID 真机确认。",
+      "跨组件优先依赖继承 Token，pui-dark-* 用于页面 WXML 或明确开放 externalClasses 的根节点。"
+    ]
+  },
+  "ai": {
+    "summary": "PoemUI 同时提供自动跟随 Token 的普通颜色类和只在 ConfigProvider dark 范围生效的显式 pui-dark-* 覆盖类。",
+    "rules": [
+      "需要条件覆盖时组合默认类与 pui-dark-*，不要把普通 Token 跟随误写成显式 dark variant。",
+      "不要生成运行时 JIT、任意值或无法进入静态 WXSS 的 dark 类。",
+      "跨自定义组件边界使用 dark utility 前检查 custom-class、externalClasses 和样式隔离。"
+    ],
+    "tags": ["style-utilities", "dark-mode", "config-provider", "wxss", "theme-token"]
+  }
+}

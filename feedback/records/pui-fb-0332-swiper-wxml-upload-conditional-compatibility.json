@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0332",
+  "title": "Swiper 分页 WXML 条件分支阻断合法 AppID 上传",
+  "scope": "component",
+  "components": ["swiper", "miniprogram", "npm-dist", "preview-site"],
+  "type": "compatibility",
+  "severity": "critical",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "合法 AppID 的小程序上传不得因 Swiper 的 WXML 条件分支而被编译器阻断。",
+  "environment": {
+    "surfaces": ["swiper", "miniprogram_dist", "miniprogram_npm", "upload"],
+    "platforms": ["wechat-devtools-webview", "wechat-miniprogram"],
+    "viewports": ["390px", "upload compiler"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "使用合法 AppID 上传 miniprogram 项目。",
+    "上传编译 miniprogram_npm/poemui-miniprogram/swiper/swiper.wxml。",
+    "Swiper 的 inside/outside Navigation 各自以 `<block wx:if=\"{{navigationType === 'fraction'}}\">` 后紧跟带 wx:for 的 `<view wx:else>`。"
+  ],
+  "expected": "fraction 与 dots/dots-bar 分页互斥且微信开发者工具上传编译器可以解析发布 WXML。",
+  "actual": "上传编译器报告 `Bad attr wx:else` 和 `wx:if not found`，导致上传失败；源、miniprogram_dist 与已有 npm 产物含同一非法结构。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务对话", "note": "用户提供合法 AppID 上传日志，错误精确定位到 swiper/swiper.wxml 的 wx:else。"},
+    {"kind": "file", "ref": "swiper/swiper.wxml", "note": "修复前两个 Navigation 分支均让 wx:for view 以 wx:else 跟随 fraction block。"},
+    {"kind": "file", "ref": "miniprogram_dist/swiper/swiper.wxml", "note": "标准构建后必须与源完全一致，并向微信 npm 构建提供合法 WXML。"},
+    {"kind": "test", "ref": "scripts/test-swiper.js", "note": "专项锁定 inside/outside 两个显式非 fraction 分支，并禁止该 wx:else + wx:for 模式。"}
+  ],
+  "rootCause": "Swiper 将一般模板中可读的互斥写法直接用于小程序 WXML；上传编译器要求 wx:else 紧邻可识别的 wx:if 节点，不能把它挂在跟随 `<block wx:if>` 的循环 view 上。",
+  "decision": {
+    "outcome": "inside 与 outside Navigation 均保留 fraction 的 wx:if，并将 dots/dots-bar 改为独立 `navigationType !== 'fraction'` block；不改变公开 API、渲染结果或 H5 行为。",
+    "rationale": "两条显式条件分支消除上传编译器的结构歧义，同时保持 fraction 与指标列表的互斥关系和现有 current 真相源。",
+    "alternativesRejected": [
+      "直接修改 miniprogram_npm 会在下一次标准 npm 构建后复发，且违反发布源唯一性。",
+      "保留 wx:else 并依赖普通模拟器编译通过，无法覆盖上传编译器的严格校验。"
+    ]
+  },
+  "impact": {
+    "files": ["swiper/swiper.wxml", "miniprogram_dist/swiper/swiper.wxml", "scripts/test-swiper.js", "docs/components/SWIPER.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0332-swiper-wxml-upload-conditional-compatibility.json"],
+    "dependencies": ["微信 WXML 编译器", "miniprogram_dist", "微信开发者工具标准 npm 构建", "Swiper H5 镜像"]
+  },
+  "verification": {
+    "tests": ["scripts/test-swiper.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["npm run miniprogram:build", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具构建 npm", "微信开发者工具普通编译"],
+    "browser": ["H5 的 Swiper Navigation 继续使用同一 fraction/dots/dots-bar 互斥结果；本修复仅收紧小程序 WXML 语法。"],
+    "deviceRisks": ["修复后仍需由用户重新执行一次实际上传，确认其上传编译器版本接受新的 npm 产物；iOS/Android WebView 真机的 swiper 手势和分页命中不由本次编译修复替代。"]
+  },
+  "ai": {
+    "summary": "发布 WXML 的互斥分支必须按微信上传编译器的严格结构书写，普通预览通过不能替代上传校验。",
+    "rules": [
+      "不得让带 wx:for 的节点以 wx:else 跟随 `<block wx:if>`；使用两个完整 wx:if block 表达互斥分支。",
+      "上传阻断必须从组件源、dist 和标准 npm 构建修复，禁止手改 miniprogram_npm。",
+      "WXML 语法修复也要同步 Swiper 合同、H5 兼容说明、专项测试、Ledger 和安装产物。"
+    ],
+    "tags": ["swiper", "wxml", "upload", "wechat-devtools", "miniprogram-npm", "compatibility"]
+  }
+}

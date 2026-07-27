@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0105",
+  "title": "窄屏常规模式代码正文覆盖 PreviewDevice 下半区",
+  "scope": "global",
+  "components": ["preview-site", "all-components", "picker"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "390px 下固定 622px PreviewDevice 必须完整可操作，代码正文位于设备下方且不能覆盖或截获组件交互。",
+  "environment": {
+    "surfaces": ["h5-preview", "normal-mode-code-document"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "351x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 390px 打开 Picker 概览并滚动/拖动设备下半区。",
+    "测量发现 PreviewDevice y=330..952，而绝对定位的代码正文从 y=732 开始，覆盖设备约 220px。",
+    "代码层实际截获 Picker 第二列拖动，导致看似组件交互失效。"
+  ],
+  "expected": "<=1180px 时代码正文退出绝对定位，按正常文档流位于完整 PreviewDevice 下方；自身高度 240px，不改变设备高度。",
+  "actual": "代码正文仍按桌面绝对定位叠在设备上，视觉和命中测试同时失真。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件由 agent 完成证据闭环后自主连续验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/picker", "note": "修复后 390px 实测 device y=111..733，代码 y=773..1013，间隔 40px，页面横向溢出为 0。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "<=1180px 的 preview-code-mount 改为 position:relative、四向 auto、语义宽度与 margin。"},
+    {"kind": "test", "ref": "scripts/test-preview-normal-code-card.js", "note": "锁定窄屏代码正文退出绝对定位和治理文档措辞。"},
+    {"kind": "file", "ref": "docs/UI_DESIGN_CONTRACT.md", "note": "明确 240px 仅限制代码正文，禁止覆盖固定 622px PreviewDevice。"}
+  ],
+  "rootCause": "窄屏媒体查询只调整代码面板宽高，没有覆盖桌面 absolute 的 top/right/bottom/left，因此代码正文仍脱离文档流并与设备重叠。",
+  "decision": {
+    "outcome": "在 <=1180px 显式恢复 relative 与四向 auto，通过共享 gutter/margin 把代码正文放到 PreviewDevice 下方正常流；<=700px 同步移动端 gutter。",
+    "rationale": "正常流能从结构上消除覆盖和命中冲突，同时保持设备、代码各自独立的固定语义高度。",
+    "alternativesRejected": [
+      "增加 z-index 只会决定谁截获交互，不能解决视觉覆盖。",
+      "缩短 PreviewDevice 到 390px 会违反全站固定 622px 合同。",
+      "给 Picker 私有 margin 会让其他组件继续受影响。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-preview-normal-code-card.js", "AGENTS.md", "CONTRIBUTING.md", "docs/UI_DESIGN_CONTRACT.md", "docs/PREVIEW_INFORMATION_HIERARCHY.md"],
+    "dependencies": ["PreviewDevice", "normal mode code document"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-normal-code-card.js", "scripts/test-picker.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "390px 页面 scrollWidth 等于 clientWidth。",
+      "代码正文 top 大于 PreviewDevice bottom，设备保持 622px。",
+      "修复后 Picker 第二列真实 pointer drag 可命中并产生 source=drag。"
+    ],
+    "deviceRisks": [
+      "移动 Safari 动态工具栏改变 dvh 时需实机确认 240px 代码正文滚动手感，但不会再覆盖设备。"
+    ]
+  },
+  "ai": {
+    "summary": "窄屏代码正文必须进入 PreviewDevice 下方正常流，不能以 z-index 或缩短设备掩盖覆盖。",
+    "rules": [
+      "<=1180px 必须显式清除 preview-code-mount 的绝对定位四向坐标。",
+      "390px 验收同时测量 device bottom、code top 和交互命中。",
+      "240px 只属于代码正文，PreviewDevice 永远保持 622px。"
+    ],
+    "tags": ["preview-site", "390px", "layout", "code-document", "pointer-events", "preview-device"]
+  }
+}

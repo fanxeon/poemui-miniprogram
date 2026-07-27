@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0369",
+  "title": "快速样式页重复内容标题区",
+  "scope": "component",
+  "components": ["style-utilities", "navbar", "tabs", "scroll-area"],
+  "type": "visual-layout",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "快速样式页顶部不保留重复的内容 Header 标题区，首屏应直接进入分类和内容。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "navbar", "tabs content"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/styles/index。",
+    "Navbar 已显示“快速样式”，其下仍出现 theme/utilities.wxss、页面标题和导语。"
+  ],
+  "expected": "Navbar 承担唯一页面标题；内容滚动区直接从分类 Tabs 开始，并保留当前分类示例的必要标题。",
+  "actual": "内容区重复建立页面 Header，首屏分类与可操作内容被向下推移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务对话", "note": "用户明确要求不需要顶部 Header 标题区。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "内容区已删除 styles-page__intro，Tabs 是首个业务区块。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxss", "note": "已删除仅服务于重复 Header 的样式规则。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "专项锁定旧 Header DOM 与标题文案不能回归。"}
+  ],
+  "rootCause": "创建快速样式页时复制了介绍性内容区，未遵守 Navbar 已承担唯一页面标题的层级规则。",
+  "decision": {
+    "outcome": "删除内容 Header 与专属样式，仅保留分类示例内部的当前分组标题和说明。",
+    "rationale": "当前分类说明直接服务于已选内容，而页面标题在 Navbar 已经完整表达；移除重复层级可提高首屏操作密度。",
+    "alternativesRejected": [
+      "压缩标题字号或间距仍会保留重复语义。",
+      "把导语移入 Tabs Header 会重新制造导航与内容的混合区域。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/styles/index.wxml", "miniprogram/pages/styles/index.wxss", "scripts/test-miniprogram-style-utilities-page.js", "docs/MINIPROGRAM_HOME.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["pui-navbar", "pui-tabs", "pui-scroll-area"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js"],
+    "commands": ["node scripts/test-miniprogram-style-utilities-page.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 CLI build-npm"],
+    "browser": [],
+    "deviceRisks": ["尚需在微信 390px 模拟器和 iOS/Android 真机确认首屏密度、Tabs 横滚、ScrollArea 渐变遮罩与安全区。"]
+  },
+  "ai": {
+    "summary": "当 Navbar 已表达页面名时，内容区不能再增加重复的 eyebrow、标题和导语；Tabs 与真实内容应直接开始。",
+    "rules": [
+      "页面标题只能存在于 Navbar 或内容 Header 的其中一处。",
+      "移除重复 Header 时保留当前分类、当前组件或当前任务所需的局部标题。",
+      "同步删除无引用样式，并用页面专项测试禁止旧 DOM 回归。"
+    ],
+    "tags": ["style-utilities", "navbar", "tabs", "information-hierarchy", "miniprogram"]
+  }
+}

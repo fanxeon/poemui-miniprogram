@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0345",
+  "title": "Sheet 拖拽柄不应随全局无边框外观消失",
+  "scope": "component",
+  "components": ["sheet", "config-provider", "preview-site", "miniprogram-component-pages"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Sheet 默认保留可见、可拖动的顶部拖拽柄，不能在全局无边框外观下消失。",
+  "environment": {
+    "surfaces": ["miniprogram-component-pages", "miniprogram-dist", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在外观设置中使用默认的 bordered=false 配置。",
+    "打开 Sheet 示例；示例明确传入 show-handle 和 draggable。",
+    "拖拽柄背景读取 --pui-border-color，而 ConfigProvider 的 pui-border--off 将该 Token 设为 transparent。"
+  ],
+  "expected": "拖拽柄保持为独立、低强调但可见的下拉手势提示；无边框只移除中性 Surface 边界，不能移除交互提示。",
+  "actual": "Sheet 拖拽柄仍存在于 WXML 和手势事件中，但其背景被全局无边框 Token 透明化，视觉上消失。",
+  "evidence": [
+    {"kind": "file", "ref": "sheet/sheet.wxml", "note": "showHandle 默认 true，拖拽柄保留真实 touch 事件。"},
+    {"kind": "file", "ref": "common/style/theme.wxss", "note": "pui-border--off 将 --pui-border-color 设为 transparent。"},
+    {"kind": "file", "ref": "sheet/sheet.wxss", "note": "修复后拖拽柄消费独立的 --pui-text-placeholder。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 镜像使用独立 --subtle，而非 --border。"},
+    {"kind": "user-report", "ref": "2026-07-25 Sheet 追问", "note": "用户在 Sheet 截图中发现顶部拖拽柄不可见。"},
+    {"kind": "test", "ref": "scripts/test-sheet.js", "note": "专项锁定小程序和 H5 拖拽柄不再依赖可透明化边界 Token。"}
+  ],
+  "rootCause": "拖拽柄被误当作中性边界，使用了 --pui-border-color / --border；这两个 Token 按全局 bordered=false 合同必须透明化。",
+  "decision": {
+    "outcome": "小程序 Sheet 拖拽柄改用 --pui-text-placeholder，H5 镜像改用 --subtle；拖拽中仍提升为既有 secondary/muted 状态。",
+    "rationale": "拖拽柄是独立交互提示，不是可移除的 Surface 边界；它必须同时适配无边框、深浅色和全局外观配置。",
+    "alternativesRejected": [
+      "在组件详情页为拖拽柄补私有颜色：其他消费者仍会消失。",
+      "在 bordered=false 时保留全部 --pui-border-color：会违反全局无边框合同。",
+      "关闭无边框默认：会回退用户已经确认的全局视觉基线。"
+    ]
+  },
+  "impact": {
+    "files": ["sheet/sheet.wxss", "preview/styles.css", "docs/components/SHEET.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-sheet.js", "miniprogram_dist/sheet/sheet.wxss"],
+    "dependencies": ["config-provider", "visualConfig", "pui-popup"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sheet.js", "scripts/test-config-provider.js", "scripts/test-equal-spacing-visual-config.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run site:build", "npm run example:install", "npm run pack:check"],
+    "browser": [],
+    "deviceRisks": ["尚未在当前合法 AppID 的 iOS/Android WebView 真实设备确认无边框、深浅色与拖拽过程中的拖拽柄对比度及手势。"]
+  },
+  "ai": {
+    "summary": "全局无边框只能透明化 Surface 中性边界，不能透明化可见的交互提示。",
+    "rules": [
+      "拖拽柄、状态点和操作提示不得消费会被 bordered=false 透明化的边界 Token。",
+      "组件级可见性修复必须同步小程序、H5、合同、测试、Ledger 和分发产物。",
+      "不要以页面私有颜色掩盖全局外观 Token 的语义错误。"
+    ],
+    "tags": ["sheet", "drag-handle", "borderless", "visual-config", "miniprogram", "h5"]
+  }
+}

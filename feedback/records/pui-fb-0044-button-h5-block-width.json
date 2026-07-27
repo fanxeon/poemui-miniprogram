@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0044",
+  "title": "Button H5 镜像的 block 被父级自动宽度吞掉",
+  "scope": "component",
+  "components": ["button", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-19",
+  "userGoal": "在 Props 中开启 block 后，当前 Button 必须真实占满可用宽度，并在 390px 及更窄设备中保持无横向溢出。",
+  "environment": {
+    "surfaces": ["h5-preview", "props-panel"],
+    "platforms": ["browser"],
+    "viewports": ["375x667", "393x852", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Button 属性页并启用 block，返回概览检查当前属性驱动按钮。",
+    "旧 H5 showcase 把按钮放进 auto-width 的 inline flex form；Button 自身 width:100% 只能填满收缩后的 form，不能填满内容行。",
+    "读取按钮、form 和行宽，可观察三者宽度不一致，block 视觉仍像普通按钮。"
+  ],
+  "expected": "block=true 时承载当前按钮的 form 与按钮共同占满 showcase 可用宽度；关闭时恢复内容宽度。",
+  "actual": "Button 的 100% 宽度受收缩父级限制，属性已改变但预览没有表达真实 block 语义。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户在 Button battle 报告后明确确认验收。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "当前按钮的 form 按 block 状态切换 is-block 类，使父级与 Button 同时获得完整宽度。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "Button showcase 的 block form 使用 width:100%，不通过私有 margin 修补。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "真实浏览器切换 block 后 Button、form、所在行宽度均为 324px；iPhone SE 375px 设备 viewport clientWidth/scrollWidth 均为 373px。"
+    }
+  ],
+  "rootCause": "H5 只镜像了 Button 根的 width:100%，忽略真实 HTML form 作为额外布局父级对百分比宽度的约束。",
+  "decision": {
+    "outcome": "让当前按钮的 form 跟随 block 状态切换为全宽，Button 继续由共享 helper 管理自身几何；窄设备按钮行允许自然换行。",
+    "rationale": "百分比宽度必须沿真实父布局闭环，修正父级职责比给 Button 增加魔法宽度或私有 margin 更稳定。",
+    "alternativesRejected": [
+      "给 Button 写固定像素宽度无法适配 PreviewDevice 和 390px。",
+      "移除 form 会失去 submit/reset 的真实浏览器验证路径。",
+      "仅在截图场景增加 margin 或 min-width 会掩盖 block 合同而制造溢出。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-button.js"],
+    "dependencies": ["buttonSample", "Button H5 form bridge"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js"],
+    "commands": ["node scripts/test-button.js", "npm run check"],
+    "browser": ["block 切换后按钮、form 和内容行同宽 324px；375px PreviewDevice 无内部或页面级横向溢出。"],
+    "deviceRisks": ["小程序原生 block 样式仍需在真实页面父布局和样式隔离环境验证；H5 form 修复不改变原生 WXML。"]
+  },
+  "ai": {
+    "summary": "Button block 必须让真实布局父级与按钮共同占满宽度，不能只给子节点 width:100%。",
+    "rules": [
+      "验证 block 时必须同时测量组件、直接父级和可用内容区宽度。",
+      "H5 存在 form 或其他桥接父级时，父级必须参与 block 布局合同。",
+      "禁止用固定宽度、私有 margin 或 min-width 掩盖 block 父级问题。"
+    ],
+    "tags": ["button", "block", "h5", "responsive", "visual-layout"]
+  }
+}

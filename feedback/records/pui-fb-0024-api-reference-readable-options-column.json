@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0024",
+  "title": "API 参数列表字号过小且缺少可选值列",
+  "scope": "global",
+  "components": ["preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "提高所有标准组件 API 列表的字号，并在演示初值右侧增加可选值列，用逗号分隔可选择内容。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入任意标准组件页面并切换到 API。",
+    "旧表格正文使用 12px caption，枚举值被拼进类型列，演示初值右侧直接是说明。",
+    "用户无法快速区分字段类型、当前演示初值和实际可选集合。"
+  ],
+  "expected": "API 表使用可读的 PUI body-medium 字号，并固定显示参数、类型、演示初值、可选值、说明五列；枚举和布尔值逗号分隔，范围显示上下界与步长。",
+  "actual": "旧表只有四列、正文偏小，类型列同时承担数据类型和枚举集合，信息密度高且扫描困难。",
+  "evidence": [
+    { "kind": "user-report", "ref": "当前任务对话", "note": "用户要求增加 API 字号，并在演示初值右侧增加逗号分隔的可选值列。" },
+    { "kind": "file", "ref": "preview/app.js", "note": "renderApiReference 已使用五列，formatApiOptions 从现有 options/min/max/step 生成可选值，不维护第二份元数据。" },
+    { "kind": "test", "ref": "scripts/test-api-reference-readability.js", "note": "专项合同锁定列顺序、逗号格式、布尔/范围回退、14px Token 和窄屏表内滚动。" }
+  ],
+  "rootCause": "API 页面沿用早期紧凑调试表样式，枚举元数据只被用于 Props 控件和类型字符串，没有建立面向组件消费者的独立可选值语义。",
+  "decision": {
+    "outcome": "从既有 Prop 定义直接派生可选值：select 输出 options，boolean 输出 true/false，nullable boolean 补 null，range 输出上下界与步长，其余显示破折号。类型列恢复纯数据类型。表格正文提升到 body-medium 14px，五列在窄屏保持 820px 内容宽并由表格自身横向滚动。",
+    "rationale": "复用同一个 Prop 定义可避免 API 与 PROP 控件漂移；固定字号与表内滚动能在 390px 保持可读性且不制造页面级溢出。",
+    "alternativesRejected": [
+      "继续把枚举拼在类型列会重复职责，且长枚举难以扫描。",
+      "为每个组件手写可选值文案会形成第二份易过期的 API 数据。",
+      "移动端缩小字号以塞下五列会直接违背可读性目标。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "preview/index.html", "AGENTS.md", "docs/UI_DESIGN_CONTRACT.md", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-api-reference-readability.js", "scripts/test-design-contracts.js"],
+    "dependencies": ["component-prop-definitions", "typography-tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-api-reference-readability.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "Button API 桌面实测表头依次为参数/类型/演示初值/可选值/说明，首行 theme 为 string、primary、default, primary, success, warning, danger；五个单元格均为 14px/20px，页面 client/scroll width 均为 1265px。",
+      "390x844 覆盖下页面 client/scroll width 均为 375px，API 表为 client 349px / scroll 820px / overflow-x auto，可选值仍为 14px/20px，未以缩小字号换取塞入一屏。",
+      "深色 390px 下 API Surface 为 rgb(24, 24, 27)，可选值文字为 rgb(250, 250, 250)，仍为 14px/20px且页面无横向溢出；验收后恢复浅色，日志 0 warning/error。"
+    ],
+    "deviceRisks": ["该改动只影响 H5 官网 API 表；移动浏览器的触摸横向滚动与系统字体差异仍需真实设备复核。"]
+  },
+  "ai": {
+    "summary": "API 表固定五列并使用 14px PUI 正文字号；可选值必须从现有 Prop 定义派生，不得手写第二份枚举。",
+    "rules": [
+      "API 可选值必须位于演示初值右侧，枚举与布尔值用逗号分隔。",
+      "类型列只表达数据类型，不得重复可选值集合。",
+      "API 表正文不得低于 --pui-font-size-body-medium；窄屏使用表内滚动，不得缩小文字或造成页面级溢出。",
+      "可选值优先读取 Prop options/min/max/step；没有约束时显示破折号，不得猜测。"
+    ],
+    "tags": ["preview-site", "api-reference", "typography", "readability", "options", "responsive"]
+  }
+}

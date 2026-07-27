@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0414",
+  "title": "Select 可见选项层使用系统 Picker 而非 PUI 组件",
+  "scope": "component",
+  "components": ["select", "button", "popup", "icon", "miniprogram"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Select 的触发器和弹出选项都应使用 PoemUI 自身组件，具备一致的深浅色、外观、选中态和关闭体验。",
+  "environment": {
+    "surfaces": ["select component page", "h5 component preview"],
+    "platforms": ["wechat-miniprogram", "h5-preview"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 Select 页面并打开选项。",
+    "旧实现直接使用微信原生 picker 作为最终可见控件。",
+    "系统选择层无法复用 PUI Button、Popup、Icon 和统一 Surface 合同。"
+  ],
+  "expected": "Trigger 使用 PUI Button；选项层使用有界全屏 PUI Popup；每个选项使用 PUI Button 和选中 Icon；input/change/cancel 与受控值闭环。",
+  "actual": "旧实现由原生 picker 控制可见菜单，仅 change 事件可用，无法表达 PUI Popup 的遮罩、标题、关闭和选项状态。",
+  "evidence": [
+    {"kind": "file", "ref": "select/select.wxml", "note": "Select 由 PUI Button、Popup 与 Icon 组合，不再包含 picker。"},
+    {"kind": "file", "ref": "select/select.js", "note": "严格值匹配、受控与非受控状态、input/change/cancel 和弹层显隐闭环。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 镜像的 Trigger 与 options 逐项调用共享 buttonSample。"},
+    {"kind": "test", "ref": "scripts/test-select.js", "note": "锁定 PUI 组合、事件顺序、0/false 严格区分、受控值和生成器保护。"},
+    {"kind": "browser", "ref": "/tmp/poemui-select-popup-after.png", "note": "390x844 模拟器确认全屏遮罩、底部 Popup、关闭按钮、选中勾和两项 PUI Button。"}
+  ],
+  "rootCause": "早期 Select 生成模板直接映射系统 picker，绕过了项目对可见表单控件和浮层必须复用 PUI helper/组件的合同。",
+  "decision": {
+    "outcome": "Select 保留简单单选 API，但可见层统一为 Button Trigger + bottom Popup + Button options + Icon；删除生成器中的废弃 picker 模板，并继续把 Select 列入原生实现保护清单。",
+    "rationale": "获得跨端一致的外观、遮罩、关闭和选中反馈，同时不把多列滚轮 Picker 的复杂 API强加给 Select。",
+    "alternativesRejected": [
+      "继续美化系统 picker 不能让弹出层复用 PUI。",
+      "复制 Picker 多列 API 会混淆 Select 的简单单选语义。",
+      "页面手写 Popup 只修复示例，安装端仍不一致。"
+    ]
+  },
+  "impact": {
+    "files": ["select/", "preview/app.js", "preview/styles.css", "scripts/test-select.js", "scripts/generate-shadcn-components.js", "docs/components/SELECT.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md"],
+    "dependencies": ["PUI Button", "PUI Popup", "PUI Icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-select.js"],
+    "commands": ["node scripts/test-select.js", "npm run site:build", "npm run miniprogram:build", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具 390x844 运行态打开 Popup；调用第二项后页面受控 selectValue 回读 preview。"],
+    "deviceRisks": ["iOS/Android 真机的遮罩触摸、焦点、返回键、长选项滚动和读屏 listbox 语义仍需复核。"]
+  },
+  "ai": {
+    "summary": "Select 的最终可见层必须由 PUI Button、Popup 和 Icon 组合，系统 picker 只属于明确的 Picker 能力。",
+    "rules": [
+      "Select WXML 不得包含微信原生 picker。",
+      "选项值使用严格相等，0 与 false 不得被字符串化合并。",
+      "选择事件顺序固定为 input 后 change，遮罩或关闭触发 cancel。"
+    ],
+    "tags": ["select", "popup", "button", "picker", "controlled"]
+  }
+}

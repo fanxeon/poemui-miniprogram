@@ -1,0 +1,91 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0008",
+  "title": "H5 Tag 被拉伸且文字未居中",
+  "scope": "component",
+  "components": ["tag", "dialog", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-17",
+  "updatedAt": "2026-07-18",
+  "userGoal": "Dialog 默认 Slot 中的 Tag 必须一眼可识别为 Tag，保持内容宽度、标准 padding、标准圆角，并让文字水平垂直居中。",
+  "environment": {
+    "surfaces": ["h5-preview", "miniprogram"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Dialog 官网预览并查看“Dialog default slot”灰色元素。",
+    "浏览器测量 .pui-dialog-preview__slot .pui-tag，旧元素宽 274px、文字宽约 107.5px，文字左侧 9px、右侧 157.5px。",
+    "检查计算样式，Grid 将 inline Tag blockify 并拉伸，H5 最终 justify-content 为 normal；旧 H5 默认高度和圆角也与原生 Medium Tag 不一致。"
+  ],
+  "expected": "H5 Medium Tag 镜像与原生一致：24px/48rpx 高、8px/16rpx 水平 padding、小圆角、双轴居中；Dialog Slot 中保持 max-content 宽度并居中。",
+  "actual": "旧 H5 Tag 被 Grid 拉伸至整行，最终 justify-content=normal，文字明显靠左；28px 高和 round 圆角又使它更像输入框而不是 Tag。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确指出无法识别该元素为 Tag，且文字没有居中。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-dialog",
+      "note": "修复前实测 width=274px、childLeft=9px、childRight=157.5px、justifyContent=normal。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 Tag 镜像补齐居中、24px 高、8px padding、小圆角，并在 Dialog Slot 中恢复 max-content。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "全局设计合同锁定原生与 H5 Tag 的居中、默认尺寸、padding 和圆角。"
+    }
+  ],
+  "rootCause": "H5 Tag 的后置镜像规则没有显式保留 justify-content:center，Dialog Slot 的 Grid 又使用默认 stretch；早期 28px 高与 round 圆角继续参与级联，导致 H5 与原生 Medium Tag 合同漂移。",
+  "decision": {
+    "outcome": "全局 H5 Tag 明确使用 inline-flex、双轴居中、24px 高、8px 水平 padding和 small radius；Dialog Slot 的直接 Tag 使用 max-content 与 justify-self:center。",
+    "rationale": "Tag 自身负责内部几何，Slot 只负责外部排列；同时修复全局镜像和局部拉伸，才能避免同类问题在其他预览复现。",
+    "alternativesRejected": [
+      "只给文字增加 text-align:center，Flex 主轴仍不会移动子元素。",
+      "只在 Dialog 局部写 padding，会破坏 Tag 自身的尺寸合同。",
+      "保留整行 Tag 再居中文字，仍会让 Tag 看起来像输入框或内容面板。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/styles.css",
+      "dialog/dialog.wxss",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "scripts/test-design-contracts.js",
+      "scripts/test-dialog.js",
+      "feedback/records/pui-fb-0008-tag-preview-centering.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["tag", "dialog"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-dialog.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "390x844 实测 Tag width=127.945px、height=24px、padding-left/right=8px、align/justify=center；普通模式 radius=6px，大圆角模式 radius=9px，文字左右可见留白均为 9px（含 1px border），中心偏差为 0。"
+    ],
+    "deviceRisks": [
+      "H5 已按 1px≈2rpx 镜像原生 Tag；小程序自定义组件宿主在不同基础库中的 Grid 收缩仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "PUI Tag 保持内容宽度和自身 padding，父级 Grid 不能把它拉成整行。",
+    "rules": [
+      "生成 Tag 镜像时必须同时保留 inline-flex、align-items:center 与 justify-content:center。",
+      "在 Grid Slot 中放置 Tag 时使用容器对齐或 max-content，不覆盖 Tag 自己的 padding。",
+      "验收 Tag 时同时测量元素宽度、文字左右留白、默认尺寸和圆角，不能只检查 text-align。"
+    ],
+    "tags": ["tag", "dialog", "preview", "centering", "grid", "stretch", "padding", "preview-parity"]
+  }
+}

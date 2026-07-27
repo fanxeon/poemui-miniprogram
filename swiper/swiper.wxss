@@ -1,0 +1,188 @@
+:host { display: block; min-width: 0; }
+
+.pui-swiper {
+  --pui-swiper-duration: 500ms;
+  --pui-swiper-motion-duration: 500ms;
+  --pui-swiper-ease: cubic-bezier(0.2, 0, 0, 1);
+  display: block;
+  min-width: 0;
+  color: var(--pui-text-primary);
+}
+
+.pui-swiper__viewport {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1rpx solid var(--pui-border-color);
+  border-radius: var(--pui-radius-large);
+  background: var(--pui-bg-muted);
+  box-shadow: var(--pui-shadow-card);
+  -webkit-backdrop-filter: var(--pui-frosted-filter-soft);
+  backdrop-filter: var(--pui-frosted-filter-soft);
+}
+
+.pui-swiper__layer {
+  grid-area: 1 / 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  opacity: 0;
+  transform: translateY(12rpx) scale(0.99);
+  pointer-events: none;
+  transition: opacity var(--pui-swiper-motion-duration) var(--pui-ease-standard), transform var(--pui-swiper-motion-duration) var(--pui-ease-standard);
+}
+
+.pui-swiper__layer--active {
+  z-index: 1;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.pui-swiper__swiper,
+.pui-swiper__slide,
+.pui-swiper__slide swiper-slide { width: 100%; height: 100%; }
+
+.pui-swiper__slide {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--pui-bg-container), var(--pui-bg-muted));
+  transition: opacity var(--pui-swiper-motion-duration) var(--pui-ease-standard), transform var(--pui-swiper-motion-duration) var(--pui-ease-standard);
+}
+
+.pui-swiper__slide--primary { background: linear-gradient(135deg, var(--pui-color-brand-light), var(--pui-bg-container)); }
+.pui-swiper__slide--success { background: linear-gradient(135deg, var(--pui-color-success-light), var(--pui-bg-container)); }
+.pui-swiper__slide--warning { background: linear-gradient(135deg, var(--pui-color-warning-light), var(--pui-bg-container)); }
+.pui-swiper__slide--danger { background: linear-gradient(135deg, var(--pui-color-danger-light), var(--pui-bg-container)); }
+.pui-swiper__slide--disabled { opacity: 0.48; }
+
+.pui-swiper__image { display: block; width: 100%; height: 100%; }
+.pui-swiper__image .pui-image { border: 0; border-radius: 0; }
+
+.pui-swiper__visual {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pui-text-secondary);
+  opacity: 0.72;
+}
+
+.pui-swiper__scrim {
+  position: absolute;
+  inset: 35% 0 0;
+  background: linear-gradient(180deg, transparent, rgba(9, 9, 11, 0.78));
+  pointer-events: none;
+}
+
+.pui-swiper__copy {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--pui-space-xs);
+  padding: var(--pui-space-xl) var(--pui-space-lg) var(--pui-space-lg);
+  color: #fafafa;
+}
+
+.pui-swiper__title {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--pui-font-size-title-small);
+  line-height: var(--pui-line-height-title-small);
+  font-weight: var(--pui-font-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pui-swiper__description {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--pui-font-size-body-small);
+  line-height: var(--pui-line-height-body-small);
+  color: rgba(250, 250, 250, 0.82);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.pui-swiper__controls { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.pui-swiper__control { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: auto; }
+.pui-swiper__control--prev { left: var(--pui-space-sm); }
+.pui-swiper__control--next { right: var(--pui-space-sm); }
+.pui-swiper--vertical .pui-swiper__control { top: auto; right: auto; left: 50%; transform: translateX(-50%); }
+.pui-swiper--vertical .pui-swiper__control--prev { top: var(--pui-space-sm); }
+.pui-swiper--vertical .pui-swiper__control--next { bottom: var(--pui-space-sm); }
+
+.pui-swiper__navigation {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pui-space-xs);
+  color: var(--pui-text-secondary);
+  font-size: var(--pui-font-size-caption);
+  line-height: var(--pui-line-height-caption);
+}
+
+.pui-swiper__navigation--inside {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: var(--pui-space-sm);
+  max-width: calc(100% - 160rpx);
+  transform: translateX(-50%);
+}
+
+.pui-swiper__navigation--inside.pui-swiper__navigation--fraction {
+  min-width: 56rpx;
+  padding: var(--pui-space-xxs) var(--pui-space-xs);
+  border: 1rpx solid rgba(255, 255, 255, 0.26);
+  border-radius: var(--pui-radius-round);
+  background: rgba(9, 9, 11, 0.58);
+  color: #fafafa;
+}
+
+.pui-swiper__navigation--outside { margin-top: var(--pui-space-sm); }
+
+.pui-swiper__indicator {
+  width: 12rpx;
+  height: 12rpx;
+  flex: 0 0 auto;
+  border-radius: var(--pui-radius-round);
+  background: rgba(250, 250, 250, 0.52);
+  transition: width var(--pui-swiper-motion-duration) var(--pui-ease-standard), background-color var(--pui-swiper-motion-duration) var(--pui-ease-standard), opacity var(--pui-swiper-motion-duration) var(--pui-ease-standard);
+}
+
+.pui-swiper__navigation--dots-bar .pui-swiper__indicator--active { width: 32rpx; }
+.pui-swiper__indicator--active { background: #fafafa; }
+.pui-swiper__navigation--outside .pui-swiper__indicator { background: var(--pui-border-color); }
+.pui-swiper__navigation--outside .pui-swiper__indicator--active { background: var(--pui-color-brand); }
+
+.pui-swiper__state {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pui-space-lg);
+}
+
+.pui-swiper__state--error { flex-direction: column; }
+.pui-swiper__state--error pui-button { display: flex; width: 100%; min-width: 0; }
+
+.pui-swiper--disabled { opacity: 0.52; }
+.pui-swiper--reduced-motion .pui-swiper__layer,
+.pui-swiper--reduced-motion .pui-swiper__slide,
+.pui-swiper--reduced-motion .pui-swiper__indicator { transition-duration: 1ms; }

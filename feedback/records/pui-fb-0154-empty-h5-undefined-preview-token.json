@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0154",
+  "title": "Empty H5 图形网格引用未定义 Preview Token",
+  "scope": "component",
+  "components": ["empty", "preview-site", "design-tokens", "responsive-layout"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "Empty 的 H5 图形内容分区必须消费真实 PUI Token，在 390px、主题和视觉开关中保持可读、可用且无页面级横向溢出。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-styles", "overview", "responsive-layout"],
+    "platforms": ["browser"],
+    "viewports": ["390px browser", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Empty 图形内容分区的 H5 CSS 使用了 --pui-preview-panel-gap，但全局 Preview Token 未定义该变量。",
+    "运行 npm run check 的 CSS Token 扫描会报 preview CSS contains undefined custom properties without fallbacks: --pui-preview-panel-gap。"
+  ],
+  "expected": "H5 图形网格只使用已定义的语义 Token；390px 下从两列自然重排为单列，Empty 根始终透明且不引入页面横向溢出。",
+  "actual": "未定义变量使间距回退为浏览器默认无效值，破坏了 Token 合同并使布局在主题或后续 Token 改动时不可预测。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已确认范围化自主验收授权：后续组件无需逐项确认，agent 在完整审计、浏览器、专项测试、文档、Ledger 与构建门禁后可自主验收。"},
+    {"kind": "test", "ref": "scripts/test-design-contracts.js", "note": "2026-07-20 的 npm run check 经此专项扫描明确报告未定义 --pui-preview-panel-gap。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "修复后 Empty 图形网格改为消费已定义的 --pui-preview-space-lg。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/empty", "note": "390px 实测图形网格宽 282px 并单列重排，document/body 均为 375px，没有横向溢出。"},
+    {"kind": "test", "ref": "scripts/test-design-contracts.js", "note": "专项设计合同和完整 check 在修复后通过。"}
+  ],
+  "rootCause": "H5 分区样式复用了不存在的旧命名，没有在新增网格时先核验 Preview Token 真相源。",
+  "decision": {
+    "outcome": "以已定义的 --pui-preview-space-lg 替换未定义变量，并由全局 Token 扫描和 Empty 浏览器 390px 复测共同锁定。",
+    "rationale": "间距必须消费真实语义 Token，不能用无 fallback 的私有变量碰巧依赖浏览器回退。",
+    "alternativesRejected": [
+      "给 --pui-preview-panel-gap 临时新增重复 Token 会增加不必要的同义命名。",
+      "在 Empty 选择器硬编码像素间距会绕过全局间距合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-design-contracts.js", "docs/components/EMPTY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["Preview Token contract", "CSS undefined-variable scanner", "PreviewDevice responsive layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js"],
+    "commands": ["2026-07-20 npm run check：修复后通过，未再报告 undefined custom property", "2026-07-20 npm run site:build、npm run pack:check、npm run example:install：通过"],
+    "browser": ["390px 实测 Empty 图形网格从两列改为一列，宽度 282px；document/body 375px，PreviewDevice 349px，无页面级横向溢出。", "dark、border/shadow/frost/large-radius/gradient 实际切换后 Empty 根仍 transparent，恢复标准 light 组合后布局未漂移。"],
+    "deviceRisks": ["H5 Token 与响应式布局已验收，但小程序端 rpx 最终排版仍需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "新增 H5 分区或网格前必须核验 CSS Token 已定义，不能用无 fallback 的猜测变量。",
+    "rules": [
+      "所有无 fallback 的 var(--*) 必须由全局 Token 或组件运行时明确提供。",
+      "Token 修复后同时执行静态扫描、真实 390px 几何读取和主题/视觉开关检查。",
+      "透明展示组件不能用额外 Surface 或硬编码间距掩盖 Token 缺口。"
+    ],
+    "tags": ["empty", "preview", "design-tokens", "responsive", "visual-layout"]
+  }
+}

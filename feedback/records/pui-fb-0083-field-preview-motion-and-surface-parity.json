@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0083",
+  "title": "Field 官网分区噪音与预览重建使状态颜色直接跳变",
+  "scope": "component",
+  "components": ["field", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Field 官网应按用户能筛选的用法分区，真实组合 PUI 控件、保持单一 Surface，并能实际观察状态颜色的正常动效与低动效完成态。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "element-inspector"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "375px PreviewDevice", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Field 概览没有按基础、对齐、帮助、校验分区，无法同时比较标签布局、必填帮助和反馈状态。",
+    "完成分区后发现固定对齐和校验示例继承了默认 help，所有例子重复显示“用于 npm 包内的标识”，分区语义被无关文案干扰。",
+    "通过元素选择 Inspector 将 status 从 default 切换到 error，H5 会重建当前预览节点；仅声明 transition 的新节点直接使用 error 最终色，动画中间帧实际不存在。"
+  ],
+  "expected": "概览四区各自只展示相关能力，Field 作为共享 field-row 的可编辑形态承载唯一行级 Surface，默认 Slot 调用透明嵌入的共享 PUI Input；状态变化在 500ms 内真实过渡，reduceMotion 压缩为 1ms，并保留可验证完成态。",
+  "actual": "旧概览缺少用法结构；初版分区仍有帮助文案串扰；节点重建让 CSS transition 只存在于样式声明而没有可观察的运行过程。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求预览像 TDesign 一样分区、分区标题可辨认、Props 真实作用，并授权 agent 自主完成后续 battle。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区同源调用 fieldPreviewMarkup，固定对齐与校验例显式清空 help，当前实例组合共享 Input 并保存上一状态驱动真实 keyframe。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Field 与 Cell 复用 field-row-preview 行级 Surface，分区使用统一 section gap，message 使用500ms语义色动画，系统低动效压缩为1ms。"},
+    {"kind": "test", "ref": "scripts/test-field.js", "note": "专项锁定四个分区、extra Slot、零 bind、唯一 Surface、状态动画起止边界与低动效。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/field", "note": "default→error 的真实 animationstart/animationend 耗时记录173ms，完成态为 rgb(220,38,38)/alert；reduceMotion 下 error→success 计算时长1ms并完成为 rgb(22,163,74)/status。"}
+  ],
+  "rootCause": "旧官网把 Field 当作单个静态布局片段；预览渲染器用 innerHTML 替换当前组件时没有携带前一语义色，浏览器无法从已删除节点建立过渡。",
+  "decision": {
+    "outcome": "概览固定为基础用法、标签与对齐、必填与帮助、校验反馈四区；非帮助专项例清空 help；Field 使用与 Cell 同源的 field-row 行级 Surface，当前实例标记后由运行态保存上一 status，并在新节点执行500/1ms语义色 keyframe，animationend 后清理临时样式。",
+    "rationale": "分区必须帮助用户比较真实用法；在站点架构仍会替换节点时，显式继承上一语义色是对小程序同节点 property 更新动画的真实镜像，不是伪事件或提示文字。",
+    "alternativesRejected": [
+      "只保留 transition 声明无法穿越节点替换，浏览器实测仍直接跳到最终色。",
+      "在所有静态成功/错误例上持续播放入场动画会制造无业务触发的视觉噪音。",
+      "给 Field 外壳增加卡片、边框或毛玻璃会和默认 Slot 的 Input 形成双层 Surface。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-field.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/FIELD.md"],
+    "dependencies": ["PreviewDevice", "inputControlSample", "tagSample", "iconComponent", "visualConfig", "element inspector"]
+  },
+  "verification": {
+    "tests": ["scripts/test-field.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-normal-code-card.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node --check preview/app.js", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "基础、标签与对齐、必填与帮助、校验反馈四区同时可见；固定对齐和校验例不再重复无关 help。",
+      "390px 页面与375/393设备均无横向溢出；API 12 Props 与5 Slots 全文换行，无 ellipsis 或 nowrap。",
+      "light/dark、border、shadow、frost、large-radius、gradient 全部实点；Field 与 Cell 的共享行级 Surface 同步变化，普通 Input 继续透明嵌入，验收后恢复标准组合。",
+      "Props 变更保留当前输入值；label/help/message Slot、extra Slot、required、arrow 和 error alert 均在真实 DOM 可见。"
+    ],
+    "deviceRisks": [
+      "H5 keyframe 只用于镜像小程序 property 更新的颜色过渡；微信 WXSS transition 的中间帧与 animationend 时序仍需真机录屏确认。",
+      "毛玻璃、阴影和大圆角由 Slot 内真实子控件消费；不同小程序基础库的 backdrop-filter 支持度仍需真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Field 概览按四类真实用法分区，共享 field-row、PUI 子控件与可观察状态动效必须同源。",
+    "rules": [
+      "Field 与 Cell 必须复用同一 field-row 行级 Surface；普通 Input 透明嵌入，禁止形成第二层 Surface。",
+      "固定对照示例不得继承当前实例的无关 help/message，分区只保留本节需要比较的能力。",
+      "预览节点重建时若组件本体应有过渡，必须携带上一真实状态并验证 animationstart、完成态和 reduceMotion。",
+      "Field 基础 WXML 禁止 bind，输入事件属于 pui-input，完整 Field API 只展示 Props 与 Slots。"
+    ],
+    "tags": ["field", "preview", "motion", "surface", "section-demo", "reduce-motion", "tdesign"]
+  }
+}

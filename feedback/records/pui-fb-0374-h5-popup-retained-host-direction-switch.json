@@ -1,0 +1,53 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0374",
+  "title": "H5 Popup 边缘方向切换不能复用旧的离场 Host",
+  "scope": "component",
+  "components": ["popup", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Popup 从左、右、上、下或居中打开时，入口方向、动画方向和阴影方向必须对应当前选择，不能被上一个仍在离场的浮层节点污染。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 H5 Popup 弹出层页面，点击一个方向入口关闭或等待离场动画期间，再点击另一个边缘方向入口。",
+    "旧实现只依据 demo.popupMounted 判断是否清理，已有 retained host 但运行态标志已变为 false 时，左侧入口仍可能短暂显示 overlay-box--right。"
+  ],
+  "expected": "方向入口先写回 placement；若已有 Host 的 placement 与目标不一致，不论运行态 mounted 标志是否准确，都必须清除离场节点并从目标方向重新建立。",
+  "actual": "已在 popup-open 分支同时检查 previousPlacement、existingHost 和 hostPlacementChanged；只要存在旧 Host 就清理 timer、mounted、active、phase，再通过统一可见性函数重建当前方向。",
+  "evidence": [
+    {"kind": "browser", "ref": "2026-07-25 H5 Popup 页面", "note": "刷新后真实点击左侧入口，Host class 为 overlay-box--left，计算阴影为 12px 右向外投影；此前快速切换可复现旧 right Host 残留。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "popup-open 分支检查 retained host 的 placement，并在方向变化时清除离场状态。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "锁定 previousPlacement、existingHost 和 retained host 清理逻辑。"}
+  ],
+  "rootCause": "Popup 采用保留节点完成真实离场动画，入口方向变化时只信任 demo.popupMounted；状态标志和 DOM 生命周期在动画边界上可能短暂不同步，导致旧方向 Host 被重新激活。",
+  "decision": {
+    "outcome": "方向切换以 DOM retained host 的 class 为最终防护；目标方向与旧 Host 不一致时先清理旧节点状态，再进入统一 Popup visibility 生命周期。",
+    "rationale": "保留离场动画的同时消除旧方向节点复用，避免通过强制立即卸载牺牲真实动画或依赖点击时序。",
+    "alternativesRejected": ["取消所有离场动画会破坏 Popup 现有可见性合同。", "只延长等待时间无法修复状态标志与 DOM class 不一致。"]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-popup.js", "preview/styles.css"],
+    "dependencies": ["Popup retained-node lifecycle", "directional shadow tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js", "scripts/test-appearance-contract-matrix.js"],
+    "commands": ["node scripts/test-popup.js", "node scripts/test-appearance-contract-matrix.js"],
+    "browser": ["刷新 H5 Popup 页面后真实点击左侧入口，读取 Host class=overlay-box--left；inner Surface 计算 box-shadow=12px 0 30px。"],
+    "deviceRisks": ["微信开发者工具和 iOS/Android 真机仍需确认连续快速点击、触摸事件与 WXSS 动画合成。"]
+  },
+  "ai": {
+    "summary": "使用保留离场节点的浮层，方向或 placement 改变时必须同时检查运行态和 DOM Host class，不能只相信一个 mounted 标志。",
+    "rules": ["浮层 placement 变化必须先写回真实 Props，再检查 retained host 是否与目标方向一致。", "旧 Host 与目标方向不一致时清理其 timer、mounted、active 和 phase，再复用统一 visibility 函数。", "连续入口点击必须用真实浏览器验证方向 class 和阴影方向，不能只做静态字符串检查。"],
+    "tags": ["popup", "retained-node", "animation", "direction", "h5-preview"]
+  }
+}

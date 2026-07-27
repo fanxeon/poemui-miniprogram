@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0409",
+  "title": "Indexes 独立页内容过短且活动字母错位低对比",
+  "scope": "component",
+  "components": ["indexes", "button", "cell", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Indexes 列表需要足够长以验证滚动，右侧索引当前项必须清楚、居中且不与列表内容冲突。",
+  "environment": {
+    "surfaces": ["indexes component page"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "旧独立页只有六个分组，几乎没有足够滚动距离。",
+    "当前字母的 PUI Button 仍按 small Button 内部高度排版，白字落到黑色活动轨下缘。",
+    "索引栏和内容共享最右区域时 Badge 会与字母轨重叠。",
+    "受控 current 定位到末端附近的 T 时，260ms 抑制窗口短于 500ms 滚动动画，后续短尾 scroll 又把活动态覆盖成 U。"
+  ],
+  "expected": "至少十二个真实分组形成持续滚动；活动字母黑底白字并在 42rpx×36rpx 轨内居中；索引轨不覆盖 Badge 或操作内容。",
+  "actual": "分组过短，活动字母部分落出选中底色，列表右侧内容会进入索引轨；末端程序定位还会被滚动回调覆盖为最后一组。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/indexes/index.js", "note": "独立页扩展为十四个真实组件首字母分组。"},
+    {"kind": "file", "ref": "indexes/indexes.wxml", "note": "字母使用 Button content 轨和明确的紧凑根几何。"},
+    {"kind": "file", "ref": "indexes/indexes.wxss", "note": "活动反色、光学居中、有界索引栏和内容安全轨同步。"},
+    {"kind": "file", "ref": "indexes/indexes.js", "note": "程序定位保护覆盖完整动画与收敛余量，末端短尾不再覆盖目标字母。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "锁定紧凑 Button、反色、内部边界、内容预留和隐藏重复滚动条。"},
+    {"kind": "browser", "ref": "/tmp/poemui-indexes-final5.png", "note": "390x844 模拟器确认十四字母索引、内容避让与黑底白字 A 居中显示。"},
+    {"kind": "browser", "ref": "/tmp/poemui-indexes-selected-t-final.png", "note": "390x844 模拟器确认受控定位 T 后活动态保持 T，不再错误跳为 U。"}
+  ],
+  "rootCause": "示例数据预算不足；Button 的标准 small 高度大于索引紧凑轨，且默认 Slot 基线未按 36rpx 轨做光学校正；索引浮层缺少内容安全轨；程序定位抑制时间短于真实滚动动画。",
+  "decision": {
+    "outcome": "独立页扩展为十四分组；小程序 Button 使用 content prop、内联紧凑几何和 Token 化光学校正；索引栏限制在组件 body，条目内容按左右位置预留索引轨并隐藏重复原生滚动条；程序定位保护覆盖 500ms 动画与 120ms 收敛余量。",
+    "rationale": "保留 PUI Button 的真实交互与可访问名称，同时让紧凑索引视觉和内容区各自拥有明确几何。",
+    "alternativesRejected": [
+      "只换活动背景颜色不能解决文字基线落出底色。",
+      "手写 text 点击区会绕过 PUI Button。",
+      "继续保留六组数据无法验证 scroll、短尾和字母联动。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/", "miniprogram/pages/components/indexes/", "scripts/test-indexes.js", "scripts/test-miniprogram-navigation-pages.js", "docs/components/INDEXES.md", "docs/MINIPROGRAM_NAVIGATION_PAGES.md"],
+    "dependencies": ["PUI Button", "PUI Cell", "PUI Badge"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js", "scripts/test-miniprogram-navigation-pages.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具 390x844 浅色截图确认列表可滚、十四字母索引完整、内容不与索引轨碰撞；A 与末端受控 T 均为黑底白字且居中。"],
+    "deviceRisks": ["iOS/Android 真机的 touchmove 字母命中、惯性滚动、sticky 与读屏顺序仍需复核。"]
+  },
+  "ai": {
+    "summary": "紧凑索引 Button 必须同时验证根几何、内部文字基线、活动反色和内容避让。",
+    "rules": [
+      "Indexes 独立页至少十二个分组。",
+      "活动字母必须在 42rpx×36rpx 轨内黑底白字居中。",
+      "索引轨不得覆盖 Badge、箭头或内容操作区。"
+    ],
+    "tags": ["indexes", "long-list", "active-state", "button", "390px"]
+  }
+}

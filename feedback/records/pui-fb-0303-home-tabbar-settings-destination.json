@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0303",
+  "title": "首页 Tabbar 需提供真实图标的设置目的地并保持禁用边界",
+  "scope": "component",
+  "components": ["miniprogram-home", "tabbar", "icon"],
+  "type": "visual-layout",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页底部 Tabbar 增加第四项，最右侧为设置；尚无设置页时不得产生假路由或状态切换。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "wechat simulator"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390px", "wechat simulator"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开真实首页底部 Tabbar。",
+    "当前只有首页、任务、我的三项，缺少用户要求的最右设置目的地。"
+  ],
+  "expected": "Tabbar 为四个等宽纯图标项；设置项位于最右、label 为空、ariaLabel=设置、图标来自 PUI Icon manifest，并在设置页存在前保持 disabled。",
+  "actual": "首页 Tabbar 只有三个目的地，未提供设置项。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求 Tabbar 增加第四项，最右为 setting。"},
+    {"kind": "file", "ref": "icon/icon-font-catalog.js", "note": "PUI Icon 字体目录提供 palette 图标，可作为设置外观的真实图形入口。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "设置项使用 palette、空 label、设置 ariaLabel 与 disabled=true；未增加路由。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项测试锁定四项、最后设置项的真实图标与禁用不切换边界。"}
+  ],
+  "rootCause": "初版首页按当时可用页面仅配置三个目的地，未同步后续设置入口的信息架构要求。",
+  "decision": {
+    "outcome": "在首页 TABBAR_ITEMS 末尾加入 value=settings、icon=palette、ariaLabel=设置、disabled=true 的纯图标项；不新增设置页、路由、change 事件或提示。",
+    "rationale": "palette 已存在于 PUI Icon manifest，语义上指向设置中的外观入口；禁用状态如实反映设置页尚未实装。",
+    "alternativesRejected": [
+      "使用不存在的 settings 图标会重演资源缺失问题。",
+      "创建空设置页或提示弹窗会制造无业务结果的假入口。",
+      "让 disabled 设置项更新 activeTab 会伪造页面切换。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.js", "scripts/test-miniprogram-home.js"],
+    "dependencies": ["PUI Icon manifest", "PUI Tabbar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run check"],
+    "browser": ["已打开的微信开发者工具热重载后，确认 390px 首页 Tabbar 显示四个等宽图标，设置位于最右且点击不切换。"],
+    "deviceRisks": ["微信真机仍需确认四个图标的基线、触摸命中和读屏名称。"]
+  },
+  "ai": {
+    "summary": "页面扩展 Tabbar 时，新增目的地须先在 PUI Icon manifest 校验图标；页面不存在则 disabled，不能伪造导航。",
+    "rules": [
+      "Tabbar item.icon 必须来自当前 PUI Icon manifest。",
+      "纯图标项继续显式 label 为空并提供 ariaLabel。",
+      "未实装目的地必须 disabled，且不添加假路由、假 change 或提示。"
+    ],
+    "tags": ["miniprogram-home", "tabbar", "icon", "settings", "disabled"]
+  }
+}

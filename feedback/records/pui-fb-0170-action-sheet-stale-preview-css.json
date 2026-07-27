@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0170",
+  "title": "ActionSheet 收敛后残留 H5 状态样式和未定义 Token",
+  "scope": "component",
+  "components": ["action-sheet", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "ActionSheet 必须只保留真实动作选择能力；完成 API 收敛后，官网样式、Token 扫描和实际预览也必须不存在历史业务状态壳。",
+  "environment": {
+    "surfaces": ["h5-preview", "css-token-contract"],
+    "platforms": ["browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 393px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "完成 ActionSheet 新实现并执行 npm run check。",
+    "test-preview-css-token-contract.js 扫描 preview/styles.css，报告 --pui-action-sheet-preview-z-index、--pui-action-sheet-preview-ease、--pui-action-sheet-preview-max-height 未定义。",
+    "定位到旧 ActionSheet delivery mirror：它仍含 __state、max-height 动画、分组/把手/反馈等已删除能力，即使最终选择器覆盖后仍不应留在样式表。"
+  ],
+  "expected": "H5 只保留当前 WXML/preview 模板实际使用的 ActionSheet 样式，所有无 fallback 的 Token 都有定义，且不再存在根级状态、height/max-height 过渡或局部模拟遮罩样式。",
+  "actual": "旧镜像 CSS 未随 API 收敛删除，引用了失效 Token，并保留历史状态容器样式；全局 CSS Token 合同因此失败。",
+  "evidence": [
+    {"kind": "build", "ref": "npm run check", "note": "首次完整门禁由 test-preview-css-token-contract.js 精确报告三项未定义 ActionSheet Token。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "删除旧 ActionSheet delivery mirror 整段；保留并使用末尾当前的透明 canvas、完整设备遮罩和 bottom sheet 样式。"},
+    {"kind": "test", "ref": "scripts/test-preview-css-token-contract.js", "note": "删除后专项扫描通过，不再存在三项无定义 Token。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/action-sheet", "note": "重置后真实点击入口，面板与完整遮罩均为 opacity=1、过渡 500ms，__state 节点为 0，页面横向溢出为 0。"},
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权本 Goal 在完整 browser、Ledger、构建和产物证据后自主验收。"}
+  ],
+  "rootCause": "ActionSheet 早期 H5 镜像在末尾新合同样式覆盖前仍保留旧状态型 CSS；源码/API 已收敛，但没有同步清理历史规则。",
+  "decision": {
+    "outcome": "删除整个旧 delivery mirror，不为它补 Token；只保留当前 ActionSheet 模板所需的透明 layout root、完整遮罩、bottom sheet、列表/宫格、分页、取消区和 500ms/1ms opacity/transform 动效。",
+    "rationale": "定义废弃 Token 只能掩盖死代码，也会让后续 Agent 误以为 ActionSheet 仍支持业务状态、分组或 max-height 动画。",
+    "alternativesRejected": [
+      "给三项旧 Token 增加全局定义，会使过时状态壳继续存活。",
+      "保留旧规则并依赖后置选择器覆盖，无法阻止未来模板回退或 Token 漂移。",
+      "只忽略 CSS Token 检查，会削弱全站样式事实门禁。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "feedback/records/pui-fb-0170-action-sheet-stale-preview-css.json"],
+    "dependencies": ["ActionSheet H5 mirror", "PreviewDevice edge-to-edge layout", "CSS token contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-css-token-contract.js", "scripts/test-action-sheet.js", "scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["2026-07-20 删除旧规则后上述专项通过；完整 npm run check、site:build、pack:check、example:install 和微信 build-npm 在本次组件收口中复验。"],
+    "browser": ["390x844：重置后打开面板，overlay=1、panel=1、transition=500ms、legacy __state=0、页面横向溢出=0；关闭后 panel 已卸载。"],
+    "deviceRisks": ["微信 WebView 仍需用合法 AppID 验证安全区、rpx、swiper 手势、样式隔离和系统低动效。"]
+  },
+  "ai": {
+    "summary": "组件 API 收敛时，必须同时删除被覆盖的旧 H5 CSS；不允许用补 Token 或最终选择器覆盖来掩盖历史能力。",
+    "rules": [
+      "全量 API/状态删除后，搜索组件专属 class、旧 state class 和对应 CSS custom property，逐项清理。",
+      "CSS Token 合同失败时先找真实消费方；过时规则必须删除，而不是新增假 Token。",
+      "浮层只允许 opacity/transform 的有限动效；不得以 max-height 或 display:none 伪造状态切换。"
+    ],
+    "tags": ["action-sheet", "preview-css", "token-contract", "no-fake-state"]
+  }
+}

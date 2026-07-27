@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0159",
+  "title": "Result 被全局预览 Surface 覆盖且动效时长漂移",
+  "scope": "component",
+  "components": ["result", "preview-site", "responsive-layout", "animation", "design-tokens"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须镜像透明的 Result WXML/WXSS，不让通用卡片样式改写组件结构、边界或 500ms/1ms 动效；390px、主题和视觉开关均可用。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-styles", "overview", "responsive-layout", "appearance-menu"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Result 根在源码 WXSS 中是透明展示根，但旧 preview/styles.css 的通用 preview-stage Surface 选择器仍匹配 .pui-result-preview，额外注入背景、边框、阴影、圆角和 500ms transition。",
+    "浏览器在修复前读取到 Result 根继承卡片 Surface 与 500ms；这与原生透明根和 500ms/低动效 1ms 不一致。"
+  ],
+  "expected": "Result 根始终透明、无中性边框和阴影，进入动效为 500ms，reduceMotion 为 1ms；外观开关只作用于 PreviewDevice 和真实可见组件 Surface，不改变 Result 根责任。",
+  "actual": "全局预览样式把展示型 Result 重新包成卡片，且覆盖了其生命周期时长，导致 H5 与小程序 WXSS 视觉和动效均漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已确认范围化自主验收授权：后续组件无需逐项确认，agent 在完整审计、浏览器、专项测试、文档、Ledger 与构建门禁后可自主验收。"},
+    {"kind": "file", "ref": "result/result.wxss", "note": "Result 根仅声明布局、文字和 --pui-result-duration，不声明背景、边框或阴影。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "已从四组通用 preview Surface 选择器移除 Result，专属根明确 background:transparent、border:0、box-shadow:none。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/result", "note": "修复后实测根 background=rgba(0,0,0,0)、border=0px、boxShadow=none、duration=0.18s；reduceMotion 后为0.001s。"},
+    {"kind": "test", "ref": "scripts/test-result.js", "note": "专项测试禁止 Result 进入全局 preview Surface 选择器，并锁定透明根与 180ms/1ms。"}
+  ],
+  "rootCause": "通用预览卡片选择器按历史组件集合维护，没有在 Result 收敛为透明展示根时同步剔除，从而以更晚 CSS 规则覆盖专属合同。",
+  "decision": {
+    "outcome": "从所有通用 preview Surface 选择器移除 Result，只保留透明专属 H5 根；PreviewDevice 继续承载主题底色、裁切和外观开关。",
+    "rationale": "Result 自身不应再建立第二层 Surface；移除覆盖能让同一组件尺寸、边界与动效在 H5/WXSS 间保持可解释。",
+    "alternativesRejected": [
+      "在 Result 专属选择器上用 !important 反覆盖会保留脆弱的全局依赖。",
+      "把透明根改为卡片以匹配 H5 会反向破坏真实 WXML/WXSS 合同。",
+      "仅在浅色修复会让深色和视觉开关继续漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-result.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/RESULT.md"],
+    "dependencies": ["PreviewDevice shadow-safe layout", "appearance preferences", "PUI Icon/Image mirror"]
+  },
+  "verification": {
+    "tests": ["scripts/test-result.js", "scripts/test-preview-theme-coverage.js", "scripts/test-layout-contracts.js"],
+    "commands": ["2026-07-20 npm run site:build、npm run check、npm run pack:check：通过", "2026-07-20 npm run example:install：通过", "2026-07-20 微信 CLI build-npm：touristappid 不存在，code 10。"],
+    "browser": ["390x844 实测 window.innerWidth=390、document/body/Stage client/scroll=375/375、PreviewDevice=349/349、Result=282/282，无页面级横向溢出。", "真实切换 light/dark、border、shadow、frost、large-radius、gradient；暗色组合下 PreviewDevice 为 blur(18px) saturate(1.35)、32px 圆角和双层阴影，Result 根仍透明无边界；恢复浅色标准组合后控制台 error/warn=0。", "通过真实刷新触发 Result 进入，浏览器驱动的点击往返晚于180ms而无法读取数值中间 opacity；已读取真实 180ms/1ms 计算时长并由专项测试锁定，真机录屏仍保留。"],
+    "deviceRisks": ["微信真机仍需以合法 AppID 对 Result 500ms 中间帧、rpx 文本回流、图标基线、主题 Token 继承、样式隔离、读屏和系统低动效录屏确认。"]
+  },
+  "ai": {
+    "summary": "透明展示组件不能被通用 H5 卡片选择器重新包成 Surface。",
+    "rules": [
+      "新增或收敛透明组件时，逐项检查其是否命中全局 preview Surface、transition 或外观选择器。",
+      "PreviewDevice 可承载主题和视觉效果，但组件根必须保持真实 WXML/WXSS 的 Surface 责任。",
+      "动效验收同时读取正常和低动效计算时长；浏览器驱动无法采样中间帧时如实登记真机录屏风险。"
+    ],
+    "tags": ["result", "preview-parity", "transparent-root", "animation", "appearance", "390px"]
+  }
+}

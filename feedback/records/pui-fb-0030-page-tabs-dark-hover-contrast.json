@@ -1,0 +1,95 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0030",
+  "title": "标准页 Tabs 不使用视觉 Hover",
+  "scope": "global",
+  "components": ["preview-site", "tabs"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "标准组件页 Tabs 不提供额外视觉 Hover，只保留稳定、明确的选中态与键盘焦点态。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-header"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件页并在深浅色模式下移动指针经过非选中 Tabs。",
+    "曾尝试为非选中 Tabs 增加主题 Hover Surface，但用户认为适配结果不符合预期。",
+    "若只删除私有 Hover 规则，通用 PUI Button 的 :hover Surface 仍可能泄漏到页面 Tabs。"
+  ],
+  "expected": "非选中 Tabs 在指针经过时保持原有透明 Surface 与文字，不产生背景、颜色、位移或边框变化；选中项继续使用高对比滑块，键盘 focus-visible 继续提供独立轮廓。",
+  "actual": "旧实现存在非选中 :hover 规则；首轮修复又新增主题 Hover Token。用户明确要求不要 Hover，因此两种实现都不再符合最终交互合同。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确表示“不要 HOVER 了”，这是最终交互决定。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "页面 Tabs 私有 :hover 与 Hover Token 已删除；高特异性的 Tabs Button 基础规则显式保持 transparent background/border，阻止通用 Button Hover Surface 泄漏。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-compact-header.js",
+      "note": "专项合同禁止 Tabs Hover Token 与私有 :hover，并锁定基础透明 Surface、选中态和 focus-visible。"
+    }
+  ],
+  "rootCause": "页面 Tabs 复用了 PUI Button，因此删除页面私有 Hover 后仍可能命中通用 Button Hover。此前把 Hover 当成必须补齐的状态，但用户最终偏好是页面分类只用选中和键盘焦点表达状态，不需要指针经过反馈。",
+  "decision": {
+    "outcome": "彻底删除 --pui-site-tabs-hover-background、主题映射、背景色 Hover 过渡和页面 Tabs 私有 :hover。Tabs Button 基础规则显式设置 transparent background 与 border-color，以较高特异性覆盖通用 PUI Button Hover Surface；保留 transform-only 高对比选中滑块、文字选中过渡和 focus-visible 轮廓。",
+    "rationale": "页面一级分类已经通过固定高对比滑块明确当前视图；取消 Hover 可减少状态噪音和跨主题适配面。基础透明规则比单纯删除 :hover 更可靠，因为它同时封住通用 Button 样式回流。",
+    "alternativesRejected": [
+      "继续调整深色 Hover 颜色仍违背用户明确要求。",
+      "只删除页面私有 :hover 会让通用 PUI Button Hover 重新生效。",
+      "删除 focus-visible 会损害键盘可访问性，不能与取消指针 Hover 混为一谈。",
+      "删除选中滑块会失去当前视图的主要识别信号。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/styles.css",
+      "scripts/test-preview-compact-header.js",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0026-compact-component-header-tabs-active-state.json",
+      "feedback/records/pui-fb-0030-page-tabs-dark-hover-contrast.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["tabs", "button"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-compact-header.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "1265px 浅色 Button 页面实测非选中 API 的 background/border-color 均为 transparent，transition-property 只剩 color；CSSOM 中 component-page-tabs 私有 :hover 规则数量为 0。",
+      "1265px 深色复验非选中 API 的 background/border-color 仍为 transparent，选中 Indicator 保持 rgb(250,250,250)，证明取消 Hover 未破坏深色选中态。",
+      "390×844 下 Tabs 为 351×40px、坐标 12/475，非选中 Surface 继续透明，document client/scroll width 为 375/375px。",
+      "验收结束恢复浅色，浏览器 warning/error 日志为空。"
+    ],
+    "deviceRisks": ["本次仅取消 H5 页面级 Tabs 的指针 Hover，不改变小程序组件 API、触摸反馈或通用 PUI Button 的 Hover 合同。"]
+  },
+  "ai": {
+    "summary": "标准页 Tabs 不提供视觉 Hover；基础 Surface 必须透明，只保留高对比选中态和 focus-visible。",
+    "rules": [
+      "标准组件页面 Tabs 禁止新增私有 :hover 视觉规则或 Hover Token。",
+      "Tabs Button 基础 background 与 border-color 必须保持 transparent，防止通用 PUI Button Hover 泄漏。",
+      "取消 Hover 不得删除高对比选中滑块、aria-selected 或键盘 focus-visible。",
+      "深浅色验收必须确认非选中 Tabs 指针经过前后视觉样式不变。",
+      "通用 PUI Button 仍可保留自身 Hover；无 Hover 决定只作用于页面分类 Tabs。"
+    ],
+    "tags": ["preview-site", "tabs", "no-hover", "selected-state", "focus-visible", "dark-mode", "design-decision"]
+  }
+}

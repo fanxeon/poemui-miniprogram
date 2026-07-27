@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0334",
+  "title": "纯图标 Tabbar 沿用标签短横位置导致视觉脱节",
+  "scope": "component",
+  "components": ["tabbar", "button", "preview-site", "miniprogram-home"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页纯图标 Tabbar 的活动短横应靠近图标，不能沿用给图标加文案预留的远距离底部位置。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-home", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在首页渲染四项 label:'' 的 pui-tabbar。",
+    "观察活动首页图标与底部短横：条目高度仍为 112rpx，但没有标签内容，短横仍固定在最低的标签形态位置。"
+  ],
+  "expected": "图标+标签项保持现有完整垂直节奏；纯图标项的活动短横使用同一组件内的语义 Token 上移，靠近图标而不改变导航高度、命中区或 split 分隔。",
+  "actual": "纯图标项沿用图标+标签项的底部短横位置，空出的标签轨道使图标与活动指示器的距离过大。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户指出首页 Tabbar 的短横离纯图标过远，并询问是否因文案轨道导致。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxss", "note": "通用活动短横固定在条目底部，纯图标项此前没有独立结构状态。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxml", "note": "显式 label:'' 已是纯图标边界，可在组件结构内派生 icon-only 状态。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "锁定原生与 H5 的纯图标状态类和同义 Token 定位。"}
+  ],
+  "rootCause": "活动短横只按 Tabbar 条目底部定位，未区分是否存在标签内容；纯图标项虽然通过 Button iconOnly 移除了空内容节点，却没有同步调整指示器节奏。",
+  "decision": {
+    "outcome": "Tabbar 在 item wrap 派生 icon-only 结构类，活动短横对纯图标项改用 space-normal 上移；带标签条目保留原位置。H5 用 is-icon-only 镜像同一状态与同义 Token。",
+    "rationale": "标签是否存在是已有的组件数据语义，短横属于 Tabbar 自身而不是页面职责；只移动短横能保留固定导航高度、原生 Button 命中区、安全区和分隔线合同。",
+    "alternativesRejected": [
+      "首页添加 margin 或 transform 只能修复单一消费者，且会覆盖共享组件职责。",
+      "压缩整个纯图标 Tabbar 高度会改变命中区和安全区，破坏一级导航稳定性。",
+      "新增 indicatorOffset 等公开 Prop 会把内部排版细节错误暴露给消费者。"
+    ]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.wxml", "tabbar/tabbar.wxss", "preview/app.js", "preview/styles.css", "scripts/test-tabbar.js", "docs/components/TABBAR.md", "feedback/records/pui-fb-0334-tabbar-icon-only-indicator-rhythm.json"],
+    "dependencies": ["PUI Tabbar", "PUI Button", "PUI Icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-tabbar.js", "node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具构建 npm"],
+    "browser": ["2026-07-24：H5 #/components/tabbar 的活动纯图标项实测高度 56px，图标 top/height 为 19px/18px，短横 bottom/height 为 10px/2px，图标底部到短横顶部为 7px；图标+标签项未应用 icon-only 状态。", "2026-07-24：保持已打开的微信开发者工具 RC 2.02.2607161，构建 npm（272ms）后在 iPhone 12/13 (Pro) 模拟器复看：首页纯图标活动短横已上移，仍保留固定底栏高度和内收 split 分隔。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 rpx 垂直几何、触摸热区、安全区和系统低动效。"]
+  },
+  "ai": {
+    "summary": "Tabbar 的活动短横位置由是否存在标签内容决定；纯图标项在组件内部使用语义 Token 上移，不由页面补 margin。",
+    "rules": [
+      "显式 label:'' 的 Tabbar 条目必须同时触发 Button iconOnly 与 Tabbar 自身 icon-only 指示器节奏。",
+      "纯图标项只移动活动短横；不要改变 112rpx/56px 导航高度、Button 命中区、安全区或 split 分隔。",
+      "原生与 H5 使用同名 icon-only 状态和同义间距 Token；不得在首页或预览页面写私有定位补丁。"
+    ],
+    "tags": ["tabbar", "icon-only", "indicator", "spacing", "miniprogram-home", "h5-parity"]
+  }
+}

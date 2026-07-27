@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0097",
+  "title": "Radio 原生 borderless 没有可移除的 Surface",
+  "scope": "component",
+  "components": ["radio", "radio-group", "h5-preview"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Radio 的 borderless 和全局边框开关必须在小程序与 H5 都有真实视觉含义，同时保持盒模型、选中边界和布局稳定。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计重写后的 radio.wxss，根节点没有背景、边框或内距，borderless 只把没有声明的子节点 border-color 设为透明。",
+    "H5 Radio 默认存在真实 Surface，切换 borderless 会移除背景、边框和阴影，因此两端视觉合同不一致。",
+    "全局边框开关验收要求透明化中性边界但不改变宽度。"
+  ],
+  "expected": "默认 Radio 使用 PUI 中性 Surface、边框、语义内距和圆角；borderless 只移除中性视觉并保持可用命中区，选中和焦点语义继续存在。",
+  "actual": "原生 borderless 是无效果开关，H5 却会明显改变 Surface，文档和真实 WXSS 不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授权 agent 对后续共有组件自主连续验收，不再逐组件等待确认。"},
+    {"kind": "file", "ref": "radio/radio.wxss", "note": "根现与 Checkbox 同源使用背景、2rpx边框、medium圆角、64rpx最小高度和语义内距；borderless 透明化背景边界并移除左右内距。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 使用相同默认 Surface/border/radius，borderless 和全局边框开关不改变根宽度。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/radio", "note": "390px 深色下阴影、blur(18px)、9px大圆角均生效；关闭全局边框时border透明且根宽度保持282px。"},
+    {"kind": "test", "ref": "scripts/test-radio.js", "note": "专项锁定 borderless class、原生/H5样式入口和固定动效。"}
+  ],
+  "rootCause": "新增 borderless Prop 时只写了状态 class，没有同时建立默认可见 Surface，导致开关只有名字没有视觉对象。",
+  "decision": {
+    "outcome": "原生与 H5 都采用默认中性 Surface；borderless 移除背景、边界和附加视觉，checked 非 borderless 保留语义边界，尺寸与布局不变。",
+    "rationale": "Boolean 外观 Prop 必须能在计算样式中验证，且两端应共享同一默认与关闭语义。",
+    "alternativesRejected": [
+      "删除 borderless 会失去 Group 父子覆盖和 TDesign 对照能力。",
+      "只在 H5 保留 Surface 会继续造成预览与安装端不一致。",
+      "关闭边框时改变 width 或 display 会破坏390px布局稳定性。"
+    ]
+  },
+  "impact": {
+    "files": ["radio/radio.wxss", "preview/styles.css", "docs/components/RADIO.md", "scripts/test-radio.js"],
+    "dependencies": ["PUI surface tokens", "global appearance preferences", "RadioGroup borderless inheritance"]
+  },
+  "verification": {
+    "tests": ["scripts/test-radio.js", "scripts/test-design-contracts.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "light/dark 下默认 Surface、文字和边界可读。",
+      "阴影、毛玻璃和大圆角分别真实改变 box-shadow、backdrop-filter 和 radius。",
+      "全局 border off 时边框透明、border-width仍为1px、根宽度保持282px。"
+    ],
+    "deviceRisks": ["微信真机的毛玻璃支持、阴影裁切、rpx边界抗锯齿和大圆角映射仍需目标基础库复核。"]
+  },
+  "ai": {
+    "summary": "Radio borderless 必须移除真实默认 Surface，不能成为只加 class 的无效果开关。",
+    "rules": [
+      "新增外观 Boolean 前必须先确认默认态存在可切换的计算样式。",
+      "borderless 与全局 border off 只能透明化中性视觉，不得改变盒模型。",
+      "外观验收必须读取组件计算样式和几何，不能只读 data 属性。"
+    ],
+    "tags": ["radio", "borderless", "surface", "parity", "appearance"]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0267",
+  "title": "Indexes H5 滚到底部时短尾分组不会成为活动项",
+  "scope": "component",
+  "components": ["indexes", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Indexes 的滚动联动必须准确，最后一组内容较短时滚到底部也要明确显示最后一个索引。",
+  "environment": {
+    "surfaces": ["h5-preview", "native-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开第 18 号 Indexes 基础用法。",
+    "主示例最后一组从 offsetTop=627px 开始，内部滚动区 clientHeight=320px、scrollHeight=717px，最大 scrollTop 只有397px。",
+    "旧 H5 只以 `group.offsetTop <= scrollTop + 1` 计算活动组，因此滚到底仍只能命中 B，无法命中最后的“其他”。",
+    "原生 `indexes.js` 已在滚动底边显式激活最后一个分组，H5 与原生不一致。"
+  ],
+  "expected": "手动滚动达到容器底部边界时，无论最后一组能否贴住顶部，都将最后一个真实分组设为活动项并只发布 change(source='scroll')。",
+  "actual": "H5 缺少原生的短尾底边判断，仅按分组顶部与 scrollTop 比较，最后一组永远无法通过该条件。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "indexes/indexes.js",
+      "note": "原生 onScroll 在 scrollTop + viewportHeight >= scrollHeight - 2 时固定激活最后分组。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/navigation/indexes",
+      "note": "主示例 scrollHeight=717px、clientHeight=320px、max=397px，而最后分组 offsetTop=627px，旧 offsetTop 算法无法命中。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 scroll handler 现先判断底边，命中时选择 groupMarkers.at(-1)，否则沿用正常顶部阈值。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-indexes.js",
+      "note": "专项断言锁定与原生一致的两像素短尾边界。"
+    }
+  ],
+  "rootCause": "H5 运行时早期只复制了常规分组顶部阈值，没有同步原生 onScroll 为短尾内容提供的容器底部特判。",
+  "decision": {
+    "outcome": "在 H5 scroll handler 中先计算 `scrollTop + clientHeight >= scrollHeight - 2`，到达底部时直接采用最后一个真实 marker。",
+    "rationale": "两像素容差和原生完全一致，不增加新 API，也不会影响中间分组、程序化滚动抑制或严格 index 身份。",
+    "alternativesRejected": [
+      "给最后一组增加虚假底部填充会改变内容几何并制造无意义空白。",
+      "要求最后一组必须贴顶在短列表中不可实现。",
+      "点击最后索引能定位不代表手动滚动联动已经正确。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-indexes.js", "docs/components/INDEXES.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["Indexes scroll runtime", "controlled current write-back"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["2026-07-23 node --check preview/app.js 与 node scripts/test-indexes.js：通过", "2026-07-23 npm run site:build 与 npm run check：通过", "2026-07-23 微信 CLI build-npm：IDE server 已启动，touristappid 不存在，code 10；未生成或伪造 miniprogram_npm"],
+    "browser": [
+      "主示例实测 clientHeight=320px、scrollHeight=717px、最大 scrollTop=397px。",
+      "390px 点击最后索引后 current=\"#\"、active=#、scrollTop=max=397px，500ms 程序化定位完成态保持正确。",
+      "短尾手动滚动判断与原生使用同一 `-2px` 边界；程序化滚动期间继续由 indexesAnimating 抑制中间帧。"
+    ],
+    "deviceRisks": [
+      "微信真机仍需复核 scroll-view 惯性、scrollHeight detail、底边回弹和 touchmove 与 scroll 事件交错。"
+    ]
+  },
+  "ai": {
+    "summary": "索引列表的活动组不能只按分组顶部判断；短尾内容滚到底时必须显式选中最后分组。",
+    "rules": [
+      "审计索引滚动时同时比较最后分组 offsetTop 与真实 maxScrollTop。",
+      "最后分组无法贴顶时使用容器底边判断，不得塞空白占位伪造可滚距离。",
+      "H5 镜像必须逐项同步原生 scroll 边界，而不是只复制常规路径。",
+      "程序化滚动和手动滚动的事件抑制仍需保持独立。"
+    ],
+    "tags": ["indexes", "scroll", "short-tail", "h5-parity"]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0113",
+  "title": "Slider 公开合同混入重复事件、实例方法、Slot 与私有动效",
+  "scope": "component",
+  "components": ["slider", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Slider 应参考成熟小程序组件的公开合同保持克制，基础 WXML 只表达基础选择任务，完整事件只进入 API。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "props-panel", "wxml-copy"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Slider 元数据、源码、API、示例与专项测试，确认同时公开 changing/input/change、4 个实例方法、默认 Slot 和 duration/easing。",
+    "旧 input 与 change 在同一次松手提交中重复表达数值变化，消费者需要自行去重。",
+    "默认 Slot 和方法栏没有对应原子 Slider 的独立用户任务，私有动效参数还会扩大公共配置面。"
+  ],
+  "expected": "Slider 只公开微信横向单滑块所需的 16 Props、changing/change 两个事件，不发布 Slot 或实例方法，固定 500ms 并以 reduceMotion 压缩为 1ms。",
+  "actual": "旧 18 Props、3 Events、1 Slot、4 Methods 把诊断、重复提交和展示组合暴露成了长期 API。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项对照 TDesign 收敛 API，并授权完整证据后自主连续验收。"},
+    {"kind": "file", "ref": "slider/slider.js", "note": "最终源码固定 16 Props，仅发布 changing/change，删除实例方法与可配置动效。"},
+    {"kind": "file", "ref": "slider/slider.wxml", "note": "保留微信原生 slider、表单字段、边界与辅助值，删除默认 Slot。"},
+    {"kind": "file", "ref": "docs/components/SLIDER.md", "note": "记录微信原生单拇指边界、受控规则、事件与 TDesign 取舍。"},
+    {"kind": "test", "ref": "scripts/test-slider.js", "note": "专项合同锁定 16/2/0/0、严格数值、事件顺序、WXML、H5、文档与产物一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=slider-final#/components/slider", "note": "390px 下真实输入、受控回写、退控保值、边界、动效、API 全文和六项外观均已验证。"}
+  ],
+  "rootCause": "旧 Slider 在原生整改时把事件诊断、命令式调试和演示组合一起提升为公共合同，没有区分原子数值选择职责与消费者组合职责。",
+  "decision": {
+    "outcome": "对照 TDesign Mini Program 1.15.3 收敛为 16 Props、2 Events、0 Slots、0 Methods；删除 input、duration/easing、默认 Slot 和 setValue/reset/getValue/getState。",
+    "rationale": "微信原生 slider 已提供真实横向单值手势和表单能力；声明式 value/defaultValue 足以完成受控与非受控写入，单位和业务状态应由消费者相邻组合。",
+    "alternativesRejected": [
+      "保留 input/change 双提交会让消费者承担无价值的去重。",
+      "保留实例方法会绕开 value/defaultValue 的单一状态路径。",
+      "保留默认 Slot 会让任意内容进入原生轨道结构并混淆语义。",
+      "仅在 H5 增加 range、vertical、marks 或 capsule 会伪造微信端能力。"
+    ]
+  },
+  "impact": {
+    "files": ["slider/slider.js", "slider/slider.wxml", "slider/slider.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/SLIDER.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-slider.js", "feedback/records/pui-fb-0113-slider-api-contract-overexposure.json"],
+    "dependencies": ["wechat native slider", "makeUsageCode"]
+  },
+  "verification": {
+    "tests": ["scripts/test-slider.js", "scripts/test-design-contracts.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["node scripts/test-slider.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "390x844 下 value=0 保持受控，实际输入 40 后父级 Props 回写，value=null 后退控继续显示 40；空输入保持上次有效值。",
+      "step=10 与 -50–50 负数区间的真实 range input 分别更新到 40 和 -15，readonly/disabled 均由原生 disabled 阻断。",
+      "min=-20、max=20、step=5、blockSize=12 全部作用于真实 input；正常轨道为 0.18s，reduceMotion 为 0.001s。",
+      "API 完整显示 16 Props 与 2 Events，单元格无 ellipsis、nowrap 或 hidden 裁切，基础 WXML 零 bind。"
+    ],
+    "deviceRisks": [
+      "微信原生 slider 的真机触摸采样、form 提交、blockSize/rpx、主题颜色、样式隔离、系统低动效和读屏仍需合法 AppID 复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Slider 只承担横向单值选择；声明式状态和 changing/change 是唯一写入合同。",
+    "rules": [
+      "基础 Slider WXML 不展示 bind 事件，事件全集只进入 API Events。",
+      "不得恢复重复 input、实例方法、默认 Slot 或私有 duration/easing。",
+      "H5 只能镜像微信已存在的横向单滑块能力，不得独自增加范围、纵向、刻度或胶囊主题。",
+      "数值归一化必须严格区分数字 0、Boolean、空字符串、null 与非有限数值。"
+    ],
+    "tags": ["slider", "tdesign", "api-contract", "controlled", "wechat-native"]
+  }
+}

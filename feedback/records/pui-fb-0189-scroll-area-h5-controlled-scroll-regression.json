@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0189",
+  "title": "ScrollArea H5 顶部和底部演示只改 Props 未改变真实滚动位置",
+  "scope": "component",
+  "components": ["scroll-area", "preview-site", "test-contract"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 预览必须对应真实 WXML/WXSS 能力；父级回写后必须真正改变滚动位置，不能只更新 Props 或提示文字。",
+  "environment": {
+    "surfaces": ["h5-preview", "native-source", "test-contract"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "访问 http://127.0.0.1:4179/#/components/scroll-area 的旧实现，读取真实滚动容器初始 scrollTop=0、scrollHeight=624、clientHeight=258。",
+    "点击旧概览的“底部”PUI Button，Props 被重绘为目标 scrollTop，但 240ms 后同一真实容器仍为 scrollTop=0，状态文字仍是“scroll 事件”。",
+    "根因是旧 H5 只有 applyScrollAreaPreviewPosition 定义，没有在 bindPreviewRuntime 的 ScrollArea 分支重新施加它；整段 Stage 重绘后保留了新 Props 却丢失实际滚动。"
+  ],
+  "expected": "若组件承诺受控定位，父级更新后必须实际滚动；无法稳定镜像的平台能力必须删除而非用按钮、状态文字或 Props 回显伪造成功。",
+  "actual": "旧顶部/底部演示显示可用的 PUI Button，但点击后没有改变浏览器滚动容器，形成 fake success。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户明确禁止 fake success、假事件、静态占位和只更新提示文字的伪交互，并授权本 Goal 后续组件自主连续验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/scroll-area", "note": "2026-07-20 旧版真实点击“底部”前后：scrollTop 0→0，scrollHeight=624，clientHeight=258，复现了未施加受控位置。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "修复后以 bindScrollAreaPreviewRuntime 在同一真实 overflow 容器内查找同名 anchor，并写入实际 scrollTop；旧顶部/底部动作、事件状态和 500ms 伪动画已删除。"},
+    {"kind": "test", "ref": "scripts/test-scroll-area.js", "note": "禁止旧 fake action/animation，并要求 H5 真实 anchor 定位函数、PUI Cell slot 内容和运行时绑定存在。"}
+  ],
+  "rootCause": "旧 H5 将 scrollTop 视为 Props 展示值，缺少运行时挂载路径；演示按钮和状态文本掩盖了 DOM 没有实际滚动这一事实。",
+  "decision": {
+    "outcome": "删除不可靠的 scrollTop/顶部/底部模拟路径；H5 与原生共同收敛到 scrollIntoView，父级更新目标 id 后真实定位到 Slot anchor。",
+    "rationale": "TDesign 的实际薄封装只提供 scrollIntoView。收敛后 H5 能与 WXML 一起验证同一个用户意图，不再维护浏览器私有的受控动画和假边界事件。",
+    "alternativesRejected": [
+      "只在点击处理器里手写 scrollTop，继续保留与原生合同不一致的坐标、事件和动画 API。",
+      "保留状态文字并把 Props 回显称为受控滚动成功。",
+      "用 CSS smooth scroll 或 display 切换模拟定位，绕过真实元素位置。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-scroll-area.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0189-scroll-area-h5-controlled-scroll-regression.json"],
+    "dependencies": ["PreviewDevice", "PUI Cell mirror", "scrollIntoView Slot anchor"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-scroll-area.js", "npm run site:build", "PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js", "npm run feedback:check", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["修复后在真实 Props 面板选择 scroll-area-build，H5 overflow 容器 scrollTop 实测为 124px，等于 max(0, target.offsetTop 152px - area.offsetTop 28px)；不再存在按钮、状态文字或 CSS 动画伪造成功。", "390x844 对滚动区注入真实 mouseWheel 输入，scrollTop 从 0 变为 120px（最大 150px）；选择 scroll-area-publish 时实际 scrollTop=150px，输入 invalid 高度与空目标后实际回退 height=160px、scrollTop=0，document/body 均为 375px。", "实点切换暗色、边框关闭、阴影、毛玻璃、大圆角与渐变后 Slot Cell 读取半透明深色/blur/阴影/14px 圆角，透明 ScrollArea 根未被错误变为第二张 Surface；随后恢复标准浅色。"],
+    "deviceRisks": ["合法 AppID 真机仍需确认 scroll-into-view 对动态 Slot 节点、重复 id、rpx 高度和 enhanced 行为的实际平台表现。"]
+  },
+  "ai": {
+    "summary": "预览中 Props 回显不等于真实交互；必须读取实际 DOM 位置或事件结果验证滚动已经发生。",
+    "rules": [
+      "任何滚动、拖拽、打开或关闭演示都要在浏览器中读真实运行态，不能只确认 Props 或状态文案改变。",
+      "当 H5 无法稳定镜像已扩张的平台 API 时，应收敛到原生与参考组件共有、可实际执行的用户意图。",
+      "删除 fake action 后，概览仍应保留真实组件本体和可用的 Props 回写路径，不能留空容器。"
+    ],
+    "tags": ["scroll-area", "h5-parity", "controlled", "no-fake-success", "scroll-into-view"]
+  }
+}

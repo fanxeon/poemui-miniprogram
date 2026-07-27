@@ -1,0 +1,88 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}} {{customStyle}}"
+  role="list"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+  aria-readonly="{{readonly}}"
+  aria-busy="{{loading}}"
+>
+  <view wx:if="{{customHeader}}" class="pui-virtual-list__header"><slot name="header"></slot></view>
+
+  <scroll-view
+    class="pui-virtual-list__viewport"
+    style="{{listStyle}}"
+    scroll-y="{{true}}"
+    scroll-top="{{appliedScrollTop}}"
+    scroll-with-animation="{{scrollAnimation}}"
+    upper-threshold="{{upperThreshold}}"
+    lower-threshold="{{lowerThreshold}}"
+    show-scrollbar="{{showScrollbar}}"
+    enhanced="{{true}}"
+    bindscroll="onScroll"
+    bindscrolltoupper="onScrollToUpper"
+    bindscrolltolower="onScrollToLower"
+  >
+    <view wx:if="{{isError}}" class="pui-virtual-list__state">
+      <pui-empty description="{{displayErrorText}}" icon="error-circle" aria-label="{{displayErrorText}}" reduce-motion="{{reduceMotion}}" />
+      <pui-button theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled || loading}}" bind:click="onRetry">{{displayRetryText}}</pui-button>
+    </view>
+    <view wx:elif="{{isLoading}}" class="pui-virtual-list__state">
+      <pui-loading text="{{displayLoadingText}}" size="medium" duration="{{duration}}" easing="{{easing}}" reduce-motion="{{reduceMotion}}" />
+    </view>
+    <view wx:elif="{{isEmpty}}" class="pui-virtual-list__state">
+      <slot wx:if="{{customEmpty}}" name="empty"></slot>
+      <pui-empty wx:else description="{{displayEmptyText}}" icon="inbox" aria-label="{{displayEmptyText}}" reduce-motion="{{reduceMotion}}" />
+    </view>
+    <block wx:else>
+      <view class="pui-virtual-list__spacer" style="{{topSpacerStyle}}"></view>
+      <view
+        wx:for="{{renderedItems}}"
+        wx:key="index"
+        class="pui-virtual-list__item {{item.selected ? 'pui-virtual-list__item--selected' : ''}} {{activeIndex === item.index ? 'pui-virtual-list__item--active' : ''}} {{item.disabled || item.loading ? 'pui-virtual-list__item--disabled' : ''}}"
+        style="{{item.itemStyle}}"
+        data-index="{{item.index}}"
+        hover-class="{{clickable && !disabled && !item.disabled && !item.loading ? 'pui-virtual-list__item--hover' : 'none'}}"
+        hover-stay-time="80"
+        role="listitem"
+        aria-label="{{item.label}}"
+        aria-selected="{{item.selected}}"
+        aria-disabled="{{disabled || item.disabled || item.loading}}"
+        bindtap="onItemTap"
+      >
+        <view class="pui-virtual-list__item-body">
+          <virtual-item
+            wx:if="{{customItem}}"
+            item="{{item.raw}}"
+            index="{{item.index}}"
+            item-key="{{item.key}}"
+            selected="{{item.selected}}"
+            title="{{item.label}}"
+            description="{{showDescription ? item.description : ''}}"
+            left-icon="{{showItemIcon ? item.icon : ''}}"
+            clickable="{{false}}"
+            bordered="{{false}}"
+          />
+          <pui-cell
+            wx:else
+            title="{{item.label}}"
+            description="{{showDescription ? item.description : ''}}"
+            left-icon="{{showItemIcon ? item.icon : ''}}"
+            clickable="{{false}}"
+            bordered="{{false}}"
+          />
+        </view>
+        <view class="pui-virtual-list__accessory" aria-hidden="true">
+          <pui-loading wx:if="{{item.loading}}" size="small" duration="{{duration}}" easing="{{easing}}" reduce-motion="{{reduceMotion}}" />
+          <pui-badge wx:elif="{{showItemBadge && item.hasBadge}}" count="{{item.badge}}" dot="{{item.badgeDot}}" show-zero size="small" />
+          <text wx:if="{{showValue && item.valueText}}" class="pui-virtual-list__value">{{item.valueText}}</text>
+          <text wx:if="{{showIndex}}" class="pui-virtual-list__index">{{item.index + 1}}</text>
+          <pui-icon wx:if="{{selectable && item.selected && activeIcon}}" class="pui-virtual-list__selected-icon" name="{{activeIcon}}" size="28" color-scheme="{{colorScheme}}" />
+        </view>
+      </view>
+      <view class="pui-virtual-list__spacer" style="{{bottomSpacerStyle}}"></view>
+    </block>
+  </scroll-view>
+
+  <view wx:if="{{customFooter}}" class="pui-virtual-list__footer"><slot name="footer"></slot></view>
+</view>

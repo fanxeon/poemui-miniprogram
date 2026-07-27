@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0285",
+  "title": "Tabbar 徽标被共享 Button 溢出裁切",
+  "scope": "component",
+  "components": ["tabbar", "button", "badge", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Tabbar 的图标、文字和徽标应完整可见，不能因内部 padding 或层级错误被截断。",
+  "environment": {
+    "surfaces": ["h5-preview", "miniprogram-source", "component-preview"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Tabbar 基础用法，观察带数字徽标或红点的图标项。",
+    "修复前共享 PUI Button 及其 content 的 overflow:hidden 会裁掉 Tabbar 内以定位方式外扩的 PUI Badge。"
+  ],
+  "expected": "Tabbar 保持既有 space-xs 内距和 PUI Button/Icon/Badge 组合；数字、0 值和 dot 均完整显示，不被裁切。",
+  "actual": "视觉上徽标贴近图标上缘时会被截断，容易被误判为需要增大 padding 或调整 Badge 层级。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 当前任务截图", "note": "用户指出图标区域疑似因 padding 或 Badge 层级而持续发生截断。"},
+    {"kind": "file", "ref": "button/button.wxss", "note": "共享 Button 与 pui-button__content 默认都设为 overflow:hidden。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxss", "note": "Tabbar 现只在自身 Button 与 content 上恢复 overflow:visible，保留现有 PUI Badge 结构。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 在共享 pui-button-preview 基线之后恢复普通 Tabbar 根、条目和内容容器的可见溢出；round 胶囊保留自身裁切。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "专项测试锁定原生与 H5 的 Badge 防裁切选择器。"}
+  ],
+  "rootCause": "Tabbar 合法地把 PUI Badge 放在 PUI Button default Slot 的图标锚点内，但共享 Button 的通用文本裁切规则没有为该定位 Badge 提供组件级溢出例外；H5 的普通 Tabbar 根节点也错误地 overflow:hidden，形成第二道裁切边界。",
+  "decision": {
+    "outcome": "仅在普通 Tabbar 根、条目和其内部 Button content 恢复 overflow:visible；round 胶囊保留边界裁切，Badge 继续使用原有 PUI Badge helper 和 WXML 组件树。",
+    "rationale": "问题是裁切边界而非内距或层级；组件级例外可以完整保留 Badge 定位，同时不让普通 Button 的长文案失去截断保护。",
+    "alternativesRejected": [
+      "删除或增大 Tabbar padding：前者只会让图文贴边、后者会挤压节奏，两者都不能解除 overflow 裁切。",
+      "缩小或手写 Badge：会破坏 badge=0、dot、上限和跨端组合合同。",
+      "全局移除 Button overflow:hidden：会破坏其他 Button 的安全文本裁切。"
+    ]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.wxss", "preview/styles.css", "docs/components/TABBAR.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-tabbar.js", "feedback/records/pui-fb-0285-tabbar-badge-overflow-clipping.json"],
+    "dependencies": ["PUI Button", "PUI Badge", "PUI Icon", "Tabbar default Slot"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["2026-07-23：iPhone 15 / 393px H5 实测普通 Tabbar 根、条目与 Button content 均为 overflow:visible；数字徽标完整显示，item 高度 56px，document 无横向溢出。badge=0/dot 的结构与同一选择器受专项测试覆盖。"],
+    "deviceRisks": ["微信真机仍需复核 custom component 样式隔离下的 overflow 覆盖、徽标偏移和 safe-area。"]
+  },
+  "ai": {
+    "summary": "Tabbar 徽标裁切优先检查共享 Button 的 overflow 边界；不要以增大 padding 或重画 Badge 代替组件级溢出例外。",
+    "rules": [
+      "Tabbar 内 PUI Badge 必须继续复用 badgeSample 和 pui-badge，不得降级成私有标记。",
+      "只有普通 Tabbar 根、条目与其 content 可覆盖共享 Button 的 overflow:hidden；round 胶囊和普通 Button 保持各自裁切合同。",
+      "修复后必须验证数字、0、dot 三类徽标以及图标和标签均完整可见。"
+    ],
+    "tags": ["tabbar", "badge", "overflow", "clipping", "button", "h5-parity"]
+  }
+}

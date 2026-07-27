@@ -1,0 +1,33 @@
+@import "../common/style/utilities.wxss";
+
+.pui-radio{--pui-radio-duration:500ms;display:inline-flex;align-items:flex-start;box-sizing:border-box;gap:var(--pui-space-xs);min-width:0;max-width:100%;min-height:64rpx;padding:var(--pui-space-sm) var(--pui-space-normal);color:var(--pui-text-primary);font-family:var(--pui-font-family-sans);background:var(--pui-bg-container);border:2rpx solid var(--pui-border-color);border-radius:var(--pui-radius-medium);transition:color var(--pui-radio-duration) var(--pui-ease-standard),background-color var(--pui-radio-duration) var(--pui-ease-standard),border-color var(--pui-radio-duration) var(--pui-ease-standard),opacity var(--pui-radio-duration) var(--pui-ease-standard)}
+.pui-radio--block{display:flex;width:100%}
+.pui-radio--right{flex-direction:row-reverse}
+.pui-radio--borderless{padding-right:0;padding-left:0;background:transparent;border-color:transparent}
+.pui-radio--checked:not(.pui-radio--borderless){border-color:var(--pui-color-brand-4)}
+.pui-radio__target{display:flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 48rpx;width:48rpx;min-height:48rpx}
+.pui-radio__body{display:flex;flex:1;flex-direction:column;justify-content:center;min-width:0;min-height:48rpx}
+.pui-radio--right .pui-radio__body{text-align:right}
+.pui-radio--content-disabled .pui-radio__body{opacity:.56}
+
+.pui-radio__mark{position:relative;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:36rpx;height:36rpx;color:var(--pui-color-brand);background:var(--pui-bg-container);border:2rpx solid var(--pui-control-outline-color);border-radius:var(--pui-radius-round);transform:scale(1);transition:color var(--pui-radio-duration) var(--pui-ease-standard),background-color var(--pui-radio-duration) var(--pui-ease-standard),border-color var(--pui-radio-duration) var(--pui-ease-standard),box-shadow var(--pui-radio-duration) var(--pui-ease-standard),opacity var(--pui-radio-duration) var(--pui-ease-standard),transform var(--pui-radio-duration) var(--pui-ease-standard)}
+.pui-radio__dot{width:18rpx;height:18rpx;background:var(--pui-color-brand);border-radius:var(--pui-radius-round);opacity:0;transform:scale(.25);transition:opacity var(--pui-radio-duration) var(--pui-ease-standard),transform var(--pui-radio-duration) var(--pui-ease-standard)}
+.pui-radio--checked .pui-radio__mark{border-color:var(--pui-color-brand);box-shadow:0 0 0 4rpx var(--pui-color-brand-focus)}
+.pui-radio--checked .pui-radio__dot{opacity:1;transform:scale(1)}
+.pui-radio--icon-dot .pui-radio__mark{background:var(--pui-color-brand)}
+.pui-radio--icon-dot .pui-radio__dot{width:100%;height:100%;background:var(--pui-bg-container)}
+.pui-radio--icon-line .pui-radio__mark{border-color:transparent;background:transparent;box-shadow:none;opacity:0;transform:scale(.4)}
+.pui-radio--icon-line.pui-radio--checked .pui-radio__mark{opacity:1;transform:scale(1)}
+.pui-radio__indicator{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.25);transition:opacity var(--pui-radio-duration) var(--pui-ease-standard),transform var(--pui-radio-duration) var(--pui-ease-standard)}
+.pui-radio__indicator--unchecked{opacity:1;transform:scale(1)}
+.pui-radio--checked .pui-radio__indicator--unchecked{opacity:0;transform:scale(.25)}
+.pui-radio--checked .pui-radio__indicator--checked{opacity:1;transform:scale(1)}
+.pui-radio__slot-icon{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+
+.pui-radio__label,.pui-radio__content{display:-webkit-box;min-width:0;overflow:hidden;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.pui-radio__label{font-size:var(--pui-font-size-medium);font-weight:var(--pui-font-weight-semibold);line-height:var(--pui-line-height-medium)}
+.pui-radio__content{margin-top:var(--pui-space-xxs);color:var(--pui-text-secondary);font-size:var(--pui-font-size-small);line-height:var(--pui-line-height-small)}
+.pui-radio__slot{display:flex;flex-wrap:wrap;gap:var(--pui-space-xs);align-items:center;min-width:0}
+.pui-radio--disabled{opacity:.45}
+.pui-radio--readonly{opacity:.72}
+.pui-radio--reduced-motion .pui-radio__mark,.pui-radio--reduced-motion .pui-radio__dot,.pui-radio--reduced-motion .pui-radio__indicator,.pui-radio--reduced-motion{transition-duration:1ms}

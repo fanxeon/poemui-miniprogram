@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0188",
+  "title": "ScrollArea 将原生滚动参数、事件和方法误扩张为组件合同",
+  "scope": "component",
+  "components": ["scroll-area", "preview-site", "documentation", "example", "miniprogram-dist"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-22",
+  "userGoal": "以联网 TDesign 对照逐组件收敛可真实交付的 ScrollArea；基础用法保持最小，不能把原生平台细节和演示操作伪装成 PoemUI 组件能力。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example", "miniprogram-dist"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "PreviewDevice 393px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 ScrollArea 的 JS/JSON/WXML/WXSS、metadata、H5、API、示例与安装产物：组件对原生 scroll-view 额外公开 height、padding、bordered、横纵滚动、滚动条、坐标、动画、阈值、disabled、低动效共 15 Props，另有 3 个事件和 2 个方法。",
+    "联网核对 https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/scroll-view、https://github.com/Tencent/tdesign-miniprogram/blob/develop/packages/components/scroll-view/scroll-view.wxml，并读取固定 tdesign-miniprogram@1.15.3 的 miniprogram_dist/scroll-view/{scroll-view.d.ts,scroll-view.js,scroll-view.wxml,scroll-view.wxss,scroll-view.json}。固定包只声明 scrollIntoView，WXML 固定 scroll-y、enhanced 与 show-scrollbar=false，未发布事件或方法。",
+    "旧基础 WXML、API 与示例将坐标、阈值和 bindscroll 作为常规用法，掩盖了组件实际上不需要承担这些平台级能力。"
+  ],
+  "expected": "ScrollArea 只保留独立用户意图的固定高度、目标 id 定位与可访问名称；默认 Slot 承担内容。原生坐标、阈值、横向滚动、事件与手势细节不被重新包装。",
+  "actual": "旧合同把薄 ScrollView 扩张为第二套 scroll-view API，使基础用法、H5 预览和文档都承诺大量不必要且难以保持跨端一致的能力。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户要求联网逐项对照、基础 WXML 只保留基础，并授权后续组件在完整证据下自主连续验收。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/scroll-view", "note": "2026-07-20 在线核对官方 ScrollView 目录与源码文件。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/blob/develop/packages/components/scroll-view/scroll-view.wxml", "note": "官方 WXML 固定为原生纵向 enhanced scroll-view，隐藏滚动条并直接投影 Slot。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.js", "note": "当前公开 height、scrollIntoView、gradientOverlay、gradientOverlayColor、ariaLabel；无 triggerEvent 或公开滚动方法。"},
+    {"kind": "test", "ref": "scripts/test-scroll-area.js", "note": "锁定 5 Props、默认 Slot、0 Events/Methods、顶底无交互遮罩、WXML、H5、文档、示例和 dist 一致性。"}
+  ],
+  "rootCause": "历史生成壳把微信 scroll-view 的平台属性和演示控制都上升为 ScrollArea 公共 API，未以 TDesign 固定发布包和真实组件职责重新划分边界。",
+  "decision": {
+    "outcome": "收敛为 height、scrollIntoView、gradientOverlay、gradientOverlayColor、ariaLabel 五个 Props，一个 default Slot，0 Events，0 Methods；固定原生 scroll-y/enhanced/隐藏滚动条。gradientOverlay 默认开启，只增加两个与真实视口同级、无交互的固定阅读过渡层；调用方继续直接组合内容与目标 id。",
+    "rationale": "height 保证封装作为可见滚动区域可直接使用；scrollIntoView 是 TDesign 真实公开的定位能力；ariaLabel 是 PoemUI 可实际执行的语义补充。用户要求的 overlay 是有边界的 PoemUI 视觉能力，不复刻平台参数、事件或方法；其余能力由原生 scroll-view 或调用方负责，避免第二套无法长期维护的平台 API。",
+    "alternativesRejected": [
+      "保留 15 个 Props、3 个事件和 2 个方法，仅修补 H5 演示。",
+      "为追求完整度继续公开横向滚动、坐标、阈值、disabled 与滚动动画。",
+      "删除 height 并让所有用户依赖 custom-style，牺牲作为独立滚动容器的最小可用性。"
+    ]
+  },
+  "impact": {
+    "files": ["scroll-area/scroll-area.js", "scroll-area/scroll-area.wxml", "scroll-area/scroll-area.wxss", "common/style/theme.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/SCROLL-AREA.md", "scripts/test-scroll-area.js"],
+    "dependencies": ["原生 scroll-view", "PUI Cell Slot 组合", "PreviewDevice", "TDesign ScrollView"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project /Users/fanx/Documents/poemUI 小程序组件库/_example（touristappid 权限失败时记录 code 10，绝不手工生成 miniprogram_npm）"],
+    "browser": ["2026-07-20 在 http://127.0.0.1:4179/#/components/scroll-area 实点属性 Select：scrollIntoView=scroll-area-build 后，真实 overflow 容器由 scrollTop=0 定位至 124px（目标 offsetTop=152px、容器 offsetTop=28px）；390x844 选择 scroll-area-publish 后按最大滚动范围钳制为 150px。", "390x844 对滚动区发出真实浏览器 mouseWheel 输入后，scrollTop 从 0 变为 120px（最大 150px），证明默认 Slot 容器确实可滚动；document/body 宽度仍为 375px。", "390x844 实点 height 输入 invalid 与空目标：H5 回退为 160px、scrollTop=0；API 为 3 Props + default Slot，未出现 Events/Methods，24 个 API 单元格无 ellipsis、nowrap 或高度裁切。", "实点切换 light/dark、border、shadow、frostedGlass、largeRadius、gradient：暗色果味组合下 Slot 内 PUI Cell 为深色半透明 Surface、blur(18px) saturate(1.35)、阴影与 14px 圆角，ScrollArea 根始终 transparent/0px/none；随后恢复标准浅色组合。", "2026-07-22：公开合同在既有最小 API 上新增两个受限视觉 Props 后，H5 属性面板实显 5 Props。实际关闭 gradientOverlay 后两层固定遮罩完全移除而视口保持 564/1116px；#fef3c7 自定义色与深色回退 rgb(24,24,27) 均在真实顶/底 sibling layer 生效，滚轮和 scrollIntoView 仍分别得到 scrollTop=280 和 248。"],
+    "deviceRisks": ["合法 AppID 真机仍需确认 enhanced scroll-view、rpx 高度、目标 id 定位、Slot 投影、样式隔离和读屏。", "微信 CLI 若 touristappid 不存在会返回 code 10 且不会生成 miniprogram_npm；H5、dist 或 tarball 一致不替代该产物。"]
+  },
+  "ai": {
+    "summary": "ScrollArea 是原生 ScrollView 薄封装；平台滚动细节不能因演示方便被扩张为组件 API，固定阅读遮罩必须保持为最小、无交互的组件视觉层。",
+    "rules": [
+      "先联网核对 TDesign 官方页、官方仓库和固定 npm 包；固定包源码是可复现 API 事实。",
+      "基础 WXML 只展示 default Slot 和真实内容，零 bind:*、零默认 Props、零诊断动作。",
+      "没有公开 Events 或 Methods 时，API 必须明确显示为零，不能套用原生 scroll-view 的事件或实例方法。",
+      "需要滚动坐标、阈值、横向滚动或手势事件时，直接使用微信 scroll-view，而不是要求 ScrollArea 继续扩张。",
+      "固定顶底遮罩只能使用主题安全色、透明 sibling layer、pointer-events:none 与 aria-hidden；不能创建第二个滚动上下文或 Surface。"
+    ],
+    "tags": ["scroll-area", "scroll-view", "tdesign", "api-contract", "slot", "minimal-api"]
+  }
+}

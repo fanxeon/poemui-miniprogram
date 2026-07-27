@@ -1,0 +1,99 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0029",
+  "title": "页面 Tabs 动画不稳定且 PROP 文案过度工程化",
+  "scope": "global",
+  "components": ["preview-site", "tabs"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "标准组件页 Tabs 使用稳定、克制且不易错位的切换动画，并把面向开发实现的 PROP 标签改成用户可理解的属性。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-header"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件页，在概览、API、PROP 之间连续切换。",
+    "旧选中 Surface 同时过渡 left 和 width，位置由 JavaScript 百分比写入；内容重排或断点变化时容易产生追赶感和几何漂移。",
+    "第三个标签直接显示 PROP，上下文 Inspector 入口也显示完整 PROP，用户必须理解工程术语。"
+  ],
+  "expected": "三个 Tabs 轨道和按钮几何始终固定，只有一个选中 Surface 使用 PUI 标准时长与缓动做 transform 位移；低动效为 1ms。第三个标签及相关入口统一显示属性，内部 prop 状态不暴露给用户。",
+  "actual": "旧实现通过 indicator.style.left/width 更新选中块并同时动画两项几何属性；第三个标签和相关可访问文案显示 PROP。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确认为现有 Tabs 动画较差，要求采用不容易出错的方案，并把 PROP 改名为属性。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "页面分类继续保持 overview/api/prop 内部状态，但用户标签改为概览/API/属性；控制根只同步 data-active-view，不再写入 indicator left/width。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-compact-header.js",
+      "note": "专项合同锁定三等分 Grid、transform-only 位移、PUI 动效 Token、属性文案以及禁止恢复 left/width 内联动画。"
+    }
+  ],
+  "rootCause": "首版为了复用通用 Tabs 指示器，运行时用百分比同时控制 left 和 width；页面一级 Tabs 实际固定为三项，却没有把固定轨道作为更强、更简单的几何合同。信息架构沿用了内部 prop 命名，也没有区分代码状态名与用户标签。",
+  "decision": {
+    "outcome": "页面 Tabs 固定使用 repeat(3, minmax(0, 1fr)) Grid；选中 Surface 宽度固定为三分之一，由 data-active-view 的 overview/api/prop 语义状态分别映射 translate3d(0/100%/200%)。过渡只包含 transform 与主题颜色，消费 --pui-duration-normal / --pui-ease-standard，现有低动效媒体查询继续压缩为 1ms。第三项及 Inspector 跳转统一显示属性，内部 state.view=prop 和 class 名保持兼容。",
+    "rationale": "轨道、按钮和选中块宽度都不随切换改变，浏览器只合成 transform，避免布局计算和双属性追赶；语义 data 状态比运行时测量更容易测试。保留内部 prop 标识避免无价值的路由迁移，用户层则使用自然中文。",
+    "alternativesRejected": [
+      "继续调 left/width 的持续时间仍保留双几何属性不同步和布局参与风险。",
+      "每次点击测量目标按钮再计算像素会引入 resize、字体和断点竞态。",
+      "给内容区增加位移或高度动画会放大页面跳动，并增加溢出与焦点风险。",
+      "把内部 prop 状态和所有 class 一并改名会扩大无用户价值的迁移范围。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-compact-header.js",
+      "scripts/test-design-contracts.js",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0013-component-page-tabs-information-architecture.json",
+      "feedback/records/pui-fb-0026-compact-component-header-tabs-active-state.json",
+      "feedback/records/pui-fb-0029-stable-page-tabs-animation-properties-label.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["tabs", "button"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-compact-header.js", "scripts/test-design-contracts.js", "scripts/test-layout-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "1265px 桌面真实页面显示概览/API/属性，Tabs 外框始终为 270×40px、坐标 963/69；三按钮轨道分别为 89.328/89.336/89.336px，选中 Surface 宽度固定 89.328px。",
+      "概览→API→属性切换时 data-active-view 依次为 overview/api/prop，aria-selected 同步；Indicator 只包含 transform/background-color/border-color 过渡，时长 0.18s、缓动 cubic-bezier(0.2,0,0,1)，位移矩阵分别为 0/89.328/178.656px，Tabs 外框未移动。",
+      "深色属性态的选中 Surface 为 rgb(250,250,250)，文字为 rgb(9,9,11)，几何仍为 270×40px；恢复浅色后状态正常。",
+      "390×844 覆盖下 Tabs 为 351×40px、坐标 12/475，三轨约 116.33px，属性选中块宽 116.328px、位移 232.656px；document client/scroll width 均为 375px，页面无横向溢出。",
+      "验收结束恢复概览与浅色，浏览器 warning/error 日志为空。"
+    ],
+    "deviceRisks": ["本次只修改 H5 官网页面级 Tabs 和用户文案，不改变小程序组件 API、WXML 或 WXSS。"]
+  },
+  "ai": {
+    "summary": "页面 Tabs 固定为概览/API/属性三等分轨道，选中块只用 transform 移动；prop 仅保留为内部状态名。",
+    "rules": [
+      "标准组件页用户可见 Tabs 固定为概览/API/属性，不得重新显示 PROP。",
+      "页面 Tabs 使用固定三等分 Grid，按钮和轨道几何不得随切换改变。",
+      "选中块只能通过 transform 在固定轨道间移动，禁止动画 left/width 或测量 DOM 尺寸。",
+      "Tabs 动效使用 --pui-duration-normal / --pui-ease-standard，系统低动效必须压缩为 1ms。",
+      "切换只更新 data-active-view、aria-selected、tabIndex 与内容，不得重建 Tabs DOM。"
+    ],
+    "tags": ["preview-site", "tabs", "animation", "transform", "properties", "label", "layout-stability", "reduced-motion", "390px"]
+  }
+}

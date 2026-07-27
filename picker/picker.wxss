@@ -1,0 +1,25 @@
+.pui-picker { display: block; color: var(--pui-text-primary); }
+.pui-picker--inline { overflow: hidden; background: var(--pui-bg-container); border: 2rpx solid var(--pui-border-color); border-radius: var(--pui-radius-xlarge); }
+.pui-picker--disabled { opacity: .56; }
+.pui-picker__surface { overflow: hidden; background: inherit; border-radius: inherit; }
+.pui-picker__header { display: grid; grid-template-columns: minmax(112rpx, auto) minmax(0, 1fr) minmax(112rpx, auto); align-items: center; gap: var(--pui-content-gap); min-height: 104rpx; padding: 0 var(--pui-space-step-8); border-bottom: 2rpx solid var(--pui-border-color); }
+.pui-picker__title { overflow: hidden; font-size: var(--pui-font-size-title-small); font-weight: var(--pui-font-weight-semibold); line-height: var(--pui-line-height-title-small); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.pui-picker__actions { display: grid; box-sizing: border-box; width: 100%; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--pui-content-gap); }
+.pui-picker__body { position: relative; display: grid; place-items: center; min-height: 320rpx; transition: opacity var(--pui-picker-duration) var(--pui-ease-standard); }
+.pui-picker__view { width: 100%; }
+.pui-picker__column { text-align: center; }
+.pui-picker__item { display: flex; align-items: center; justify-content: center; gap: var(--pui-tight-gap); box-sizing: border-box; min-width: 0; padding: 0 var(--pui-space-step-8); color: var(--pui-text-secondary); font-size: var(--pui-font-size-body-large); opacity: .56; }
+.pui-picker__item--selected { color: var(--pui-text-primary); font-weight: var(--pui-font-weight-semibold); opacity: 1; }
+.pui-picker__item text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pui-picker__item--disabled { color: var(--pui-text-disabled); opacity: .32; }
+.pui-picker__body > .pui-loading,
+.pui-picker__body > .pui-empty { width: 100%; }
+.pui-picker--reduced .pui-picker__body { transition-duration: 1ms; }
+.pui-spacing--equal .pui-picker__surface {
+  --pui-picker-section-gap: var(--pui-surface-inset);
+  display: grid;
+  gap: var(--pui-picker-section-gap);
+  padding: var(--pui-surface-inset);
+}
+.pui-spacing--equal .pui-picker__header,
+.pui-spacing--equal .pui-picker__body { padding-left: 0; padding-right: 0; }

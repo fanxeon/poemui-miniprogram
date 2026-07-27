@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0281",
+  "title": "Tabbar 分隔默认值与单选值类型未和实际语义收口",
+  "scope": "component",
+  "components": ["tabbar", "preview-site"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "按 TDesign 对照继续收口 Tabbar，但不把不符合 PoemUI 一级目的地单选语义的数组能力带入公开 API。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "component-contract"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "读取 tabbar/tabbar.js、preview/app.js、metadata 与 API 文档。",
+    "旧 split 默认值为 false，而 TDesign TabBar 默认 true；即使类名切为 split，H5 共享 Button 基线仍将 border-width 归零。旧 API 又以 any 暗示 value/defaultValue 可以承接数组，但实际状态机只有一个 activeIndex。"
+  ],
+  "expected": "分隔线默认与 TDesign 对齐为 true；PoemUI Tabbar 明确只选择一个目的地，value/defaultValue 和 item.value 只接受 String/Number/Boolean，并完整保留 0、\"0\"、false 与空字符串。",
+  "actual": "默认视觉与对照不一致，H5 分隔线也因共享 Button 基线不可见；类型文档宽于组件的单选实现，调用者可能误以为数组会形成多选或多活动项。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 范围化授权", "note": "用户明确确认继续按 TDesign 对照收口，并已授权后续组件无需逐项确认、由 Agent 完成验证与验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/tab-bar", "note": "2026-07-23 读取官方 TabBar Props 默认 split=true 与 value/defaultValue 类型。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/tab-bar", "note": "2026-07-23 复核官方源码目录和固定 1.15.3 包内 props/type 文件。"},
+    {"kind": "file", "ref": "tabbar/tabbar.js", "note": "旧实现以单个 activeIndex 和严格比较管理选择，无法提供数组多选。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabbar", "note": "2026-07-23 真实页面发现 split 类名存在但计算 border-left-color 透明，定位到共享 Button 将边框宽度归零。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "专项断言 split 默认、分隔线宽度与颜色、非法受控值无选中、非法初值回退和非法条目值回退。"}
+  ],
+  "rootCause": "早期对照时只保留了 split 能力却遗漏默认值，H5 又只设置 border color 没有恢复被共享 Button 清空的 border width；同时把通用 any 类型留在单选状态机的文档中。",
+  "decision": {
+    "outcome": "split 默认 true，H5 分隔线显式恢复 1px 中性边界；value/defaultValue 与条目 value 收紧为单个 String/Number/Boolean，非法受控值无选中，非法非受控初值或条目值按既定回退处理。",
+    "rationale": "默认视觉应与参考基线一致，而一级目的地导航不应伪装成多选数据控件。",
+    "alternativesRejected": [
+      "照搬 TDesign Array value 会要求多活动项、事件和辅助语义，超出 Tabbar 的单选定位。",
+      "仅改文档不改源码与 H5 会留下非法值在两端表现不一致。"
+    ]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.js", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/TABBAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "scripts/test-tabbar.js"],
+    "dependencies": ["TDesign MiniProgram 1.15.3 TabBar", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["重新打开本地 Tabbar 概览，确认默认基础样例存在分隔线；用属性面板切换 split 并确认相邻条目边界即时变化；非法值在 H5 不产生假活动项。"],
+    "deviceRisks": ["合法 AppID 真机仍需复核 rpx 分隔、fixed 安全区、触摸与读屏。"]
+  },
+  "ai": {
+    "summary": "TDesign 对照应逐项包含默认值；公开类型不得宽于真实状态机，一级 Tabbar 保持单选。",
+    "rules": [
+      "对照组件时同时核对 Prop 是否存在、默认值、类型和实现状态机。",
+      "Tabbar 的 value/defaultValue 不得恢复数组、对象或函数多选暗示。",
+      "保留 0、字符串 0、false 和空字符串的严格身份，并在源码、H5、文档与测试同步。"
+    ],
+    "tags": ["tabbar", "tdesign", "default-value", "single-select", "api-contract"]
+  }
+}

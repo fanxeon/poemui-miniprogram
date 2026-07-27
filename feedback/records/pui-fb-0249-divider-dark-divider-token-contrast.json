@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0249",
+  "title": "Divider 深色模式复用边界色导致细线不可辨识",
+  "scope": "component",
+  "components": ["divider", "preview-site", "theme", "documentation", "miniprogram-dist"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "07 Divider 必须在深色模式中保持清楚、克制且真实的分隔线层级，不能看起来像没有适配深色。",
+  "environment": {"surfaces": ["native-source", "h5-preview", "theme-tokens", "component-contract", "miniprogram-dist"], "platforms": ["browser", "wechat-miniprogram"], "viewports": ["390x844 browser"], "themes": ["light", "dark"]},
+  "reproduction": ["在 H5 打开 #/components/divider，使用真实外观菜单切换深色模式。", "旧 Divider 线条直接读取 --pui-border-color；深色为 #27272a，置于 PreviewDevice #09090b 底色上，细线视觉对比不足。"],
+  "expected": "Divider 的细线应使用跨端同源、专属且主题可读的 Token；深色细线要明显可见，边框总开关关闭时也不得隐藏内容层级。",
+  "actual": "新增 --pui-divider-color：浅色与深色均为 #a1a1aa。原生实线/虚线和 H5 实线/横竖虚线均使用该 Token；border-off 只关闭 Surface 边界，不再令 Divider 透明，未改变 API、几何、Slot 或交互边界。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户指出编号 07 Divider 没有兼容深色模式。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/divider · 2026-07-23 · 390x844", "note": "初修 #52525b、#71717a 后虽有真实 1px DOM 线（各 146.5px 宽），但用户目视仍不够可辨；深色 Token 最终提升为 #a1a1aa 后复测。设备底色为 rgb(9,9,11)，document/PreviewDevice 为 375/375、349/349。后续截图证实 border-off 会把线条变 transparent，已改为只关闭 Surface 边界。"},
+    {"kind": "file", "ref": "common/style/theme.wxss", "note": "主题定义 Divider 专属浅/深/边框关闭 Token。"},
+    {"kind": "file", "ref": "divider/divider.wxss", "note": "实线和横竖虚线均消费 --pui-divider-color。"},
+    {"kind": "test", "ref": "scripts/test-divider.js", "note": "专项合同锁定双端 Token、实线/虚线使用与 border-off 回归。"}
+  ],
+  "rootCause": "Divider 将独立阅读分隔线误建模为普通组件边界，深色 #27272a 是适合 Surface 边界的低对比色；初修 #52525b、#71717a 仍不足以让 1px 线在 #09090b 页面底上被第一眼识别。",
+  "decision": {"outcome": "新增专属 --pui-divider-color 并在小程序主题、H5 预览、实线与虚线路径统一消费；浅色和深色最终均取 #a1a1aa，border-off 不再覆写该 Token。", "rationale": "Divider 是展示内容流的独立细线，需要比容器边界更可辨识但仍保持中性克制；#d4d4d8 在浅色 1px 预览中仍过轻，专属 Token 可避免把其他组件边界整体加深，也不能被关闭 Surface 边界的偏好隐藏。", "alternativesRejected": ["直接加深全局 --pui-border-color，会改变全部 Surface 和表单边界。", "仅给 H5 写 dark 私有颜色，会使小程序端继续漂移。", "固定硬编码白灰，会破坏主题 Token 合同。"]},
+  "impact": {"files": ["common/style/theme.wxss", "divider/divider.wxss", "preview/styles.css", "scripts/test-divider.js", "docs/components/DIVIDER.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0249-divider-dark-divider-token-contrast.json"], "dependencies": ["PUI theme behavior", "PreviewDevice", "global border preference", "TDesign Divider reference"]},
+  "verification": {"tests": ["scripts/test-divider.js", "scripts/test-preview-css-token-contract.js", "scripts/test-global-border-preference.js", "scripts/test-component-semantic-contracts.js"], "commands": ["node scripts/test-divider.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 CLI build-npm"], "browser": ["真实外观菜单切换 dark 后，Divider Token 为 #a1a1aa、实线计算色为 rgb(161,161,170)，设备底色为 rgb(9,9,11)。", "边框关闭时 Divider Token 仍为 #a1a1aa；不透明 Surface 边界仍透明，无横向溢出。"], "deviceRisks": ["微信 CLI 已实际启动 IDE server，但 touristappid 读取权限返回 code 10，未生成也未伪造 _example/miniprogram_npm；需以合法 AppID 真机确认 1rpx #a1a1aa 在 OLED/LCD、微信暗色主题和样式隔离下的实际抗锯齿与可辨识性。"]},
+  "ai": {"summary": "独立阅读分隔线不能盲目复用低对比 Surface 边界；需要专属主题 Token，且不能被 Surface 边框关闭偏好隐藏。", "rules": ["Divider 实线、横向虚线和纵向虚线必须共同消费 --pui-divider-color。", "深色 Divider 细线必须由真实深色浏览器计算样式和目视检查，不得只验证 data-theme。", "bordered=false 只关闭中性 Surface 边界；Divider 作为内容层级必须保留可见 Token。", "新增展示原语 Token 时同时提供浅色、深色及小程序/H5 同源定义；不得通过加深全局 border 修复单一组件。"], "tags": ["divider", "dark-mode", "theme-token", "contrast", "border-off", "h5-parity", "tdesign"]}
+}

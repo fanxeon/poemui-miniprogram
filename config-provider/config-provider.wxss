@@ -1,0 +1,5 @@
+.pui-config-provider {
+  min-height: inherit;
+  color: var(--pui-text-primary);
+  background: transparent;
+}

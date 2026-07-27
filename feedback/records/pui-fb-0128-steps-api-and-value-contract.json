@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0128",
+  "title": "Steps 公开合同混入业务状态、重复事件与命令式流程控制",
+  "scope": "component",
+  "components": ["steps", "button", "icon", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Steps 应参考成熟小程序步骤条，只表达阶段、当前值和选择请求；基础调用克制，严格保留原始值，页面业务状态与前后动作由消费者组合。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Steps 公开 24 Props、4 Events、3 Methods 与 footer Slot，把 loading/error/empty/retry、标题截断、单项加载、动画调参和流程动作塞进步骤指示器。",
+    "旧 click/input/change 重复表达选择，select/next/prev 可绕过父级受控所有权；footer 又把页面提交动作固定进组件。",
+    "旧值归一化会让数字 0、字符串 \"0\"、false 与空字符串发生碰撞，受控未命中时可能错误激活索引 0。",
+    "TDesign MiniProgram 1.15.3 Steps/StepItem 以 current/defaultCurrent、currentStatus、layout、sequence、theme、readonly 和 change 为主干。"
+  ],
+  "expected": "Steps 只公开跨微信与 H5 可真实一致的 12 Props、1 个 change Event、0 Slots、0 Methods；严格区分 0、\"0\"、false 与空字符串；基础 WXML 零 bind。",
+  "actual": "旧公共面把阶段指示、页面请求状态、流程动作、视觉调参和命令式控制混在一起，原始值身份与父级所有权不可靠。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API、按用法分区、基础示例不展示全部 bind，并授权完整证据后自主验收。"},
+    {"kind": "file", "ref": "steps/steps.js", "note": "最终 12 Props、严格原始值、受控与非受控连续性、单一 change 事件和固定 180/1ms。"},
+    {"kind": "file", "ref": "steps/steps.wxml", "note": "每项组合 PUI Button/Icon，空 items 不渲染假状态、footer Slot 或业务动作。"},
+    {"kind": "file", "ref": "docs/components/STEPS.md", "note": "记录 TDesign 1.15.3 的保留、拒绝、值身份、事件、状态与消费者职责边界。"},
+    {"kind": "test", "ref": "scripts/test-steps.js", "note": "VM 与静态合同覆盖 12/1/0/0、严格边界值、受控等待、禁用、状态推导、PUI 组合和三层产物。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/steps", "note": "390px 真实点击、键盘、受控父级回写与物理点击禁用项，依次验证 0、字符串 0、false、空字符串和重复项静默。"}
+  ],
+  "rootCause": "旧实现按演示诊断不断扩张 Steps 顶层能力，没有先限定组件只负责阶段展示与可选步骤请求，也没有把业务状态、页面动作和受控值身份分开。",
+  "decision": {
+    "outcome": "收敛为 items/current/defaultCurrent/currentStatus/layout/sequence/theme/scrollable/readonly/disabled/ariaLabel/reduceMotion；只保留 change；0 Slots；0 Methods。",
+    "rationale": "步骤条需要稳定的数据、阶段状态、布局和值所有权；页面加载、失败、重试、提交和前后动作都应由消费页面用现有 PUI 组件真实闭环。",
+    "alternativesRejected": [
+      "保留 loading/error/empty/retry 会让 Steps 冒充页面业务状态容器。",
+      "保留 footer Slot 与 next/prev 方法会把页面流程动作和导航权限藏进展示组件。",
+      "保留 click/input/change 会为一次选择制造重复语义。",
+      "公开标题截断、duration/easing 和单项 loading 会扩大跨端不可验证的调参面。"
+    ]
+  },
+  "impact": {
+    "files": ["steps/steps.js", "steps/steps.json", "steps/steps.wxml", "steps/steps.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/STEPS.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-steps.js", "feedback/records/pui-fb-0128-steps-api-and-value-contract.json"],
+    "dependencies": ["pui-button", "pui-icon", "TDesign MiniProgram 1.15.3 Steps/StepItem"]
+  },
+  "verification": {
+    "tests": ["scripts/test-steps.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node scripts/test-steps.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "受控基础实例把 develop 真实回写为 verify，change detail 保留 previousValue、previousIndex、source 与 controlled。",
+      "边界实例严格完成 0 → \"0\" → false → 空字符串；禁用条目、readonly、disabled 与重复当前项均不发布事件。",
+      "reverse 保留原始 index/value，item.status 覆盖推导状态；dot、horizontal/vertical 与局部滚动真实生效。",
+      "正常过渡为 500ms，reduceMotion 计算样式为 1ms；390px document 为 375/375px。"
+    ],
+    "deviceRisks": [
+      "微信 Button 触摸、scroll-view 惯性、rpx 连接线、样式隔离、系统低动效和读屏需合法 AppID 真机复核。",
+      "微信 build-npm 若继续被项目 touristappid 阻断必须保留 pending-cli，不得手工生成产物冒充成功。"
+    ]
+  },
+  "ai": {
+    "summary": "Steps 只负责阶段展示与可选步骤请求；页面状态和流程动作归消费者，原始值身份与父级所有权必须严格保留。",
+    "rules": [
+      "Steps 不得恢复根级 loading/error/empty/retry、footer Slot、next/prev/select 或页面提交动作。",
+      "current 比较必须严格区分 0、\"0\"、false 与空字符串；受控未命中和全部禁用时不得伪造当前项。",
+      "只在不同可用步骤被选择时发布一次 change；disabled、readonly 和重复当前项静默，受控模式等待父级回写。",
+      "不得恢复 click/input、标题截断、单项 loading 或公开 duration/easing。"
+    ],
+    "tags": ["steps", "tdesign", "api-contract", "controlled", "strict-value"]
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0087",
+  "title": "Switch 概览放入 Cell value 后点击命中父级而非开关",
+  "scope": "component",
+  "components": ["switch", "cell", "preview-site", "example"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Switch 在官网和示例的 Cell 组合中必须是真实可点击的右侧操作，而不是看起来存在但命中父级的静态占位。",
+  "environment": {
+    "surfaces": ["h5-preview", "wechat-example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Switch 概览并点击基础用法中的轨道。",
+    "旧 H5 把 Switch 字符串传给 cellSample 的 value，最终进入 Cell 的 em 文本容器。",
+    "在真实 390px 浏览器中 elementFromPoint 与点击都命中父 Cell，Switch 的 aria-checked 不变化。"
+  ],
+  "expected": "基础演示与小程序示例都把 Switch 作为 Cell 的真实右侧 Slot 组合，点击轨道只触发 Switch 并完成父级回写。",
+  "actual": "旧演示把组件标记当普通 value 文本嵌入，视觉存在但点击路径被父 Cell 结构接管。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授权后续共有组件完成完整门禁后由 agent 自主连续验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=switch3#/components/switch", "note": "首次真实点击命中父 Cell，基础 Switch false 保持 false。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "基础演示改用 cellSample rightSlot 挂载 switchPreviewMarkup，与真实示例组合一致。"},
+    {"kind": "file", "ref": "_example/miniprogram/pages/components/index.wxml", "note": "示例以 pui-cell right Slot 组合 pui-switch，基础示例零 bind，受控示例只绑定 change。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=switch5#/components/switch", "note": "修复后物理点击基础轨道 false→true，父级 value 真实回写，静态状态区仍不可误触。"}
+  ],
+  "rootCause": "H5 组合层误把组件 HTML 传入 Cell 的 value 文本通道，没有遵守原生 Cell right Slot 的交互组合语义。",
+  "decision": {
+    "outcome": "基础和状态演示统一通过 Cell rightSlot 挂载共享 Switch 镜像；Cell 只负责标题说明与排列，Switch 保留唯一 role=switch 和点击根。",
+    "rationale": "right Slot 与原生 WXML、示例和真实用户路径一致，避免可交互组件落入文本容器或父级点击区。",
+    "alternativesRejected": [
+      "给 value 文本容器提高 z-index 或 pointer-events 会继续让错误语义依赖 CSS 偶然命中。",
+      "移除 Cell 独立摆放 Switch 会失去真实常用组合和标题上下文。",
+      "在父 Cell 点击中代替 Switch 切换会制造第二个操作根和假事件来源。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-switch.js", "docs/components/SWITCH.md"],
+    "dependencies": ["cellSample", "switchPreviewMarkup", "pui-cell right slot"]
+  },
+  "verification": {
+    "tests": ["scripts/test-switch.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "390px 基础 Cell 内物理点击 Switch 后 aria-checked false→true，父级回写后保持。",
+      "loading、disabled、readonly 三种状态的 Cell 仍展示真实 Switch，点击不会改变值。",
+      "默认、文字图标、状态、尺寸四区共9个 Switch 语义节点，只有基础节点承担当前交互。"
+    ],
+    "deviceRisks": ["微信 Cell Slot 的触摸冒泡、catchtap 消费者组合和无障碍焦点顺序仍需目标基础库真机复核。"]
+  },
+  "ai": {
+    "summary": "Cell 内 Switch 必须进入 right Slot，不能作为 value 文本或父 Cell 代理交互。",
+    "rules": [
+      "H5 Cell 组合可交互子组件时必须使用与原生 WXML 同名 Slot 通道。",
+      "禁止把 Switch、Button、Checkbox 等组件 HTML 传入 Cell value/description 文本字段。",
+      "父 Cell 不得代理子 Switch 切换或伪造 change 来源。"
+    ],
+    "tags": ["switch", "cell", "slot", "hit-target", "preview-parity", "composition"]
+  }
+}

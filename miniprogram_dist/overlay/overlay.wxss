@@ -1,0 +1,5 @@
+.pui-overlay-layer { position: fixed; right: 0; bottom: 0; left: 0; box-sizing: border-box; opacity: 0; pointer-events: none; background: var(--pui-overlay-background, rgba(9, 9, 11, .42)); transition: opacity var(--pui-overlay-duration) var(--pui-ease-standard); }
+.pui-overlay-layer--entered { opacity: 1; pointer-events: auto; }
+.pui-overlay-layer--blurred,
+.pui-frosted-glass--on .pui-overlay-layer { -webkit-backdrop-filter: var(--pui-overlay-blur); backdrop-filter: var(--pui-overlay-blur); }
+.pui-overlay-layer--reduced { animation-duration: 1ms !important; transition-duration: 1ms !important; }

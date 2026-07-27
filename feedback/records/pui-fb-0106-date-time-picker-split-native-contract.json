@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0106",
+  "title": "DateTimePicker 旧版拆成两个原生选择器且公开合同过量",
+  "scope": "component",
+  "components": ["date-time-picker", "picker", "documentation", "example"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "DateTimePicker 应像成熟小程序组件一样提供一套可确认的日期时间滚轮，API 克制、基础示例简单，并与 PUI Picker 组合而不是重复实现。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api", "example", "npm-package"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查旧 date-time-picker WXML，可见 date 和 time 两个系统 picker 独立提交，datetime 不是同一份草稿。",
+    "检查旧 API，可见 dateTitle/timeTitle、三类 placeholder、clearable、bordered、compact、showIcon、loading、invalid、duration/easing 和默认 Slot 等 27 Props。",
+    "对照 tdesign-miniprogram@1.15.3 DateTimePicker 源码，成熟合同基于 Picker 列、mode/start/end/steps/format/showWeek 和统一确认。"
+  ],
+  "expected": "DateTimePicker 只负责日期时间领域列，直接组合 PUI Picker，支持年到秒精度、范围、步长、格式、双受控和统一草稿确认；基础 WXML 不展示 bind:*。",
+  "actual": "旧实现是两个原生系统面板的布局壳，日期和时间无法在一次确认中联动，公开了大量展示、状态和私有动效属性。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件无需逐项确认，由 agent 在完整证据后自主连续验收。"},
+    {"kind": "file", "ref": "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "note": "固定记录 tdesign-miniprogram@1.15.3 DateTimePicker 官方文档与 npm 源码对照。"},
+    {"kind": "file", "ref": "date-time-picker/date-time-picker.wxml", "note": "重建后仅组合一个 pui-picker，不再出现原生 picker、input、button 或 slot。"},
+    {"kind": "file", "ref": "docs/components/DATE-TIME-PICKER.md", "note": "固化 21 Props、7 Events、0 Slots、6 Methods 与拒绝项。"},
+    {"kind": "test", "ref": "scripts/test-date-time-picker.js", "note": "覆盖闰年、月末、范围、步长、时间戳 0、双受控、事件、方法和组合边界。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/date-time-picker", "note": "390px 实测五列 Popup、点击、键盘、wheel、Pointer drag、confirm/change 父级回写、cancel 回滚、内联、disabled/readonly 和低动效。"}
+  ],
+  "rootCause": "旧实现把系统 date/time picker 的可用属性直接堆叠成组件 API，没有先定义 DateTimePicker 的统一草稿和领域列职责，也没有复用已存在的 PUI Picker。",
+  "decision": {
+    "outcome": "重建为 PUI Picker 的日期时间适配器，公开 21 Props、7 Events、0 Slots、6 Methods；移除旧分裂字段、状态装饰和私有动效 API。",
+    "rationale": "日期时间列、确认、取消、显隐和滚轮交互应只有一份事实源；DateTimePicker 只增加领域算法，避免复制 Popup、Button、Loading、Empty 和 picker-view。",
+    "alternativesRejected": [
+      "保留两个系统 picker 会继续让 datetime 分裂提交并无法统一取消。",
+      "照搬 TDesign 的函数型 filter/formatter 和 popupProps 不适合 WXML 序列化与 PoemUI 克制合同。",
+      "保留 loading/error/empty 会把本地同步日期算法伪装成远程数据状态。"
+    ]
+  },
+  "impact": {
+    "files": ["date-time-picker/", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/", "scripts/test-date-time-picker.js"],
+    "dependencies": ["picker", "popup", "button", "icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-date-time-picker.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "点击月份、键盘调整日期、真实鼠标滚轮调整分钟和 Pointer 拖动日期均改变同一草稿，并记录 option/keyboard/wheel/drag source。",
+      "确认顺序为 confirm → change → visible-change → close；受控值显示父级已回写，取消恢复已提交值且不触发 change。",
+      "时间戳 0 被识别为受控值并按 start 边界规整；disabled/readonly 阻止 Trigger，usePopup=false 显示五列内联滚轮。",
+      "reduceMotion 的 Popup mask 与滚轮 track 计算 transition-duration 均为 0.001s。"
+    ],
+    "deviceRisks": [
+      "微信 picker-view 的触摸惯性、Popup relation、rpx 中间帧和真机读屏仍需合法 AppID 实机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "DateTimePicker 必须是 PUI Picker 的日期时间领域适配器，不得恢复两个原生系统 picker 或过量展示 API。",
+    "rules": [
+      "DateTimePicker 只维护日期时间列算法，Popup、滚轮和确认生命周期必须复用 PUI Picker。",
+      "基础 WXML 不得出现 bind:*，完整事件只进入 API Events。",
+      "本地日期算法不得虚构 loading/error/empty；可视范围日历使用 Calendar + Popover。"
+    ],
+    "tags": ["date-time-picker", "picker", "api", "tdesign", "composition"]
+  }
+}

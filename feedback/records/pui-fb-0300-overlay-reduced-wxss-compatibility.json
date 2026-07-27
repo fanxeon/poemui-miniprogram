@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0300",
+  "title": "Overlay 低动效通配选择器导致微信 WXSS 编译失败",
+  "scope": "global",
+  "components": ["overlay", "miniprogram-home", "miniprogram-dist"],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页通过 pui-overlay 打开圆形 Combobox，且必须在真实微信开发者工具中可编译运行。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "npm-dist"],
+    "platforms": ["wechat-devtools"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在微信开发者工具 RC 2.02.2607161、基础库 3.17.0 编译 miniprogram/pages/index/index。",
+    "首页首次实际引用 pui-overlay 后，编译 miniprogram_npm/poemui-miniprogram/overlay/overlay.wxss。",
+    "编译器在 .pui-overlay-layer--reduced * 的通配后代选择器报 unexpected token `*`。"
+  ],
+  "expected": "Overlay 在低动效下仍将自身遮罩过渡压缩为 1ms，并且共享组件 WXSS 可被当前微信 CSS 编译器接受。",
+  "actual": "Overlay 的低动效规则将根选择器与通配后代选择器并列，导致整个首页渲染层无法编译，自动化也无法取得页面元数据。",
+  "evidence": [
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161 Console", "note": "2026-07-24 实际编译显示 overlay.wxss(6:57): unexpected token `*`，页面显示 WXSS 文件编译错误。"},
+    {"kind": "file", "ref": "overlay/overlay.wxss", "note": "原规则 .pui-overlay-layer--reduced,.pui-overlay-layer--reduced * 同时命中 Overlay 根和所有 Slot 后代。"},
+    {"kind": "test", "ref": "scripts/test-overlay.js", "note": "专项测试禁止恢复当前微信 WXSS 编译器不接受的 Overlay 通配后代选择器。"}
+  ],
+  "rootCause": "Overlay 作为此前未被首页实际引用的 npm 组件，保留了当前基础库 WXSS 编译器不接受的通配后代组合选择器；源码契约测试未覆盖真实开发者工具编译。",
+  "decision": {
+    "outcome": "低动效规则只作用于 Overlay 自身遮罩根；Slot 内容继续由其各自组件的 reduceMotion 或系统低动效合同控制。",
+    "rationale": "Overlay 唯一自有动效是 opacity，去除不可编译的后代选择器即可保留组件职责并让首页重新可编译。",
+    "alternativesRejected": [
+      "在首页绕开 pui-overlay 或复制遮罩会破坏用户指定的组件组合与共享组件边界。",
+      "改用页面私有低动效样式会把共享 Overlay 的兼容问题隐藏在单页。",
+      "保留通配选择器并将微信编译失败视为工具问题会造成真实页面不可用。"
+    ]
+  },
+  "impact": {
+    "files": ["overlay/overlay.wxss", "scripts/test-overlay.js"],
+    "dependencies": ["微信开发者工具 WXSS 编译器", "pui-overlay", "pui-combobox 首页入口"]
+  },
+  "verification": {
+    "tests": ["scripts/test-overlay.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-overlay.js", "npm run check", "npm run site:build", "微信 CLI build-npm", "微信开发者工具实际编译"],
+    "browser": ["微信开发者工具 RC 2.02.2607161、基础库 3.17.0：普通编译首页后不再出现 overlay.wxss unexpected token `*`，页面成功加载；点击搜索后 Overlay blur 与居中 Combobox 可见，点击遮罩空白区后正常关闭。"],
+    "deviceRisks": ["真机仍需确认 Overlay backdrop-filter 支持、低动效与复杂 Slot 内容的视觉过渡。"]
+  },
+  "ai": {
+    "summary": "共享组件首次进入实际小程序页面时，必须在微信开发者工具编译；不要只用 Node 契约测试接受 WXSS 选择器。",
+    "rules": [
+      "Overlay 低动效首先保证自身 opacity 动画，Slot 后代的低动效由各自组件管理。",
+      "当前微信 WXSS 编译器报错的通配后代选择器不能保留为兼容代码。",
+      "组件构建通过不等于页面渲染层已编译；实际引用后仍需开发者工具验证。"
+    ],
+    "tags": ["overlay", "wxss", "wechat-devtools", "low-motion", "compatibility"]
+  }
+}

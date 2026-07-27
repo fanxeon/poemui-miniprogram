@@ -1,0 +1,72 @@
+.pui-stepper {
+  --pui-stepper-button-track-size: 88rpx;
+  position: relative;
+  box-sizing: border-box;
+  display: inline-block;
+  width: var(--pui-stepper-control-width);
+  height: var(--pui-stepper-button-track-size);
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--pui-text-primary);
+  background: var(--pui-bg-container);
+  border: 1rpx solid transparent;
+  border-radius: var(--pui-radius-medium);
+  box-shadow: var(--pui-shadow-soft);
+  transition:
+    opacity var(--pui-stepper-duration) var(--pui-stepper-ease),
+    background-color var(--pui-stepper-duration) var(--pui-stepper-ease),
+    border-color var(--pui-stepper-duration) var(--pui-stepper-ease),
+    border-radius var(--pui-stepper-duration) var(--pui-stepper-ease),
+    box-shadow var(--pui-stepper-duration) var(--pui-stepper-ease);
+}
+
+.pui-stepper--small { --pui-stepper-button-track-size: 72rpx; }
+.pui-stepper--large { --pui-stepper-button-track-size: 100rpx; }
+.pui-stepper--filled { background: var(--pui-bg-muted); }
+.pui-stepper--outline { border-color: var(--pui-border-color); }
+.pui-stepper--disabled { opacity: .5; }
+.pui-stepper--readonly { opacity: .72; }
+
+.pui-stepper__button {
+  position: absolute;
+  top: 0;
+  color: var(--pui-text-primary);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.pui-stepper__button--limit {
+  color: var(--pui-text-disabled);
+  opacity: .5;
+}
+
+.pui-stepper__input {
+  position: absolute;
+  top: 50%;
+  left: var(--pui-stepper-button-track-size);
+  width: var(--pui-stepper-input-width);
+  min-width: 0;
+  max-width: 100%;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: translateY(-50%);
+}
+
+.pui-stepper__input .pui-input__field {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.pui-stepper--outline .pui-stepper__input {
+  border-right: 1rpx solid var(--pui-border-color);
+  border-left: 1rpx solid var(--pui-border-color);
+}
+
+.pui-stepper--input-disabled .pui-stepper__input { opacity: .5; }

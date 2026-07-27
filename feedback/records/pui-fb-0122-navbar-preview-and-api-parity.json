@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0122",
+  "title": "Navbar 官网缺少用法分区且属性回写残留陈旧显隐反馈",
+  "scope": "component",
+  "components": ["navbar", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Navbar 官网应按基础、组合、状态和透明导航分区陈列，Props 必须真实作用，API 全文可读，显隐和 Slot 反馈不能显示陈旧或伪造结果。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-panel", "usage-code"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "349x620 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览使用单块工程诊断预览，堆叠 show/hide、事件和状态说明，不能快速比较基础、Slot、加载、禁用与透明导航。",
+    "旧静态示例将返回与右侧操作设为 disabled，只展示外观而不能真实点击验证消费者事件。",
+    "旧 visible 通过属性面板重新回写 true 后仍保留此前父级设置 visible=false 的反馈，页面状态与提示冲突。",
+    "旧 API 和兼容说明仍描述 32 Props、6 Events、2 Methods，基础示例绑定 input/change/open/close/left/right 全部事件。"
+  ],
+  "expected": "概览固定四个用户用法分区，默认返回和 Slot 可真实点击；当前实例显隐反馈与 Props 同源；API 完整显示 14/1/3/0，390px 无裁切与页面级溢出。",
+  "actual": "旧官网偏向工程诊断，静态操作为假禁用，陈旧反馈与属性真值不一致，API 文档和基础代码无法作为真实调用参考。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求演示按用法分区、分区标题上间距清晰、代码区可复制、API 全文不得省略，并授权 agent 自主连续验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区 showcase、共享 PUI helper、真实 Slot 回调、声明式显隐和陈旧反馈清理。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "PreviewDevice 内局部 fixed、稳定三列、18px 分区标题上间距和固定 180/1ms 过渡。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "14 Props、1 Event、3 Slots、0 Methods和零 bind 基础用法完整记录。"},
+    {"kind": "test", "ref": "scripts/test-navbar.js", "note": "锁定四分区、Slot 真实动作、陈旧反馈清理、最小代码、API、兼容说明和跨产物一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/navbar", "note": "390px 下真实完成显隐中间帧、返回/Slot、Props、API、主题和所有外观开关，日志为空。"}
+  ],
+  "rootCause": "旧预览复用单实例诊断模板，没有区分当前 Props 实例和用户用法样例，也没有在属性面板独立改变 visible 时清理前一次 demo toggle 的事件反馈。",
+  "decision": {
+    "outcome": "官网重建基础用法、标题与操作、加载与禁用、透明导航四区；静态 Slot 与返回可真实操作；属性回写 visible 清理陈旧反馈；fixed 只限 PreviewDevice；API 全文自然换行。",
+    "rationale": "用户需要快速比较真实用法、复制最小 WXML 并在 API 查看完整事件；提示必须反映当前真实 Prop，而不是历史操作。",
+    "alternativesRejected": [
+      "在旧诊断块下追加更多说明会继续放大事件和方法噪声。",
+      "把静态用法全部禁用只能证明外观，不能证明 Slot 消费者边界。",
+      "保留历史 demo 反馈会在属性回写后制造与当前 visible 冲突的假状态。",
+      "让 H5 fixed 作用官网视口会污染文档导航并偏离 PreviewDevice 边界。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/NAVBAR.md", "scripts/test-navbar.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0122-navbar-preview-and-api-parity.json"],
+    "dependencies": ["PreviewDevice", "PUI Tabs", "Props helpers", "buttonSample", "iconButtonSample", "loadingComponent"]
+  },
+  "verification": {
+    "tests": ["scripts/test-navbar.js", "scripts/test-shared-subcomponent-geometry.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-api-reference-readability.js"],
+    "commands": ["node scripts/test-navbar.js", "npm run site:build", "npm run check", "npm run feedback:check", "npm run pack:check"],
+    "browser": [
+      "390x844 概览四分区完整存在，分区间标题 margin-top 为 18px；组件引用与基础 WXML 使用同一 makeUsageCode 真相源。",
+      "隐藏操作在 20ms 仍为 active，100ms opacity 为 0.147116 且 translateY 为 -5.1173px，500ms 后节点卸载；1ms 低动效计算样式真实生效。",
+      "left Slot 和 right Slot 可真实点击，分别报告消费者回调；visible 属性回写 true 后旧 false 反馈被清除。",
+      "document clientWidth/scrollWidth 均为 375；PreviewDevice 外框 349px，当前 fixed Navbar 使用 viewport 可用 338px，无页面级横向溢出。",
+      "深色+shadow+frost+large-radius+gradient+border-off 下 Navbar 为 rgba(15,15,17,.9)、真实 8px/22px 阴影、blur(14px) saturate(1.2)、透明边线且保持全宽 0 圆角；恢复浅色后为白色 Surface、可见边线、无阴影/blur。",
+      "API 五组表行数为 3/5/6/1/3，全部 clientWidth/scrollWidth=349；单元格 white-space=normal、text-overflow=clip、scrollHeight 等于可见高度，ellipsis 为 0；Tabs 三视图固定为 13,349,349x38，日志为空。"
+    ],
+    "deviceRisks": [
+      "浏览器 click、CSS sticky/absolute 和 20px 安全区只能近似微信 tap、fixed、rpx 与 env；低端设备中间帧和系统低动效仍需真机复核。",
+      "微信 Slot 触摸冒泡、fixed 与页面滚动、样式隔离和读屏顺序需合法 AppID 开发者工具与真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Navbar 官网按用户用法分区；当前 Props 真实回写，Slot 事件归消费者，反馈不得残留历史假状态，API 全文可读。",
+    "rules": [
+      "Navbar 概览固定为基础、标题与操作、加载与禁用、透明导航四区，分区标题保留清晰上间距。",
+      "基础 WXML 禁止 bind:*；完整 left-click 只进入 API，业务示例只绑定必要事件。",
+      "属性面板直接改变 visible 时必须清除历史 toggle 反馈，当前真值优先。",
+      "H5 fixed 必须限制在 PreviewDevice；Navbar 全宽屏幕附着 Surface 在大圆角下仍保持 0 圆角。",
+      "API 参数、事件和 Slot 文字必须自然换行，禁止 ellipsis、nowrap 和固定高度裁切。"
+    ],
+    "tags": ["navbar", "preview", "api-docs", "responsive", "accessibility", "state-parity"]
+  }
+}

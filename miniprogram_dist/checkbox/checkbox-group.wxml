@@ -1,0 +1,35 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="group"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+  aria-readonly="{{readonly}}"
+>
+  <view wx:if="{{normalizedOptions.length}}" class="pui-checkbox-group__options">
+    <pui-checkbox
+      wx:for="{{normalizedOptions}}"
+      wx:key="key"
+      value="{{item.value}}"
+      checked="{{item.checked}}"
+      indeterminate="{{item.indeterminate}}"
+      label="{{item.label}}"
+      content="{{item.content}}"
+      icon="{{item.icon}}"
+      check-all="{{item.checkAll}}"
+      block="{{item.block}}"
+      borderless="{{item.borderless}}"
+      content-disabled="{{item.contentDisabled}}"
+      disabled="{{item.disabled}}"
+      readonly="{{item.readonly}}"
+      placement="{{item.placement}}"
+      max-label-row="{{item.maxLabelRow}}"
+      max-content-row="{{item.maxContentRow}}"
+      aria-label="{{item.ariaLabel}}"
+      reduce-motion="{{reduceMotion}}"
+      data-index="{{index}}"
+      bind:change="onOptionChange"
+    />
+  </view>
+  <slot></slot>
+</view>

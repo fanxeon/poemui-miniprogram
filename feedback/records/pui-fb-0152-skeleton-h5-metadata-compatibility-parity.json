@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0152",
+  "title": "Skeleton 元数据与 H5 兼容说明滞后于真实公开合同",
+  "scope": "component",
+  "components": ["skeleton", "preview-site", "api-reference", "metadata", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "官网 Props、API、H5 兼容说明、WXML、示例与安装产物必须同源；所有说明完整展示真实能力，不保留被删除的事件、Slot 或动效。",
+  "environment": {
+    "surfaces": ["metadata", "api-reference", "property-panel", "h5-compatibility", "usage-code", "documentation", "example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["375px PreviewDevice", "390px responsive contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计发现 metadata 缺少 Skeleton apiEvents/apiSlots，导致真实 WXML 的默认 Slot 无法在 API Reference 中出现；同时 H5 兼容区仍宣称 show/hide、placeholder Slot、avatar 私有字段、pulse/wave 与 0–500ms 私有动效。",
+    "浏览器打开 #/components/skeleton 的属性视图可复现旧兼容文本，即使源组件已经删除对应对外能力。"
+  ],
+  "expected": "metadata 明确只提供默认 Slot、没有 Events；属性/API/兼容说明、代码生成器、示例和文档均显示七项 Props、默认 Slot、gradient/flashed/none 与固定 180ms/1ms。",
+  "actual": "官网数据源和兼容说明保留历史快照，调用方会看到源码中不存在的生命周期、Slot 和动效，形成跨端公开合同漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已确认范围化自主验收授权：后续组件无需逐项确认，agent 在完整审计、浏览器、专项测试、文档、Ledger 和构建门禁后可自主验收。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "当前 apiProps.skeleton 为七项，apiSlots.skeleton 精确声明 default，apiEvents.skeleton 不存在。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Skeleton H5 兼容分支现明确无 Events/Methods/placeholder Slot，并复用 loading/rowCol/theme/animation 的真实路径。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/skeleton", "note": "2026-07-20 真实 API 显示 7 Props 与 default Slot；属性页的 H5 兼容区不再出现 show/hide 或 placeholder Slot。"},
+    {"kind": "test", "ref": "scripts/test-skeleton.js", "note": "专项测试比较 metadata、WXML、API/H5 文档、属性兼容分支、示例与分发四件套。"}
+  ],
+  "rootCause": "此前只改了组件运行时，metadata 和 preview 的兼容说明保留独立历史文案；生成目录依赖 metadata，因而 API 与真实组件发生漂移。",
+  "decision": {
+    "outcome": "同步 metadata Props/分组/default Slot、H5 showcase、compatibility branch、API/H5 文档、示例、shadcn 映射和专项测试；重新生成 catalog 后再浏览器复验。",
+    "rationale": "metadata 是 API Reference 与生成产物的真相源，兼容说明必须复述真实 WXML/WXSS，而不是保留旧版运行时说明。",
+    "alternativesRejected": [
+      "只在 API 页面硬编码 Slot 或事件说明不能修复 metadata 与生成目录。",
+      "保留旧文本并标注兼容会使不存在的能力继续被发现和复制。"
+    ]
+  },
+  "impact": {
+    "files": ["metadata/components.js", "metadata/shadcn.js", "preview/app.js", "preview/styles.css", "preview/components-data.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_CATALOG.md", "docs/COMPONENT_MATRIX.md", "docs/SHADCN_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-skeleton.js"],
+    "dependencies": ["catalog generator", "API Reference renderer", "shared PUI Select/Switch/Input helpers"]
+  },
+  "verification": {
+    "tests": ["scripts/test-skeleton.js", "scripts/test-api-reference-readability.js"],
+    "commands": ["2026-07-20 npm run feedback:generate && npm run feedback:check：通过（152 records）", "2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过，catalog 与 miniprogram_dist 已同源重建", "2026-07-20 微信 CLI build-npm：touristappid 被拒绝为不存在 AppID（code 10），未生成 miniprogram_npm、未冒充通过"],
+    "browser": ["真实点击属性页的 PUI theme/animation Select、delay、rowCol、reduceMotion，所有变更回写到概览；非法 JSON 保留上次有效 Props 并设 aria-invalid=true。", "真实 API 视图显示 7 Props 和默认 Slot，未显示 Events/Methods；代码复制显示“基础用法代码已复制”，基础 WXML 为零 bind。"],
+    "deviceRisks": ["微信真机仍需以合法 AppID 验证默认 Slot 投影、长 API 文案、PUI Select/Switch 触摸命中、rpx 与读屏。", "内置浏览器的页级 390px 视口不能独立改写，响应式合同与 375px PreviewDevice 不替代目标手机浏览器最终复核。"]
+  },
+  "ai": {
+    "summary": "任何公开 API 收敛都必须同时更新 metadata、H5 兼容说明、文档和生成目录；不能只改源码或只改页面。",
+    "rules": [
+      "逐项比较 JS properties、WXML Slots/Events、metadata.apiProps/apiEvents/apiSlots、API Reference、基础 WXML 和示例。",
+      "属性页兼容文案也属于公开合同，删除能力后必须检索并清理所有历史术语。",
+      "metadata 变更后必须重新生成 catalog，并在真实浏览器中查看 API 和属性页。"
+    ],
+    "tags": ["skeleton", "metadata", "preview-parity", "api-reference", "documentation"]
+  }
+}

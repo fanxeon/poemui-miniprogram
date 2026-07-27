@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0289",
+  "title": "Tabs 徽标被通用 Button 裁切且原生锚点包住整段标签",
+  "scope": "component",
+  "components": ["tabs", "badge", "button", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Tabs 的徽标与禁用示例必须完整展示，不能再次出现数量徽标被截断的情况。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "example-install", "miniprogram-dist"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390px browser", "iPhone 15 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 #/components/tabs 的“徽标与禁用”，数量 0 的 PUI Badge 在窄 PreviewDevice 中出现可读性不足或被裁掉的视觉结果。",
+    "H5 组件专用的 overflow:visible 被后置的通用 .pui-button-preview__content overflow:hidden 规则覆盖；原生 WXML 又让 pui-badge 包住整段标签，绝对定位的 Badge 会越出条目后被裁切。"
+  ],
+  "expected": "消息、通知的 3 与 0 徽标，以及禁用 Tab 的图标、文字都在完整点击区域内可读；长标签只省略文字，数量与红点永不裁切。",
+  "actual": "通用 Button 文本裁切把 Tabs 的 Badge 一并当成可省略内容；原生 Badge 锚点结构也无法保证越界数量完整可见。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话与截图", "note": "用户明确指出 Tabs“徽标与禁用”中徽标没有完整展示，并强调这是重复问题；此前用户已授权后续组件在完整审计、真实浏览器和构建证据后由 Agent 自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabs", "note": "390px DOM 实测旧版 Tabs Button 与其 Button content 计算 overflow 均为 hidden，证明专用规则被通用后置规则覆盖。"},
+    {"kind": "file", "ref": "tabs/tabs.wxml", "note": "原生改为标签文字与独立 PUI Badge 并列，不再让 Badge 包住整段标签。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 最终级联只裁切 label，不裁切 Badge。"},
+    {"kind": "test", "ref": "scripts/test-tabs.js", "note": "专项合同锁定独立 Badge 结构、文字唯一裁切边界与最终 H5 级联覆盖。"}
+  ],
+  "rootCause": "共享 Button 文本省略规则的选择器优先级和出现顺序都晚于 Tabs 专用规则；同时原生把 Badge 作为整个 label 的宿主而不是标签后的独立展示叶子。",
+  "decision": {
+    "outcome": "Tabs 两端都将 Badge 设为标签文字后的独立 PUI 子组件；文字单独持有 overflow/text-overflow，Badge 固定不收缩。H5 在通用 Button 基线之后以更高优先级恢复 Tabs Button/content 的 visible overflow。",
+    "rationale": "保留 PUI Badge 与 Button 的真实组合，同时将可省略的次要标签文字和必须完整呈现的状态数量分离，避免用扩大宽度、缩小 Badge 或隐藏内容掩盖问题。",
+    "alternativesRejected": [
+      "只增大 Tabs 宽度会在 390px 和长标签时再次失效。",
+      "缩小 Badge 或把 0 隐藏会破坏 Badge 的 showZero 合同。",
+      "仅修改 H5 不同步 WXML 会继续保留小程序端裁切风险。"
+    ]
+  },
+  "impact": {
+    "files": ["tabs/tabs.wxml", "tabs/tabs.wxss", "preview/app.js", "preview/styles.css", "scripts/test-tabs.js", "docs/components/TABS.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0289-tabs-badge-readable-inline-layout.json"],
+    "dependencies": ["pui-button", "pui-badge", "pui-icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabs.js", "scripts/test-badge.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-tabs.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "npm run feedback:check"],
+    "browser": [
+      "390px 与 PreviewDevice 中读取每个徽标和所属 Tab 的 DOM Rect；徽标必须完全位于 Button/content 可见范围内。",
+      "真实点击两个可用徽标 Tab、键盘 Enter 切换，并确认禁用 Tab 不触发选择；切换 light/dark 与视觉开关后复测无页面横溢出。"
+    ],
+    "deviceRisks": [
+      "微信端仍需用合法 AppID 真机确认 pui-badge external class、Slot 布局、rpx 字体回流和 ScrollView 横向惯性。",
+      "微信 CLI 若 touristappid 仍返回 code 10，不能将 H5 与安装产物验证伪报成 miniprogram_npm 成功。"
+    ]
+  },
+  "ai": {
+    "summary": "可截断的是次要标签文字，数量、红点、关键状态与操作永远不能借由通用 Button 的 overflow 被裁掉。",
+    "rules": [
+      "组合 Button、Icon、Badge 时，先明确谁可收缩：文字单独成为可截断节点，Badge 必须是独立 flex:none/standalone 节点。",
+      "组件级 overflow 修复必须检查其是否会被后置的共享 Button 基线覆盖，并以最终计算样式与 DOM Rect 验证。",
+      "H5 组合结构变更若涉及 PUI 子组件锚点，同步审计 WXML；不得只补官网 CSS。"
+    ],
+    "tags": ["tabs", "badge", "overflow", "preview-parity", "390px", "pui-button"]
+  }
+}

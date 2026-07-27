@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0168",
+  "title": "ActionSheet 旧公开合同把业务状态容器和命令式能力误暴露为组件能力",
+  "scope": "component",
+  "components": ["action-sheet", "preview-site", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "按联网核对的 TDesign 合同收敛共有组件，但保留真实可用交互；基础用法只保留必要调用，业务加载、失败、成功和父级回写不能伪装成 ActionSheet 自己的能力。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 375px", "PreviewDevice 390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 action-sheet/action-sheet.js、metadata、H5、示例与 API：公开了 33 个 Props、11 个事件和 open/close/toggle/retry 方法，并在根级渲染 loading/error/empty/retry。",
+    "联网核对 https://tdesign.tencent.com/miniprogram/components/action-sheet、https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/action-sheet，并读取 tdesign-miniprogram@1.15.3 的 miniprogram_dist/action-sheet/{props.js,type.d.ts,action-sheet.js,action-sheet.wxml}。",
+    "固定版本源码只把 ActionSheet 定位为动作选择浮层：items、列表/宫格、visible/defaultVisible、cancel、selected、close、visible-change 和默认 Slot；不拥有根级业务状态或组件实例方法。"
+  ],
+  "expected": "PoemUI ActionSheet 仅公开语义清晰且可由真实 WXML/H5 共同实现的动作合同；动作选择、遮罩关闭、取消、受控回写、0/false 和 180ms/1ms 必须有确定边界，基础 WXML 不应展示 bind:*。",
+  "actual": "旧合同把 title、分组、三段 Slot、关闭策略、根级 loading/error/empty/retry、层级和动效逃生口及命令式方法都作为 ActionSheet 能力；H5 也借这些 Props 渲染状态壳，和当前组件职责及 TDesign 参考不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求联网对照 TDesign、逐组件 battle，并授权当前 Goal 在完整证据后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/action-sheet", "note": "2026-07-20 联网核对 ActionSheet 的公开用途、Props、items、事件和 Slot。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/action-sheet", "note": "2026-07-20 在线核对源码位置；固定 tdesign-miniprogram@1.15.3 的 props.js、type.d.ts、action-sheet.js、action-sheet.wxml 确认 selected → close(select) → visible-change(false)，cancel 仅通知，overlay 为 close(overlay) → visible-change(false)。"},
+    {"kind": "file", "ref": "action-sheet/action-sheet.js", "note": "修复后仅保留 13 Props、默认 Slot、Icon 依赖、真实 list/grid/swiper、180ms/1ms 和四个事件。"},
+    {"kind": "test", "ref": "scripts/test-action-sheet.js", "note": "专项覆盖 0/false、禁用、受控/非受控、取消、遮罩、选择事件顺序、分页、低动效、WXML/H5/API/示例/消费方一致性。"}
+  ],
+  "rootCause": "旧实现以通用浮层/状态容器为起点叠加了大量页面业务和演示诊断能力，没有将 ActionSheet 的职责限制在动作选择与显隐请求。",
+  "decision": {
+    "outcome": "收敛为 align、cancelText、count、description、items、showCancel、showOverlay、theme、usingCustomNavbar、visible、defaultVisible、ariaLabel、reduceMotion；只保留 visible-change/cancel/close/selected 与 default Slot。",
+    "rationale": "这套合同可由真实小程序 WXML/WXSS 和 H5 镜像共同实现，避免把消费者业务状态或全局样式绕过能力伪装成基础组件。PoemUI 明确记录 0/false 的原始项保留与 aria/reduceMotion 扩展。",
+    "alternativesRejected": [
+      "为了保留旧 API 同时保留 root loading/error/empty/retry，会继续让动作面板冒充业务状态页。",
+      "直接照搬 TDesign popupProps/style 等任意样式逃生口，会绕开 PoemUI 语义 Token 与全局视觉配置。",
+      "只改 API 文档、不改 WXML/H5/示例与专项测试，会留下虚假能力。"
+    ]
+  },
+  "impact": {
+    "files": ["action-sheet/action-sheet.js", "action-sheet/action-sheet.json", "action-sheet/action-sheet.wxml", "action-sheet/action-sheet.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/ACTION-SHEET.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-action-sheet.js"],
+    "dependencies": ["pui-icon", "buttonSample", "iconButtonSample", "PreviewDevice edge-to-edge layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-action-sheet.js", "scripts/test-preview-css-token-contract.js", "scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["2026-07-20 已通过 npm run site:build、npm run check、npm run pack:check、npm run example:install、npm run feedback:generate、npm run feedback:check；微信 build-npm 已执行但 touristappid 被 CLI 拒绝（code 10），未伪造 miniprogram_npm。"],
+    "browser": ["http://127.0.0.1:4179/#/components/action-sheet：实际点击 list 选择、取消、遮罩关闭、grid 翻页、禁用项、受控父级回写、reduceMotion 与 Props；390x844 页面/API 无横向溢出，79 个 API cell 全部 normal/clip/visible，控制台 0 warning/error；light/dark、border/shadow/frost/large-radius/gradient 均实际切换后恢复。"],
+    "deviceRisks": ["微信真机仍需核验 fixed 浮层、安全区、swiper 手势、Slot 投影、图标对象和系统低动效。"]
+  },
+  "ai": {
+    "summary": "ActionSheet 只能承载动作集合和显隐请求；业务状态、提交结果和命令式流程必须由父级或 default Slot 管理。",
+    "rules": [
+      "处理 ActionSheet 前先联网核对官方页面与固定 npm 源码；不能按历史 Props 数量保留能力。",
+      "基础 ActionSheet WXML 必须零 bind:*；完整事件只进入 API 或专项示例。",
+      "selected、close 与 visible-change 必须维持 selected → close(select) → visible-change(false)，cancel 只通知且不自动关闭。",
+      "items 的 0、false、空字符串必须保留原始值；disabled 项不能发 selected 或关闭请求。",
+      "不要给 ActionSheet 恢复 root loading/error/empty/retry、title/header/cancel Slot、关闭策略或 open/close/toggle/retry 方法。"
+    ],
+    "tags": ["action-sheet", "tdesign", "api-contract", "controlled-state", "no-fake-state"]
+  }
+}

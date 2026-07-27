@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0352",
+  "title": "Combobox 首次受控打开被零高度测量裁掉搜索框",
+  "scope": "component",
+  "components": ["combobox", "input", "miniprogram-home", "preview-site"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "首页搜索打开后，Combobox 内的真实搜索输入必须可见、可聚焦并筛选组件候选。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "首页点击 Navbar 搜索，Overlay 完成进入后由页面受控写入 Combobox visible=true。",
+    "Combobox Panel 尚未有实测高度时，旧 WXML 同时写入 height:0px 与 max-height:0px。",
+    "部分小程序渲染路径的 selector query 回传 0，Panel 内的 PUI Input 随后持续被 overflow 裁切。"
+  ],
+  "expected": "首次打开应立即露出可测量的搜索行，非零测量值接管稳定 Panel 高度；无论由 Trigger 还是父级受控 visible=true 打开，内部搜索 Input 都应请求焦点。",
+  "actual": "旧实现把零高度视为有效测量结果，首次受控打开可能持续保持 0px，首页只剩 Trigger；受控打开也不会经过内部 requestVisible 的自动聚焦分支。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户报告首页搜索的 Combobox 内搜索框消失。"},
+    {"kind": "file", "ref": "combobox/combobox.wxml", "note": "旧 Panel 使用 panelHeight 同时控制 height 与 max-height，初始高度为零时会裁切搜索行。"},
+    {"kind": "file", "ref": "combobox/combobox.js", "note": "visible 的外部受控变化只走 syncState；修复后零测量不会覆盖引导高度，并同步受控打开的焦点请求。"},
+    {"kind": "test", "ref": "scripts/test-combobox.js", "note": "专项测试覆盖零高度回调、延后受控打开、引导高度和搜索 Input 焦点请求。"}
+  ],
+  "rootCause": "稳定高度机制把 0px SelectorQuery 结果当成有效高度，且首页以受控 Prop 打开时绕过了仅位于 requestVisible 内的 queryFocus 设置。",
+  "decision": {
+    "outcome": "Combobox 仅接受非零测量值作为稳定 Panel 高度；首次可见且尚未测得高度时使用内部 160px 引导轨道。受控和非受控打开共同从 visible 状态推导 queryFocus；H5 使用同名引导轨道和真实 input focus。",
+    "rationale": "引导轨道只覆盖无法测量的首帧，首个真实高度立即接管，不改变公开 Prop、事件、滚动上下文或既有稳定高度规则。",
+    "alternativesRejected": [
+      "在首页增加固定 min-height 会让其他 Combobox 消费者保留同一故障。",
+      "以 height:auto 取代 max-height 动画会违反常驻 Panel 的动效合同。",
+      "把搜索 Input 挪进 Trigger 会恢复已废弃的双输入交互路径。"
+    ]
+  },
+  "impact": {
+    "files": ["combobox/combobox.js", "combobox/combobox.wxml", "preview/app.js", "scripts/test-combobox.js", "docs/components/COMBOBOX.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0352-combobox-first-open-bootstrap-height.json"],
+    "dependencies": ["pui-combobox", "pui-input", "SelectorQuery", "scroll-view", "inputControlSample"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-combobox.js", "node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["2026-07-25 Chrome 本地 H5 预览 http://127.0.0.1:4179/#/components/combobox：展开态真实搜索 Input 可见且获得焦点；实测 Panel height/max-height 与 inner scrollHeight/min-height 均为 268px。关闭后重新打开，Input 仍可见、自动获得焦点，Panel 保持 268px。"],
+    "deviceRisks": ["仍需在 iOS 和 Android 真机确认 SelectorQuery 首帧、软键盘、中文输入法候选、Overlay 触摸阻断与焦点保持。"]
+  },
+  "ai": {
+    "summary": "Combobox 的零高度测量不是稳定布局值；首次打开须保留组件级可见引导轨道，不能由页面补丁掩盖。",
+    "rules": [
+      "Panel 的稳定高度只能由非零实测结果建立，0px 回调必须保留当前引导或既有高度。",
+      "受控 visible=true 与 Trigger 打开必须使用同一搜索 Input 焦点语义。",
+      "首开兜底只属于 Combobox 内部实现，不新增页面私有 min-height 或第二个搜索输入。"
+    ],
+    "tags": ["combobox", "panel-height", "selector-query", "focus", "miniprogram-home", "h5-parity"]
+  }
+}

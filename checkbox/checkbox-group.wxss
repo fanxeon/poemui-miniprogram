@@ -1,0 +1,5 @@
+.pui-checkbox-group{display:flex;flex-direction:column;box-sizing:border-box;gap:var(--pui-space-sm);min-width:0;max-width:100%;color:var(--pui-text-primary)}
+.pui-checkbox-group__options{display:flex;flex-flow:row wrap;gap:var(--pui-space-sm);min-width:0}
+.pui-checkbox-group--disabled{opacity:.72}
+.pui-checkbox-group--readonly{opacity:.88}
+.pui-checkbox-group--reduced-motion,.pui-checkbox-group--reduced-motion pui-checkbox{transition-duration:1ms}

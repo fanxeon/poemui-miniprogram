@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0392",
+  "title": "小程序缺少数据展示区十四个组件的独立可操作页面",
+  "scope": "global",
+  "components": ["miniprogram-home", "avatar", "badge", "card", "image", "tag", "cell", "list", "collapse", "collapsible", "bubble", "swipe-cell", "count-down", "swiper", "table"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "将稳定数据展示组件迁入微信小程序，保留各自公开状态与用户可操作的真实边界。",
+  "environment": {"surfaces": ["miniprogram-home", "miniprogram-data-pages"], "platforms": ["wechat-miniprogram", "node"], "viewports": ["390px"], "themes": ["light", "dark"]},
+  "reproduction": ["迁移前数据展示区十四个稳定组件没有小程序独立路由。", "用户无法从首页或搜索进入并观察父级对选择、展开、错误恢复和计时状态的回写。"],
+  "expected": "每个数据展示组件具有显式路由、共享页面壳、真实 PUI 组合与可观察的父级状态回写。",
+  "actual": "此前仅有包级组件与 H5 镜像，小程序目录和搜索入口缺失。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/avatar/", "note": "十四个组件页统一接入共享详情页设施。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/table/", "note": "选择和排序意图由页面数据回写。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-data-pages.js", "note": "覆盖十四页结构和关键交互回写。"}
+  ],
+  "rootCause": "已发布的数据展示组件缺少微信端的路由、页面级组合和交互验证。",
+  "decision": {"outcome": "新增十四条显式路由、首页数据展示分区和专项页面测试，并让页面只处理组件事件与本地状态。", "rationale": "保留组件各自的公开合同，避免用静态展示或不存在的业务结果替代交互。", "alternativesRejected": ["把十四个组件压成一个按参数切换的页面。", "把 Cell 导航指向不存在的路由。", "把倒计时结束或操作事件描述为业务成功。"]},
+  "impact": {"files": ["miniprogram/app.json", "miniprogram/pages/index/index.js", "miniprogram/pages/components/avatar/", "miniprogram/pages/components/table/", "scripts/test-miniprogram-data-pages.js", "docs/MINIPROGRAM_DATA_PAGES.md"], "dependencies": ["component-page", "pui-cell", "pui-table", "pui-swiper"]},
+  "verification": {"tests": ["scripts/test-miniprogram-data-pages.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js"], "commands": ["node scripts/test-miniprogram-data-pages.js：通过", "node scripts/test-miniprogram-home.js：通过", "npm run check：通过", "微信开发者工具 build-npm：通过，warnings=[]"], "browser": ["2026-07-26 微信开发者工具 Stable 2.01.2510290 的 iPhone 12/13 (Pro) 模拟器：从首页展开数据展示并进入 Table，表格在 390px 设备内渲染，选择动作后出现父级回写状态；这是代表页检查。"], "deviceRisks": ["其余十三页尚未完成 390px 逐页实测；iOS/Android 真机仍未验证图片长按、SwipeCell 手势、倒计时、Swiper 惯性、Table 固定列和读屏。"]},
+  "ai": {"summary": "数据展示页必须使用独立路由与真实父级回写，不以展示文字伪造完成状态。", "rules": ["Cell 仅导航到工程存在的真实路由。", "SwipeCell、Swiper、Table 和 Collapse 的状态必须由页面回写。", "倒计时归零、Bubble 操作和图片事件不得宣称业务成功。", "新增页面同步首页、Search、专项测试、文档和 Ledger。"], "tags": ["miniprogram", "data-display", "routing", "controlled", "no-fake-success"]}
+}

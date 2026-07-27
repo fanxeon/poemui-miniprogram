@@ -1,0 +1,1659 @@
+{
+  "style": {
+    "name": "PoemUI Roundline",
+    "viewBox": "0 0 24 24",
+    "strokeWidth": "2.15",
+    "lineCap": "round",
+    "lineJoin": "round",
+    "color": "currentColor",
+    "notes": "以 Lucide 成熟构形为底稿，统一为 PoemUI 的圆线权重与光学微调。源图标保持单色、currentColor 和 24 x 24 画布。"
+  },
+  "upstream": {
+    "name": "Lucide",
+    "package": "lucide-static",
+    "version": "1.24.0",
+    "license": "ISC / MIT for Feather-derived icons",
+    "url": "https://lucide.dev"
+  },
+  "categories": [
+    {
+      "key": "navigation",
+      "label": "Navigation 导航",
+      "desc": "方向、返回、菜单、页面切换",
+      "count": 15
+    },
+    {
+      "key": "action",
+      "label": "Action 操作",
+      "desc": "新增、删除、复制、刷新、分享等高频命令",
+      "count": 16
+    },
+    {
+      "key": "editing",
+      "label": "Editing 编辑",
+      "desc": "文本、排版、撤销、格式化",
+      "count": 13
+    },
+    {
+      "key": "status",
+      "label": "Status 状态",
+      "desc": "成功、失败、警告、提示、加载",
+      "count": 12
+    },
+    {
+      "key": "form",
+      "label": "Form 表单",
+      "desc": "输入、搜索、筛选、可见性、选择",
+      "count": 13
+    },
+    {
+      "key": "file",
+      "label": "File 文件",
+      "desc": "文件、文件夹、附件、归档",
+      "count": 13
+    },
+    {
+      "key": "media",
+      "label": "Media 媒体",
+      "desc": "图片、音视频、播放控制",
+      "count": 13
+    },
+    {
+      "key": "communication",
+      "label": "Communication 通信",
+      "desc": "消息、通知、邮件、电话",
+      "count": 12
+    },
+    {
+      "key": "user",
+      "label": "User 用户",
+      "desc": "账户、团队、身份、收藏",
+      "count": 12
+    },
+    {
+      "key": "commerce",
+      "label": "Commerce 商业",
+      "desc": "购物、订单、支付、票券",
+      "count": 12
+    },
+    {
+      "key": "device",
+      "label": "Device 设备",
+      "desc": "终端、网络、电量、打印",
+      "count": 12
+    },
+    {
+      "key": "chart",
+      "label": "Chart 图表",
+      "desc": "数据、趋势、统计、仪表盘",
+      "count": 12
+    },
+    {
+      "key": "map",
+      "label": "Map 地图",
+      "desc": "位置、路线、地点、出行",
+      "count": 12
+    },
+    {
+      "key": "development",
+      "label": "Development 开发",
+      "desc": "代码、接口、分支、终端、数据库",
+      "count": 12
+    },
+    {
+      "key": "layout",
+      "label": "Layout 布局",
+      "desc": "组件、容器、栅格、面板",
+      "count": 12
+    },
+    {
+      "key": "components",
+      "label": "Components 组件",
+      "desc": "PoemUI 已落地组件的专属图形",
+      "count": 14
+    },
+    {
+      "key": "abstract",
+      "label": "Abstract 抽象",
+      "desc": "智能、灵感、玻璃、品牌氛围",
+      "count": 13
+    }
+  ],
+  "icons": [
+    {
+      "name": "arrow-left",
+      "category": "navigation",
+      "source": "arrow-left",
+      "path": "navigation/arrow-left.svg",
+      "codepoint": "E001"
+    },
+    {
+      "name": "arrow-right",
+      "category": "navigation",
+      "source": "arrow-right",
+      "path": "navigation/arrow-right.svg",
+      "codepoint": "E002"
+    },
+    {
+      "name": "arrow-up",
+      "category": "navigation",
+      "source": "arrow-up",
+      "path": "navigation/arrow-up.svg",
+      "codepoint": "E003"
+    },
+    {
+      "name": "arrow-down",
+      "category": "navigation",
+      "source": "arrow-down",
+      "path": "navigation/arrow-down.svg",
+      "codepoint": "E004"
+    },
+    {
+      "name": "chevron-left",
+      "category": "navigation",
+      "source": "chevron-left",
+      "path": "navigation/chevron-left.svg",
+      "codepoint": "E005"
+    },
+    {
+      "name": "chevron-right",
+      "category": "navigation",
+      "source": "chevron-right",
+      "path": "navigation/chevron-right.svg",
+      "codepoint": "E006"
+    },
+    {
+      "name": "chevron-up",
+      "category": "navigation",
+      "source": "chevron-up",
+      "path": "navigation/chevron-up.svg",
+      "codepoint": "E007"
+    },
+    {
+      "name": "chevron-down",
+      "category": "navigation",
+      "source": "chevron-down",
+      "path": "navigation/chevron-down.svg",
+      "codepoint": "E008"
+    },
+    {
+      "name": "caret-left",
+      "category": "navigation",
+      "source": "chevron-left",
+      "path": "navigation/caret-left.svg",
+      "codepoint": "E009"
+    },
+    {
+      "name": "caret-right",
+      "category": "navigation",
+      "source": "chevron-right",
+      "path": "navigation/caret-right.svg",
+      "codepoint": "E00A"
+    },
+    {
+      "name": "menu",
+      "category": "navigation",
+      "source": "menu",
+      "path": "navigation/menu.svg",
+      "codepoint": "E00B"
+    },
+    {
+      "name": "more-horizontal",
+      "category": "navigation",
+      "source": "ellipsis",
+      "path": "navigation/more-horizontal.svg",
+      "codepoint": "E00C"
+    },
+    {
+      "name": "more-vertical",
+      "category": "navigation",
+      "source": "ellipsis-vertical",
+      "path": "navigation/more-vertical.svg",
+      "codepoint": "E00D"
+    },
+    {
+      "name": "home",
+      "category": "navigation",
+      "source": "house",
+      "path": "navigation/home.svg",
+      "codepoint": "E00E"
+    },
+    {
+      "name": "arrow-left-right",
+      "category": "navigation",
+      "source": "arrow-left-right",
+      "path": "navigation/arrow-left-right.svg",
+      "codepoint": "E0D2"
+    },
+    {
+      "name": "add",
+      "category": "action",
+      "source": "plus",
+      "path": "action/add.svg",
+      "codepoint": "E00F"
+    },
+    {
+      "name": "add-circle",
+      "category": "action",
+      "source": "circle-plus",
+      "path": "action/add-circle.svg",
+      "codepoint": "E010"
+    },
+    {
+      "name": "minus",
+      "category": "action",
+      "source": "minus",
+      "path": "action/minus.svg",
+      "codepoint": "E011"
+    },
+    {
+      "name": "minus-circle",
+      "category": "action",
+      "source": "circle-minus",
+      "path": "action/minus-circle.svg",
+      "codepoint": "E012"
+    },
+    {
+      "name": "close",
+      "category": "action",
+      "source": "x",
+      "path": "action/close.svg",
+      "codepoint": "E013"
+    },
+    {
+      "name": "close-circle",
+      "category": "action",
+      "source": "circle-x",
+      "path": "action/close-circle.svg",
+      "codepoint": "E014"
+    },
+    {
+      "name": "check",
+      "category": "action",
+      "source": "check",
+      "path": "action/check.svg",
+      "codepoint": "E015"
+    },
+    {
+      "name": "check-circle",
+      "category": "action",
+      "source": "circle-check",
+      "path": "action/check-circle.svg",
+      "codepoint": "E016"
+    },
+    {
+      "name": "edit",
+      "category": "action",
+      "source": "pencil",
+      "path": "action/edit.svg",
+      "codepoint": "E017"
+    },
+    {
+      "name": "delete",
+      "category": "action",
+      "source": "trash-2",
+      "path": "action/delete.svg",
+      "codepoint": "E018"
+    },
+    {
+      "name": "copy",
+      "category": "action",
+      "source": "copy",
+      "path": "action/copy.svg",
+      "codepoint": "E019"
+    },
+    {
+      "name": "download",
+      "category": "action",
+      "source": "download",
+      "path": "action/download.svg",
+      "codepoint": "E01A"
+    },
+    {
+      "name": "upload",
+      "category": "action",
+      "source": "upload",
+      "path": "action/upload.svg",
+      "codepoint": "E01B"
+    },
+    {
+      "name": "refresh",
+      "category": "action",
+      "source": "rotate-cw",
+      "path": "action/refresh.svg",
+      "codepoint": "E01C"
+    },
+    {
+      "name": "share",
+      "category": "action",
+      "source": "share-2",
+      "path": "action/share.svg",
+      "codepoint": "E01D"
+    },
+    {
+      "name": "external-link",
+      "category": "action",
+      "source": "external-link",
+      "path": "action/external-link.svg",
+      "codepoint": "E01E"
+    },
+    {
+      "name": "bold",
+      "category": "editing",
+      "source": "bold",
+      "path": "editing/bold.svg",
+      "codepoint": "E01F"
+    },
+    {
+      "name": "italic",
+      "category": "editing",
+      "source": "italic",
+      "path": "editing/italic.svg",
+      "codepoint": "E020"
+    },
+    {
+      "name": "underline",
+      "category": "editing",
+      "source": "underline",
+      "path": "editing/underline.svg",
+      "codepoint": "E021"
+    },
+    {
+      "name": "strikethrough",
+      "category": "editing",
+      "source": "strikethrough",
+      "path": "editing/strikethrough.svg",
+      "codepoint": "E022"
+    },
+    {
+      "name": "align-left",
+      "category": "editing",
+      "source": "text-align-start",
+      "path": "editing/align-left.svg",
+      "codepoint": "E023"
+    },
+    {
+      "name": "align-center",
+      "category": "editing",
+      "source": "text-align-center",
+      "path": "editing/align-center.svg",
+      "codepoint": "E024"
+    },
+    {
+      "name": "align-right",
+      "category": "editing",
+      "source": "text-align-end",
+      "path": "editing/align-right.svg",
+      "codepoint": "E025"
+    },
+    {
+      "name": "list-bullet",
+      "category": "editing",
+      "source": "list",
+      "path": "editing/list-bullet.svg",
+      "codepoint": "E026"
+    },
+    {
+      "name": "list-number",
+      "category": "editing",
+      "source": "list-ordered",
+      "path": "editing/list-number.svg",
+      "codepoint": "E027"
+    },
+    {
+      "name": "undo",
+      "category": "editing",
+      "source": "undo-2",
+      "path": "editing/undo.svg",
+      "codepoint": "E028"
+    },
+    {
+      "name": "redo",
+      "category": "editing",
+      "source": "redo-2",
+      "path": "editing/redo.svg",
+      "codepoint": "E029"
+    },
+    {
+      "name": "text",
+      "category": "editing",
+      "source": "type",
+      "path": "editing/text.svg",
+      "codepoint": "E02A"
+    },
+    {
+      "name": "tag",
+      "category": "editing",
+      "source": "tag",
+      "path": "editing/tag.svg",
+      "codepoint": "E0D3"
+    },
+    {
+      "name": "success-circle",
+      "category": "status",
+      "source": "circle-check-big",
+      "path": "status/success-circle.svg",
+      "codepoint": "E02B"
+    },
+    {
+      "name": "error-circle",
+      "category": "status",
+      "source": "circle-x",
+      "path": "status/error-circle.svg",
+      "codepoint": "E02C"
+    },
+    {
+      "name": "warning-triangle",
+      "category": "status",
+      "source": "triangle-alert",
+      "path": "status/warning-triangle.svg",
+      "codepoint": "E02D"
+    },
+    {
+      "name": "info-circle",
+      "category": "status",
+      "source": "info",
+      "path": "status/info-circle.svg",
+      "codepoint": "E02E"
+    },
+    {
+      "name": "help-circle",
+      "category": "status",
+      "source": "circle-question-mark",
+      "path": "status/help-circle.svg",
+      "codepoint": "E02F"
+    },
+    {
+      "name": "loading-ring",
+      "category": "status",
+      "source": "loader-circle",
+      "path": "status/loading-ring.svg",
+      "codepoint": "E030"
+    },
+    {
+      "name": "shield-check",
+      "category": "status",
+      "source": "shield-check",
+      "path": "status/shield-check.svg",
+      "codepoint": "E031"
+    },
+    {
+      "name": "shield-warning",
+      "category": "status",
+      "source": "shield-alert",
+      "path": "status/shield-warning.svg",
+      "codepoint": "E032"
+    },
+    {
+      "name": "verified",
+      "category": "status",
+      "source": "badge-check",
+      "path": "status/verified.svg",
+      "codepoint": "E033"
+    },
+    {
+      "name": "blocked",
+      "category": "status",
+      "source": "ban",
+      "path": "status/blocked.svg",
+      "codepoint": "E034"
+    },
+    {
+      "name": "progress",
+      "category": "status",
+      "source": "circle-dashed",
+      "path": "status/progress.svg",
+      "codepoint": "E035"
+    },
+    {
+      "name": "spark",
+      "category": "status",
+      "source": "sparkle",
+      "path": "status/spark.svg",
+      "codepoint": "E036"
+    },
+    {
+      "name": "search",
+      "category": "form",
+      "source": "search",
+      "path": "form/search.svg",
+      "codepoint": "E037"
+    },
+    {
+      "name": "filter",
+      "category": "form",
+      "source": "funnel",
+      "path": "form/filter.svg",
+      "codepoint": "E038"
+    },
+    {
+      "name": "eye",
+      "category": "form",
+      "source": "eye",
+      "path": "form/eye.svg",
+      "codepoint": "E039"
+    },
+    {
+      "name": "eye-off",
+      "category": "form",
+      "source": "eye-off",
+      "path": "form/eye-off.svg",
+      "codepoint": "E03A"
+    },
+    {
+      "name": "lock",
+      "category": "form",
+      "source": "lock",
+      "path": "form/lock.svg",
+      "codepoint": "E03B"
+    },
+    {
+      "name": "unlock",
+      "category": "form",
+      "source": "lock-open",
+      "path": "form/unlock.svg",
+      "codepoint": "E03C"
+    },
+    {
+      "name": "calendar",
+      "category": "form",
+      "source": "calendar",
+      "path": "form/calendar.svg",
+      "codepoint": "E03D"
+    },
+    {
+      "name": "clock",
+      "category": "form",
+      "source": "clock",
+      "path": "form/clock.svg",
+      "codepoint": "E03E"
+    },
+    {
+      "name": "clear",
+      "category": "form",
+      "source": "circle-x",
+      "path": "form/clear.svg",
+      "codepoint": "E03F"
+    },
+    {
+      "name": "scan",
+      "category": "form",
+      "source": "scan-line",
+      "path": "form/scan.svg",
+      "codepoint": "E040"
+    },
+    {
+      "name": "slider",
+      "category": "form",
+      "source": "sliders-horizontal",
+      "path": "form/slider.svg",
+      "codepoint": "E041"
+    },
+    {
+      "name": "checkbox",
+      "category": "form",
+      "source": "square-check-big",
+      "path": "form/checkbox.svg",
+      "codepoint": "E042"
+    },
+    {
+      "name": "radio",
+      "category": "form",
+      "source": "circle-dot",
+      "path": "form/radio.svg",
+      "codepoint": "E043"
+    },
+    {
+      "name": "file",
+      "category": "file",
+      "source": "file",
+      "path": "file/file.svg",
+      "codepoint": "E044"
+    },
+    {
+      "name": "file-text",
+      "category": "file",
+      "source": "file-text",
+      "path": "file/file-text.svg",
+      "codepoint": "E045"
+    },
+    {
+      "name": "file-code",
+      "category": "file",
+      "source": "file-code",
+      "path": "file/file-code.svg",
+      "codepoint": "E046"
+    },
+    {
+      "name": "file-image",
+      "category": "file",
+      "source": "file-image",
+      "path": "file/file-image.svg",
+      "codepoint": "E047"
+    },
+    {
+      "name": "file-pdf",
+      "category": "file",
+      "source": "file-text",
+      "path": "file/file-pdf.svg",
+      "codepoint": "E048"
+    },
+    {
+      "name": "file-zip",
+      "category": "file",
+      "source": "file-archive",
+      "path": "file/file-zip.svg",
+      "codepoint": "E049"
+    },
+    {
+      "name": "folder",
+      "category": "file",
+      "source": "folder",
+      "path": "file/folder.svg",
+      "codepoint": "E04A"
+    },
+    {
+      "name": "folder-open",
+      "category": "file",
+      "source": "folder-open",
+      "path": "file/folder-open.svg",
+      "codepoint": "E04B"
+    },
+    {
+      "name": "folder-add",
+      "category": "file",
+      "source": "folder-plus",
+      "path": "file/folder-add.svg",
+      "codepoint": "E04C"
+    },
+    {
+      "name": "folder-search",
+      "category": "file",
+      "source": "folder-search",
+      "path": "file/folder-search.svg",
+      "codepoint": "E04D"
+    },
+    {
+      "name": "archive",
+      "category": "file",
+      "source": "archive",
+      "path": "file/archive.svg",
+      "codepoint": "E04E"
+    },
+    {
+      "name": "attachment",
+      "category": "file",
+      "source": "paperclip",
+      "path": "file/attachment.svg",
+      "codepoint": "E04F"
+    },
+    {
+      "name": "cloud",
+      "category": "file",
+      "source": "cloud",
+      "path": "file/cloud.svg",
+      "codepoint": "E050"
+    },
+    {
+      "name": "image",
+      "category": "media",
+      "source": "image",
+      "path": "media/image.svg",
+      "codepoint": "E051"
+    },
+    {
+      "name": "camera",
+      "category": "media",
+      "source": "camera",
+      "path": "media/camera.svg",
+      "codepoint": "E052"
+    },
+    {
+      "name": "video",
+      "category": "media",
+      "source": "video",
+      "path": "media/video.svg",
+      "codepoint": "E053"
+    },
+    {
+      "name": "mic",
+      "category": "media",
+      "source": "mic",
+      "path": "media/mic.svg",
+      "codepoint": "E054"
+    },
+    {
+      "name": "volume",
+      "category": "media",
+      "source": "volume-2",
+      "path": "media/volume.svg",
+      "codepoint": "E055"
+    },
+    {
+      "name": "volume-mute",
+      "category": "media",
+      "source": "volume-x",
+      "path": "media/volume-mute.svg",
+      "codepoint": "E056"
+    },
+    {
+      "name": "play",
+      "category": "media",
+      "source": "play",
+      "path": "media/play.svg",
+      "codepoint": "E057"
+    },
+    {
+      "name": "pause",
+      "category": "media",
+      "source": "pause",
+      "path": "media/pause.svg",
+      "codepoint": "E058"
+    },
+    {
+      "name": "stop",
+      "category": "media",
+      "source": "square",
+      "path": "media/stop.svg",
+      "codepoint": "E059"
+    },
+    {
+      "name": "music",
+      "category": "media",
+      "source": "music",
+      "path": "media/music.svg",
+      "codepoint": "E05A"
+    },
+    {
+      "name": "crop",
+      "category": "media",
+      "source": "crop",
+      "path": "media/crop.svg",
+      "codepoint": "E05B"
+    },
+    {
+      "name": "palette",
+      "category": "media",
+      "source": "palette",
+      "path": "media/palette.svg",
+      "codepoint": "E05C"
+    },
+    {
+      "name": "gallery-horizontal",
+      "category": "media",
+      "source": "gallery-horizontal",
+      "path": "media/gallery-horizontal.svg",
+      "codepoint": "E0D4"
+    },
+    {
+      "name": "message",
+      "category": "communication",
+      "source": "message-square",
+      "path": "communication/message.svg",
+      "codepoint": "E05D"
+    },
+    {
+      "name": "chat",
+      "category": "communication",
+      "source": "messages-square",
+      "path": "communication/chat.svg",
+      "codepoint": "E05E"
+    },
+    {
+      "name": "comment",
+      "category": "communication",
+      "source": "message-circle",
+      "path": "communication/comment.svg",
+      "codepoint": "E05F"
+    },
+    {
+      "name": "mail",
+      "category": "communication",
+      "source": "mail",
+      "path": "communication/mail.svg",
+      "codepoint": "E060"
+    },
+    {
+      "name": "phone",
+      "category": "communication",
+      "source": "phone",
+      "path": "communication/phone.svg",
+      "codepoint": "E061"
+    },
+    {
+      "name": "bell",
+      "category": "communication",
+      "source": "bell",
+      "path": "communication/bell.svg",
+      "codepoint": "E062"
+    },
+    {
+      "name": "bell-off",
+      "category": "communication",
+      "source": "bell-off",
+      "path": "communication/bell-off.svg",
+      "codepoint": "E063"
+    },
+    {
+      "name": "send",
+      "category": "communication",
+      "source": "send-horizontal",
+      "path": "communication/send.svg",
+      "codepoint": "E064"
+    },
+    {
+      "name": "inbox",
+      "category": "communication",
+      "source": "inbox",
+      "path": "communication/inbox.svg",
+      "codepoint": "E065"
+    },
+    {
+      "name": "at",
+      "category": "communication",
+      "source": "at-sign",
+      "path": "communication/at.svg",
+      "codepoint": "E066"
+    },
+    {
+      "name": "link",
+      "category": "communication",
+      "source": "link-2",
+      "path": "communication/link.svg",
+      "codepoint": "E067"
+    },
+    {
+      "name": "unlink",
+      "category": "communication",
+      "source": "unlink-2",
+      "path": "communication/unlink.svg",
+      "codepoint": "E068"
+    },
+    {
+      "name": "user",
+      "category": "user",
+      "source": "user-round",
+      "path": "user/user.svg",
+      "codepoint": "E069"
+    },
+    {
+      "name": "user-add",
+      "category": "user",
+      "source": "user-round-plus",
+      "path": "user/user-add.svg",
+      "codepoint": "E06A"
+    },
+    {
+      "name": "user-check",
+      "category": "user",
+      "source": "user-round-check",
+      "path": "user/user-check.svg",
+      "codepoint": "E06B"
+    },
+    {
+      "name": "user-circle",
+      "category": "user",
+      "source": "circle-user-round",
+      "path": "user/user-circle.svg",
+      "codepoint": "E06C"
+    },
+    {
+      "name": "users",
+      "category": "user",
+      "source": "users-round",
+      "path": "user/users.svg",
+      "codepoint": "E06D"
+    },
+    {
+      "name": "team",
+      "category": "user",
+      "source": "users",
+      "path": "user/team.svg",
+      "codepoint": "E06E"
+    },
+    {
+      "name": "id-card",
+      "category": "user",
+      "source": "id-card",
+      "path": "user/id-card.svg",
+      "codepoint": "E06F"
+    },
+    {
+      "name": "profile",
+      "category": "user",
+      "source": "contact-round",
+      "path": "user/profile.svg",
+      "codepoint": "E070"
+    },
+    {
+      "name": "heart",
+      "category": "user",
+      "source": "heart",
+      "path": "user/heart.svg",
+      "codepoint": "E071"
+    },
+    {
+      "name": "star",
+      "category": "user",
+      "source": "star",
+      "path": "user/star.svg",
+      "codepoint": "E072"
+    },
+    {
+      "name": "bookmark",
+      "category": "user",
+      "source": "bookmark",
+      "path": "user/bookmark.svg",
+      "codepoint": "E073"
+    },
+    {
+      "name": "crown",
+      "category": "user",
+      "source": "crown",
+      "path": "user/crown.svg",
+      "codepoint": "E074"
+    },
+    {
+      "name": "cart",
+      "category": "commerce",
+      "source": "shopping-cart",
+      "path": "commerce/cart.svg",
+      "codepoint": "E075"
+    },
+    {
+      "name": "bag",
+      "category": "commerce",
+      "source": "shopping-bag",
+      "path": "commerce/bag.svg",
+      "codepoint": "E076"
+    },
+    {
+      "name": "wallet",
+      "category": "commerce",
+      "source": "wallet",
+      "path": "commerce/wallet.svg",
+      "codepoint": "E077"
+    },
+    {
+      "name": "credit-card",
+      "category": "commerce",
+      "source": "credit-card",
+      "path": "commerce/credit-card.svg",
+      "codepoint": "E078"
+    },
+    {
+      "name": "coupon",
+      "category": "commerce",
+      "source": "ticket-percent",
+      "path": "commerce/coupon.svg",
+      "codepoint": "E079"
+    },
+    {
+      "name": "ticket",
+      "category": "commerce",
+      "source": "ticket",
+      "path": "commerce/ticket.svg",
+      "codepoint": "E07A"
+    },
+    {
+      "name": "gift",
+      "category": "commerce",
+      "source": "gift",
+      "path": "commerce/gift.svg",
+      "codepoint": "E07B"
+    },
+    {
+      "name": "tag-price",
+      "category": "commerce",
+      "source": "badge-dollar-sign",
+      "path": "commerce/tag-price.svg",
+      "codepoint": "E07C"
+    },
+    {
+      "name": "receipt",
+      "category": "commerce",
+      "source": "receipt",
+      "path": "commerce/receipt.svg",
+      "codepoint": "E07D"
+    },
+    {
+      "name": "coin",
+      "category": "commerce",
+      "source": "circle-dollar-sign",
+      "path": "commerce/coin.svg",
+      "codepoint": "E07E"
+    },
+    {
+      "name": "safe-box",
+      "category": "commerce",
+      "source": "vault",
+      "path": "commerce/safe-box.svg",
+      "codepoint": "E07F"
+    },
+    {
+      "name": "store",
+      "category": "commerce",
+      "source": "store",
+      "path": "commerce/store.svg",
+      "codepoint": "E080"
+    },
+    {
+      "name": "phone-device",
+      "category": "device",
+      "source": "smartphone",
+      "path": "device/phone-device.svg",
+      "codepoint": "E081"
+    },
+    {
+      "name": "tablet",
+      "category": "device",
+      "source": "tablet",
+      "path": "device/tablet.svg",
+      "codepoint": "E082"
+    },
+    {
+      "name": "desktop",
+      "category": "device",
+      "source": "monitor",
+      "path": "device/desktop.svg",
+      "codepoint": "E083"
+    },
+    {
+      "name": "watch",
+      "category": "device",
+      "source": "watch",
+      "path": "device/watch.svg",
+      "codepoint": "E084"
+    },
+    {
+      "name": "keyboard",
+      "category": "device",
+      "source": "keyboard",
+      "path": "device/keyboard.svg",
+      "codepoint": "E085"
+    },
+    {
+      "name": "mouse",
+      "category": "device",
+      "source": "mouse",
+      "path": "device/mouse.svg",
+      "codepoint": "E086"
+    },
+    {
+      "name": "printer",
+      "category": "device",
+      "source": "printer",
+      "path": "device/printer.svg",
+      "codepoint": "E087"
+    },
+    {
+      "name": "wifi",
+      "category": "device",
+      "source": "wifi",
+      "path": "device/wifi.svg",
+      "codepoint": "E088"
+    },
+    {
+      "name": "battery",
+      "category": "device",
+      "source": "battery-medium",
+      "path": "device/battery.svg",
+      "codepoint": "E089"
+    },
+    {
+      "name": "battery-charge",
+      "category": "device",
+      "source": "battery-charging",
+      "path": "device/battery-charge.svg",
+      "codepoint": "E08A"
+    },
+    {
+      "name": "server",
+      "category": "device",
+      "source": "server",
+      "path": "device/server.svg",
+      "codepoint": "E08B"
+    },
+    {
+      "name": "chip",
+      "category": "device",
+      "source": "cpu",
+      "path": "device/chip.svg",
+      "codepoint": "E08C"
+    },
+    {
+      "name": "chart-bar",
+      "category": "chart",
+      "source": "chart-no-axes-column",
+      "path": "chart/chart-bar.svg",
+      "codepoint": "E08D"
+    },
+    {
+      "name": "chart-line",
+      "category": "chart",
+      "source": "chart-line",
+      "path": "chart/chart-line.svg",
+      "codepoint": "E08E"
+    },
+    {
+      "name": "chart-pie",
+      "category": "chart",
+      "source": "chart-pie",
+      "path": "chart/chart-pie.svg",
+      "codepoint": "E08F"
+    },
+    {
+      "name": "chart-donut",
+      "category": "chart",
+      "source": "donut",
+      "path": "chart/chart-donut.svg",
+      "codepoint": "E090"
+    },
+    {
+      "name": "trend-up",
+      "category": "chart",
+      "source": "trending-up",
+      "path": "chart/trend-up.svg",
+      "codepoint": "E091"
+    },
+    {
+      "name": "trend-down",
+      "category": "chart",
+      "source": "trending-down",
+      "path": "chart/trend-down.svg",
+      "codepoint": "E092"
+    },
+    {
+      "name": "dashboard",
+      "category": "chart",
+      "source": "gauge",
+      "path": "chart/dashboard.svg",
+      "codepoint": "E093"
+    },
+    {
+      "name": "activity",
+      "category": "chart",
+      "source": "activity",
+      "path": "chart/activity.svg",
+      "codepoint": "E094"
+    },
+    {
+      "name": "rank",
+      "category": "chart",
+      "source": "trophy",
+      "path": "chart/rank.svg",
+      "codepoint": "E095"
+    },
+    {
+      "name": "matrix",
+      "category": "chart",
+      "source": "grid-3x3",
+      "path": "chart/matrix.svg",
+      "codepoint": "E096"
+    },
+    {
+      "name": "table",
+      "category": "chart",
+      "source": "table-2",
+      "path": "chart/table.svg",
+      "codepoint": "E097"
+    },
+    {
+      "name": "timeline",
+      "category": "chart",
+      "source": "timeline",
+      "path": "chart/timeline.svg",
+      "codepoint": "E098"
+    },
+    {
+      "name": "location",
+      "category": "map",
+      "source": "map-pin",
+      "path": "map/location.svg",
+      "codepoint": "E099"
+    },
+    {
+      "name": "map",
+      "category": "map",
+      "source": "map",
+      "path": "map/map.svg",
+      "codepoint": "E09A"
+    },
+    {
+      "name": "compass",
+      "category": "map",
+      "source": "compass",
+      "path": "map/compass.svg",
+      "codepoint": "E09B"
+    },
+    {
+      "name": "navigation-pointer",
+      "category": "map",
+      "source": "navigation",
+      "path": "map/navigation-pointer.svg",
+      "codepoint": "E09C"
+    },
+    {
+      "name": "route",
+      "category": "map",
+      "source": "route",
+      "path": "map/route.svg",
+      "codepoint": "E09D"
+    },
+    {
+      "name": "flag",
+      "category": "map",
+      "source": "flag",
+      "path": "map/flag.svg",
+      "codepoint": "E09E"
+    },
+    {
+      "name": "pin",
+      "category": "map",
+      "source": "map-pinned",
+      "path": "map/pin.svg",
+      "codepoint": "E09F"
+    },
+    {
+      "name": "globe",
+      "category": "map",
+      "source": "earth",
+      "path": "map/globe.svg",
+      "codepoint": "E0A0"
+    },
+    {
+      "name": "car",
+      "category": "map",
+      "source": "car",
+      "path": "map/car.svg",
+      "codepoint": "E0A1"
+    },
+    {
+      "name": "bike",
+      "category": "map",
+      "source": "bike",
+      "path": "map/bike.svg",
+      "codepoint": "E0A2"
+    },
+    {
+      "name": "walk",
+      "category": "map",
+      "source": "footprints",
+      "path": "map/walk.svg",
+      "codepoint": "E0A3"
+    },
+    {
+      "name": "train",
+      "category": "map",
+      "source": "train-front",
+      "path": "map/train.svg",
+      "codepoint": "E0A4"
+    },
+    {
+      "name": "code",
+      "category": "development",
+      "source": "code-xml",
+      "path": "development/code.svg",
+      "codepoint": "E0A5"
+    },
+    {
+      "name": "terminal",
+      "category": "development",
+      "source": "square-terminal",
+      "path": "development/terminal.svg",
+      "codepoint": "E0A6"
+    },
+    {
+      "name": "bug",
+      "category": "development",
+      "source": "bug",
+      "path": "development/bug.svg",
+      "codepoint": "E0A7"
+    },
+    {
+      "name": "branch",
+      "category": "development",
+      "source": "git-branch",
+      "path": "development/branch.svg",
+      "codepoint": "E0A8"
+    },
+    {
+      "name": "commit",
+      "category": "development",
+      "source": "git-commit-horizontal",
+      "path": "development/commit.svg",
+      "codepoint": "E0A9"
+    },
+    {
+      "name": "merge",
+      "category": "development",
+      "source": "git-merge",
+      "path": "development/merge.svg",
+      "codepoint": "E0AA"
+    },
+    {
+      "name": "database",
+      "category": "development",
+      "source": "database",
+      "path": "development/database.svg",
+      "codepoint": "E0AB"
+    },
+    {
+      "name": "api",
+      "category": "development",
+      "source": "webhook",
+      "path": "development/api.svg",
+      "codepoint": "E0AC"
+    },
+    {
+      "name": "package",
+      "category": "development",
+      "source": "package",
+      "path": "development/package.svg",
+      "codepoint": "E0AD"
+    },
+    {
+      "name": "command",
+      "category": "development",
+      "source": "command",
+      "path": "development/command.svg",
+      "codepoint": "E0AE"
+    },
+    {
+      "name": "braces",
+      "category": "development",
+      "source": "braces",
+      "path": "development/braces.svg",
+      "codepoint": "E0AF"
+    },
+    {
+      "name": "brackets",
+      "category": "development",
+      "source": "brackets",
+      "path": "development/brackets.svg",
+      "codepoint": "E0B0"
+    },
+    {
+      "name": "app",
+      "category": "layout",
+      "source": "grid-2x2",
+      "path": "layout/app.svg",
+      "codepoint": "E0B1"
+    },
+    {
+      "name": "grid",
+      "category": "layout",
+      "source": "layout-grid",
+      "path": "layout/grid.svg",
+      "codepoint": "E0B2"
+    },
+    {
+      "name": "columns",
+      "category": "layout",
+      "source": "columns-3",
+      "path": "layout/columns.svg",
+      "codepoint": "E0B3"
+    },
+    {
+      "name": "rows",
+      "category": "layout",
+      "source": "rows-3",
+      "path": "layout/rows.svg",
+      "codepoint": "E0B4"
+    },
+    {
+      "name": "sidebar-left",
+      "category": "layout",
+      "source": "panel-left",
+      "path": "layout/sidebar-left.svg",
+      "codepoint": "E0B5"
+    },
+    {
+      "name": "sidebar-right",
+      "category": "layout",
+      "source": "panel-right",
+      "path": "layout/sidebar-right.svg",
+      "codepoint": "E0B6"
+    },
+    {
+      "name": "panel-top",
+      "category": "layout",
+      "source": "panel-top",
+      "path": "layout/panel-top.svg",
+      "codepoint": "E0B7"
+    },
+    {
+      "name": "panel-bottom",
+      "category": "layout",
+      "source": "panel-bottom",
+      "path": "layout/panel-bottom.svg",
+      "codepoint": "E0B8"
+    },
+    {
+      "name": "window",
+      "category": "layout",
+      "source": "app-window",
+      "path": "layout/window.svg",
+      "codepoint": "E0B9"
+    },
+    {
+      "name": "layers",
+      "category": "layout",
+      "source": "layers",
+      "path": "layout/layers.svg",
+      "codepoint": "E0BA"
+    },
+    {
+      "name": "stack",
+      "category": "layout",
+      "source": "gallery-vertical-end",
+      "path": "layout/stack.svg",
+      "codepoint": "E0BB"
+    },
+    {
+      "name": "component",
+      "category": "layout",
+      "source": "component",
+      "path": "layout/component.svg",
+      "codepoint": "E0BC"
+    },
+    {
+      "name": "button",
+      "category": "components",
+      "source": "rectangle-horizontal",
+      "path": "components/button.svg",
+      "codepoint": "E0BD"
+    },
+    {
+      "name": "divider",
+      "category": "components",
+      "source": "separator-horizontal",
+      "path": "components/divider.svg",
+      "codepoint": "E0BE"
+    },
+    {
+      "name": "icon",
+      "category": "components",
+      "source": "shapes",
+      "path": "components/icon.svg",
+      "codepoint": "E0BF"
+    },
+    {
+      "name": "popup",
+      "category": "components",
+      "source": "square",
+      "path": "components/popup.svg",
+      "codepoint": "E0C0"
+    },
+    {
+      "name": "popover",
+      "category": "components",
+      "source": "square",
+      "path": "components/popover.svg",
+      "codepoint": "E0C1"
+    },
+    {
+      "name": "sheet",
+      "category": "components",
+      "source": "panel-bottom",
+      "path": "components/sheet.svg",
+      "codepoint": "E0C2"
+    },
+    {
+      "name": "action-sheet",
+      "category": "components",
+      "source": "panel-bottom",
+      "path": "components/action-sheet.svg",
+      "codepoint": "E0C3"
+    },
+    {
+      "name": "dropdown-menu",
+      "category": "components",
+      "source": "panel-top",
+      "path": "components/dropdown-menu.svg",
+      "codepoint": "E0C4"
+    },
+    {
+      "name": "overlay",
+      "category": "components",
+      "source": "square",
+      "path": "components/overlay.svg",
+      "codepoint": "E0C5"
+    },
+    {
+      "name": "badge",
+      "category": "components",
+      "source": "rectangle-horizontal",
+      "path": "components/badge.svg",
+      "codepoint": "E0D5"
+    },
+    {
+      "name": "cell",
+      "category": "components",
+      "source": "rectangle-horizontal",
+      "path": "components/cell.svg",
+      "codepoint": "E0D6"
+    },
+    {
+      "name": "swipe-cell",
+      "category": "components",
+      "source": "rectangle-horizontal",
+      "path": "components/swipe-cell.svg",
+      "codepoint": "E0D7"
+    },
+    {
+      "name": "scroll-area",
+      "category": "components",
+      "source": "square",
+      "path": "components/scroll-area.svg",
+      "codepoint": "E0D8"
+    },
+    {
+      "name": "dialog",
+      "category": "components",
+      "source": "square",
+      "path": "components/dialog.svg",
+      "codepoint": "E0D9"
+    },
+    {
+      "name": "ai",
+      "category": "abstract",
+      "source": "brain-circuit",
+      "path": "abstract/ai.svg",
+      "codepoint": "E0C6"
+    },
+    {
+      "name": "codex",
+      "category": "abstract",
+      "source": "bot",
+      "path": "abstract/codex.svg",
+      "codepoint": "E0DA"
+    },
+    {
+      "name": "sparkles",
+      "category": "abstract",
+      "source": "sparkles",
+      "path": "abstract/sparkles.svg",
+      "codepoint": "E0C7"
+    },
+    {
+      "name": "atom",
+      "category": "abstract",
+      "source": "atom",
+      "path": "abstract/atom.svg",
+      "codepoint": "E0C8"
+    },
+    {
+      "name": "orbit",
+      "category": "abstract",
+      "source": "orbit",
+      "path": "abstract/orbit.svg",
+      "codepoint": "E0C9"
+    },
+    {
+      "name": "cube",
+      "category": "abstract",
+      "source": "box",
+      "path": "abstract/cube.svg",
+      "codepoint": "E0CA"
+    },
+    {
+      "name": "hexagon",
+      "category": "abstract",
+      "source": "hexagon",
+      "path": "abstract/hexagon.svg",
+      "codepoint": "E0CB"
+    },
+    {
+      "name": "crystal",
+      "category": "abstract",
+      "source": "diamond",
+      "path": "abstract/crystal.svg",
+      "codepoint": "E0CC"
+    },
+    {
+      "name": "glass",
+      "category": "abstract",
+      "source": "glass-water",
+      "path": "abstract/glass.svg",
+      "codepoint": "E0CD"
+    },
+    {
+      "name": "wave",
+      "category": "abstract",
+      "source": "waves-horizontal",
+      "path": "abstract/wave.svg",
+      "codepoint": "E0CE"
+    },
+    {
+      "name": "moon",
+      "category": "abstract",
+      "source": "moon",
+      "path": "abstract/moon.svg",
+      "codepoint": "E0CF"
+    },
+    {
+      "name": "sun",
+      "category": "abstract",
+      "source": "sun",
+      "path": "abstract/sun.svg",
+      "codepoint": "E0D0"
+    },
+    {
+      "name": "focus",
+      "category": "abstract",
+      "source": "focus",
+      "path": "abstract/focus.svg",
+      "codepoint": "E0D1"
+    }
+  ],
+  "font": {
+    "family": "PoemUI Roundline",
+    "format": "woff2",
+    "delivery": "embedded-data-uri",
+    "unitsPerEm": 1024,
+    "glyphCount": 218,
+    "bytes": 22476,
+    "sha256": "e33800fdf026677a24da5707c43b18c8722c23cc2112df4b16dc459ea4712c95"
+  }
+}

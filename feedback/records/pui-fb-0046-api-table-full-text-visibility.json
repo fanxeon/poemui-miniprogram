@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0046",
+  "title": "API 表格使用省略号隐藏关键文字",
+  "scope": "global",
+  "components": ["preview-site", "documentation", "all-components"],
+  "type": "accessibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "API 表格中的参数、类型、初值、可选值、事件 detail、Slot 和说明必须完整可读，可以换行但不能用省略号隐藏。",
+  "environment": {
+    "surfaces": ["api-reference", "props-table", "events-table", "slots-table"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件的 API 页，检查类型、参数名和较长可选值单元格的计算样式。",
+    "旧共享样式为 code 与 api-type 设置 overflow:hidden、text-overflow:ellipsis 和 white-space:nowrap，长内容只能看到截断结果。",
+    "窄屏旧表格仍强制 820px 最小行宽，只能横向滚动，字段与当前值的对应关系难以连续阅读。"
+  ],
+  "expected": "所有 API 文字完整展示；桌面行高随内容自然增长，窄屏按字段标签纵向重排，页面不产生横向溢出。",
+  "actual": "关键 API 文字会被省略号和单行规则裁掉，窄屏依赖超宽表格，用户无法直接看全真实合同。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户在 Button battle 报告后明确确认 API 表格验收。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求 API 表格所有文字完整展示，允许换行但禁止省略号。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "共享 API 单元格统一使用 normal + overflow-wrap:anywhere；最终作用域覆盖禁止 hidden/ellipsis/nowrap，900px 以下改为单列字段标签。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "Props、Events、Slots 的每个 cell 都携带与桌面表头同源的 data-label，供窄屏重排展示。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "390px 覆盖下 187 个 API cell 的 hidden/ellipsis/nowrap 数量为 0、内容溢出数量为 0、document 溢出为 0；openType 全部 157 字符完整换行为 325×101px。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-api-reference-readability.js",
+      "note": "专项合同锁定完整文字、响应式 data-label、禁止三类截断样式与全局文档规则。"
+    }
+  ],
+  "rootCause": "API 表格早期以固定五列密度为优先，把代码区常用的单行省略规则错误应用到必须完整阅读的参考资料。",
+  "decision": {
+    "outcome": "桌面保持五列但允许所有单元格自然换行和行高增长；900px 以下隐藏重复表头，以 data-label 为每个值恢复字段名并纵向排列；全局禁止 API 文本省略、单行截断和固定高度裁切。",
+    "rationale": "API 是调用合同而非次要摘要，完整性优先于单行密度；响应式标签能在窄屏同时保留字段关系与完整内容。",
+    "alternativesRejected": [
+      "只增加 title 或 hover 提示在触摸端不可用，也不能被辅助技术稳定发现。",
+      "继续使用 820px 横向表格虽可滚动，但窄屏很难同时看到字段名和长值。",
+      "缩小字号会破坏全局可读性合同，并不能解决极长平台枚举。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-api-reference-readability.js", "AGENTS.md", "docs/UI_DESIGN_CONTRACT.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md"],
+    "dependencies": ["API renderer", "responsive layout", "component metadata"]
+  },
+  "verification": {
+    "tests": ["scripts/test-api-reference-readability.js", "scripts/test-button.js"],
+    "commands": ["node scripts/test-api-reference-readability.js", "node scripts/test-button.js", "npm run check"],
+    "browser": [
+      "桌面 Button API 的最长 openType 可选值计算样式为 white-space:normal、text-overflow:clip、overflow-wrap:anywhere，高度自然增长到 160px且无内容溢出。",
+      "390px 覆盖下表头退出、每个 cell 显示响应式字段标签，首标签为“参数”；openType 完整值 client/scroll 同为 325×101px，页面无横向溢出。"
+    ],
+    "deviceRisks": ["该变更只作用于 H5 官网 API 阅读层；真实移动浏览器字体回流、缩放和屏幕阅读器分组朗读仍需目标设备复核。"]
+  },
+  "ai": {
+    "summary": "API 表格是完整合同，所有字段和值必须可见；窄屏通过标签化纵向重排而非省略或超宽滚动。",
+    "rules": [
+      "API 单元格禁止 ellipsis、text-cut、nowrap、line-clamp 和固定高度裁切。",
+      "长参数、类型、枚举、事件 detail、Slot 与说明必须允许 overflow-wrap:anywhere 和自然行高。",
+      "窄屏 API 行必须保留字段标签并纵向重排，不能仅缩小字体或强制超宽表格。",
+      "浏览器验收必须检查计算样式、client/scroll 尺寸和页面级横向溢出。"
+    ],
+    "tags": ["api", "table", "readability", "responsive", "no-ellipsis", "accessibility"]
+  }
+}

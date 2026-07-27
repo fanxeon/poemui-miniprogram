@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0127",
+  "title": "Tabbar H5 分隔线与毛玻璃阴影开关没有真实生效",
+  "scope": "component",
+  "components": ["tabbar", "preview-site", "config-provider"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Tabbar H5 必须对应真实 WXSS 能力，split、边框、阴影、毛玻璃、大圆角和深浅色都要通过计算样式真实生效，不能只切根 data 属性。",
+  "environment": {
+    "surfaces": ["h5-preview", "wechat-component", "appearance-menu"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349x620 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "H5 split 最初用 box-shadow 模拟分隔线，全局 shadow=off 会把分隔一并清除，使 split=true 的计算样式仍为 none。",
+    "改为只设置 border-left-color 后，H5 item 基础规则仍是 border:0，没有宽度和线型，分隔线继续不可见。",
+    "原生 Tabbar 已使用 glass surface、glass shadow 与 frosted filter Token；H5 却写死 surface-solid，shadow/frost 开关只改变 App Shell data 属性，Tabbar 自身无 blur 和阴影。"
+  ],
+  "expected": "split 独立于阴影开关，以透明占位边框保持盒模型；H5 Tabbar 与原生共同消费玻璃 Surface、阴影和 backdrop-filter Token；外观切换不改变 390px 布局。",
+  "actual": "H5 分隔线和毛玻璃属于视觉假开关：属性值与根 data 已更新，但代表 Tabbar 的计算样式没有变化。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权本 Goal 后续组件在完整计算样式、浏览器与门禁证据后由 Agent 自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabbar", "note": "390px 实点 split 后首次得到 boxShadow:none；修复后第二项 border-left 为 1px solid rgb(228,228,231)。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabbar", "note": "深色、border-off、shadow/frost/radius/gradient 开启后，round Tabbar 为 rgba(15,15,17,.9)、blur(14px) saturate(1.2)、真实阴影、14px 圆角且边框透明。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxss", "note": "原生使用 --pui-glass-surface-strong、--pui-glass-shadow-soft、--pui-frosted-filter，并以透明 border-left 保留 split 盒模型。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 同步 surface-strong、shadow-soft、blur 与透明 1px border-left，split 只改变边界颜色。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "锁定 split 边界而非 shadow，以及 H5 玻璃 Surface、阴影和 backdrop-filter 消费。"}
+  ],
+  "rootCause": "H5 把 split 错当装饰阴影，并只检查全局开关状态而没有读取代表组件的计算样式；H5 Tabbar 的 Surface 语义也没有随原生玻璃 Token 升级。",
+  "decision": {
+    "outcome": "原生与 H5 item 都常驻透明左边界，split 只改变相邻项边界颜色；H5 根改用 surface-strong、shadow-soft 和 blur，round 继续消费语义圆角。",
+    "rationale": "分隔是边界语义，不属于阴影效果；外观开关必须落到组件真实 Surface，透明占位还能保证开关前后尺寸不变。",
+    "alternativesRejected": [
+      "继续用 box-shadow 分隔会被全局阴影关闭规则误杀。",
+      "只切 data-shadow/data-frost 而不检查组件计算样式属于假验收。",
+      "用 display 或增减边框宽度切换会造成条目几何漂移。",
+      "给 round 写死圆角会绕过全局五档语义圆角映射。"
+    ]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.wxss", "preview/styles.css", "preview/index.html", "scripts/test-tabbar.js", "docs/components/TABBAR.md", "feedback/records/pui-fb-0127-tabbar-visual-switch-parity.json"],
+    "dependencies": ["ConfigProvider visualConfig", "appearance menu", "PUI theme tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js", "scripts/test-preview-theme-coverage.js", "scripts/test-global-border-preference.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "split=true 时第二项计算边界为 1px solid rgb(228,228,231)，shadow 默认关闭也保持可见。",
+      "深色效果组合下 normal Tabbar 为 rgba Surface、真实 blur 与 shadow；border-off 只让边界透明。",
+      "shape=round 且大圆角开启时半径为 14px，导航仍位于 PreviewDevice 内，rect 为 322x54px。",
+      "恢复浅色标准组合后 Tabbar 为白色 Surface、可见边线、无阴影/blur；document 始终 375/375px。"
+    ],
+    "deviceRisks": ["微信真机 backdrop-filter 支持、env 安全区、rpx 边界、样式隔离和低端设备合成性能需合法 AppID 复核。"]
+  },
+  "ai": {
+    "summary": "Tabbar split 是边界而不是阴影；外观验收必须读取组件计算样式，H5 与原生共同消费玻璃 Surface、阴影、滤镜和语义圆角。",
+    "rules": [
+      "Tabbar split 必须用常驻透明边界切颜色，禁止用 box-shadow 模拟。",
+      "验收 shadow/frost/radius/border 时必须读取 Tabbar 本体计算样式，不能只看 App Shell data 属性。",
+      "H5 Tabbar 必须消费 surface-strong、shadow-soft 和 blur，原生继续消费同义 PUI glass Token。",
+      "视觉开关前后必须验证 PreviewDevice 与 document 宽度不变。"
+    ],
+    "tags": ["tabbar", "preview-parity", "split", "frosted-glass", "appearance"]
+  }
+}

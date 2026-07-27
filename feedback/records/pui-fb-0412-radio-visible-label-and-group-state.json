@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0412",
+  "title": "Radio 文案、未选轮廓和组选中态不可读",
+  "scope": "component",
+  "components": ["radio", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Radio 独立页必须清楚看到每个选项、当前唯一选中项和未选圆环。",
+  "environment": {
+    "surfaces": ["radio component page"],
+    "platforms": ["wechat-miniprogram", "h5-preview"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在小程序 Radio 页查看 label/content Prop 示例，文字为空。",
+    "关闭全局中性边框后，未选单选圆环近乎不可见。",
+    "使用 options 生成 RadioGroup 时，组 value 与子项 checked 未稳定同步。"
+  ],
+  "expected": "Prop 文案和 Slot 内容均可见；未选轮廓始终可辨；组内只能有一个与 value 严格对应的选中项。",
+  "actual": "命名 Slot fallback 在微信端为空；轮廓随 Surface 边框开关被透明化；generated options 没有显式 checked 映射。",
+  "evidence": [
+    {"kind": "file", "ref": "radio/radio.wxml", "note": "Prop 文案与命名 Slot 改为同级渲染。"},
+    {"kind": "file", "ref": "radio/radio-group.js", "note": "生成选项由组 value 装饰唯一 checked，并提供事件回写。"},
+    {"kind": "file", "ref": "radio/radio.wxss", "note": "未选圆环消费独立 control outline Token。"},
+    {"kind": "test", "ref": "scripts/test-radio.js", "note": "锁定文案、严格互斥、组选项回写和轮廓 Token。"},
+    {"kind": "browser", "ref": "/tmp/poemui-radio-after.png", "note": "390x844 模拟器确认选中圆点、未选圆环、文案和禁用状态均清楚。"}
+  ],
+  "rootCause": "与 Checkbox 相同的 Slot fallback 假设和边框 Token 误用，同时 RadioGroup 的 options 渲染未把受控 value 映射为子项 checked。",
+  "decision": {
+    "outcome": "显式渲染 Prop 文案；RadioGroup 统一装饰 generated options；Radio 未选圆环使用 control outline Token，并同步 H5。",
+    "rationale": "确保所有调用方式共享同一单选真相源，同时不把交互边界误当作可关闭的 Surface 装饰。",
+    "alternativesRejected": [
+      "用页面私有 checked 样式会绕过组件受控状态。",
+      "恢复全局 bordered 不能满足无边框外观。",
+      "仅修正文案不能解决组互斥状态不可见。"
+    ]
+  },
+  "impact": {
+    "files": ["radio/", "common/style/theme.wxss", "preview/styles.css", "scripts/test-radio.js", "docs/components/RADIO.md"],
+    "dependencies": ["PUI RadioGroup", "visualConfig.bordered"]
+  },
+  "verification": {
+    "tests": ["scripts/test-radio.js"],
+    "commands": ["node scripts/test-radio.js", "npm run miniprogram:build", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具 390x844 浅色页面确认基础、分组和禁用项的圆点、圆环与文字完整。"],
+    "deviceRisks": ["iOS/Android 真机的圆环抗锯齿、互斥点击和读屏 radiogroup 语义仍需复核。"]
+  },
+  "ai": {
+    "summary": "Radio 的内容投影、组 value 和未选圆环必须分别有明确真相源。",
+    "rules": [
+      "Radio Prop 文案不能依赖命名 Slot fallback。",
+      "RadioGroup generated options 必须严格按 value 计算唯一 checked。",
+      "未选圆环不得随 Surface bordered 开关消失。"
+    ],
+    "tags": ["radio", "slot", "group", "outline", "single-select"]
+  }
+}

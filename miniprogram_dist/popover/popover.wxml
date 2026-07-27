@@ -1,0 +1,9 @@
+<view class="pui-popover {{customClass}}" style="{{customStyle}}">
+  <view class="pui-popover__reference"><slot></slot></view>
+  <view wx:if="{{rendered && closeOnClickOutside}}" class="pui-popover__outside" catchtap="onOutsideTap" catchtouchmove="noop"></view>
+  <view wx:if="{{rendered}}" class="{{panelClass}}" style="{{panelStyle}}{{fixedStyle}}" role="dialog" aria-modal="false" aria-label="{{semanticLabel}}" aria-hidden="{{!active}}">
+    <slot name="content"></slot>
+    <text wx:if="{{content}}" class="pui-popover__text">{{content}}</text>
+    <view wx:if="{{showArrow}}" class="pui-popover__arrow"></view>
+  </view>
+</view>

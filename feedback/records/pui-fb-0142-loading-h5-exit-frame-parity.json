@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0142",
+  "title": "Loading H5 在 loading=false 时重建预览节点而跳过真实退场帧",
+  "scope": "component",
+  "components": ["loading", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须对应真实 WXML/WXSS，显隐动画需要可观察中间帧和完成态，不得用重建或瞬移伪造交互。",
+  "environment": {
+    "surfaces": ["h5-preview", "property-panel", "preview-device"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 的 updateCurrentProp 在 loading=false 时立即重建 PreviewDevice 内容；新节点从 inactive 初始样式开始，视觉上没有从 active 到 inactive 的过渡。",
+    "将 duration 调到 500ms 后点击“隐藏 Loading”，旧结构会保留一个节点，但计算 opacity 已是 0，不能作为真实中间帧。"
+  ],
+  "expected": "loading=false 在同一个已挂载 H5 节点上切换 active/inactive，opacity/scale 在 0–500ms 内真实过渡，完成后才卸载；低动效为 1ms。",
+  "actual": "H5 通过整段 stage 重绘跳过了 CSS transition，和小程序端保留节点到 leave 完成的状态机不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求真实浏览器 battle、动画中间帧和完成态，不接受静态占位或伪交互，并明确授权后续组件在完整证据后自主验收。"},
+    {"kind": "file", "ref": "loading/loading.js", "note": "源码的 leaving 阶段在 duration 后才调用 finishHide 卸载节点。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "preserveLoadingPreviewExit 在同一 data-loading-preview-current 节点上切换 class，并只在计时完成后 renderStage。"},
+    {"kind": "browser", "ref": "127.0.0.1:4179/#/components/loading", "note": "duration=400 的真实点击后中间帧仍连接，opacity 约 0.07、transitionDuration=0.4s；完成后内容节点才移除。"},
+    {"kind": "test", "ref": "scripts/test-loading.js", "note": "专项测试锁定当前预览根、退场保留路径和低动效合同。"}
+  ],
+  "rootCause": "共享 renderStage 每次 Props 回写都替换整个 PreviewDevice DOM，Loading 没有对退出分支保留同一渲染节点。",
+  "decision": {
+    "outcome": "增加 preserveLoadingPreviewExit：只在 overview 中 loading=true→false 且内容已可见时复用现有节点，切换 inactive、安排完成渲染；其他 Props 继续走统一真实 Props 回写路径。",
+    "rationale": "退场节点是 Loading 公开可见行为的一部分；局部 class 切换既保留共享 Button 树，也让浏览器真正执行 WXSS 对应的 opacity/scale transition。",
+    "alternativesRejected": [
+      "用 setTimeout 延后整段重绘仍会跳过 DOM 上的 transition。",
+      "用 display:none 或立即清空 stage 会制造瞬移。",
+      "只把动画结果写进状态文字不能证明组件真的过渡。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-loading.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/LOADING.md"],
+    "dependencies": ["PreviewDevice runtime", "shared property panel", "shared PUI Button mirror"]
+  },
+  "verification": {
+    "tests": ["scripts/test-loading.js"],
+    "commands": ["node scripts/test-loading.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["2026-07-20 真实点击隐藏/显示、delay=1000、duration=400 和 reduceMotion；中间帧保留节点，完成后卸载，低动效计算为 0.001s 且指示器 animation-name=none。", "同次 battle 实测 spinner、dots、layout、progress=0/100、pause/reverse、fullscreen、light/dark 和六项外观。"],
+    "deviceRisks": ["微信端实际帧调度、rpx 缩放、页面 fixed、样式隔离和系统低动效需使用合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "只要组件声明了退场阶段，H5 不得用整段重绘跳过 transition；必须在已挂载节点上切换状态并延后卸载。",
+    "rules": [
+      "验证动画时读取真实计算 opacity/transform/transitionDuration，并同时确认完成后卸载。",
+      "H5 Props 回写若会替换动画节点，必须为退出分支保留节点或采用等价的 DOM 过渡结构。",
+      "低动效必须压缩显隐并停止无限循环，不能只改根 data 属性。"
+    ],
+    "tags": ["loading", "preview-parity", "animation", "reduce-motion", "browser"]
+  }
+}

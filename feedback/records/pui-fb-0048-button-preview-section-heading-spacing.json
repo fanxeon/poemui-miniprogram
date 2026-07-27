@@ -1,0 +1,90 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0048",
+  "title": "Button 预览分区标题上间距不足",
+  "scope": "component",
+  "components": ["button", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Button 预览中的基础用法、组件类型、组件状态和组件样式要有清楚的视觉分区，后续标题不能紧贴上一组按钮。",
+  "environment": {
+    "surfaces": ["h5-preview", "button-showcase"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Button 概览，依次观察基础用法、组件类型、组件状态和组件样式标题。",
+    "测量相邻分区：PreviewDevice 的直接 Showcase gap 为 8px，后续分区只追加 6px margin，标题与上一分区末尾内容实际仅相隔 14px。",
+    "在连续按钮内容和小字号说明之间，14px 无法形成足够清晰的分区层级。"
+  ],
+  "expected": "首个基础用法保持顶部对齐；后续标题使用现有语义化分区间距，与上一组内容明显分开，同时不造成 390px 横向溢出。",
+  "actual": "后续分区只使用 small 级 6px 额外 margin，叠加内容 gap 后总间距仅 14px，标题容易与上一组内容混读。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户在 Button battle 报告后明确确认分区间距验收。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确指出预览中分区标题上间距需要增大，否则看不清。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "修复前四个分区的后续标题 gapFromPrevious 均为 14px，首个标题保持正常顶部位置。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "后续 .pui-button-demo-group 改用 --pui-preview-section-gap，不新增固定像素值。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-button.js",
+      "note": "专项测试锁定 section-gap 并禁止回退为 space-sm。"
+    }
+  ],
+  "rootCause": "PreviewDevice 的 component-only 父布局会把直接 Showcase gap 统一为 8px；Button 后续分区虽另加 margin，但使用了仅 6px 的 small Token，叠加后仍不足以表达一级分区。",
+  "decision": {
+    "outcome": "保留 PreviewDevice 的共享 8px 内容 gap，只把第二至第四个 Button 分区的额外上间距从 --pui-preview-space-sm 改为 --pui-preview-section-gap；首个分区不增加 margin。",
+    "rationale": "调整现有 sibling 规则即可把真实间距从 14px 提升到 26px，既保持 Showcase 统一父布局，又明确区分内容组合和一级分区。",
+    "alternativesRejected": [
+      "增大全部 demo-section 的共享 gap 会未经审计影响其他组件和直接内容组合。",
+      "给标题增加边框、底色或卡片会制造额外 Surface，不符合 Less is more。",
+      "使用固定像素 margin 会绕过现有 section Token，后续主题和全局节奏难以统一。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/styles.css",
+      "docs/components/BUTTON.md",
+      "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "scripts/test-button.js",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["PreviewDevice component-only layout", "Button H5 showcase"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js"],
+    "commands": ["node scripts/test-button.js", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["桌面与 390px 下复测第二至第四个标题的 gapFromPrevious；目标为 26px，首个标题顶部不变，页面无横向溢出。"],
+    "deviceRisks": ["该变更只作用官网 Button 演示分区，不改变小程序 Button WXML/WXSS；移动端字体缩放后的纵向节奏仍需目标浏览器人工观感确认。"]
+  },
+  "ai": {
+    "summary": "Button 演示的一级分区标题必须使用 section gap，与组内 content gap 明确区分。",
+    "rules": [
+      "Button 首个基础分区不增加额外顶部空白，后续分区标题追加 --pui-preview-section-gap。",
+      "组内按钮与说明继续使用 content gap，不得把一级分区和内容组合混用同一小间距。",
+      "不要通过边框、底色或嵌套卡片替代正确的分区间距。"
+    ],
+    "tags": ["button", "preview", "section-heading", "spacing", "visual-layout"]
+  }
+}

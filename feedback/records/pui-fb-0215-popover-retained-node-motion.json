@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0215",
+  "title": "Popover 官网镜像重绘节点导致动效瞬移",
+  "scope": "component",
+  "components": ["popover", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "将 Popup battle 确定的真实状态预览与动效规则推广到全库官网组件。",
+  "environment": {"surfaces": ["h5-preview", "component-contract"], "platforms": ["browser", "node"], "viewports": ["390x844"], "themes": ["light"]},
+  "reproduction": ["打开 Popover 后，旧 schedulePopoverPreviewPhase 在 16ms 和退场回调执行 renderStage()，以整段重绘替换气泡节点。"],
+  "expected": "锚点入口始终保留；气泡在同一 canvas 节点上完成 500ms opacity/transform 进退场。",
+  "actual": "旧 H5 生命周期回调重绘 Stage，声明的 duration 没有稳定节点来呈现真实中间帧。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户授权按 Popup 规则全库自主审计与验收，不需要逐个确认。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增 Popover 局部 DOM 阶段同步，进入/离开只切 class 和 aria；显隐动作显式 return，避免通用 Stage 重绘。"},
+    {"kind": "test", "ref": "scripts/test-popover.js", "note": "专项断言稳定节点助手、进入/离开调度以及动作分支不重绘。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?popover-motion=20260722-191#/components/popover", "note": "390x844 实点：打开 130ms 气泡与锚点同时存在，opacity=0.971695；外部点击关闭 160ms 气泡仍在、opacity=0.0151165，完成后气泡卸载但锚点保留；无页面横向溢出。"}
+  ],
+  "rootCause": "Popover H5 阶段回调把生命周期推进与 renderStage 的 innerHTML 重绘耦合。",
+  "decision": {"outcome": "使用 updatePopoverPreviewDom 原地切换 entering/entered/leaving，只有退场完成才重绘关闭态。", "rationale": "与 Popup、Sheet 一致，CSS transition 需要稳定 DOM 身份。", "alternativesRejected": ["仅延长计时器：不能恢复已替换节点的中间帧。"]},
+  "impact": {"files": ["preview/app.js", "scripts/test-popover.js", "docs/components/POPOVER.md", "feedback/records/pui-fb-0215-popover-retained-node-motion.json"], "dependencies": ["popover-preview-runtime", "motion-contract"]},
+  "verification": {"tests": ["scripts/test-popover.js"], "commands": ["node scripts/test-popover.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"], "browser": ["390x844 实测进入/离开中间帧、锚点保留与无横向溢出。"], "deviceRisks": ["本次只改 H5；微信真机仍需验证 SelectorQuery、fixed、rpx、Slot 投影与触摸点击层。"]},
+  "ai": {"summary": "锚点浮层的 H5 动效必须在同一节点完成。", "rules": ["阶段回调不可重绘 PreviewDevice。", "进入/离开都要采样 opacity 或 transform 中间帧与锚点保留。"], "tags": ["popover", "retained-node", "motion"]}
+}

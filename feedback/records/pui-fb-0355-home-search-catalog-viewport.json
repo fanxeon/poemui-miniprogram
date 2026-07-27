@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0355",
+  "title": "首页搜索遗漏可导航组件且列表视口偏高",
+  "scope": "component",
+  "components": ["miniprogram-home", "search", "combobox"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "首页搜索列表应展示所有真实组件，并在每次打开时随机排序；Combobox 内容区需要更紧凑。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "从首页 Navbar 打开搜索 Overlay。",
+    "此前候选仅取 BASE_COMPONENTS，只有 Button、Divider、Icon，浮层组件虽有真实页面却不可搜索。",
+    "Combobox 使用组件默认 480rpx 内容视口，作为首页 Overlay 候选区显得过高。"
+  ],
+  "expected": "每次打开均随机展示当前全部真实可导航组件，Search 筛选结果进入一个更紧凑、唯一可滚动的 Combobox 视口。",
+  "actual": "首页候选遗漏六个浮层组件，且没有为 Overlay 场景覆盖较紧凑的列表高度。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求内容区降低并展示所有组件，且每次打开随机排序。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "候选从 CATALOG_SECTIONS 全量汇集并通过 Fisher-Yates 随机排列。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "首页 Combobox 显式消费 360rpx list-height，组件默认值未被改写。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项测试锁定九项真实候选、随机实现及紧凑视口。"}
+  ],
+  "rootCause": "搜索候选函数错误地只使用 BASE_COMPONENTS；首页没有针对 Overlay 的紧凑列表高度进行消费者覆盖。",
+  "decision": {
+    "outcome": "搜索候选由 CATALOG_SECTIONS 的全部当前可导航条目汇集，每次 Overlay 打开时随机排序；首页单独传入 list-height=360，组件默认 480rpx 保持不变。",
+    "rationale": "搜索只能导航到真实独立页，随机顺序避免目录首项长期垄断，同时页面级紧凑高度不污染 Combobox 的通用默认值。",
+    "alternativesRejected": [
+      "把尚无真实页面的包组件加入可点击搜索，会制造断点路由。",
+      "修改 Combobox 全局默认高度，会影响所有消费者。",
+      "在页面用私有 scroll-view 替换 Combobox 列表，会破坏唯一滚动区合同。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.js", "miniprogram/pages/index/index.wxml", "scripts/test-miniprogram-home.js", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["pui-search", "pui-combobox", "CATALOG_SECTIONS"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check"],
+    "browser": [],
+    "deviceRisks": ["仍需在合法 AppID 真机确认 360rpx 列表的惯性滚动、随机顺序与九个入口的触摸可达性。"]
+  },
+  "ai": {
+    "summary": "首页搜索候选只允许来自已实现、可导航的组件页；页面可覆盖 Combobox listHeight，但不得污染组件默认值。",
+    "rules": [
+      "搜索候选必须从当前真实组件目录汇集，不能只保留某个分区，也不能伪造没有路由的组件入口。",
+      "每次打开首页搜索时再随机排列候选，筛选只在该次顺序上进行。",
+      "页面级 listHeight 应作为消费者 Prop 覆盖，Combobox 继续保持唯一滚动区与组件级默认值。"
+    ],
+    "tags": ["miniprogram-home", "search", "combobox", "random-order", "fixed-viewport"]
+  }
+}

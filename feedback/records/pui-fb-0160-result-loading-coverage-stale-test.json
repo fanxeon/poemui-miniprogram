@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0160",
+  "title": "共享 Loading 覆盖测试仍要求已移除依赖的 Result",
+  "scope": "component",
+  "components": ["result", "test-suite", "preview-site"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "专项与全库门禁必须从真实 WXML 依赖出发，不能让已删除的 Loading 镜像成为 Result 的假契约。",
+  "environment": {
+    "surfaces": ["source", "test-suite", "h5-preview"],
+    "platforms": ["node", "browser"],
+    "viewports": ["all"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Result 已收敛为 image/icon/title/description 展示，result/result.wxml 不含 <pui-loading，H5 resultShowcase 也不应调用 loadingComponent。",
+    "执行 npm run check 时 scripts/test-shared-subcomponent-geometry.js 的 loadingCoverage 静态表仍含 result: resultShowcase，导致 nativeLoadingComponents 与静态表比较失败。"
+  ],
+  "expected": "Loading 覆盖表只列举真实 WXML 使用 <pui-loading 的组件；Result 移除该依赖后全库门禁应通过，且不以 H5 假 Loading 补洞。",
+  "actual": "历史静态映射把 Result 误列为 Loading 消费者，使正确的公开 API 收敛无法通过完整检查。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已确认范围化自主验收授权：后续组件无需逐项确认，agent 在完整审计、浏览器、专项测试、文档、Ledger 与构建门禁后可自主验收。"},
+    {"kind": "file", "ref": "result/result.wxml", "note": "当前只依赖 pui-image 和 pui-icon，明确不含 pui-loading。"},
+    {"kind": "test", "ref": "scripts/test-shared-subcomponent-geometry.js", "note": "失败差异精确显示 expected 多出 result；移除过期映射后测试通过。"},
+    {"kind": "build", "ref": "npm run check", "note": "先真实失败，再修复映射并完整通过，不以跳过测试处理。"}
+  ],
+  "rootCause": "共享几何门禁维护了手写 loadingCoverage 名单，Result 合同移除 Loading 后没有同步更新名单。",
+  "decision": {
+    "outcome": "从 loadingCoverage 删除 Result，继续由 nativeLoadingComponents 从真实 WXML 推导覆盖集合；Result 专项测试明确禁止 PUI Loading 和 H5 假 Loading。",
+    "rationale": "门禁必须反映真实组合关系，不能为了维持历史名单把不属于组件责任的 Loading 加回去。",
+    "alternativesRejected": [
+      "在 Result 中重新添加隐藏 Loading 会制造无意义依赖。",
+      "跳过共享几何测试会失去其他真实 Loading 组合的覆盖。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/test-shared-subcomponent-geometry.js", "scripts/test-result.js"],
+    "dependencies": ["native WXML dependency scan", "shared loadingComponent H5 mirror"]
+  },
+  "verification": {
+    "tests": ["scripts/test-shared-subcomponent-geometry.js", "scripts/test-result.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["2026-07-20 首次 npm run check：因 expected 多出 result 失败", "2026-07-20 修正后 node scripts/test-shared-subcomponent-geometry.js、npm run check、npm run pack:check：通过"],
+    "browser": ["Result 概览只显示真实 image/icon/title/description；没有静态 Loading 或伪 loading 成功状态。"],
+    "deviceRisks": ["此问题仅影响源码/H5 组合门禁；微信端仍需合法 AppID 复核 Result 自身的图形、Slot、rpx 和低动效。"]
+  },
+  "ai": {
+    "summary": "共享组合测试应以真实 WXML 依赖为准，不能用历史静态名单反向逼出假组件能力。",
+    "rules": [
+      "删除组件内部依赖后，先运行依赖覆盖门禁并只更新与真实 WXML 不一致的映射。",
+      "不要为通过测试把已收敛的 Loading、Button 或事件壳重新加回组件。",
+      "测试失败先保留失败证据，再修正最小的过期合同并重跑全量门禁。"
+    ],
+    "tags": ["result", "loading", "test-suite", "dependency-scan", "no-fake-success"]
+  }
+}

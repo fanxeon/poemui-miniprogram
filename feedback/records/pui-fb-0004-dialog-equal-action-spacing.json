@@ -1,0 +1,92 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0004",
+  "title": "Dialog 分区间距与 Footer 区内间距缺少层级",
+  "scope": "component",
+  "components": ["dialog"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-17",
+  "updatedAt": "2026-07-18",
+  "userGoal": "Dialog Header、Content、Footer 的分区间距应比面板和 Footer 区内间距大一级；Footer 左右、底部和按钮间仍须严格等距并使用统一 PUI Token。",
+  "environment": {
+    "surfaces": ["miniprogram", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 Dialog 页面并查看默认双按钮操作区。",
+    "检查 dialog/dialog.wxss 与 preview/styles.css，原实现分别使用不同的容器 padding、按钮 gap 和 margin-top Token。"
+  ],
+  "expected": "Header↔Content、Content↔Footer 使用 36rpx/18px 分区 Token；Dialog 面板安全内距以及 Footer 左右、底部和按钮间使用 28rpx/14px 操作 Token，两端按 1px≈2rpx 镜像。",
+  "actual": "旧合同把 Content→Footer 也当作 Footer 区内间距并锁定为 28rpx/14px，无法表达用户确认的‘分区更宽、区内更紧’层级。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "codex-clipboard-da0c3a6f-df7b-4eec-9802-af81814d3a62.png",
+      "note": "用户明确要求 Dialog footer 四处直接间距必须相等。"
+    },
+    {
+      "kind": "file",
+      "ref": "dialog/dialog.wxss",
+      "note": "Dialog 根容器消费 action spacing，三区 Grid gap 消费 section spacing，Footer 按钮消费 action spacing。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dialog.js",
+      "note": "专项合同锁定原生组件和 H5 预览的同一变量引用。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-dialog",
+      "note": "390px 验收三区 gap 为 18px，面板内距和 Footer 按钮 gap 为 14px。"
+    }
+  ],
+  "rootCause": "旧实现只提供 action-spacing，并用 Footer margin-top 同时承担 Content→Footer 分区关系，混淆了主要分区与操作区内部两种不同语义。",
+  "decision": {
+    "outcome": "保留 --pui-dialog-action-spacing=28rpx/14px 管理面板和 Footer 区内关系；新增 --pui-dialog-section-spacing 指向全局 --pui-section-gap=36rpx/18px，使用 Dialog Surface 的 grid gap 管理三区。",
+    "rationale": "36→28 建立清晰的区间/区内层级；Grid gap 只作用于真实渲染的语义区域，不再依赖各区 margin 拼接布局。",
+    "alternativesRejected": [
+      "全部统一为 28rpx，会让主要分区与区内操作缺少视觉层级。",
+      "全部统一为 36rpx，会让按钮之间和面板边缘过于松散。",
+      "继续用 Content/Footer margin 拼接，空分区容易保留幽灵间距。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "dialog/dialog.wxss",
+      "preview/styles.css",
+      "scripts/test-dialog.js",
+      "docs/SPACING.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "feedback/records/pui-fb-0004-dialog-equal-action-spacing.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["popup", "button"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js", "scripts/test-layout-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "390x844 实测 Header→Content=18px、Content→Footer=18px、Surface padding=14px、Footer gap=14px；Dialog clientHeight=259px、scrollHeight=259px，无内部自动增高溢出；document scrollWidth=375px、clientWidth=375px，无横向溢出。"
+    ],
+    "deviceRisks": [
+      "H5 与 WXSS Token 已保持 1px≈2rpx，但 28rpx 在不同微信设备上的视觉密度仍需真机验收。"
+    ]
+  },
+  "ai": {
+    "summary": "Dialog 三区使用 36rpx section gap，面板与 Footer 区内使用 28rpx action spacing。",
+    "rules": [
+      "生成或修改 Dialog 时，Header↔Content↔Footer 必须使用 --pui-dialog-section-spacing。",
+      "Dialog 面板安全内距及 Footer 左右、底部、按钮 gap 使用 --pui-dialog-action-spacing，不得混入 section spacing。",
+      "验收时分别测量 36rpx/18px 分区和 28rpx/14px 区内关系，不能只看单个 margin。"
+    ],
+    "tags": ["dialog", "header", "content", "footer", "section-gap", "action-spacing", "design-token", "preview-parity"]
+  }
+}

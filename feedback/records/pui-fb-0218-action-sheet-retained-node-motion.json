@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0218",
+  "title": "ActionSheet 官网镜像重绘底部面板导致动效瞬移",
+  "scope": "component",
+  "components": ["action-sheet", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "将 Popup battle 确定的真实状态预览、空间与动效规则推广至全部官网组件。",
+  "environment": {"surfaces": ["h5-preview", "component-contract"], "platforms": ["browser", "node"], "viewports": ["390x844"], "themes": ["light"]},
+  "reproduction": ["旧 ActionSheet 的 requestAnimationFrame、阶段计时器与打开/遮罩/选择分支调用 renderStage()，替换已挂载 Overlay 和底部 Surface。"],
+  "expected": "打开入口始终保留；Overlay 与面板在同一 canvas 完成 500ms opacity/translateY 进退场，完成后才卸载。",
+  "actual": "整段 Stage 重绘使 CSS transition 没有稳定的 DOM 身份。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户授权按 Popup 规则全库自主审计和验收，不需要逐个确认。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增 updateActionSheetPreviewDom；阶段计时与显隐动作只切 class/ARIA，生命周期动作显式 return。"},
+    {"kind": "test", "ref": "scripts/test-action-sheet.js", "note": "专项断言稳定节点助手与显隐动作分支不重绘。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?action-sheet-motion=20260722-193#/components/action-sheet", "note": "390x844 实点：打开 130ms 入口和面板并存、opacity=0.978522；点击遮罩关闭 150ms 仍有面板、phase=leaving、opacity=0.0109347，完成后只卸载面板，页面无横向溢出。"}
+  ],
+  "rootCause": "ActionSheet H5 把阶段推进与 renderStage 重绘耦合。",
+  "decision": {"outcome": "以 updateActionSheetPreviewDom 原地更新 phase、Surface 与 Overlay 的交互/ARIA，初始挂载和退场完成以外禁止重绘。", "rationale": "全屏底部面板需要稳定节点才能真实呈现动效并保留用户触发上下文。", "alternativesRejected": ["仅延长计时器：无法恢复已替换节点的中间帧。"]},
+  "impact": {"files": ["preview/app.js", "preview/index.html", "scripts/test-action-sheet.js", "docs/components/ACTION-SHEET.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0218-action-sheet-retained-node-motion.json"], "dependencies": ["action-sheet-preview-runtime", "preview-device", "motion-contract"]},
+  "verification": {"tests": ["scripts/test-action-sheet.js"], "commands": ["node scripts/test-action-sheet.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"], "browser": ["390x844 实测打开、遮罩关闭的中间帧、入口保留及无页面横向溢出。"], "deviceRisks": ["本次只改 H5；合法 AppID 真机仍需验证安全区、swiper、触摸遮罩、rpx、Slot 和读屏。"]},
+  "ai": {"summary": "底部全屏动作面板必须把触发入口留在同一场景，并让 Overlay/Surface 在稳定节点上完成进退场。", "rules": ["ActionSheet 的 rAF、阶段计时和显隐事件不得重绘已挂载 canvas。", "验收需采样打开和遮罩关闭中间帧、入口保留及 390px 溢出。"], "tags": ["action-sheet", "retained-node", "overlay", "motion", "preview-parity"]}
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0206",
+  "title": "官网品牌缺少 Poem 语义且退化为无内容色块",
+  "scope": "global",
+  "components": ["preview-site", "documentation"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "design-review",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-23",
+  "userGoal": "官网 Logo 应体现 Poem 的诗意，同时保持 PoemUI 组件系统的克制与可读性，不能只是无内容色块或常见组件拼图。",
+  "environment": {
+    "surfaces": ["h5-preview", "site-topbar", "documentation"],
+    "platforms": ["browser"],
+    "viewports": ["desktop", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 Topbar，原品牌位置只渲染没有内部图形的深色圆角方块，副标题为通用英文描述。",
+    "尝试以四菱形模块表达组件组合，用户指出它像既有图标，不能体现 Poem。",
+    "审视月牙与三行诗句候选后，用户明确选择初版“月下成行”方向。",
+    "用户复看已上线的月下成行后，要求月亮本体更好看；原月牙与首行间距偏紧，双弧重心略厚。"
+  ],
+  "expected": "官网与浏览器标签应提供可缩放、深浅反白且在小尺寸清晰的同一品牌标记；更均衡、端点收尖的双弧月牙与诗行之间有明确呼吸空间，月亮、诗行、节奏和留白构成唯一图形语义，网页文案准确说明其为原生小程序组件库。",
+  "actual": "旧 Topbar 品牌标记没有图形语义，且历史样式存在渐变与投影版本，无法表达 PoemUI 的品牌定位。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-22 当前任务对话", "note": "用户否决组件拼图方向，认可并指定初版月下成行作为官网更新依据。"},
+    {"kind": "user-report", "ref": "2026-07-22 当前任务对话", "note": "用户明确要求在保留月下成行方向的前提下继续精修月亮。"},
+    {"kind": "file", "ref": "preview/index.html", "note": "Topbar 使用带 brand__moon/brand__lines 语义类的内联 SVG；月牙改为 5.35/6.08 偏移双弧，诗行下移以保留呼吸空间，并显式链接同构的 favicon.svg 与 favicon.ico。"},
+    {"kind": "file", "ref": "preview/favicon.svg", "note": "网站图标复用同一双弧月牙和三行诗句；SVG 使用 prefers-color-scheme 深浅反白，ICO 保留多尺寸回退。"},
+    {"kind": "file", "ref": "docs/BRAND_IDENTITY.md", "note": "记录精修后的双弧月牙、诗行留白、文案、深浅色、禁止项与验收边界。"},
+    {"kind": "test", "ref": "scripts/test-design-contracts.js", "note": "锁定月下成行的精确双弧路径、三行语义类、文案和 Token 驱动的平面黑白边界。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/foundation/button", "note": "2026-07-22 复测桌面与 390x844：标记 25×25、图形 18×18，SVG 路径和月/行语义类均生效，页面无横向溢出。"}
+  ],
+  "rootCause": "Topbar 只为品牌预留了方形容器，没有建立可维护的品牌图形合同；早期视觉样式还把品牌容器误做成渐变投影装饰。",
+  "decision": {
+    "outcome": "采用“月下成行”作为唯一官网品牌标记，并将月牙精修为 5.35/6.08 偏移双弧：月牙表示诗句停顿，三条不等长 2.15 圆线表示诗行、节奏与留白；诗行整体下移，使月牙下缘与首行至少相距 1 个 viewBox 单位。Topbar 文案固定为“月下成行 · 原生小程序组件库”；网站使用同构的 SVG favicon，并保留同图形的多尺寸 ICO 回退。",
+    "rationale": "双弧让月牙的外缘饱满、内缘更轻、端点自然收尖；额外留白让“月在上、行在下”的阅读次序在 18px 图形内仍清楚。构形继续表达 Poem 的意象与 UI 的精确节奏，不依赖书本、羽毛笔或抽象组件拼图，平面黑白可直接遵循现有深浅色 Token。",
+    "alternativesRejected": [
+      "四菱形模块：只表达组件拼装，且与既有图标构形过近。",
+      "羽毛笔、书本、纸张、引号：落入泛化诗歌或文档应用意象。",
+      "渐变、玻璃或外阴影：会把品牌入口误提升为装饰性浮层，并破坏默认克制的视觉合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/index.html", "preview/favicon.svg", "preview/favicon.ico", "preview/styles.css", "scripts/test-design-contracts.js", "docs/BRAND_IDENTITY.md", "docs/UI_DESIGN_CONTRACT.md", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "CHANGELOG.md", "feedback/records/pui-fb-0206-moonlit-stanza-brand-mark.json", "docs/COMPONENT_FEEDBACK_LEDGER.md"],
+    "dependencies": ["preview-site design tokens", "site-topbar", "global appearance preferences"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-preview-compact-header.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "node scripts/test-design-contracts.js", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["2026-07-22 本地站点 http://127.0.0.1:4179/#/foundation/button：桌面 1280px 与 390x844 均存在唯一品牌链接、SVG 标记和固定文案；390px 下标记为 25x25、图形为 18x18，精修双弧路径与月/行语义类均生效，文档 scrollWidth 为 375（未超过 viewport）。", "深色模式下标记为 #fafafa 背景、#09090b 图形；恢复浅色后为 #18181b 背景、#fafafa 图形；两态均 box-shadow:none。", "已逐一切换阴影、毛玻璃、大圆角、渐变背景和深色模式并恢复原设置；标记仍为 25x25、无阴影且无横向溢出。", "2026-07-23 以 390x844 真实 H5 路由验证：HTML 同时链接 ./favicon.svg 与 ./favicon.ico，品牌链接、月牙精确路径、25x25 标记、18x18 图形与无横向溢出均成立；直接请求两个资源均为 200，ICO 为 16/32/48/64 四尺寸。"],
+    "deviceRisks": ["该变更仅影响官网；微信小程序原生图标、AppID 入口图标和系统图标裁切尚未接入或在真机验证。", "2026-07-23 已实际执行微信开发者工具 build-npm，但示例工程使用 touristappid，IDE 返回 code 10（不存在此 AppID）；因此未生成或伪造 miniprogram_npm，需换用有效 AppID 后重跑。"]
+  },
+  "ai": {
+    "summary": "PoemUI 官网品牌使用月下成行：偏移双弧月牙表达停顿，三行圆线表达诗的节奏；它是品牌 SVG，不是可交互 PUI Icon。",
+    "rules": [
+      "品牌标记必须保持平面黑白并消费 --brand/--page，禁止渐变、外阴影、玻璃和 3D 装饰。",
+      "月牙必须保持偏移双弧、收尖端点以及与首行至少 1 个 viewBox 单位的留白；不能把它画回沉重色块或贴住诗行。",
+      "品牌副标题使用“月下成行 · 原生小程序组件库”；移动端可隐藏副标题但必须保留品牌名称与完整可访问名称。",
+      "品牌 SVG 不进入 pui-icon manifest；所有业务操作继续组合 PUI Button 与 PUI Icon。",
+      "改动品牌几何、文案或 Topbar 布局时必须验证 desktop、390px、light/dark 和全局外观偏好。"
+    ],
+    "tags": ["global", "preview-site", "brand", "logo", "moonlit-stanza", "topbar", "accessibility", "390px"]
+  }
+}

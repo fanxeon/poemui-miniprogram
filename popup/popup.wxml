@@ -1,0 +1,25 @@
+<view wx:if="{{rendered}}" class="pui-popup-layer {{entered ? 'pui-popup-layer--entered' : ''}}" style="{{layerStyle}};{{motionStyle}}" aria-hidden="{{!entered}}">
+  <view wx:if="{{showOverlay && preventScrollThrough}}" class="pui-popup__mask {{blurOverlay ? 'pui-popup__mask--blurred' : ''}}" style="{{overlayStyle}}" catchtap="onOverlayTap" catchtouchmove="noop"></view>
+  <view wx:elif="{{showOverlay}}" class="pui-popup__mask {{blurOverlay ? 'pui-popup__mask--blurred' : ''}}" style="{{overlayStyle}}" catchtap="onOverlayTap"></view>
+  <view class="{{rootClass}} {{entered ? 'pui-popup--entered' : ''}} {{customClass}}" style="{{customStyle}}" role="dialog" aria-modal="{{showOverlay}}" aria-label="{{semanticLabel}}" catchtap="noop">
+    <view class="pui-popup__surface">
+    <view wx:if="{{showHeader}}" class="pui-popup__header">
+      <view class="pui-popup__header-side pui-popup__header-side--left"><slot name="header-left"></slot></view>
+      <view class="pui-popup__title-area">
+        <text wx:if="{{title}}" class="pui-popup__title">{{title}}</text>
+        <text wx:if="{{subtitle}}" class="pui-popup__subtitle">{{subtitle}}</text>
+      </view>
+      <view class="pui-popup__header-side pui-popup__header-side--right">
+        <pui-button wx:if="{{closeBtn}}" theme="default" variant="base" shape="circle" size="small" icon="close" icon-only aria-label="关闭弹出层" reduce-motion="{{reduceMotion}}" bind:click="onCloseTap" />
+        <slot name="close-btn"></slot>
+      </view>
+    </view>
+    <scroll-view scroll-y class="pui-popup__content" enable-flex>
+      <slot name="content"></slot>
+      <slot></slot>
+      <text wx:if="{{content}}" class="pui-popup__fallback">{{content}}</text>
+    </scroll-view>
+    <view wx:if="{{showFooter}}" class="pui-popup__footer"><view class="pui-popup__footer-content"><slot name="footer"></slot></view></view>
+    </view>
+  </view>
+</view>

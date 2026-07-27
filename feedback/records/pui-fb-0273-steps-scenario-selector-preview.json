@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0273",
+  "title": "Steps 概览把互斥示例纵向堆叠，无法快速筛选场景",
+  "scope": "component",
+  "components": ["steps", "button", "preview-site", "preview-device"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Steps 的示例不能作为多个独立长区块同时出现；用户应在左侧选择用法，右侧展示对应的真实视图。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-contract", "feedback-ledger"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390x844 browser", "iPhone 15 393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 #/components/steps 的概览。",
+    "旧页面依次纵向展示基础、方向、状态、边界四个完整 Steps 实例。",
+    "用户需要比较或查看一个用法时，另三个实例同时占据 PreviewDevice，不能从一个固定的左侧入口筛选。"
+  ],
+  "expected": "左侧有可访问的 PUI Button 场景选择器，右侧只渲染被选场景的真实 Steps；切换必须改变真实 Props、布局与步骤数据。",
+  "actual": "旧概览把四个实例作为彼此独立的纵向内容块堆叠，信息密度高且不符合用户需要的左选右看动线。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求示例左侧切换、右侧 view 变化。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "旧 stepsShowcase 串行输出四个 article；新实现由 stepsScenario 驱动一个 data-steps-scenario-view。"},
+    {"kind": "test", "ref": "scripts/test-steps.js", "note": "专项门禁锁定 scenarios、真实 handler 和单一右侧 view。"}
+  ],
+  "rootCause": "旧 H5 合同把“按用法分区”误解为同时展示所有用法，缺少组件内的筛选与聚焦结构。",
+  "decision": {
+    "outcome": "Steps 概览改为基础、方向、状态、边界四个左侧 PUI Button 场景；右侧始终只有一个真实 Steps view，场景状态写入 demo.stepsScenario。",
+    "rationale": "用户能迅速筛选一个阶段形态，同时仍能操作实际 Steps、验证 current 回写和各项布局能力。",
+    "alternativesRejected": [
+      "只用 CSS 隐藏其它示例，仍会保留无效 DOM 与多个运行态。",
+      "只替换标题或说明，不能证明右侧真实 Props 已变化。",
+      "继续纵向堆叠所有示例，会在固定 PreviewDevice 中挤压可读空间。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-steps.js", "docs/components/STEPS.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0273-steps-scenario-selector-preview.json"],
+    "dependencies": ["PUI Button helper", "PUI Icon helper", "PreviewDevice", "Steps H5 runtime"]
+  },
+  "verification": {
+    "tests": ["scripts/test-steps.js", "scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["scripts/test-steps.js、feedback:generate/check（265 records）、site:build、check、pack:check 和 example:install 均通过；微信 CLI 实际启动 IDE server，但 touristappid 权限查询报 code 10，未伪报 build-npm 成功。"],
+    "browser": ["390px 浏览器实点方向、状态、边界、基础四个入口：每次仅有一个 data-steps-scenario-view；方向切换为 vertical/reverse 的 3 项真实 Steps，状态切换为 dot/error，边界切换为 500px 内部横滚且页面 overflow=0，基础实例点击验证后 current 真实改为 verify。"],
+    "deviceRisks": ["合法 AppID 真机仍需验证小程序本体的横向手势、rpx、Button Slot、读屏与系统低动效。"]
+  },
+  "ai": {
+    "summary": "互斥的组件用法应使用左侧场景选择和唯一右侧真实 view，不得把所有示例纵向堆叠。",
+    "rules": [
+      "场景切换必须改变真实组件 Props 或运行态，不能只更新标题、提示或日志。",
+      "场景入口必须复用 PUI Button 与 Icon，并带可访问名称和选中态。",
+      "PreviewDevice 内只保留当前场景的组件实例，避免多个示例同时挤压固定屏幕。"
+    ],
+    "tags": ["steps", "scenario-selector", "preview-layout", "component-only"]
+  }
+}
