@@ -1,4 +1,5 @@
-FROM nginx:1.27-alpine
+ARG BASE_IMAGE=nginx:1.27-alpine
+FROM ${BASE_IMAGE}
 
 COPY deploy/h5/nginx.conf /etc/nginx/conf.d/default.conf
 COPY preview/ /usr/share/nginx/html/

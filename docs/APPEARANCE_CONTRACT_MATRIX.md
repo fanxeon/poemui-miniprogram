@@ -6,7 +6,7 @@
 
 | 字段 | 语义 |
 | --- | --- |
-| `effectsEnabled` | 总开关，只暂停 `shadow`、`frostedGlass`、`largeRadius` 的有效值；不改变主题、边框、等距或布局。重新开启恢复此前保存的单项值。 |
+| `effectsEnabled` | 开发者 Store/API 与预设内部闸门，只暂停 `shadow`、`frostedGlass`、`largeRadius` 的有效值；不改变主题、边框、等距或布局。用户外观菜单不渲染该开关，旧暂停状态由菜单初始化迁移为开启并保留三个单项。 |
 | `shadow` | 只有具备独立 Surface 的组件获得外投影；`none` 表示即使全局阴影开启也不得增加外投影。`edge-*` 表示阴影方向与附着边相反。 |
 | `frostedGlass` | 只作用于组件自己拥有的可见 Surface 或遮罩，不给透明布局根、条目和图标叶子添加第二层背景。 |
 | `largeRadius` | 只重映射组件实际消费的语义圆角；`round/circle` 等显式满圆形态不被改成圆角方块。 |

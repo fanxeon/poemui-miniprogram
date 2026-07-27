@@ -1398,7 +1398,7 @@ function normalizePreviewPreferences(value) {
   const source = value && typeof value === 'object' ? value : {};
   return {
     theme: source.theme === 'dark' || source.theme === 'light' ? source.theme : defaultPreviewPreferences.theme,
-    effectsEnabled: typeof source.effectsEnabled === 'boolean' ? source.effectsEnabled : defaultPreviewPreferences.effectsEnabled,
+    effectsEnabled: true,
     shadow: source.shadow === 'on' || source.shadow === 'off' ? source.shadow : defaultPreviewPreferences.shadow,
     frost: source.frost === 'on' || source.frost === 'off' ? source.frost : defaultPreviewPreferences.frost,
     radius: source.radius === 'large' || source.radius === 'normal' ? source.radius : defaultPreviewPreferences.radius,
@@ -2231,7 +2231,6 @@ function ensureComponentInfrastructureControls() {
 }
 
 const previewPreferenceDefinitions = [
-  { key: 'effectsEnabled', label: '视觉效果', ariaLabel: '视觉效果总开关' },
   { key: 'border', label: '边框', ariaLabel: '边框' },
   { key: 'shadow', label: '阴影', ariaLabel: '阴影' },
   { key: 'frost', label: '毛玻璃', ariaLabel: '毛玻璃' },
@@ -2242,7 +2241,6 @@ const previewPreferenceDefinitions = [
 ];
 
 function previewPreferenceChecked(key) {
-  if (key === 'effectsEnabled') return state.effectsEnabled === true;
   if (key === 'theme') return state.theme === 'dark';
   if (key === 'radius') return state.radius === 'large';
   if (key === 'equalSpacing') return state.equalSpacing === true;
@@ -2297,7 +2295,6 @@ function ensurePreviewPreferenceControls() {
       ariaLabel: item.ariaLabel,
       size: 'small',
       customClass: 'topbar-preference',
-      disabled: ['shadow', 'frost', 'radius'].includes(item.key) && state.effectsEnabled === false,
     };
     return switchPreviewMarkup(props, switchPreviewSnapshot(props, {}), {
       preferenceKey: item.key,
@@ -2347,13 +2344,6 @@ function syncAppearanceMenu() {
   trigger.setAttribute('aria-label', state.appearanceMenuOpen ? '关闭外观设置' : '打开外观设置');
   panel.setAttribute('aria-hidden', String(!state.appearanceMenuOpen));
   panel.inert = !state.appearanceMenuOpen;
-  document.querySelectorAll('[data-preference-toggle]').forEach((button) => {
-    const key = button.dataset.preferenceToggle;
-    const disabled = ['shadow', 'frost', 'radius'].includes(key) && state.effectsEnabled === false;
-    button.disabled = disabled;
-    button.setAttribute('aria-disabled', String(disabled));
-    button.closest('[data-preference-root]')?.classList.toggle('is-disabled', disabled);
-  });
   syncFruitFlavorControl();
 }
 
@@ -6871,6 +6861,7 @@ function configProviderShowcase(props) {
 
 const guideCopySources = {
   install: `npm i poemui-miniprogram@0.1.0 -S --production`,
+  registry: `https://www.npmjs.com/package/poemui-miniprogram`,
   reference: `{
   "usingComponents": {
     "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
@@ -6891,7 +6882,7 @@ App({
     visualConfig.restore();
   }
 });`,
-  skill: `git clone --depth 1 https://github.com/fanxeon/poemui-miniprogram.git
+  skill: `git clone --depth 1 --branch v0.1.0 https://github.com/fanxeon/poemui-miniprogram.git
 cp -R poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/`,
 };
 
@@ -6953,7 +6944,10 @@ function gettingStartedGuide() {
           <div><span>npm Registry</span><strong>已发布</strong></div>
           <div><span>微信 build-npm</span><strong>公共包已验证</strong></div>
         </div>
-        ${guideCodeBlockSample('install', '固定版本安装', 'Terminal')}
+        <div class="pui-guide__code-grid">
+          ${guideCodeBlockSample('install', '固定版本安装', 'Terminal')}
+          ${guideCodeBlockSample('registry', '公共 npm 地址', 'npm Registry')}
+        </div>
         <ol class="pui-guide__steps">
           <li><span>1</span><p>执行固定版本安装，并在项目设置中启用 npm 构建。</p></li>
           <li><span>2</span><p>在微信开发者工具执行“工具 → 构建 npm”。</p></li>
@@ -7004,7 +6998,7 @@ function gettingStartedGuide() {
           <div>
             <strong>poemui-miniprogram Skill</strong>
             <span>适配 0.1.0 · 公开可用</span>
-            <p>公开真相源为 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/codex/public-beta-0.1.0/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>；安装后仍需让 AI 运行合同测试和微信构建。</p>
+            <p>公开真相源为 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/v0.1.0/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>；安装后仍需让 AI 运行合同测试和微信构建。</p>
           </div>
         </div>
         ${guideCodeBlockSample('skill', '安装 PoemUI Skill', 'Terminal')}
@@ -19903,9 +19897,7 @@ function syncShell() {
   }
   document.querySelectorAll('[data-preference-toggle]').forEach((button) => {
     const key = button.dataset.preferenceToggle;
-    const active = key === 'effectsEnabled'
-      ? state.effectsEnabled === true
-      : key === 'theme'
+    const active = key === 'theme'
       ? state.theme === 'dark'
       : key === 'radius'
         ? state.radius === 'large'
@@ -19916,7 +19908,6 @@ function syncShell() {
       shadow: '阴影',
       frost: '毛玻璃',
       radius: '大圆角',
-      effectsEnabled: '视觉效果',
       gradient: '渐变背景',
       border: '边框',
       equalSpacing: '间距相等',
@@ -19997,10 +19988,7 @@ document.querySelector('#previewPreferenceControls').addEventListener('click', (
   const control = event.target.closest('[data-preference-toggle]');
   if (control) {
     const key = control.dataset.preferenceToggle;
-    if (['shadow', 'frost', 'radius'].includes(key) && state.effectsEnabled === false) return;
-    if (key === 'effectsEnabled') {
-      state.effectsEnabled = !state.effectsEnabled;
-    } else if (key === 'theme') {
+    if (key === 'theme') {
       state.theme = state.theme === 'dark' ? 'light' : 'dark';
     } else if (key === 'radius') {
       state.radius = state.radius === 'large' ? 'normal' : 'large';

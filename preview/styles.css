@@ -21418,8 +21418,8 @@ body .app-shell[data-page-mode] #componentCopyAction[data-copy-state="error"] {
 }
 
 /* Getting Started is a document surface, not a simulated phone. It keeps one
- * readable content column and only exposes copy actions for currently usable
- * page code. npm/GitHub install actions remain unavailable until published. */
+ * readable content column and only exposes copy actions for verified public
+ * npm, GitHub and currently usable page code. */
 .pui-guide {
   display: grid;
   gap: calc(var(--pui-section-gap) * 2);

@@ -71,4 +71,4 @@ Topbar 的全站入口使用“月下成行”品牌标记：偏移双弧月牙�
 
 ### 当前外观设置统一补充（2026-07-25）
 
-当前官网真实菜单承载八项外观 Switch：`effectsEnabled`、边框、阴影、毛玻璃、大圆角、渐变、等距和深色；渐变预设由共享 Select 承载。`effectsEnabled=false` 只暂停 shadow/frost/radius 的有效值，不能丢失已保存单项；果味 checked 由预设字段实时推导，theme 与 equalSpacing 独立。小程序页面根通过 `visualConfig` Store 复用同一有效值语义，组件是否有资格消费某个开关以 [外观资格矩阵](./APPEARANCE_CONTRACT_MATRIX.md) 为准。
+当前官网真实菜单承载七项外观 Switch：边框、阴影、毛玻璃、大圆角、渐变、等距和深色；渐变预设由共享 Select 承载。`effectsEnabled` 只保留为内部 Store/API 与预设字段，不进入菜单；旧 H5 偏好中的 `false` 会迁移为 `true` 并保留 shadow/frost/radius 单项，避免用户面对不可达的暂停状态。果味 checked 由预设字段实时推导，theme 与 equalSpacing 独立。小程序页面根通过 `visualConfig` Store 复用同一有效值语义，组件是否有资格消费某个开关以 [外观资格矩阵](./APPEARANCE_CONTRACT_MATRIX.md) 为准。

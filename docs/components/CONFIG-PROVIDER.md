@@ -103,4 +103,4 @@ view.pui-config-provider + theme/effect classes
 
 任何不能满足本文的实现必须在 Feedback Ledger 中说明原因，不得静默绕过。
 
-当前外观设置补充：Provider 公共 Store 字段固定包含 `theme / effectsEnabled / shadow / frostedGlass / largeRadius / bordered / equalSpacing`；渐变及其预设属于 H5 消费者页面画布，不进入组件 Surface。`effectsEnabled=false` 只暂停 shadow、frostedGlass、largeRadius 的有效值，恢复后使用原持久化单项。31 个真实根组件和 Search/Combobox 内嵌 Input 的资格统一以 [外观资格矩阵](../APPEARANCE_CONTRACT_MATRIX.md) 为准。
+当前外观设置补充：Provider 公共 Store 字段固定包含 `theme / effectsEnabled / shadow / frostedGlass / largeRadius / bordered / equalSpacing`；渐变及其预设属于 H5 消费者页面画布，不进入组件 Surface。`effectsEnabled=false` 只暂停 shadow、frostedGlass、largeRadius 的有效值，恢复后使用原持久化单项。该字段与 `setEffectsEnabled()` 继续是开发者 API，但小程序/H5 的用户外观菜单不再渲染总开关；菜单初始化会把旧的暂停状态迁移为开启，保留三个单项。31 个真实根组件和 Search/Combobox 内嵌 Input 的资格统一以 [外观资格矩阵](../APPEARANCE_CONTRACT_MATRIX.md) 为准。

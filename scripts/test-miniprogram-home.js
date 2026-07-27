@@ -304,7 +304,11 @@ assert.strictEqual(pageJson.usingComponents['pui-overlay'], 'poemui-miniprogram/
 assert.strictEqual(pageJson.usingComponents['pui-popup'], 'poemui-miniprogram/popup/popup');
 assert.strictEqual(pageJson.usingComponents['pui-tabbar'], 'poemui-miniprogram/tabbar/tabbar');
 assert.strictEqual(pageJson.enableShareTimeline, true, '首页必须显式开启朋友圈分享');
-assert.strictEqual(pagePackage.dependencies['poemui-miniprogram'], 'file:..');
+assert.strictEqual(
+  pagePackage.dependencies['poemui-miniprogram'],
+  '0.1.0',
+  '真实产品小程序必须固定消费已发布的公共 poemui-miniprogram@0.1.0，不能退回本地 file:..'
+);
 assert.ok(appJs.indexOf("require('poemui-miniprogram/common/utils/visual-config')") !== -1, 'App 必须通过 npm 包路径恢复 visualConfig');
 assert.strictEqual(appJson.renderer, undefined, '当前小程序只支持默认 WebView，不能启用 Skyline renderer');
 assert.strictEqual(appJson.rendererOptions, undefined, '当前小程序不能保留 Skyline rendererOptions');

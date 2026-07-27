@@ -13,8 +13,10 @@
 ### 已完成并有运行证据
 
 - PoemUI H5 已部署到 `https://poemcoder.com/poem-ui/docs/`。生产容器使用
-  `poemui-h5:20260727-public-beta-final`，仅监听 `127.0.0.1:3102`，健康检查、
-  HTML、CSS、JS、390px/更窄移动视口、light/dark、真实复制和浏览器 console 已验。
+  `poemui-h5:20260728-public-registry-r3`，仅监听 `127.0.0.1:3102`；直接回滚
+  容器为 `poemui-h5-rollback-20260728-public-registry-r2`。健康检查、HTML、CSS、
+  JS、`0.1.0-20260728-002` 缓存指纹、390px/更窄移动视口、light/dark、真实复制和
+  浏览器 console 已验。
 - PoemCoder `/poem-ui` 受限 Beta 落地页已部署到
   `https://poemcoder.com/poem-ui`，使用真实微信开发者工具截图、小程序码明确留白、
   npm/GitHub 待发布状态和 H5 真实 CTA；桌面、390px、light/dark、链接点击和 console 已验。
@@ -22,7 +24,9 @@
   目录。`quick_validate.py`、真实小程序审计和安装验证脚本均通过。
 - H5 “安装”已升级为“快速开始”，现在提供固定版本
   `npm install poemui-miniprogram@0.1.0`、公开 GitHub 与网络 Skill 动作；所有复制仍以
-  真实剪贴板结果为准。
+  真实剪贴板结果为准。公共 npm 地址完整展示为
+  <https://www.npmjs.com/package/poemui-miniprogram>；生产 390px 实点复制已得到完全
+  相同的剪贴板文本。
 - `docs/PUBLIC_BETA_NOTICE.md` 已成为 MIT Core、当前免费受限 Beta 与未来独立
   PoemUI Pro 的公开边界。
 - `npm run site:build`、`npm run check`、`npm run pack:check`、
@@ -36,12 +40,17 @@
   540 个运行文件逐文件 SHA-256 一致。
 - GitHub 仓库 <https://github.com/fanxeon/poemui-miniprogram> 已公开，默认分支为
   `codex/public-beta-0.1.0`。公开快照排除了开发者私有配置、云凭据、缓存和生成的
-  `miniprogram_npm`；旧远端 `main` 保留，没有 force push。
+  `miniprogram_npm`；旧远端 `main` 保留，没有 force push。`v0.1.0` Tag 与
+  GitHub Release 已发布，并从全新临时目录按 Tag clone 后通过发布专项合同和 Skill 路径校验。
 
-### 精确外部阻断
+### 共享云完成态与精确外部阻断
 
-- 小程序云端快速开始：`pui-codepage` 的真实写入已提交，但仍等待云数据库写操作确认；
-  未确认前不声明线上内容已更新。
+- 小程序共享云快速开始 Page 与 Skill 已通过微信 `wechatide` CLI 写入资源 AppID
+  `wxa1b9a4d6549c6cd1` 的 `poemcoder-1gkbkid139b08f45` 环境，返回
+  `matchedCount=1 / modifiedCount=1`。管理端回读确认 Page 包含固定 npm 命令、完整 npm
+  地址与最小页面引用，Skill 包含 `0.1.0`、固定 GitHub Tag 安装方式和六项能力。真实 PoemUI
+  消费端 `/pages/codex/index` 的 `codePageLoadState=ready`，并回读到三段 Page snippets
+  与唯一 `poemui-miniprogram@0.1.0` Skill，证明页面消费的是共享云数据。
 - `_example` 使用 `touristappid`，微信 CLI 报 `code 10 / 不存在此 AppID`，因此没有生成
   `_example/miniprogram/miniprogram_npm`；已改用真实 AppID 工程完成微信构建，
   但游客项目失败仍作为安装示例风险保留。

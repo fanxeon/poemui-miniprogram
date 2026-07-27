@@ -24,7 +24,7 @@
     "README 和旧快速开始直接给出 npm 安装命令，容易把已填写包名或本地 tarball 误读为公共包已发布。"
   ],
   "expected": "快速开始只展示当前可执行的页面、安装与 Skill 动作；仓库提供标准 poemui-miniprogram Skill、只读审计与安装验证脚本，并公开受限 Beta、MIT Core 与未来独立 Pro 的边界。",
-  "actual": "H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成；公共 npm 0.1.0 与 GitHub 仓库已公开并通过 Registry 安装、微信 build-npm 和公开回读。云端 pui-codepage、正式小程序码与真机继续保持独立未验证状态。",
+  "actual": "H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成；公共 npm 0.1.0 与 GitHub 仓库已公开并通过 Registry 安装、微信 build-npm 和公开回读。共享云 Page 与 Skill 均由微信 CLI 精确更新并完成管理端及真实 PoemUI 消费端回读。正式小程序码与真机继续保持独立未验证状态。",
   "evidence": [
     {
       "kind": "user-report",
@@ -78,8 +78,18 @@
     },
     {
       "kind": "browser",
+      "ref": "https://poemcoder.com/poem-ui/docs/#/guide",
+      "note": "2026-07-28 r3 生产 390px 可见完整公共 npm 地址，实点 Copy 后剪贴板精确得到 https://www.npmjs.com/package/poemui-miniprogram，横向溢出为 0，console 无告警。"
+    },
+    {
+      "kind": "test",
+      "ref": "miniprogram/common/services/codex-page.js",
+      "note": "微信 wechatide CLI 在共享环境 pui-codepage 更新 Page 与 Skill 均返回 matchedCount=1 / modifiedCount=1；管理端回读内容准确，真实 PoemUI 消费端 /pages/codex/index 回读 ready、三段 snippets 与唯一 0.1.0 Skill。"
+    },
+    {
+      "kind": "browser",
       "ref": "https://github.com/fanxeon/poemui-miniprogram",
-      "note": "2026-07-28 仓库已公开，默认分支 codex/public-beta-0.1.0 提供 MIT Core 源码、组件合同与 Skill。"
+      "note": "2026-07-28 仓库已公开；默认分支 codex/public-beta-0.1.0 与 v0.1.0 Release 提供 MIT Core 源码、组件合同与 Skill，按 Tag 全新 clone 验证通过。"
     }
   ],
   "rootCause": "项目此前专注逐组件实现与本地回归，公开安装、AI 使用、许可证、官网入口和远程交付没有形成同一可验证发布合同，导致本地完成状态可能被误报为公共可用。",
@@ -122,8 +132,14 @@
       "npm publish --access public：poemui-miniprogram@0.1.0 发布成功。",
       "npm view poemui-miniprogram@0.1.0：版本、integrity、shasum、repository 与 homepage 回读成功。",
       "全新临时目录 npm install poemui-miniprogram@0.1.0 --save-exact：通过，0 vulnerabilities。",
+      "git clone --depth 1 --branch v0.1.0 https://github.com/fanxeon/poemui-miniprogram.git：通过，HEAD=e05e5da473ef5892cae2e52935e657091066918c。",
       "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project \"/Users/fanx/Documents/poemUI 小程序组件库/miniprogram\"：AppID wx23aa017375535746 通过，warnings=[]。",
       "公共 Registry 安装包 miniprogram_dist 与真实 miniprogram_npm：540 个文件逐文件 SHA-256 一致。",
+      "wechatide cloud_db_write_doc：共享环境 Page 返回 matchedCount=1 / modifiedCount=1。",
+      "wechatide cloud_db_write_doc：共享环境 Skill 返回 matchedCount=1 / modifiedCount=1。",
+      "wechatide cloud_db_read_doc：Page 与 Skill 管理端回读内容准确。",
+      "wechatide automation_page_action：真实 PoemUI /pages/codex/index 回读 codePageLoadState=ready、三段 snippets 与唯一 poemui-miniprogram@0.1.0 Skill。",
+      "poemui-h5:20260728-public-registry-r3：本地与远端 Canary、生产健康、OpenResty -t、缓存指纹和完整 npm 地址检查通过。",
       "node skills/poemui-miniprogram/scripts/inspect-project.mjs .",
       "node skills/poemui-miniprogram/scripts/verify-install.mjs ."
     ],
@@ -133,7 +149,7 @@
     ],
     "deviceRisks": [
       "_example 使用 touristappid，微信 CLI 返回 code 10，不存在此 AppID；真实 AppID 工程已通过，但游客安装示例未生成 miniprogram_npm。",
-      "小程序 pui-codepage 云端更新仍等待数据库写操作确认，未把待确认任务报告成成功。",
+      "共享云 Page 与 Skill 已完成管理端写入、管理端回读和真实 PoemUI 消费端回读；iOS/Android 真机的弱网、缓存与读屏体验仍未验证。",
       "正式小程序码、微信审核/发布以及 iOS/Android 真机的组件、Skill 指导产物和共享云安装页仍需发布版本复核。"
     ]
   },

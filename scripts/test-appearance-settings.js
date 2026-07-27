@@ -5,10 +5,11 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'miniprogram/components/appearance-settings/appearance-settings.js'), 'utf8');
+const wxml = fs.readFileSync(path.join(root, 'miniprogram/components/appearance-settings/appearance-settings.wxml'), 'utf8');
 
 let definition;
 let visualState = {
-  theme: 'light', effectsEnabled: true, shadow: true, frostedGlass: false,
+  theme: 'light', effectsEnabled: false, shadow: true, frostedGlass: false,
   largeRadius: true, bordered: false, equalSpacing: false,
 };
 let gradient = false;
@@ -66,14 +67,15 @@ const instance = {
 Object.assign(instance, definition.methods);
 definition.lifetimes.attached.call(instance);
 
+assert.strictEqual(visualState.effectsEnabled, true, 'hidden effects gate must migrate an old paused preference back to enabled');
+assert.strictEqual(visualState.shadow, true, 'effects gate migration must preserve the stored shadow preference');
+assert.strictEqual(visualState.frostedGlass, false, 'effects gate migration must preserve the stored frost preference');
+assert.strictEqual(visualState.largeRadius, true, 'effects gate migration must preserve the stored radius preference');
+assert.ok(wxml.indexOf('data-setting="effectsEnabled"') === -1 && wxml.indexOf('视觉效果总开关') === -1, 'appearance settings must not expose effectsEnabled');
+assert.ok(wxml.indexOf('visualConfig.effectsEnabled === false') === -1, 'visible effect switches must not be disabled by a hidden gate');
 instance.onAppearanceSwitchChange({ currentTarget: { dataset: { setting: 'equalSpacing' } }, detail: { checked: true } });
 assert.strictEqual(visualState.equalSpacing, true, 'equalSpacing switch must write the shared Store');
 assert.strictEqual(instance.data.visualConfig.equalSpacing, true, 'equalSpacing must update immediately in component state');
-instance.onAppearanceSwitchChange({ currentTarget: { dataset: { setting: 'effectsEnabled' } }, detail: { checked: false } });
-assert.strictEqual(visualState.effectsEnabled, false, 'effectsEnabled switch must write the shared Store');
-assert.strictEqual(instance.data.visualConfig.effectsEnabled, false, 'effectsEnabled must update immediately in component state');
-instance.onAppearanceSwitchChange({ currentTarget: { dataset: { setting: 'effectsEnabled' } }, detail: { checked: true } });
-assert.strictEqual(visualState.effectsEnabled, true, 'effectsEnabled must be re-openable without losing stored component values');
 instance.onFruitFlavorChange({ detail: { checked: true } });
 assert.strictEqual(visualState.equalSpacing, true, 'fruit preset must not overwrite equalSpacing');
 instance.onAppearanceSwitchChange({ currentTarget: { dataset: { setting: 'equalSpacing' } }, detail: { checked: false } });
