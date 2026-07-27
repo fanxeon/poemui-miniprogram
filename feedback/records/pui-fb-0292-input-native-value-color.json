@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0292",
+  "title": "Input 原生值需平台归一化且自动化注值与像素重绘分裂",
+  "scope": "component",
+  "components": ["input", "search", "miniprogram-home", "documentation"],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页 Search 输入的真实值必须在深浅色下可见，过滤、清空和恢复不能只在状态层生效。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-home", "npm-dist"],
+    "platforms": ["wechat-miniprogram", "browser", "npm"],
+    "viewports": ["390px", "wechat simulator"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在首页打开搜索，通过辅助功能 set_value/type_text 注入 Divider。",
+    "AX value 与组件列表真实过滤到 Divider，但模拟器像素没有重绘输入文字。",
+    "清空后改用逐键 press_key，原生 input 像素能显示 Divider，但该自动化路径不派发小程序 input 事件，列表保持未过滤。",
+    "硬编码诊断色和受控 nextTick 实验均不能合并这两条自动化路径，已全部撤回；不能据此虚构单一路径已完成真机验收。"
+  ],
+  "expected": "真实用户输入时，原生文字、change 回写、过滤、清空和恢复应保持同一状态；自动化验收必须说明注值与键盘路径的能力边界。",
+  "actual": "开发者工具自动化把像素重绘和小程序 input 事件拆成两条路径，无法仅凭单条自动化证明真机端二者同时成立；共享 Input 原生根原先也缺少完整平台样式归一化。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "input/input.wxss",
+      "note": "原生 control 直接消费 --pui-text-primary/caret Token，并按固定版 TDesign 基线归一化 display、box-sizing、margin、padding、background 与 border。"
+    },
+    {
+      "kind": "file",
+      "ref": "input/input.wxml",
+      "note": "原生 input 用独立 placeholder-class 承接 --pui-text-placeholder，不再依赖平台默认占位色。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 input 已直接消费 --text，确认共享合同应显式落在平台输入根而非依赖继承。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-input.js",
+      "note": "专项锁定原生 control 的文字/光标/placeholder Token 与平台根归一化，并禁止回退 color: inherit。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.js",
+      "note": "首页 Search 的 change、clear、close 和过滤状态链保持真实，不以 Toast 或静态提示替代。"
+    },
+    {
+      "kind": "file",
+      "ref": ".audit/poemui-home-2026-07-24-fixed/04-search-filter-divider-ax.jpeg",
+      "note": "微信开发者工具 390px 模拟器的辅助功能注值路径已把真实列表过滤到 Divider；该路径的输入像素未同步重绘，因此只作为事件与过滤证据。"
+    }
+  ],
+  "rootCause": "共享 Input 原生根依赖部分浏览器默认样式，缺少明确的平台归一化；同时当前 Computer Use 对微信开发者工具的 set_value/type_text 与逐键 press_key 分别只覆盖事件回写或原生像素重绘，形成验收工具边界。现有证据不足以把该分裂归因于受控状态机，因此相关实验改动被撤回。",
+  "decision": {
+    "outcome": "不改变 Input/Search API 或受控状态机；Input 原生根直接消费主题文字/caret Token、独立 placeholder Token，并补齐固定版 TDesign 1.15.3 同类平台归一化。自动化分裂保留为真机风险。",
+    "rationale": "只保留源代码与固定参考能支持的共享改动；不以页面假文字、硬编码颜色或未证实的 nextTick 行为掩盖自动化限制。",
+    "alternativesRejected": [
+      "在首页 Search 写私有颜色会让其他 Input/Search 继续保留同一缺陷。",
+      "用 placeholder 或提示文字回显查询值不是真实输入控件状态。",
+      "硬编码黑色或诊断色既破坏主题，也无法合并自动化的事件与像素路径。",
+      "改变受控同步时序缺少单路径证据，可能破坏父级拒绝写回时的合同，因此撤回。"
+    ]
+  },
+  "impact": {
+    "files": ["input/input.wxml", "input/input.wxss", "docs/components/INPUT.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-input.js", "miniprogram_dist/input/input.wxml", "miniprogram_dist/input/input.wxss"],
+    "dependencies": ["PUI theme tokens", "PUI Search", "native input"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input.js", "scripts/test-search.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-input.js", "node scripts/test-search.js", "npm run miniprogram:build", "微信开发者工具：工具 → 构建 npm", "微信开发者工具：普通编译"],
+    "browser": ["H5 原生 input 继续直接消费 --text；微信模拟器逐键输入可见，AX 注值可触发真实过滤，但两条自动化路径不能合并。"],
+    "deviceRisks": ["微信真机仍需用真实软键盘确认文字显示与过滤在同一路径同时成立，并覆盖不同系统输入法、光标颜色、自动填充、disabled/readonly 及 dark theme。"]
+  },
+  "ai": {
+    "summary": "微信原生 input 需完整平台根归一化；自动化注值与逐键重绘分裂时必须保留真机风险，不能用假文字或未证实状态机改动补齐。",
+    "rules": [
+      "Input/Search 验收必须同时观察输入值与过滤结果，状态更新不等于文字可见。",
+      "原生 input 的 value 与 caret 直接消费 --pui-text-primary，placeholder-class 消费 --pui-text-placeholder；H5 input 直接消费 --text。",
+      "Input 原生根明确归一化 display、box-sizing、margin、padding、background 和 border。",
+      "辅助功能注值只证明 AX/事件，逐键输入只证明当前模拟器像素时，不得宣称真机同一路径已通过。",
+      "禁止在消费者页面硬编码颜色或复制一套 Search 皮肤。"
+    ],
+    "tags": ["input", "search", "native-control", "theme", "readability", "wechat"]
+  }
+}

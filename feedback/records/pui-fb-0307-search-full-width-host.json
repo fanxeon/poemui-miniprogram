@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0307",
+  "title": "Search 自定义组件宿主未声明全宽导致调用端缩窄",
+  "scope": "component",
+  "components": ["search", "input", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "在 Icon 小程序详情页中，PUI Search 必须占满 ScrollArea 的可用内容宽度，不能只让内部字段相对缩窄宿主达到 100%。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-component-page", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 Icon 详情页的全宽内容行中组合 pui-search。",
+    "Search 内部根已声明 width:100%，但组件宿主未声明宽度，微信自定义组件宿主按内容宽度收缩。",
+    "页面侧 class、inline style 与 customStyle 只能分别作用于宿主或内部根，不能保证二者在样式隔离边界内共同扩展。"
+  ],
+  "expected": "Search 作为字段组合组件应由自身保证宿主和内部根都占满调用者可用宽度且可收缩；H5 镜像维持同样的全宽根语义。",
+  "actual": "调用者看到的是占满缩窄宿主的字段；补齐 Search 宿主后，内部 PUI Input 宿主仍收缩，Icon 页面继续显示明显短于内容宽度的搜索框。",
+  "evidence": [
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161 · wx23aa017375535746", "note": "390px Icon 页面初次渲染显示分类网格已跨满内容宽度，而 Search 明显收缩为较短字段。"},
+    {"kind": "file", "ref": "search/search.wxss", "note": "修复后通过官方 :host 选择器固定 Search 宿主 display:block、width/max-width:100% 和 min-width:0。"},
+    {"kind": "file", "ref": "search/search.wxml", "note": "内部 PUI Input 宿主和根同步成为 flex:1，填满 Search 横向行剩余宽度。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 pui-search 根同步声明 width:100% 与 min-width:0。"},
+    {"kind": "test", "ref": "scripts/test-search.js", "note": "专项锁定小程序宿主和 H5 根的全宽可收缩合同。"}
+  ],
+  "rootCause": "Search 仅给内部根声明 width:100%，忽略自身与嵌套 PUI Input 的微信自定义组件物理宿主；页面端无法可靠跨过组件样式隔离控制多层几何。",
+  "decision": {
+    "outcome": "Search 在小程序 WXSS 使用 :host 声明 block、width/max-width:100%、min-width:0，并让内部 PUI Input 宿主及根作为 flex:1 占用剩余宽度；H5 镜像根同步全宽可收缩。Icon 页面只保留正常全宽布局行，不维护跨组件视觉补丁。",
+    "rationale": "宽度是 Search 组件自身的布局职责，必须同时覆盖 Search 与其内部 Input 两层自定义组件宿主；放在共享组件能够让任意页面组合获得一致行为，并符合微信组件宿主样式边界。",
+    "alternativesRejected": [
+      "在每个页面复制 pui-search 标签选择器会违反微信组件样式隔离且会触发不允许的选择器告警。",
+      "只给单层内部根或调用页 wrapper 写 width:100% 无法约束嵌套自定义组件宿主。",
+      "用页面私有 Input 皮肤替代 Search 会破坏 PUI Input/Search 组合合同。"
+    ]
+  },
+  "impact": {
+    "files": ["search/search.wxss", "preview/styles.css", "docs/components/SEARCH.md", "scripts/test-search.js", "miniprogram_dist/search/search.wxss", "_example/node_modules/poemui-miniprogram/miniprogram_dist/search/search.wxss", "feedback/records/pui-fb-0307-search-full-width-host.json"],
+    "dependencies": ["pui-search", "pui-input", "Wechat :host selector"]
+  },
+  "verification": {
+    "tests": ["scripts/test-search.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-layout-contracts.js"],
+    "commands": ["node scripts/test-search.js", "node scripts/test-miniprogram-component-pages.js", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm", "微信开发者工具普通编译"],
+    "browser": ["合法 AppID wx23aa017375535746 的微信开发者工具 RC 2.02.2607161、iPhone 12/13 390px 模拟器确认 Search 与 Icon 内容列同宽，下面的 40rpx 三列图标及分区文案完整显示。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认自定义组件 :host 几何、软键盘、长搜索词、深浅色和系统字体回流。"]
+  },
+  "ai": {
+    "summary": "小程序复合字段的内部 width:100% 不足以保证自定义组件宿主全宽；宿主几何必须由组件自身 :host 负责。",
+    "rules": [
+      "当页面内 PUI 字段缩窄时，先区分调用者 wrapper、组件宿主和组件内部根三层几何。",
+      "共享组件宿主宽度问题应使用组件自身 :host 修复，并同步 H5、合同、测试和安装产物。",
+      "禁止在页面用 pui-search 标签选择器或复制 Input 皮肤绕过组件样式隔离。"
+    ],
+    "tags": ["search", "layout", "host", "wechat", "h5-parity"]
+  }
+}

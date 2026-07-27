@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0411",
+  "title": "Checkbox 文案、未选轮廓和组选中态不可读",
+  "scope": "component",
+  "components": ["checkbox", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Checkbox 独立页必须清楚看到选项文案、未选边界、当前选中项与组选中变化。",
+  "environment": {
+    "surfaces": ["checkbox component page"],
+    "platforms": ["wechat-miniprogram", "h5-preview"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在小程序 Checkbox 页查看 label/content Prop 示例，文字为空。",
+    "关闭全局中性边框后，未选复选框轮廓近乎不可见。",
+    "使用 options 生成 CheckboxGroup 时，父级 value 已变化但子项未同步 checked。"
+  ],
+  "expected": "Prop 文案与同名 Slot 可同时按合同渲染；控件命中轮廓不受 Surface 边框开关清除；options 生成项与组 value 始终一致。",
+  "actual": "命名 Slot 的 fallback 子节点在微信运行态不显示；控件轮廓错误使用可透明化的 Surface border Token；生成项只依赖 relation 子组件回写。",
+  "evidence": [
+    {"kind": "file", "ref": "checkbox/checkbox.wxml", "note": "Prop 文案从命名 Slot fallback 改为显式同级文本。"},
+    {"kind": "file", "ref": "checkbox/checkbox-group.js", "note": "options 生成项显式装饰 checked/indeterminate，并提供事件回写。"},
+    {"kind": "file", "ref": "common/style/theme.wxss", "note": "新增不受 bordered 关闭影响的 control outline 语义 Token。"},
+    {"kind": "test", "ref": "scripts/test-checkbox.js", "note": "锁定 Prop 与 Slot 并存、组回写和可见轮廓。"},
+    {"kind": "browser", "ref": "/tmp/poemui-checkbox-after-3.png", "note": "390x844 模拟器确认文案、选中勾和未选轮廓均清楚可见。"}
+  ],
+  "rootCause": "错误假设微信命名 Slot 会渲染 fallback 子节点；组生成模式没有把 value 映射到渲染数据；交互控件边界误用了可由 bordered=false 清空的 Surface Token。",
+  "decision": {
+    "outcome": "Prop 文案与命名 Slot 分离渲染；CheckboxGroup 统一从 value 装饰 generated options；复选框轮廓使用独立 control outline Token，并同步 H5。",
+    "rationale": "三处分别修正内容投影、受控状态和交互可见性，不改变 Checkbox 的公开选中语义。",
+    "alternativesRejected": [
+      "给页面手写说明文字不能修复组件真实 label/content。",
+      "强制开启全局 bordered 会违反用户外观偏好。",
+      "只依赖 relation children 不能覆盖 options 自动生成模式。"
+    ]
+  },
+  "impact": {
+    "files": ["checkbox/", "common/style/theme.wxss", "preview/styles.css", "scripts/test-checkbox.js", "docs/components/CHECKBOX.md"],
+    "dependencies": ["PUI CheckboxGroup", "visualConfig.bordered"]
+  },
+  "verification": {
+    "tests": ["scripts/test-checkbox.js"],
+    "commands": ["node scripts/test-checkbox.js", "npm run miniprogram:build", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具 390x844 浅色页面确认基础、分组、禁用和中间态均有可读文案与边界。"],
+    "deviceRisks": ["iOS/Android 真机的 2rpx 轮廓、触摸命中和读屏分组语义仍需复核。"]
+  },
+  "ai": {
+    "summary": "微信命名 Slot 不可当作 Prop fallback 容器，控件轮廓也不能复用可关闭的 Surface 边框。",
+    "rules": [
+      "label/content Prop 与同名 Slot 必须分别显式渲染。",
+      "options 生成的组选项必须由组 value 计算 checked。",
+      "Checkbox 未选轮廓使用 control outline，而不是可透明化的 Surface border。"
+    ],
+    "tags": ["checkbox", "slot", "group", "outline", "bordered"]
+  }
+}

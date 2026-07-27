@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0386",
+  "title": "小程序缺少布局区五个组件的独立页面与滚动边界",
+  "scope": "global",
+  "components": ["miniprogram-home", "aspect-ratio", "direction", "grid", "scroll-area", "sticky"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "将布局组件迁移为可从小程序首页和搜索进入的真实独立页面，并保持各自滚动语义。",
+  "environment": {"surfaces": ["miniprogram-home", "miniprogram-layout-pages"], "platforms": ["wechat-miniprogram", "node"], "viewports": ["390px"], "themes": ["light", "dark"]},
+  "reproduction": ["迁移前小程序只有基础、导航、反馈和浮层页面，五个布局组件没有显式路由。", "ScrollArea 与 Sticky 的页面若套错滚动宿主，会让组件无法收到真实滚动事实。"],
+  "expected": "每个布局组件有独立路由、首页搜索入口、真实父级状态和正确的唯一滚动边界。",
+  "actual": "布局区此前无小程序页面，用户无法在微信端操作比例、方向、网格、滚动区或吸顶行为。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/aspect-ratio/", "note": "比例和裁切由页面状态真实回写。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/scroll-area/", "note": "被测 ScrollArea 是页面唯一滚动区域并回写滚动事实。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/sticky/", "note": "宿主 ScrollArea 的真实 scroll 转交给 Sticky 定位逻辑。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-layout-pages.js", "note": "锁定五页路由结构和关键父级回写。"}
+  ],
+  "rootCause": "已发布组件缺少小程序适配页，且布局组件不能被通用页面壳不加区分地嵌套。",
+  "decision": {"outcome": "新增五条显式路由与布局首页分区；标准页面复用 component-page，ScrollArea 自身承担唯一滚动，Sticky 将宿主真实 scroll 转给组件定位逻辑。", "rationale": "独立页保留组件公开 Props 和真实滚动边界，避免静态演示或错误的双滚动。", "alternativesRejected": ["使用一个查询参数页压平组件差异。", "用 CSS fixed 模拟 Sticky。", "在 ScrollArea 外再套一层同向滚动容器。"]},
+  "impact": {"files": ["miniprogram/app.json", "miniprogram/pages/index/index.js", "miniprogram/pages/components/aspect-ratio/", "miniprogram/pages/components/direction/", "miniprogram/pages/components/grid/", "miniprogram/pages/components/scroll-area/", "miniprogram/pages/components/sticky/", "scripts/test-miniprogram-layout-pages.js", "docs/MINIPROGRAM_LAYOUT_PAGES.md"], "dependencies": ["component-page", "pui-scroll-area", "pui-sticky"]},
+  "verification": {"tests": ["scripts/test-miniprogram-layout-pages.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js"], "commands": ["node scripts/test-miniprogram-layout-pages.js：通过", "node scripts/test-miniprogram-home.js：通过", "node scripts/test-miniprogram-component-pages.js：通过"], "browser": [], "deviceRisks": ["390px 微信模拟器和 iOS/Android 真机尚未验证比例裁切、RTL、Grid 列宽、Sticky 定位和惯性滚动。"]},
+  "ai": {"summary": "布局页必须保留独立路由和滚动边界；ScrollArea 与 Sticky 不得用静态布局冒充。", "rules": ["ScrollArea 页面不能再包裹第二个同向滚动宿主。", "Sticky 必须接收真实滚动事实，不能仅写 CSS fixed。", "Grid retry 只恢复入口状态，不描述业务成功。", "新增页面同步首页目录、Search、路由、专项测试和文档。"], "tags": ["miniprogram", "layout", "scroll-area", "sticky", "routing"]}
+}

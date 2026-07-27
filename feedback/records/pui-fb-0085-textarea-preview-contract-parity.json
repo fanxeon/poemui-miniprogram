@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0085",
+  "title": "Textarea 官网仍复制旧合同且焦点与状态镜像不真实",
+  "scope": "component",
+  "components": ["textarea", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Textarea 官网应像 TDesign 一样按用法分区，属性、WXML、兼容说明和真实 H5 行为必须共同反映当前组件，而不是继续展示已删除 API 或只改变提示文字。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "normal-code-card"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["1280px desktop", "390x844 browser", "393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 Textarea 属性页，Props 数量已显示30，但 WXML 仍包含 bind:input/reset/confirm/linechange、footer Slot 和 setValue/reset/getState；H5 兼容说明仍写旧44 Props 行为。",
+    "旧概览未提供基础、字符、自动增高、状态的可筛选分区，并以换行计数伪造 linechange；固定 Loading 与 clear 组合也散落在旧方法/事件诊断卡中。",
+    "将 focus=true 后，动态 innerHTML 插入的 autofocus 不会让浏览器真实聚焦；同时 H5 用单一 stateClass 互斥选择 focus/disabled/status，focus 会丢掉 warning/error 状态类，而小程序端会组合全部类。"
+  ],
+  "expected": "官网四区直接展示真实能力，当前 WXML 只输出非默认 Props且零 bind；全部30个 Props 真正改变预览或同源平台 WXML，焦点、状态、动效、主题和视觉开关与小程序合同一致。",
+  "actual": "属性数量、复制代码、兼容说明和运行镜像来自不同旧真相源，导致用户看到30 Props却复制出已删除的44 Props时代用法，focus 也只有属性没有真实行为。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求预览分区、标题间距清晰、代码可复制、API 全文展示、所有 Props 在真实网页逐项作用，并授权后续队列由 agent 自主验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终 makeUsageCode、compatibilityRows、textareaPreviewMarkup/sample 和真实事件处理共用当前合同，focus 运行绑定调用浏览器 focus。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "四区使用统一分区间距，Textarea 只保留一个 Surface，自动高度与反馈使用180/1ms Token。"},
+    {"kind": "test", "ref": "scripts/test-textarea.js", "note": "专项禁止旧 bind/兼容说明和 Button 几何覆盖，锁定四区、共享 Loading、真实 focus 与组合状态类。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=textarea-final#/components/textarea", "note": "属性页最终 WXML 为 pui-textarea 自闭合最小代码；focus=true 后 activeElement 为当前 textarea；受控输入将 value JSON 真正回写。"}
+  ],
+  "rootCause": "Textarea 原先在 metadata、通用 WXML 分支、兼容说明、旧 showcase 和运行事件中维护多份合同；API 收敛时只更新了其中一部分，且浏览器动态挂载行为没有专项运行绑定。",
+  "decision": {
+    "outcome": "概览固定为基础用法、字符计数、自动增高、状态与交互四区；makeUsageCode 只输出非默认 Props和激活 Slot，零 bind；兼容说明改为30 Props合同；focus 增加真实 H5 运行绑定，状态、门禁、focus 类改为并行组合。",
+    "rationale": "同一属性必须在源码、Props、当前效果代码、兼容说明和 H5 运行态中只有一个可追踪解释；平台独有事件明确不伪造。",
+    "alternativesRejected": [
+      "只隐藏旧 WXML 文案会继续让复制入口和兼容说明漂移。",
+      "仅保留 autofocus 属性在动态挂载页面实测不会聚焦，不能算 focus Prop 生效。",
+      "用输入换行数伪造 line-change 或用窗口尺寸伪造 keyboardheightchange 会制造不存在的平台事件。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-textarea.js", "scripts/test-shared-subcomponent-geometry.js", "scripts/test-preview-native-control-boundaries.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/TEXTAREA.md"],
+    "dependencies": ["PreviewDevice", "PUI Props helpers", "buttonSample", "loadingComponent", "tagSample", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-textarea.js", "scripts/test-preview-normal-code-card.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-api-reference-readability.js"],
+    "commands": ["node --check preview/app.js", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "真实输入、换行、blur、Cmd/Meta+Enter、静态与当前 clear 均操作真实 textarea；clear 完成后按钮隐藏禁用，事件固定 clear → change。",
+      "autosize 2–5行从68px经过131.125px中间帧到140px完成，transition为500ms；reduceMotion 为1ms并在8ms内到146px完成。",
+      "390x844 下 document/main 为375/375、PreviewDevice 为349/349、当前 Textarea 为282/282，无页面级横向溢出；分区标题实际间隔26px。",
+      "深色、边框关闭、阴影、毛玻璃、大圆角、渐变全部实点，字段计算为透明边框、9px圆角、blur(18px)与双层阴影；最终恢复 light/border-on/其余关闭。"
+    ],
+    "deviceRisks": [
+      "H5 自动高度按字体与行数估算，微信 auto-height、rpx 行高和软换行中间帧仍需目标基础库真机录屏确认。",
+      "H5 不伪造 line-change/keyboardheightchange；微信事件 detail、高度单位、输入法确认栏和系统低动效需合法 AppID 真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Textarea 官网四区、Props、WXML、兼容说明和运行态必须共用当前30/7/3/4合同。",
+    "rules": [
+      "Textarea 基础 WXML 只输出非默认 Props，不写任何 bind 或实例方法说明。",
+      "focus Prop 在 H5 必须产生真实 activeElement，不能只写 autofocus；disabled/readonly/loading 继续阻断 focus。",
+      "状态、门禁和 focus 类必须并行组合，禁止互斥三元表达式吞掉 error/warning。",
+      "H5 禁止凭换行数或 viewport 伪造 line-change 与 keyboardheightchange。"
+    ],
+    "tags": ["textarea", "preview", "wxml", "focus", "motion", "responsive", "theme"]
+  }
+}

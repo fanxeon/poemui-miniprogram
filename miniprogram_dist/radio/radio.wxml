@@ -1,0 +1,35 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="radio"
+  aria-label="{{semanticLabel}}"
+  aria-checked="{{innerChecked}}"
+  aria-disabled="{{effectiveDisabled}}"
+  aria-readonly="{{effectiveReadonly}}"
+>
+  <view
+    wx:if="{{iconType !== 'none'}}"
+    class="pui-radio__target"
+    hover-class="{{!effectiveDisabled && !effectiveReadonly ? 'pui-radio__target--hover' : 'none'}}"
+    catchtap="onMarkTap"
+  >
+    <view class="pui-radio__mark" aria-hidden="true">
+      <view wx:if="{{iconType === 'slot'}}" class="pui-radio__slot-icon"><slot name="icon"></slot></view>
+      <block wx:elif="{{iconType === 'custom'}}">
+        <view class="pui-radio__indicator pui-radio__indicator--unchecked"><pui-icon wx:if="{{uncheckedIcon}}" name="{{uncheckedIcon}}" size="28" /></view>
+        <view class="pui-radio__indicator pui-radio__indicator--checked"><pui-icon wx:if="{{checkedIcon}}" name="{{checkedIcon}}" size="28" /></view>
+      </block>
+      <pui-icon wx:elif="{{iconType === 'line'}}" name="check" size="28" />
+      <view wx:else class="pui-radio__dot"></view>
+    </view>
+  </view>
+  <view
+    class="pui-radio__body"
+    hover-class="{{!effectiveDisabled && !effectiveReadonly && !contentDisabled ? 'pui-radio__body--hover' : 'none'}}"
+    catchtap="onContentTap"
+  >
+    <view class="pui-radio__label" style="{{labelStyle}}"><text wx:if="{{label}}">{{label}}</text><slot name="label"></slot></view>
+    <view class="pui-radio__content" style="{{contentStyle}}"><text wx:if="{{content}}">{{content}}</text><slot name="content"></slot></view>
+    <view class="pui-radio__slot"><slot></slot></view>
+  </view>
+</view>

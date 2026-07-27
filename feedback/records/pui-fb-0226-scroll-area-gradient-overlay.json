@@ -1,0 +1,58 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0226",
+  "title": "ScrollArea 需要主题安全的固定顶底渐变遮罩",
+  "scope": "component",
+  "components": ["scroll-area", "preview-site", "documentation", "example", "miniprogram-dist"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "为 ScrollArea 增加默认开启的顶底渐变遮罩，并让用户能够以公开 Prop 自定义遮罩颜色，同时保持真实滚动与跨端一致性。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example", "miniprogram-dist"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 393px", "390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开较长 Slot 内容的 ScrollArea；现有真实滚动视口没有提供顶底阅读过渡，用户无法判断还有内容可继续滚动。",
+    "若只在 H5 容器内叠静态渐变或把渐变放入 Slot，遮罩会随内容滚走、无法进入小程序产物，或遮挡真实内容交互。"
+  ],
+  "expected": "ScrollArea 默认在唯一真实滚动视口的顶部渲染“容器色到透明”、底部渲染“透明到容器色”的固定渐变；`gradient-overlay` 可关闭，`gradient-overlay-color` 支持主题安全的用户自定义色，且不改变滚动、定位、事件、Slot 或预览根的透明边界。",
+  "actual": "旧组件没有公开渐变能力；H5 与小程序都无法通过同一 Props 提供固定顶底阅读过渡。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户明确要求顶部白到透明、底部透明到白、默认开启并允许自定义颜色。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.wxml", "note": "透明定位根内保留唯一原生 scroll-view，并在其后条件渲染两个 aria-hidden 固定 sibling overlay。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.js", "note": "gradientOverlay 默认为 true；gradientOverlayColor 只接受安全 CSS 色值，空值或非法值回退主题容器 Token。"},
+    {"kind": "test", "ref": "scripts/test-scroll-area.js", "note": "专项合同锁定五个 Props、渐变方向、无交互遮罩、H5 镜像、文档和示例约束。"}
+  ],
+  "rootCause": "原有薄封装只覆盖高度和目标定位，没有把用户所需的固定阅读过渡定义为受限、跨端可验证的组件视觉能力。",
+  "decision": {
+    "outcome": "新增 `gradientOverlay:Boolean=true`（WXML `gradient-overlay`）与 `gradientOverlayColor:String=''`（WXML `gradient-overlay-color`）。空值或非法色回退当前 `--pui-bg-container`；顶底层为相对透明根内的 absolute sibling，固定尺寸使用跨端 Token，始终 pointer-events:none / aria-hidden。",
+    "rationale": "同级层不会随 Slot 滚动，也不会建立第二个滚动 viewport；主题 Token 使浅色自然为白、深色自然为深色容器，公开色值只允许可安全写入 inline style 的形式。",
+    "alternativesRejected": [
+      "只给官网叠一层 CSS：不能进入小程序组件，也无法由调用方控制。",
+      "把渐变放入 Slot：会随内容滚走并污染调用方内容结构。",
+      "允许任意 style 字符串：会引入样式注入和跨端不可预测行为。"
+    ]
+  },
+  "impact": {
+    "files": ["scroll-area/scroll-area.js", "scroll-area/scroll-area.wxml", "scroll-area/scroll-area.wxss", "common/style/theme.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "metadata/shadcn.js", "preview/components-data.js", "_example/miniprogram/pages/components/index.wxml", "docs/COMPONENT_API.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/UI_DESIGN_CONTRACT.md", "docs/components/SCROLL-AREA.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "CHANGELOG.md", "scripts/test-scroll-area.js", "feedback/records/pui-fb-0226-scroll-area-gradient-overlay.json"],
+    "dependencies": ["原生 scroll-view", "PUI theme behavior", "PreviewDevice", "PUI Cell Slot 组合"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-scroll-area.js", "PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["2026-07-22 实点官网属性面板确认 5 个字段：height=1128rpx、scrollIntoView、gradientOverlay=true、gradientOverlayColor=''、ariaLabel；默认概览为唯一 overflow-y:auto 视口（clientHeight=564px、scrollHeight=1116px）与两个 32px 的 aria-hidden/pointer-events:none sibling overlay。", "实际关闭 gradientOverlay 后遮罩层从 2 个变为 0 个，视口仍为 564/1116px；输入 #fef3c7 并重新开启后，顶层为 rgb(254,243,199)→transparent、底层为 transparent→rgb(254,243,199)，透明根仍为 background transparent / border 0px / box-shadow none。", "真实滚轮将 scrollTop 0→280（最大 552）；实际选择 scrollIntoView=scroll-area-build 后 scrollTop=248，重置回默认后为 0。390x844 下 document/body 为 375/375px、ScrollArea 根与视口 293/293px，无横向溢出。", "通过官网外观设置实际切换深色后，空色回退为 rgb(24,24,27)→transparent / transparent→rgb(24,24,27)，并保持 32px、无交互和透明根；已实际切回浅色。"],
+    "deviceRisks": ["合法 AppID 真机仍需验证 enhanced scroll-view 中 absolute 渐变层的合成、触摸透传、rpx 尺寸、样式隔离、深浅色、Slot 读屏和滚动惯性；H5 不替代真机结论。"]
+  },
+  "ai": {
+    "summary": "固定滚动阅读遮罩必须是主题安全、无交互、可关闭的组件能力，而不是 H5 私有装饰。",
+    "rules": ["滚动遮罩固定为唯一真实视口的同级层，不能放进 Slot 或新建第二个滚动容器。", "默认色跟随容器主题；自定义色先校验再写入跨端样式变量。", "渐变层必须 pointer-events:none、aria-hidden，并以浏览器和真机分别验证。"],
+    "tags": ["scroll-area", "gradient-overlay", "theme", "accessibility", "preview-parity"]
+  }
+}

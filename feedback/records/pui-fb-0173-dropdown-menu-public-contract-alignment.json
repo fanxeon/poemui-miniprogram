@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0173",
+  "title": "DropdownMenu 旧公开合同把筛选入口误扩展为多列状态和滚动引擎",
+  "scope": "component",
+  "components": ["dropdown-menu", "preview-site", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "联网参考 TDesign 后逐组件收敛真实可交付能力，网页、源码、示例和文档不能继续展示未由 DropdownMenu 承担的 loading、error、retry、滚动、实例方法或伪事件。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 393px", "Chrome iPhone 12 Pro 390×844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 dropdown-menu 四件套、metadata、H5、API 与示例：根级公开 43 Props，兼有 columns、visible、loading/error/retry、滚动、readonly、实例 open/close/select/retry 等；H5 同时渲染状态壳和方法诊断。",
+    "联网打开 https://tdesign.tencent.com/miniprogram/components/dropdown-menu、https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/dropdown-menu，并读取固定 tdesign-miniprogram@1.15.3 的 miniprogram_dist/dropdown-menu/{props.js,type.d.ts,dropdown-menu.js,dropdown-menu.wxml} 与 dropdown-item/{props.js,type.d.ts,dropdown-item.js,dropdown-item.wxml}。",
+    "固定包表明父级拥有 closeOnClickOverlay、showOverlay、zIndex 和 duration，子级拥有 value/defaultValue、multiple、options、confirm/reset；旧 PoemUI 根状态机没有对应的独立用户任务。"
+  ],
+  "expected": "PoemUI DropdownMenu 应以一个可组合 items 数组承载并列筛选项；单选和多选有可实测的受控/非受控与事件顺序，页面状态和请求结果继续由消费者组合。",
+  "actual": "旧合同把 TDesign 的父/子分工、页面请求状态和调试方法混在一个根组件，H5 与示例因此承诺了 WXML 不应拥有的交互与反馈。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求联网对照 TDesign、实际浏览器 battle，并授予本 Goal 的单组件完整证据后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/dropdown-menu", "note": "2026-07-20 联网核对 DropdownMenu 的用途与公开演示分区。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/dropdown-menu", "note": "2026-07-20 在线定位父/子组件源码，并以固定 npm 包复核默认值和事件职责。"},
+    {"kind": "file", "ref": "dropdown-menu/dropdown-menu.js", "note": "修复后仅公开 items、value、defaultValue、closeOnClickOverlay、showOverlay、zIndex、ariaLabel、reduceMotion 八个 Props。"},
+    {"kind": "test", "ref": "scripts/test-dropdown-menu.js", "note": "专项覆盖原始 0/false、受控/非受控、多选、reset/confirm 顺序、遮罩策略、禁用、空选项、低动效和文档/示例同源。"}
+  ],
+  "rootCause": "旧实现把一个页面筛选入口当作通用数据状态容器，API 数量和 H5 诊断 UI 被历史 metadata 的 done 状态固化，未按父/子职责重新审计。",
+  "decision": {
+    "outcome": "收敛为 8 Props、open/close/change/confirm/reset 五个 Events、default/footer 两个 Slots、零实例方法；items 的单个条目表达 TDesign DropdownItem 的 option/multiple 语义，固定 500ms，reduceMotion 为 1ms。",
+    "rationale": "一个 items 入口保留页面筛选的组合性，不额外创建仅为 TDesign 容器拆分而存在的公共 dropdown-item 包；ariaLabel/reduceMotion 是可验证的 PoemUI 无障碍与低动效扩展。",
+    "alternativesRejected": [
+      "保留 columns、visible、loading/error/retry、滚动和方法以兼容旧示例，会让筛选入口冒充页面状态机。",
+      "照搬 style/custom-style、arrow-icon、options-columns 和已弃用 options-layout，会绕过 Token 或引入不可验证的跨端逃生口。",
+      "只更新文档、保留 H5 旧状态壳，会继续向用户展示假能力。"
+    ]
+  },
+  "impact": {
+    "files": ["dropdown-menu/dropdown-menu.js", "dropdown-menu/dropdown-menu.json", "dropdown-menu/dropdown-menu.wxml", "dropdown-menu/dropdown-menu.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "metadata/shadcn.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/DROPDOWN-MENU.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-dropdown-menu.js"],
+    "dependencies": ["pui-button", "pui-icon", "pui-empty", "buttonSample", "cellSample", "emptySample", "PreviewDevice edge-to-edge layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dropdown-menu.js", "scripts/test-design-contracts.js", "scripts/test-overlay-state-composition.js", "scripts/test-core-state-composition.js", "scripts/test-shared-subcomponent-geometry.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project \"/Users/fanx/Documents/poemUI 小程序组件库/_example\"（受 touristappid 无效阻断，code 10）"],
+    "browser": ["Chrome 390×844 实点非受控单选为 change → close；多选为 change，重置为 change → reset，确定为 confirm → close；disabled option 保持打开且不发布事件。", "Props 面板实测受控父级回写及 value 中 0、false、空字符串；empty options 渲染 PUI Empty；showOverlay=false 不渲染遮罩，closeOnClickOverlay=false 的真实遮罩点击保持 panel 打开。", "修复后真实 panel 外指针点击遮罩发布 close({ index: 0, source: 'overlay' })；active layer 500ms 后卸载，reduceMotion=1ms；light/dark、shadow/frost/large-radius 计算样式均已实际读取并恢复标准外观。"],
+    "deviceRisks": ["微信真机仍需核验 fixed 遮罩、安全区、catchtap 触摸穿透、Slot 投影、样式隔离、读屏和系统低动效；示例 touristappid 不能代替合法 AppID。"]
+  },
+  "ai": {
+    "summary": "DropdownMenu 是筛选项容器，不是请求状态、页面滚动、业务提交或实例命令容器。",
+    "rules": [
+      "处理 DropdownMenu 前必须联网阅读 TDesign 官方页面、仓库和固定 npm 父/子源码，再决定是否用 items 合并公共入口。",
+      "items 只承载 key、label、options、disabled、multiple；option 只承载 label、value、disabled，0、false、空字符串与数组必须原样保留。",
+      "单选严格 change → close；多选 change；reset 为 change → reset；confirm 为 confirm → close。",
+      "不要恢复 visible、loading/error/retry、readonly、根 disabled、滚动、placement、样式逃生口或实例方法。",
+      "H5 trigger/option/footer 必须使用共享 PUI Button；原生 button 只可作为完整遮罩的浏览器桥接。"
+    ],
+    "tags": ["dropdown-menu", "tdesign", "api-contract", "controlled-state", "no-fake-state"]
+  }
+}

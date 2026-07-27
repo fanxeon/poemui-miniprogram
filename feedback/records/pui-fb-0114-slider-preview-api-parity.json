@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0114",
+  "title": "Slider 官网缺少任务分区且 API 说明落入无信息兜底",
+  "scope": "component",
+  "components": ["slider", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Slider 官网应像成熟组件文档一样分区展示真实用法，API 每个属性都要完整且有意义，不能用省略或泛化文案代替。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-panel", "wxml-copy"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "349px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览只有当前实例、方法按钮和工程反馈，无法直接比较边界、步长、颜色、表单、受控、只读与禁用。",
+    "API 的 trackColor/name/blockSize/showValue 等说明落到“slider 的某参数”兜底，虽能显示但不能帮助调用者决策。",
+    "基础 WXML 生成器在无非默认属性时输出多余空格，并携带旧事件、Slot 或方法语义。"
+  ],
+  "expected": "概览按基础用法、边界与步长、颜色与表单、状态与受控四区陈列真实 range input；API 每个属性完整说明真实平台边界；基础 WXML 输出干净的 pui-slider 标签且零 bind。",
+  "actual": "旧官网偏向调试面板，静态与当前能力不可比较，API 多项说明只是字段名复述。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件由 agent 在完整证据闭环后自主验收并继续下一项。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "四区 showcase、唯一可访问名称、真实多实例状态、受控父级回写和精确 API 文案已同源实现。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "分区标题使用 18px 上间距，辅助数值自然换行且无省略。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "16 Props 与 2 Events 完整记录类型、演示初值、约束和说明。"},
+    {"kind": "test", "ref": "scripts/test-slider.js", "note": "锁定四区标题、精确说明、零 bind WXML、无诊断方法与无裁切样式。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=slider-final#/components/slider", "note": "390px 下四区、属性、API、WXML、Tabs 几何和全部外观开关已实测。"}
+  ],
+  "rootCause": "旧 Slider 官网沿用单例运行态诊断模板，API 描述生成器又没有 Slider 专属语义分支，导致展示存在但信息不足。",
+  "decision": {
+    "outcome": "官网重建为四个用户任务分区；每个示例使用唯一 ariaLabel 并运行真实 input/change 回写；补齐 16 个专属 API 说明和真实可选值；无属性时生成无多余空格的最小标签。",
+    "rationale": "组件文档的首要目标是帮助用户筛选可用能力并复制最小调用，工程事件诊断和静态提示不能替代真实多实例交互。",
+    "alternativesRejected": [
+      "只给旧单例增加更多说明卡仍无法直接比较用法。",
+      "保留泛化字段说明会让表格完整展示失去产品意义。",
+      "用静态进度条或提示文字模拟拖动不构成真实 H5 parity。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/SLIDER.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-slider.js", "feedback/records/pui-fb-0114-slider-preview-api-parity.json"],
+    "dependencies": ["PreviewDevice", "Props panel helpers", "makeUsageCode"]
+  },
+  "verification": {
+    "tests": ["scripts/test-slider.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["node scripts/test-slider.js", "npm run site:build", "npm run check", "npm run feedback:check"],
+    "browser": [
+      "390px 下四个分区标题与内容完整出现，标题间距清晰；PreviewDevice clientWidth/scrollWidth 为 349/349。",
+      "light/dark、border、shadow、frost、large-radius、gradient 全部真实点击；开关前后 PreviewDevice 保持 351px、当前 input 保持 165.875px。",
+      "页面 innerWidth=390、document clientWidth/scrollWidth=375/375，无页面级横向溢出。",
+      "概览/API/属性三态 Tabs 均为 x=13、y=349、349x38px；API 16+2 行无省略裁切，属性页 WXML 为干净的 pui-slider 开闭标签。"
+    ],
+    "deviceRisks": [
+      "H5 原生 range 的鼠标、键盘和 px 只是微信原生 slider 的近似；真机触摸惯性、rpx 排版、系统字体和辅助技术仍需合法 AppID 复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Slider 文档必须按任务陈列真实实例，API 说明必须解释行为与边界而不是复述字段名。",
+    "rules": [
+      "Slider 概览固定为基础、边界与步长、颜色与表单、状态与受控四区。",
+      "每个并列交互实例必须有唯一可访问名称，浏览器 battle 不靠模糊选择器。",
+      "API 表格完整可见只是底线，属性说明还必须给出真实行为、边界和平台含义。",
+      "代码生成器在没有属性时不得留下多余空格、bind 或实现诊断注释。"
+    ],
+    "tags": ["slider", "preview", "api-docs", "accessibility", "responsive"]
+  }
+}

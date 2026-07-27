@@ -1,0 +1,34 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="radiogroup"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+  aria-readonly="{{readonly}}"
+>
+  <view wx:if="{{normalizedOptions.length}}" class="pui-radio-group__options">
+    <pui-radio
+      wx:for="{{normalizedOptions}}"
+      wx:key="key"
+      value="{{item.value}}"
+      checked="{{item.checked}}"
+      label="{{item.label}}"
+      content="{{item.content}}"
+      icon="{{item.icon}}"
+      allow-uncheck="{{item.allowUncheck}}"
+      block="{{item.block}}"
+      borderless="{{item.borderless}}"
+      content-disabled="{{item.contentDisabled}}"
+      disabled="{{item.disabled}}"
+      readonly="{{item.readonly}}"
+      placement="{{item.placement}}"
+      max-label-row="{{item.maxLabelRow}}"
+      max-content-row="{{item.maxContentRow}}"
+      aria-label="{{item.ariaLabel}}"
+      reduce-motion="{{reduceMotion}}"
+      data-index="{{index}}"
+      bind:change="onOptionChange"
+    />
+  </view>
+  <slot></slot>
+</view>

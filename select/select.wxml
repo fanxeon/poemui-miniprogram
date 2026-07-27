@@ -1,0 +1,46 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{rootStyle}}">
+  <pui-button
+    custom-class="pui-select__trigger"
+    theme="default"
+    variant="base"
+    block
+    content="{{displayLabel}}"
+    disabled="{{menuDisabled}}"
+    aria-label="{{semanticLabel}}"
+    reduce-motion="{{reduceMotion}}"
+    bind:click="onTriggerClick"
+  >
+    <pui-icon slot="suffix" name="chevron-down" size="28" />
+  </pui-button>
+  <pui-popup
+    visible="{{menuVisible}}"
+    placement="bottom"
+    card="{{true}}"
+    show-header
+    title="{{semanticLabel}}"
+    duration="{{duration}}"
+    reduce-motion="{{reduceMotion}}"
+    aria-label="{{semanticLabel + '选项'}}"
+    bind:visible-change="onPopupVisibleChange"
+  >
+    <view class="pui-select__options" role="listbox" aria-label="{{semanticLabel + '选项'}}">
+      <block wx:for="{{normalized}}" wx:key="id">
+        <pui-button
+          custom-class="pui-select__option {{item.selected ? 'pui-select__option--selected' : ''}}"
+          theme="default"
+          variant="transparent"
+          surface="transparent"
+          block
+          content="{{item.label}}"
+          disabled="{{item.disabled}}"
+          aria-label="{{item.label}}"
+          data-index="{{index}}"
+          reduce-motion="{{reduceMotion}}"
+          bind:click="onOptionClick"
+        >
+          <pui-icon wx:if="{{item.selected}}" slot="suffix" name="check" size="28" />
+        </pui-button>
+      </block>
+    </view>
+  </pui-popup>
+</view>

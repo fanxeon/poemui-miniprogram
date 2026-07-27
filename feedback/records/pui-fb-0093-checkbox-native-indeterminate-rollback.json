@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0093",
+  "title": "Checkbox H5 原生 indeterminate 点击后回滚半选态",
+  "scope": "component",
+  "components": ["checkbox", "preview-site", "motion"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "半选 Checkbox 实点后必须清除 mixed 并进入真实选中态，且普通模式存在中间帧、低动效为1ms。",
+  "environment": {
+    "surfaces": ["h5-preview", "wechat-component"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "351px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在属性页设置 checked=false、indeterminate=true，返回概览并真实点击 Checkbox。",
+    "浏览器原生 checkbox click 默认动作在同步回写之后再次改写 indeterminate，旧闭包又读取点击前 current.indeterminate，最终 mixed 被恢复。",
+    "使用 CDP 真实按下与释放并在45ms读取样式，确认动画必须在标记 opacity 和背景色之间经过中间值。"
+  ],
+  "expected": "点击半选项固定请求 checked=true、indeterminate=false；500ms 内可见中间帧，完成态稳定；reduceMotion 固定1ms。",
+  "actual": "旧 H5 的原生默认动作与陈旧闭包覆盖父级写回，使半选态在点击完成后回滚，动画完成态也无法可信验证。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权共有组件持续完成真实交互、动画中间帧和低动效验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=checkbox-v7#/components/checkbox", "note": "修复后 indeterminate=true 实点进入checked且mixed清除；CDP点击45ms读取背景rgb(185,185,185)、勾选opacity=0.285064，证明180ms中间帧。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "事件路径读取 input.indeterminate 当前值，并在原生默认动作完成后的零延时阶段重申父级渲染状态。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Checkbox 标记与Surface固定500ms标准过渡，reduceMotion覆盖为1ms。"},
+    {"kind": "test", "ref": "scripts/test-checkbox.js", "note": "专项锁定 indeterminate 点击清除、延后重申、180/1ms及禁止height:auto/display:none动画。"}
+  ],
+  "rootCause": "H5 把 native checkbox 的默认切换和父级重建状态混在同一事件栈，并让监听闭包保留旧 indeterminate 值。",
+  "decision": {
+    "outcome": "点击逻辑读取真实 input 当前态，半选请求固定清除 indeterminate；父级回写后在默认动作结束阶段重申最终状态，动画只使用500ms opacity/background/transform，低动效1ms。",
+    "rationale": "这既保留真实平台 input 和键盘能力，也让受控父级成为最终状态所有者，不用假提示或禁用默认交互。",
+    "alternativesRejected": [
+      "完全 preventDefault 会改变原生 checkbox 键盘和辅助技术行为。",
+      "用静态 div 模拟 checkbox 会失去真实平台控件边界。",
+      "只更新状态文字会留下组件视觉、input 和 ARIA 三套真相。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-checkbox.js", "docs/components/CHECKBOX.md", "docs/H5_PREVIEW_COMPATIBILITY.md"],
+    "dependencies": ["native checkbox input", "parent controlled writeback", "prefers-reduced-motion"]
+  },
+  "verification": {
+    "tests": ["scripts/test-checkbox.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["node --check preview/app.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "indeterminate 属性从true点击后稳定为false，checked稳定为true，父级状态文字同步。",
+      "普通模式45ms得到非起点非终点的背景和opacity，最终完成态为白色标记opacity 1或取消后的0。",
+      "reduceMotion=true 时根和标记计算 transition-duration 均为0.001s。"
+    ],
+    "deviceRisks": ["微信真机 tap、observer/setData、transitionend、连续快点和系统低动效读取仍需目标基础库录屏复核。"]
+  },
+  "ai": {
+    "summary": "半选点击必须由父级稳定写回 checked=true/indeterminate=false，并验证500ms中间帧与1ms低动效。",
+    "rules": [
+      "原生 checkbox 的 indeterminate 是 DOM property，不能只写 attribute 或依赖旧闭包。",
+      "受控回写必须在原生默认动作后仍保持最终状态。",
+      "Checkbox 动画必须实际测量中间帧，不能只读取最终 class。",
+      "禁止用假事件文字、display:none或height:auto过渡替代真实状态。"
+    ],
+    "tags": ["checkbox", "preview", "indeterminate", "controlled", "motion", "middle-frame"]
+  }
+}

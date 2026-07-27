@@ -1,0 +1,92 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0270",
+  "title": "Indexes Cell 被固定侧栏预留区挤窄",
+  "scope": "component",
+  "components": ["indexes", "cell", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Indexes 内的 Cell 应撑满内容列，固定索引栏作为浮层存在，不应额外压缩列表宽度。",
+  "environment": {
+    "surfaces": ["h5-preview", "native-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开第 18 号 Indexes 组件并测量第一项 Cell。",
+    "固定侧栏已改为浮层后，滚动容器仍保留 32px 的右侧 padding，Cell 宽度从内容列中被额外扣除。",
+    "用户指出 Cell 应该满宽。"
+  ],
+  "expected": "Cell 充满 Indexes 内容列；侧栏独立浮动并保留自己的点击命中区，不参与列表布局宽度计算。",
+  "actual": "修复前 H5 PreviewDevice 中 Cell 为 279px，而滚动内容列为 322px，右侧存在 32px 预留空白。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户要求确认 Indexes Cell 是否应满宽。"
+    },
+    {
+      "kind": "file",
+      "ref": "indexes/indexes.wxss",
+      "note": "删除 bar-right/bar-left 对滚动容器的额外 padding，Cell 不再被侧栏预留区挤窄。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 删除对应右侧/左侧滚动 padding，侧栏继续在 PreviewDevice 内独立浮动。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/navigation/indexes",
+      "note": "真实浏览器修复后 Cell 311px、滚动内容列 322px，Cell 仅保留滚动条 11px，不再有侧栏预留空白。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-indexes.js",
+      "note": "专项断言锁定原生与 H5 不得为固定侧栏增加滚动容器 padding。"
+    },
+    {
+      "kind": "file",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/indexes",
+      "note": "TDesign 1.15.3 使用 fixed sidebar + slot 内容结构，侧栏不作为内容列布局项。"
+    }
+  ],
+  "rootCause": "固定侧栏仍沿用原先 absolute 侧栏的内容避让 padding，导致 Cell 宽度被错误扣除。",
+  "decision": {
+    "outcome": "移除 Indexes 滚动容器针对左右侧栏的 32px padding，让 Cell 撑满内容列；侧栏继续作为独立 fixed/PreviewDevice bounded 浮层。",
+    "rationale": "fixed 浮层不应改变内容列盒模型；视觉遮挡风险由侧栏自身的独立命中区承担，而不是把所有 Cell 压窄。",
+    "alternativesRejected": [
+      "继续为滚动容器保留 padding 会让 Cell 看起来不是满宽。",
+      "给每个 Cell 增加私有宽度和 margin 会破坏 Cell 的通用布局合同。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.wxss", "preview/styles.css", "scripts/test-indexes.js", "docs/components/INDEXES.md"],
+    "dependencies": ["fixed Indexes sidebar", "Cell collection surface", "PreviewDevice clipping"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["2026-07-23 site:build、example:install、Indexes 专项、npm run check、npm run pack:check：通过", "2026-07-23 feedback:generate、feedback:check：通过"],
+    "browser": [
+      "桌面真实浏览器：Cell 311px、滚动内容列 322px，Cell 充满可用内容列，仅保留 11px 浏览器滚动条差值。",
+      "固定侧栏仍独立位于 Cell 右侧，未改变垂直居中和点击行为。"
+    ],
+    "deviceRisks": [
+      "合法 AppID 真机仍需确认 fixed 侧栏覆盖 Cell 最右侧内容时的触摸命中、读屏顺序和安全区表现。"
+    ]
+  },
+  "ai": {
+    "summary": "固定浮层不应通过滚动容器 padding 改变 Cell 的内容列宽度。",
+    "rules": [
+      "先区分浮层命中区和内容布局区；fixed sidebar 不应成为列表的 grid/flex 子项。",
+      "Cell 满宽指充满内容列，同时保留 PreviewDevice 和滚动条的真实安全边界。"
+    ],
+    "tags": ["indexes", "cell", "full-width", "fixed-sidebar", "preview-parity"]
+  }
+}

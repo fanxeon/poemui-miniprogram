@@ -1,0 +1,125 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}};{{customStyle}}"
+  role="grid"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+  aria-busy="{{stateType === 'loading'}}"
+  aria-invalid="{{stateType === 'error'}}"
+>
+  <view class="pui-table__viewport">
+    <scroll-view
+      wx:if="{{hasStructure}}"
+      class="pui-table__scroll {{stateType === 'content' ? 'pui-table__scroll--active' : 'pui-table__scroll--inactive'}}"
+      style="{{scrollStyle}}"
+      scroll-x
+      scroll-y="{{scrollY}}"
+      scroll-left="{{scrollLeftValue}}"
+      scroll-top="{{scrollTopValue}}"
+      scroll-with-animation="{{!reduceMotion}}"
+      show-scrollbar="{{false}}"
+      bindscroll="onScroll"
+    >
+      <view class="pui-table__content" style="{{tableStyle}}">
+        <view wx:if="{{showHeader}}" class="pui-table__row pui-table__row--head" role="row">
+          <view
+            wx:if="{{selectable}}"
+            class="pui-table__cell pui-table__cell--selection {{selectionColumnClass}}"
+            style="{{selectionCellStyle}}"
+            role="columnheader"
+          >
+            <pui-checkbox
+              wx:if="{{multiple}}"
+              value="{{allSelected}}"
+              indeterminate="{{someSelected}}"
+              borderless
+              disabled="{{disabled || !selectableCount}}"
+              aria-label="全选表格行"
+              color-scheme="{{colorScheme}}"
+              bind:change="onSelectAllChange"
+            />
+            <pui-icon wx:else name="check" size="26" color-scheme="{{colorScheme}}" />
+          </view>
+          <view
+            wx:for="{{normalizedColumns}}"
+            wx:key="id"
+            class="pui-table__cell pui-table__cell--head pui-table__cell--{{item.align}} {{item.fixed ? 'pui-table__cell--fixed pui-table__cell--fixed-' + item.fixed : ''}} {{item.fixedEdge ? 'pui-table__cell--fixed-edge-' + item.fixedEdge : ''}} {{item.sortable ? 'pui-table__cell--sortable' : ''}}"
+            style="{{item.style}}{{item.fixedStyle}}"
+            role="columnheader"
+            aria-sort="{{item.sortOrder === 'asc' ? 'ascending' : item.sortOrder === 'desc' ? 'descending' : 'none'}}"
+            data-index="{{index}}"
+            bindtap="onHeaderTap"
+          >
+            <view class="pui-table__header-content">
+              <pui-icon wx:if="{{item.headerIcon}}" name="{{item.headerIcon}}" size="26" color-scheme="{{colorScheme}}" />
+              <text class="pui-table__header-title">{{item.title}}</text>
+              <pui-icon wx:if="{{item.sortable}}" name="{{item.sortOrder === 'desc' ? 'arrow-down' : 'arrow-up'}}" size="24" color-scheme="{{colorScheme}}" custom-class="pui-table__sort-icon {{item.sortOrder ? 'pui-table__sort-icon--active' : ''}}" />
+            </view>
+          </view>
+        </view>
+
+        <view class="pui-table__body" role="rowgroup">
+          <view
+            wx:for="{{rows}}"
+            wx:for-item="row"
+            wx:for-index="rowIndex"
+            wx:key="id"
+            class="pui-table__row {{row.disabled ? 'pui-table__row--disabled' : ''}} {{row.selected ? 'pui-table__row--selected' : ''}}"
+            role="row"
+            aria-selected="{{row.selected}}"
+            aria-disabled="{{row.disabled || disabled}}"
+            data-index="{{rowIndex}}"
+            bindtap="onRowTap"
+          >
+            <view
+              wx:if="{{selectable}}"
+              class="pui-table__cell pui-table__cell--selection {{selectionColumnClass}}"
+              style="{{selectionCellStyle}}"
+              role="gridcell"
+              catchtap="onSelectionCellTap"
+            >
+              <pui-checkbox
+                value="{{row.selected}}"
+                borderless
+                disabled="{{disabled || row.disabled}}"
+                name="{{row.key}}"
+                aria-label="选择第 {{row.index + 1}} 行"
+                color-scheme="{{colorScheme}}"
+                data-index="{{rowIndex}}"
+                bind:change="onRowSelectionChange"
+              />
+            </view>
+            <view
+              wx:for="{{row.cells}}"
+              wx:for-item="cell"
+              wx:for-index="cellIndex"
+              wx:key="id"
+              class="pui-table__cell pui-table__cell--{{cell.align}} {{cell.fixed ? 'pui-table__cell--fixed pui-table__cell--fixed-' + cell.fixed : ''}} {{cell.fixedEdge ? 'pui-table__cell--fixed-edge-' + cell.fixedEdge : ''}} {{cell.ellipsis ? 'pui-table__cell--ellipsis' : 'pui-table__cell--wrap'}}"
+              style="{{cell.style}}"
+              role="gridcell"
+              data-row-index="{{rowIndex}}"
+              data-cell-index="{{cellIndex}}"
+              bindtap="onCellTap"
+            >
+              <pui-tag wx:if="{{cell.type === 'tag'}}" content="{{cell.text}}" theme="{{cell.tagTheme}}" variant="outline" size="small" color-scheme="{{colorScheme}}" />
+              <pui-icon wx:elif="{{cell.type === 'icon' && cell.icon}}" name="{{cell.icon}}" size="30" aria-label="{{cell.text}}" color-scheme="{{colorScheme}}" />
+              <text wx:else>{{cell.text}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="pui-table__state pui-table__state--loading {{stateType === 'loading' ? 'pui-table__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'loading'}}">
+      <pui-loading loading="{{stateType === 'loading'}}" text="{{loadingText}}" size="36rpx" duration="180" easing="standard" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
+    </view>
+    <view class="pui-table__state pui-table__state--error {{stateType === 'error' ? 'pui-table__state--active' : ''}}" role="alert" aria-hidden="{{stateType !== 'error'}}">
+      <pui-empty description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
+      <pui-button theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" aria-label="{{retryText}}" color-scheme="{{colorScheme}}" bind:click="onRetry">{{retryText}}</pui-button>
+    </view>
+    <view class="pui-table__state pui-table__state--empty {{stateType === 'empty' ? 'pui-table__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'empty'}}">
+      <slot wx:if="{{customEmpty}}" name="empty"></slot>
+      <pui-empty wx:else description="{{emptyText}}" icon="table" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" />
+    </view>
+  </view>
+</view>

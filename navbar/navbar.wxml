@@ -1,0 +1,72 @@
+<view class="pui-navbar__host">
+  <view wx:if="{{showNode}}" class="{{rootClass}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="navigation" aria-label="{{semanticLabel}}" aria-hidden="{{motionPhase === 'leaving'}}" aria-disabled="{{disabled}}">
+    <view class="pui-navbar__safe" wx:if="{{safeAreaInsetTop}}"></view>
+    <view class="pui-navbar__content">
+      <view class="pui-navbar__action pui-navbar__action--left">
+        <block wx:if="{{leftBtn || rightBtn}}">
+          <view class="pui-navbar__mirror-capsule">
+            <pui-button
+              wx:if="{{leftBtn}}"
+              theme="default"
+              variant="text"
+              surface="transparent"
+              size="small"
+              shape="square"
+              icon-only
+              icon="{{leftBtn.icon}}"
+              disabled="{{disabled}}"
+              aria-label="{{leftBtn.ariaLabel || '左侧操作'}}"
+              reduce-motion="{{reduceMotion}}"
+              color-scheme="{{colorScheme}}"
+              bind:click="onLeftBtnClick"
+            />
+            <view wx:if="{{leftBtn && rightBtn}}" class="pui-navbar__mirror-capsule-divider" aria-hidden="true"></view>
+            <pui-button
+              wx:if="{{rightBtn}}"
+              theme="default"
+              variant="text"
+              surface="transparent"
+              size="small"
+              shape="square"
+              icon-only
+              icon="{{rightBtn.icon}}"
+              disabled="{{disabled}}"
+              aria-label="{{rightBtn.ariaLabel || '右侧操作'}}"
+              reduce-motion="{{reduceMotion}}"
+              color-scheme="{{colorScheme}}"
+              bind:click="onRightBtnClick"
+            />
+          </view>
+        </block>
+        <block wx:else>
+          <pui-button
+            wx:if="{{leftArrow}}"
+            theme="default"
+            variant="text"
+            size="small"
+            shape="square"
+            icon="chevron-left"
+            disabled="{{disabled}}"
+            aria-label="返回"
+            reduce-motion="{{reduceMotion}}"
+            color-scheme="{{colorScheme}}"
+            bind:click="onLeftClick"
+          />
+          <slot name="left"></slot>
+        </block>
+      </view>
+      <view class="pui-navbar__title">
+        <slot name="title"></slot>
+        <view wx:if="{{loading || titleText}}" class="pui-navbar__title-content">
+          <pui-loading wx:if="{{loading}}" loading size="28rpx" aria-label="导航内容加载中" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
+          <text wx:if="{{titleText}}" class="pui-navbar__title-text">{{titleText}}</text>
+        </view>
+      </view>
+      <view class="pui-navbar__action pui-navbar__action--right" aria-hidden="{{capsule}}"><slot wx:if="{{!capsule}}" name="right"></slot></view>
+    </view>
+  </view>
+  <view wx:if="{{showNode && fixed && placeholder}}" class="pui-navbar__placeholder" style="{{rootStyle}}" aria-hidden="true">
+    <view wx:if="{{safeAreaInsetTop}}" class="pui-navbar__safe"></view>
+    <view class="pui-navbar__placeholder-content"></view>
+  </view>
+</view>

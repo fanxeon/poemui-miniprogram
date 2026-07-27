@@ -1,0 +1,71 @@
+<view
+  wx:if="{{mounted}}"
+  class="pui-action-sheet-layer {{active ? 'pui-action-sheet-layer--entered' : ''}}"
+  style="{{layerStyle}}"
+  role="dialog"
+  aria-modal="{{showOverlay}}"
+  aria-hidden="{{!active}}"
+  aria-label="{{ariaLabel || description || '动作面板'}}"
+>
+  <view wx:if="{{showOverlay}}" class="{{maskClass}}" catchtap="onOverlayTap"></view>
+  <view class="{{rootClass}} {{active ? 'pui-action-sheet--entered' : ''}} {{customClass}}" style="{{customStyle}}" catchtap="noop">
+    <view wx:if="{{description}}" class="pui-action-sheet__description">{{description}}</view>
+
+    <scroll-view class="pui-action-sheet__body" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+      <view wx:if="{{theme === 'grid' && gridPages.length}}" class="pui-action-sheet__grid-wrap">
+        <swiper class="pui-action-sheet__grid-pages" current="{{gridPage}}" bindchange="onSwiperChange" indicator-dots="{{gridPages.length > 1}}" indicator-color="rgba(113,113,122,.35)" indicator-active-color="var(--pui-brand-primary)">
+          <swiper-item wx:for="{{gridPages}}" wx:key="key">
+            <view class="pui-action-sheet__items pui-action-sheet__items--grid">
+              <view
+                wx:for="{{item.items}}"
+                wx:for-item="action"
+                wx:key="key"
+                class="pui-action-sheet__item {{action.disabled ? 'pui-action-sheet__item--disabled' : ''}}"
+                style="{{action.itemStyle}}"
+                role="button"
+                aria-label="{{action.ariaLabel}}"
+                aria-disabled="{{action.disabled}}"
+                data-index="{{action.index}}"
+                bindtap="onItemTap"
+              >
+                <pui-icon wx:if="{{action.icon}}" name="{{action.icon}}" size="40" />
+                <view class="pui-action-sheet__item-copy">
+                  <text class="pui-action-sheet__item-label">{{action.label}}</text>
+                  <text wx:if="{{action.description && theme !== 'grid'}}" class="pui-action-sheet__item-description">{{action.description}}</text>
+                </view>
+                <pui-icon wx:if="{{action.suffixIcon}}" name="{{action.suffixIcon}}" size="32" />
+              </view>
+            </view>
+          </swiper-item>
+        </swiper>
+      </view>
+
+      <view wx:elif="{{normalizedItems.length}}" class="pui-action-sheet__items pui-action-sheet__items--list">
+        <view
+          wx:for="{{normalizedItems}}"
+          wx:key="key"
+          class="pui-action-sheet__item {{item.disabled ? 'pui-action-sheet__item--disabled' : ''}}"
+          style="{{item.itemStyle}}"
+          role="button"
+          aria-label="{{item.ariaLabel}}"
+          aria-disabled="{{item.disabled}}"
+          data-index="{{item.index}}"
+          bindtap="onItemTap"
+        >
+          <pui-icon wx:if="{{item.icon}}" name="{{item.icon}}" size="40" />
+          <view class="pui-action-sheet__item-copy">
+            <text class="pui-action-sheet__item-label">{{item.label}}</text>
+            <text wx:if="{{item.description && theme !== 'grid'}}" class="pui-action-sheet__item-description">{{item.description}}</text>
+          </view>
+          <pui-icon wx:if="{{item.suffixIcon}}" name="{{item.suffixIcon}}" size="32" />
+        </view>
+      </view>
+
+      <slot></slot>
+    </scroll-view>
+
+    <view wx:if="{{showCancel}}" class="pui-action-sheet__footer">
+      <view class="pui-action-sheet__cancel" role="button" aria-label="{{cancelText || '取消'}}" bindtap="onCancelTap">{{cancelText || '取消'}}</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0298",
+  "title": "组件库继续调用已弃用的 wx.getSystemInfoSync",
+  "scope": "global",
+  "components": ["platform-runtime", "icon", "navbar", "sheet", "swipe-cell", "rate", "watermark", "tabs", "popover", "direction", "virtual-list", "overlay", "miniprogram"],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "微信开发者工具不再输出 wx.getSystemInfoSync 已弃用告警，组件库应改用当前官方拆分接口。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "component-pages", "npm-dist"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在微信开发者工具 SDK 3.17.0 运行实际小程序页面。",
+    "WAServiceMainContext 输出 wx.getSystemInfoSync is deprecated，并要求改用 getSystemSetting、getAppAuthorizeSetting、getDeviceInfo、getWindowInfo、getAppBaseInfo。",
+    "审计发现 Icon 等组件直接读取旧聚合接口，多个组件保留旧接口 fallback。"
+  ],
+  "expected": "所有运行时窗口、设备、语言与主题读取都调用对应的当前官方接口，不再执行 wx.getSystemInfoSync，也不为旧接口保留会触发告警的 fallback。",
+  "actual": "组件分别从已弃用的聚合接口读取 windowWidth、windowHeight、statusBarHeight、language、theme 或 platform，导致真实开发者工具控制台报告弃用警告。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户提供 WAServiceMainContext 的 SDK 3.17.0 弃用告警并要求查询新文档修复。"},
+    {"kind": "browser", "ref": "https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getWindowInfo.html", "note": "官方文档确认窗口宽高、状态栏和安全区由 wx.getWindowInfo 返回。"},
+    {"kind": "browser", "ref": "https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getDeviceInfo.html", "note": "官方文档确认设备 platform 由 wx.getDeviceInfo 返回。"},
+    {"kind": "browser", "ref": "https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getAppBaseInfo.html", "note": "官方文档确认 language、theme 和 SDK 信息由 wx.getAppBaseInfo 返回。"},
+    {"kind": "file", "ref": "common/utils/platform-info.js", "note": "共享读取器只公开 getWindowInfo、getDeviceInfo、getAppBaseInfo，并在失败时返回空对象。"},
+    {"kind": "test", "ref": "scripts/test-platform-info.js", "note": "专项测试锁定字段映射，并扫描全部运行时消费者禁止恢复 getSystemInfoSync。"}
+  ],
+  "rootCause": "旧实现沿用聚合系统信息 API；微信已将数据按窗口、设备、应用基础信息、系统设置和授权状态拆分，而组件库没有集中迁移入口。",
+  "decision": {
+    "outcome": "新增 platform-info 共享读取器：窗口几何统一 getWindowInfo，设备平台统一 getDeviceInfo，语言和主题统一 getAppBaseInfo；不调用无业务需要的 getSystemSetting 或 getAppAuthorizeSetting。",
+    "rationale": "按字段使用官方拆分接口可消除弃用告警，保持读取最小化，并让失败回退由每个组件既有安全默认值负责。",
+    "alternativesRejected": [
+      "保留 getSystemInfoSync 作为旧基础库 fallback 会继续在新 SDK 触发告警。",
+      "每个组件直接散落调用新接口会再次产生字段映射和异常处理漂移。",
+      "无条件调用 getSystemSetting 或 getAppAuthorizeSetting 会读取无关系统状态，超出组件实际需求。"
+    ]
+  },
+  "impact": {
+    "files": ["common/utils/platform-info.js", "common/utils/theme.js", "icon/icon.js", "navbar/navbar.js", "sheet/sheet.js", "swipe-cell/swipe-cell.js", "rate/rate.js", "watermark/watermark.js", "tabs/tabs.js", "popover/popover.js", "direction/direction.js", "virtual-list/virtual-list.js", "overlay/overlay.js", "miniprogram/pages/index/index.js", "miniprogram/utils/component-page.js", "miniprogram/components/navigation-bar/navigation-bar.js", "docs/WECHAT_PLATFORM_API_COMPATIBILITY.md", "scripts/test-platform-info.js"],
+    "dependencies": ["wx.getWindowInfo", "wx.getDeviceInfo", "wx.getAppBaseInfo", "微信基础库 3.17.0"]
+  },
+  "verification": {
+    "tests": ["scripts/test-platform-info.js", "scripts/test-icon.js", "scripts/test-navbar.js", "scripts/test-direction.js", "scripts/test-overlay.js", "scripts/test-sheet.js", "scripts/test-swipe-cell.js", "scripts/test-rate.js", "scripts/test-tabs.js", "scripts/test-popover.js", "scripts/test-watermark.js", "scripts/test-virtual-list.js"],
+    "commands": ["node scripts/test-platform-info.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm", "node /tmp/pui-verify-home-button.js", "node /tmp/pui-verify-icon.js"],
+    "browser": [
+      "微信开发者工具 SDK 3.17.0 以合法 AppID wx23aa017375535746 重建 npm 后，miniprogram-automator 实测首页→Button 页及 Icon 页 consoleErrors=[]、exceptions=[]，未再出现 wx.getSystemInfoSync is deprecated。",
+      "390px x 844 实测 Navbar 为 88px、首页 ScrollArea 为 390px x 663px、Icon 页 ScrollArea 为 390px x 756px；Navbar 继续从 getWindowInfo 计算胶囊安全轨与动态高度。"
+    ],
+    "deviceRisks": [
+      "开发者工具验证不能替代 iOS/Android 真机对不同基础库、窗口变化和系统主题的确认。",
+      "低于当前拆分接口支持范围的历史基础库不再调用旧接口；会使用组件既有安全默认值，兼容范围需由消费者按目标基础库确认。"
+    ]
+  },
+  "ai": {
+    "summary": "微信平台信息必须按字段调用拆分后的官方接口，禁止恢复 wx.getSystemInfoSync fallback。",
+    "rules": [
+      "窗口宽高、状态栏和安全区使用 getWindowInfo。",
+      "platform 使用 getDeviceInfo，language/theme 使用 getAppBaseInfo。",
+      "只有真实需要系统设置或授权状态时才调用 getSystemSetting 或 getAppAuthorizeSetting。",
+      "新组件不得直接读取平台信息；优先复用 common/utils/platform-info，并以专项扫描防回归。"
+    ],
+    "tags": ["wechat", "deprecation", "platform-info", "compatibility", "miniprogram"]
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0033",
+  "title": "常规预览组件用法层级与容器过重",
+  "scope": "global",
+  "components": ["preview-site", "config-provider"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "标准组件常规模式左侧要成为可连续阅读和滚动的正文，而不是工程调试卡或两块独立滚动面板；组件引用与基础用法按自然文档流展示，代码仍保留明确的代码样式和可读排版。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-overview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件页的概览并保持常规模式。",
+    "旧界面只有 PreviewDevice 和工具栏复制按钮，用户看不到当前代码，必须点击复制或切到属性页才能理解输出。",
+    "元素选择模式已有左右上下文面板，但常规模式左侧空间没有承接代码阅读任务。",
+    "首版代码卡复用 Inspector 的 286px 固定宽度且 PreviewDevice 继续居中，导致右侧大面积空白、代码横向空间不足，整体比例不好看。",
+    "满宽版代码卡仍沿用 Inspector 的 560px 高度，比 622px 的 PreviewDevice 短，左右没有形成稳定等高关系。",
+    "模式按钮旧实现调用 renderStage() 重建整个 PreviewDevice，设备会瞬移且组件内部运行态可能被重置。",
+    "首版当前代码卡把环境注释、usingComponents 和 WXML 放进同一个长文件，用户无法快速区分引用与基础调用。",
+    "复杂组件把每个 bind:* 固定拆成独立行；Dialog 等组件的开始标签因此占据十余行，降低有限卡片高度内的信息密度。",
+    "分区版仍保留“组件用法 / 当前效果 / 默认值已省略”总 Header、白色外卡片、边框、圆角、阴影与 panel padding；用户截图中形成卡片套代码块，且下半区存在大面积无效留白。",
+    "默认 Dialog 的基础 WXML 可视宽度约 518px、内容宽度约 1153px，横向内容约为可视宽度 2.23 倍，证明 108 字符软上限仍不适合当前阅读宽度。",
+    "去掉外层 Surface 后，引用仍被限制高度、基础仍被强制填满剩余高度，且两块代码各自承担纵向滚动；用户再次指出这依然是卡片/面板模型，要求左侧改为可滚动正文。",
+    "正文结构稳定后，用户继续明确反馈当前代码字体不符合偏好；审计发现 mono Token 以浏览器解析不稳定的 SFMono-Regular PostScript 名称开头，跨平台回退也缺少 Menlo、Monaco 和 Courier New 层级。",
+    "切换为 Menlo 系统栈后，用户截图确认字形仍与原来接近，并进一步明确询问是否需要把字体下载到本地；这证明系统回退无法提供稳定且明显的新代码字体。"
+  ],
+  "expected": "常规模式左侧按组件引用、usingComponents 代码块、基础用法、WXML 代码块自然连续展示，不使用 Tabs，也不切成固定高度或各自纵向滚动的卡片。透明正文根承担唯一纵向滚动；小标题与代码块随正文共同滚动。H5 代码块通过站点本地 WOFF2 稳定加载 JetBrains Mono，保留系统等宽回退并关闭连字；小程序安装包不承担字体体积。WXML 以 80 字符软上限、每行最多 3 个属性成组换行；两区与复制、属性页共用 makeUsageCode 且过滤默认 Props。原有 622px 等高布局、模式平滑切换、同一设备 DOM 和 390px 有界合同继续成立。",
+  "actual": "字体资源和外层 pre 已成功切到 JetBrains Mono，但实际承载源码的内层 code 命中了浏览器 User Agent 默认 font-family: monospace，覆盖了父级继承；此前只读取 pre 的计算样式，因此错误地把外层声明生效当成实际文字生效。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求左侧视图分为引用与基础，引用承接 usingComponents、基础承接代码，可见注释先移除；随后指出当前代码分行过重、影响观感。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户否定首版固定窄卡片，要求常规模式把预览往右移并让代码宽度撑满。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户进一步要求代码区域最好与预览等高，并要求常规/选择元素切换时预览区平滑移动。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户指出“组件用法”整体仍不好看，并确认删除总 Header、外层 Surface 与常驻默认值说明；要求改成组件引用/基础用法小标题加代码块的连续阅读结构。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户进一步明确：常规状态左侧不再采用卡片设计，而应成为可以滚动的正文；代码内容仍以代码样式展示。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确表示不喜欢当前代码字体，要求继续调整。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户通过代码块截图明确指出目标是组件引用与基础用法的代码字形，并要求确认是否需要下载字体到本地。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "renderPreviewCodeCard 调用 previewCodeSectionSources，把 makeUsageCode 的同一结果拆成基础与引用；基础去注释并紧凑排版，引用经 JSON 规范化，逐行 Token 标记继续生成行号和主题语法色。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 代码区使用独立族名 PoemUI JetBrains Mono 的自托管字体，并让内层 code 显式 font-family:inherit，覆盖浏览器默认 monospace；源码提升为 14px/20px 并关闭 liga/calt。小程序继续使用系统回退。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-normal-code-card.js",
+      "note": "专项合同锁定同源生成、行号与安全语法标记、PUI 排版 Token、响应式边界、模式让位及治理文档。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/assets/fonts/JetBrainsMono-Regular-v2.304.woff2",
+      "note": "官网自托管官方 v2.304 Regular WOFF2，SHA-256 为 a9cb1cd82332b23a47e3a1239d25d13c86d16c4220695e34b243effa999f45f2；完整 OFL 许可证随资源保存。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-typography-contract.js",
+      "note": "字体专项合同检查 WOFF2 魔数、@font-face、预加载、font/woff2 MIME、H5 JetBrains Mono 首选与小程序系统回退边界。"
+    },
+    {
+      "kind": "browser",
+      "ref": "#/components/shadcn-dialog",
+      "note": "桌面与 390×844 真实浏览器验证正文几何、单一纵向滚动、代码横向滚动、深浅色语法色、选择模式切换和页面无横向溢出。"
+    },
+    {
+      "kind": "build",
+      "ref": "npm run site:build && npm run check && npm run example:install && npm run pack:check",
+      "note": "34 条反馈、83 个组件合同、示例 tarball 安装和 npm dry-run 全部通过；包 327.9kB、解包 1.8MB、549 files，shasum 56058336f3a0946fc38e2b2b256f364ad105d32f。"
+    }
+  ],
+  "rootCause": "代码字体最初只设置在 pre.preview-code-document__block 上，但其内部语义 code 元素受浏览器 User Agent 样式 font-family:monospace 直接命中，因此没有继承父级 PUI mono Token。前两轮验收只检查 pre 的 computedStyle 和 document.fonts，遗漏了真正渲染文本的 code/span 节点。",
+  "decision": {
+    "outcome": "继续复用 elementInspectorMount 作为常规正文与选择模式 Inspector 的互斥挂载点，并保持 article 单一纵向滚动。H5 官网自托管官方 JetBrains Mono v2.304 Regular WOFF2，以独立族名 PoemUI JetBrains Mono 注册、preload 并由 --pui-font-family-mono 优先消费；小程序主题继续只包含系统回退。代码 pre 使用标准 Body Medium 14px/20px，关闭 liga/calt；其内层 code 显式 font-family:inherit，确保浏览器默认 code 字体不能绕过 Token，所有语法 span 继续继承。代码 Surface、行号、主题语法色、键盘焦点与 overflow-x:auto 保持。previewCodeSectionSources 仍只调用 makeUsageCode；基础去注释并以 80 字符软上限、每行最多 3 个属性排版。原有 622px 左区、393×622px 设备、14px 间距、390px 有界正文和同一设备 transform 动效保持不变。",
+    "rationale": "字体文件加载成功不等于实际字符已经使用该字体；必须沿 pre→code→语法 span 检查最终计算样式。给 code 显式 inherit 是最小且语义正确的修复，可继续由父级 PUI Token 统一控制。独立 Web Font 族名排除本机同名字体碰撞，14px/20px 使用现有 Body Medium Token 提升可读性。",
+    "alternativesRejected": [
+      "为卡片重新拼接 WXML 会形成第二代码源，并与属性页和复制结果漂移。",
+      "把代码堆在 PreviewDevice 下方会拉长概览并重新制造容器套容器。",
+      "在选择元素模式继续保留代码卡会与左侧内容 Inspector 争夺同一空间。",
+      "继续让手机居中并固定代码卡为 286px 会造成左窄右空，长代码需要过多横向滚动。",
+      "继续让代码卡沿用 Inspector 的 560px 高度会破坏左右等高关系；桌面代码卡应直接消费设备高度 Token。",
+      "模式切换继续调用 renderStage() 虽能得到最终位置，却会瞬移、重建设备并丢失组件运行态。",
+      "390px 继续保持 286px 半透明卡片会浪费可用宽度并透出下方组件，降低代码可读性。",
+      "缩小代码字号以塞入长行会违反最小可读字号合同；长行应由内部横向滚动处理。"
+      ,"直接修改所有组件 makeUsageCode 的事件排版会扩大变更面并影响复制产物；阅读层可在不改变真实示例语义的前提下统一紧凑化。",
+      "保留外卡片但把背景改浅仍会留下重复 Header、边界、圆角、阴影和 panel padding，不能解决容器职责错误。",
+      "把默认值省略说明缩成 Tag 仍会让持久说明占用首屏；该信息应通过生成合同、属性文档和复制反馈表达。",
+      "继续保留引用高度上限和基础剩余高度能同时看到两个标题，但会形成两个纵向滚动上下文，与正文阅读目标冲突。",
+      "继续只调整 Menlo、Monaco 等系统字体顺序无法保证视觉变化，也无法跨设备保持一致。",
+      "引用第三方字体 CDN 会增加外部网络、隐私和可用性依赖；字体应由官网同源自托管。",
+      "把全部字重和斜体打入官网会增加约 1.5MB 资源；当前代码块只需 Regular。",
+      "把 JetBrains Mono 放进小程序 npm 包会让组件消费者为官网文档资源承担无关体积。"
+      ,"只验证 pre 的 font-family 会漏掉浏览器对内层 code 的 User Agent 默认字体；验收必须读取实际源码子节点。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/assets/fonts/JetBrainsMono-Regular-v2.304.woff2",
+      "preview/assets/fonts/OFL.txt",
+      "preview/_headers",
+      "scripts/serve-preview.js",
+      "common/style/theme.wxss",
+      "count-down/count-down.wxss",
+      "scripts/test-preview-normal-code-card.js",
+      "scripts/test-preview-typography-contract.js",
+      "scripts/test-style-utilities.js",
+      "package.json",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "CHANGELOG.md",
+      "THIRD_PARTY_NOTICES.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0033-preview-normal-current-code-card.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["button", "icon", "config-provider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-normal-code-card.js", "scripts/test-preview-typography-contract.js", "scripts/test-preview-element-inspector.js", "scripts/test-preview-code-copy.js", "scripts/test-preview-css-token-contract.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "当前开发服务器 http://192.168.31.117:4179/#/components/shadcn-dialog 返回 HTTP 200；实时 app.js 已包含“组件引用 / 基础用法”、80 字符软上限和每行最多 3 个属性，styles.css 已包含透明外层、206px 桌面引用上限与 72px 移动引用上限。",
+      "专项合同通过 VM 执行真实 compactPreviewWxml：包含 8 个属性的 Dialog 开始标签所有行均不超过 80 字符，输出保持 4–5 行，没有退化成单属性逐行。",
+      "专项 DOM/CSS 合同确认总 Header 与“当前效果 · 默认值已省略”文案不存在；article 正文根 background=transparent、border=0、shadow=none、blur=none、padding=0，并承担唯一 overflow-y:auto。",
+      "布局合同确认 body 使用自然纵向 flex 文档流；不存在引用 max-height、基础剩余高度或代码块独立纵向滚动，代码 pre 只保留 overflow-x:auto。",
+      "真实浏览器桌面稳定态确认正文为 788×622px、透明无边界且 overflow-y=auto；两个代码块高度分别为 168/206px，scrollHeight 与 clientHeight 相等，没有独立纵向溢出，基础代码只在 1153/786px 时横向滚动。",
+      "真实浏览器深色态确认正文继续透明，代码 Surface/文字/边界为 rgb(24,24,27)/rgb(250,250,250)/rgb(39,39,42)，随后已恢复浅色设置。",
+      "最终 Dialog 概览实测 document.fonts.status=loaded、document.fonts.check(14px PoemUI JetBrains Mono)=true；pre、内层 code 和实际语法 token 三层计算字体均以 PoemUI JetBrains Mono 开头，字号 14px、行高 20px，字体请求返回 200 与 Content-Type=font/woff2。",
+      "390×844 响应式稳定态确认正文为 351×240px、scrollHeight=474 且 overflow-y=auto，代码块 477/338px 只横向滚动；PreviewDevice 为 351×622px 并回到 x=12，document clientWidth/scrollWidth 均为 375px。",
+      "原有 PreviewDevice 右移、622px 等高、选择模式恢复居中、同一设备 DOM、180ms standard easing、390px 240px 有界覆盖与无页面横向溢出继续由 element-inspector、utility toolbar、layout 和 normal-code-card 专项合同共同锁定。",
+      "npm run check 全部通过：34 条 Ledger、83 个组件设计/布局合同、CSS Token、Typography、元素 Inspector、代码复制、预览层级和 Dialog 均无回归。"
+    ],
+    "deviceRisks": [
+      "该卡片只属于 H5 官网，不改变小程序组件源码、API 或安装产物。",
+      "桌面与 390px 的正文几何、滚动边界和深浅色已完成真实浏览器复核，最终视觉偏好仍等待用户在已运行的 4179 页面验收。",
+      "真实移动浏览器的触摸惯性、软键盘和辅助技术朗读顺序仍需目标设备复核。"
+    ]
+  },
+  "ai": {
+    "summary": "常规模式左侧是单一可滚动正文，组件引用与基础用法按自然文档流展示；代码块保留 PUI 代码样式和横向滚动，WXML 按 80 字符与每行最多 3 个属性排版，并与复制、属性页共用 makeUsageCode。",
+    "rules": [
+      "常规模式组件用法固定按组件引用小标题/代码块、基础用法小标题/代码块自然连续展示；不得用 Tabs 隐藏另一段，也不得切成独立纵向滚动卡片。",
+      "组件用法正文根只负责透明布局和唯一纵向滚动，禁止总 Header、常驻默认值说明、背景、边框、圆角、阴影、毛玻璃和 panel padding。",
+      "代码块必须使用 PUI code Surface、border、radius、mono Token、行号、主题语法色、键盘焦点和必要横向滚动；不得设置固定分区高度或独立纵向滚动。",
+      "可见基础、可见引用、工具栏复制和属性页 WXML 必须调用同一 makeUsageCode 真相源，禁止维护第二份字符串拼接。",
+      "可见卡片暂不显示注释；工具栏复制继续过滤默认 Props，并用注释明确视觉环境与临时运行态边界。禁止抓取 H5 DOM 或计算样式生成小程序代码。",
+      "多行 WXML 开始标签以 80 字符为软上限、每行最多 3 个属性成组放置 Props 与事件，不得机械地让每个属性独占一行，也不得缩小字号换取密度。",
+      "代码块使用 PUI mono/body-small/line-height、content/section gap、Surface 和 motion Token；外层不得冒充 panel 消费 panel padding。",
+      "代码字体必须统一读取 --pui-font-family-mono；源码阅读区关闭 liga/calt 连字，不得额外引入页面私有字体。",
+      "H5 代码字体必须由官网同源自托管 JetBrains Mono WOFF2，并保留系统等宽回退；禁止依赖访问者本机安装或第三方字体 CDN。",
+      "官网字体资源不得进入小程序 npm 安装包；代码块只使用 Regular 时不得打包无用字重。",
+      "设置代码字体后必须检查 pre、code 和实际语法 span 的计算字体；内层 code 必须 font-family:inherit，不能让浏览器默认 monospace 绕过 PUI Token。",
+      "代码必须保留缩进和换行，显示行号与主题兼容语法色，并提供键盘焦点和必要横向滚动；纵向只滚动正文。",
+      "桌面常规模式必须把 PreviewDevice 对齐 Stage 右侧 gutter，并让正文从左侧 gutter 自动撑满至设备前；不得继续使用 Inspector 固定宽度。窄屏使用左下有界正文并吃满可用宽度，不得产生页面横向溢出。",
+      "选择元素模式必须取消常规模式的不对称分配，让 PreviewDevice 恢复 Stage 几何中心，保证双侧 Inspector 对称。",
+      "桌面当前代码区与 PreviewDevice 必须共同读取 622px 设备高度 Token；不得复用 Inspector 的 560px 高度。",
+      "常规/选择元素模式切换必须保留同一个 PreviewDevice DOM 和运行态，只通过 transform 与共享 normal/standard Token 改变位置；禁止重建 Stage，低动效压缩为 1ms。",
+      "常规正文与元素选择双侧 Inspector 必须互斥；切换选择元素后正文立即退出，不得重叠或恢复常驻第三列。",
+      "所有代码文本必须先按 Token 安全转义再插入高亮标记，消费者 Props 不得形成 HTML 注入。"
+    ],
+    "tags": ["preview-site", "normal-mode", "component-usage", "transparent-layout", "container-hierarchy", "wxml", "using-components", "stacked-sections", "code-block", "jetbrains-mono", "self-hosted-font", "woff2", "compact-formatting", "readability", "syntax-highlighting", "responsive", "single-source", "motion", "state-preservation"]
+  }
+}

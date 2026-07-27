@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0006",
+  "title": "Dialog Close 必须属于平衡 Header，而非绝对定位浮层",
+  "scope": "component",
+  "components": ["dialog", "button", "icon"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-17",
+  "updatedAt": "2026-07-20",
+  "userGoal": "Dialog Close 必须属于 Header，标题保持几何居中，且不把历史 header-left Slot 伪装成当前公开能力。",
+  "environment": {
+    "surfaces": ["miniprogram", "h5-preview", "api-reference"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["393px PreviewDevice", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Dialog 将 Close 作为 Header 外的 absolute/top/right 节点，标题用额外 padding 模拟居中。",
+    "旧文档与 Ledger 还把 header-left 记录为公开 Slot；在线对照 TDesign Dialog 固定包后，该 Slot 不存在。"
+  ],
+  "expected": "Header 使用等宽左空轨 / 标题 / 右侧 PUI 圆形 Close 三列；标题无论是否有 Close 均保持居中，API 只公开真实实现的 Slot。",
+  "actual": "绝对定位和历史 header-left 合同会让标题几何与真实公开 API 脱节。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续组件无需逐项确认，由 agent 在完整证据和门禁后自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/dialog", "note": "2026-07-20 实点打开、Close、Cancel、Confirm、actions 与遮罩；Header 中 Close 可用，标题居中且无历史 header-left 入口。"},
+    {"kind": "file", "ref": "dialog/dialog.wxml", "note": "当前 Header 固定为空左轨、title 与 Close 三列，Close 位于 Header 内。"},
+    {"kind": "file", "ref": "docs/components/DIALOG.md", "note": "当前专属合同明确左轨仅为几何平衡，不公开 header-left Slot。"},
+    {"kind": "test", "ref": "scripts/test-dialog.js", "note": "专项合同锁定无 header-left、Header 三列与 API Slot 集合。"}
+  ],
+  "rootCause": "早期实现将视觉平衡轨道误建模为消费者 Slot，并以绝对定位补偿 Close 与标题。",
+  "decision": {
+    "outcome": "保留平衡三列 Header，但左轨为内部空轨；Close 继续由 PUI Button + Icon 组合，删除 header-left 公开合同与 absolute/top/right。",
+    "rationale": "这同时满足标题几何、可访问 Close 和 TDesign 实际 Slot 边界。",
+    "alternativesRejected": [
+      "保留 header-left 会继续宣传不存在的公共能力。",
+      "使用 absolute/top/right 会再次依赖标题补偿 padding。",
+      "用裸字符或原生按钮替代 PUI IconButton 会破坏统一组合合同。"
+    ]
+  },
+  "impact": {
+    "files": ["dialog/dialog.wxml", "dialog/dialog.wxss", "preview/app.js", "preview/styles.css", "docs/components/DIALOG.md", "scripts/test-dialog.js"],
+    "dependencies": ["button", "icon", "popup"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "npm run feedback:generate", "npm run feedback:check"],
+    "browser": ["2026-07-20 在 Dialog H5 实点 Close 后 180ms 完成退场；390px 下 Dialog 完整位于视口，无页面级横向溢出。"],
+    "deviceRisks": ["微信端 Header 文本基线、触摸反馈、图标光学中心和 rpx 尺寸仍需合法 AppID 真机复核。"]
+  },
+  "ai": {
+    "summary": "平衡 Header 的空轨不是公共 Slot；Close 必须在 Header 内使用 PUI IconButton。",
+    "rules": ["Dialog Header 必须保持等宽左轨、标题、等宽右 Close。", "除真实 WXML Slot 外不得在 API、合同或示例宣传 header-left。", "Close 禁止 absolute/top/right，必须复用 PUI Button 与 Icon。"],
+    "tags": ["dialog", "header", "close", "icon-button", "api-contract", "preview-parity"]
+  }
+}

@@ -1,0 +1,49 @@
+<view wx:if="{{rendered}}" class="pui-dynamic-message-layer" style="{{topStyle}}">
+  <view
+    class="{{rootClass}} pui-dynamic-message--phase-{{phase}} {{active ? 'pui-dynamic-message--active' : 'pui-dynamic-message--inactive'}} pui-dynamic-message--{{currentTheme}} {{customClass}}"
+    style="{{rootStyle}}{{customStyle}}"
+    role="status"
+    aria-live="{{ariaLive}}"
+    aria-label="{{semanticLabel}}"
+    aria-hidden="{{!active}}"
+    bindtap="onIslandTap"
+  >
+    <view class="pui-dynamic-message__accent"></view>
+    <view class="pui-dynamic-message__icon">
+      <pui-loading wx:if="{{isLoading}}" loading size="32rpx" inherit-color aria-label="{{semanticLabel}}" reduce-motion="{{reduceMotion}}" color-scheme="dark" />
+      <pui-icon wx:else name="{{currentIcon || 'bell'}}" size="32" aria-label="{{currentTheme}}" color-scheme="dark" />
+    </view>
+    <view class="pui-dynamic-message__content">
+      <text wx:if="{{currentTitle}}" class="pui-dynamic-message__title">{{currentTitle}}</text>
+      <text wx:if="{{currentMessage}}" class="pui-dynamic-message__message">{{currentMessage}}</text>
+    </view>
+    <pui-button
+      wx:if="{{currentActionText}}"
+      content="{{currentActionText}}"
+      size="extra-small"
+      variant="text"
+      surface="transparent"
+      aria-label="{{currentActionText}}"
+      reduce-motion="{{reduceMotion}}"
+      color-scheme="dark"
+      custom-style="--pui-button-tone:var(--pui-dynamic-message-text);"
+      custom-class="pui-dynamic-message__action"
+      bind:click="onActionTap"
+    />
+    <pui-button
+      wx:if="{{currentClosable}}"
+      icon="close"
+      icon-only
+      size="extra-small"
+      shape="circle"
+      variant="ghost"
+      surface="transparent"
+      aria-label="关闭通知"
+      reduce-motion="{{reduceMotion}}"
+      color-scheme="dark"
+      custom-style="--pui-button-tone:var(--pui-dynamic-message-text);"
+      custom-class="pui-dynamic-message__close"
+      bind:click="onCloseTap"
+    />
+  </view>
+</view>

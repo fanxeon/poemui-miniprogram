@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0351",
+  "title": "无边 Navbar 与静态 ScrollArea 渐变遮罩产生页面视觉割裂",
+  "scope": "component",
+  "components": ["navbar", "scroll-area", "miniprogram-home", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Navbar 保持无下边框时，ScrollArea 的阅读渐隐不能在未滚动或无溢出时制造半透明色带和页面分区错觉。",
+  "environment": {"surfaces": ["miniprogram", "preview-site"], "platforms": ["wechat-miniprogram", "web"], "viewports": ["390x844"], "themes": ["light", "dark"]},
+  "reproduction": ["首页或组件详情页的 Navbar 使用 bordered=false，ScrollArea 却在初始顶部固定渲染容器色渐变。", "内容未溢出时，旧 ScrollArea 仍显示两层渐变，造成与 Navbar 的视觉割裂。"],
+  "expected": "Navbar 的无边界使用 border-bottom:0，不保留透明边框几何；ScrollArea 仅在真实边缘显示渐变：顶部仅底层、底部仅顶层、中段两层、无溢出零层，并可继承页面画布色。",
+  "actual": "Navbar 无边界合同已正确，但 ScrollArea 将两个固定渐变始终挂载，且默认容器色可能与页面画布不同。",
+  "evidence": [
+    {"kind": "file", "ref": "navbar/navbar.wxss", "note": "borderless 以 border-bottom:0 消除边框占位。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.js", "note": "内部 scroll 与底部边缘观察只更新 showTopGradient/showBottomGradient，不发布公开事件。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.wxml", "note": "渐变层按真实边缘条件渲染，内部透明 sentinel 不改变 Slot Surface。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 以真实 scrollTop/clientHeight/scrollHeight 同步相同四种边缘状态。"},
+    {"kind": "test", "ref": "scripts/test-scroll-area.js", "note": "锁定顶部、中段、底部与无初始静态渐变的状态机、H5 class 和 Token 上下文。"}
+  ],
+  "rootCause": "ScrollArea 旧渐变只由 Props 决定是否渲染，没有读取真实溢出与当前位置；无边 Navbar 因而暴露了静态遮罩的错误分区信号。",
+  "decision": {"outcome": "保留 Navbar bordered=false 的组件默认，以 border-bottom:0 实现；ScrollArea 内部读取原生滚动边缘，页面壳将遮罩上下文色指向 --pui-bg-page。", "rationale": "边框与滚动可继续阅读是两个独立语义：前者不应以透明占位存在，后者必须由真实滚动几何驱动。", "alternativesRejected": ["仅用页面私有 CSS 隐藏顶部渐变：不能修复全部 ScrollArea 消费者。", "保留两层静态渐变并把边框设透明：仍给顶部和无溢出内容发送错误阅读提示。", "为 ScrollArea 新增 scrollTop 或阈值公开 API：会把内部阅读提示扩大为不必要的平台滚动包装。"]},
+  "impact": {"files": ["navbar/navbar.wxss", "scroll-area/scroll-area.js", "scroll-area/scroll-area.wxml", "scroll-area/scroll-area.wxss", "common/style/theme.wxss", "miniprogram/styles/component-page.wxss", "miniprogram/pages/index/index.wxss", "preview/app.js", "preview/styles.css", "docs/components/NAVBAR.md", "docs/components/SCROLL-AREA.md", "docs/UI_DESIGN_CONTRACT.md", "scripts/test-scroll-area.js"], "dependencies": ["native scroll-view", "ConfigProvider theme tokens", "PreviewDevice"]},
+  "verification": {"tests": ["scripts/test-scroll-area.js", "scripts/test-navbar.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js"], "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check"], "browser": [], "deviceRisks": ["未在合法 AppID 真机确认 createIntersectionObserver 相对 enhanced scroll-view 的边缘回调、iOS/Android 惯性滚动和 390px 渐变合成。"]},
+  "ai": {"summary": "无边 Navbar 不应由透明边框补偿；ScrollArea 渐隐只能反映真实滚动边缘，不能静态显示。", "rules": ["bordered=false 必须用 border-bottom:0，不保留透明边框或占位。", "ScrollArea 顶部仅底层、底部仅顶层、中段两层、无溢出零层；内部监听不得扩张为公开滚动 API。", "连续页面壳应通过上下文 Token 对齐 ScrollArea 渐变色，不以页面私有遮罩补丁修复。"], "tags": ["navbar", "scroll-area", "gradient-overlay", "borderless", "continuous-canvas"]}
+}

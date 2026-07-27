@@ -1,0 +1,103 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0333",
+  "title": "全局默认外观应为大圆角阴影无边框，Combobox 局部无边框不得关闭阴影",
+  "scope": "global",
+  "components": ["config-provider", "combobox", "preview-site", "miniprogram-home"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "让首次安装和重置后的全局外观默认使用大圆角与阴影且不显示中性边框；Combobox 同步跟随全局边框，而不是局部无边框时连阴影一起消失。",
+  "environment": {
+    "surfaces": ["miniprogram", "h5-preview", "documentation", "npm-package"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "清空 poemui-visual-config 后调用 visualConfig.restore() 或 visualConfig.reset()，旧默认回退为普通圆角、无阴影和有边框。",
+    "Combobox 传入 bordered=false 时，Trigger 的局部规则同时设置 border:0 和 box-shadow:none；即使全局 shadow=true，也不会保留独立 Surface 阴影。",
+    "Combobox Panel 始终由 --pui-glass-border 绘制边界，局部和全局无边框语义没有明确区分。"
+  ],
+  "expected": "首次恢复与 reset 使用 light、shadow=true、frostedGlass=false、largeRadius=true、bordered=false、equalSpacing=false；已有本地偏好优先恢复；全局 bordered=false 同时透明化 Combobox Trigger 与 Panel 的中性边界，但全局 shadow=true 继续投影独立 Surface。",
+  "actual": "默认和 standard 预设仍是普通圆角、无阴影、有边框；Combobox 本地 borderless 将无边框与无阴影耦合。",
+  "evidence": [
+    { "kind": "file", "ref": "common/utils/visual-config.js", "note": "DEFAULT_CONFIG 和 standard 预设已统一为大圆角、阴影、无边框基线；restore 继续优先读取已有存储。" },
+    { "kind": "file", "ref": "common/style/theme.wxss", "note": "Provider 的 pui-border--off 将 --pui-border-color、--pui-border 与 --pui-glass-border 透明化，保持盒模型。" },
+    { "kind": "file", "ref": "combobox/combobox.wxss", "note": "Trigger 和 Panel 都消费 --pui-glass-border；局部 borderless 只覆盖 Trigger 的 border-color，不再写 box-shadow:none。" },
+    { "kind": "file", "ref": "preview/app.js", "note": "H5 初始偏好与 standard 预设使用同一默认组合。" },
+    { "kind": "file", "ref": "preview/styles.css", "note": "H5 Combobox 局部无边框不再关闭 shadow。" },
+    { "kind": "test", "ref": "scripts/test-config-provider.js", "note": "覆盖 Store 首次恢复、reset、预设与非法存储回退。" },
+    { "kind": "test", "ref": "scripts/test-combobox.js", "note": "锁定小程序和 H5 的 local borderless 仅透明化中性边界，禁止再次出现 box-shadow:none。" },
+    { "kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "覆盖首页外观 Store 默认与重置状态。" },
+    { "kind": "test", "ref": "scripts/test-miniprogram-component-pages.js", "note": "覆盖详情页外观 Store 默认与重置状态。" }
+  ],
+  "rootCause": "visualConfig 的初始产品基线没有随当前小程序外观方向更新；Combobox 将局部边界选择错误地和独立 Surface 的全局阴影能力绑定。",
+  "decision": {
+    "outcome": "维持既有 visualConfig API 与存储键，更新 DEFAULT_CONFIG、standard 预设和 H5 镜像默认；保留 Combobox bordered 作为兼容的局部中性边界覆盖，但它不得影响 Provider shadow Token。",
+    "rationale": "默认与 reset 可立即获得一致的产品外观，同时不破坏已保存的用户选择；边框和阴影是独立视觉开关，局部选择不应越权修改全局效果。",
+    "alternativesRejected": [
+      "直接覆盖已有本地存储会丢失用户已选择的外观。",
+      "删除 Combobox bordered API 会造成无必要的破坏性升级。",
+      "在页面中通过私有样式强制去边框会让 H5、小程序与其他消费者漂移。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/utils/visual-config.js",
+      "combobox/combobox.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/CONFIG-PROVIDER.md",
+      "docs/components/COMBOBOX.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "README.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["config-provider", "visualConfig", "combobox", "preview-site"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-config-provider.js",
+      "scripts/test-combobox.js",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-appearance-settings.js",
+      "scripts/test-preview-fruit-flavor-preset.js",
+      "scripts/test-preview-appearance-menu.js"
+    ],
+    "commands": [
+      "node scripts/test-config-provider.js",
+      "node scripts/test-combobox.js",
+      "node scripts/test-miniprogram-home.js",
+      "node scripts/test-miniprogram-component-pages.js",
+      "node scripts/test-appearance-settings.js",
+      "node scripts/test-preview-fruit-flavor-preset.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check"
+    ],
+    "browser": [],
+    "deviceRisks": [
+      "真实 iOS/Android 首次安装、点击外观重置和现有 poemui-visual-config 恢复仍未验证。",
+      "微信 WebView 对无中性边框且保留阴影的 Combobox Trigger/Panel 组合、触摸命中与 rpx 回流仍需 390px 真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "全局视觉默认、预设与 H5 镜像必须同源；中性边框与独立 Surface 阴影始终是可独立组合的 Token 能力。",
+    "rules": [
+      "改动 visualConfig 默认值时同步 DEFAULT_CONFIG、standard 预设、H5 初始偏好、合同、测试和安装产物。",
+      "不得通过清空已有本地存储来伪造新默认已经生效。",
+      "局部 bordered=false 只能改变对应 Surface 的中性边界，不得关闭 Provider 的 shadow、frostedGlass 或 radius 语义。",
+      "global bordered=false 应通过共享边界 Token 覆盖同类 Trigger 与 Panel，保留盒模型和状态边界。"
+    ],
+    "tags": ["visual-config", "borderless", "shadow", "large-radius", "combobox", "miniprogram", "h5"]
+  }
+}

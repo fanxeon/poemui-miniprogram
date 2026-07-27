@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0282",
+  "title": "错误将 Sidebar 组件预览诉求扩大为全局目录改造",
+  "scope": "global",
+  "components": ["preview-site", "sidebar", "metadata", "button", "badge"],
+  "type": "ai-usability",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "保留官网全局 Sidebar；用户指出的问题仅属于 Sidebar 组件的 PreviewDevice 预览区，不能扩大为站点导航重构。",
+  "environment": {
+    "surfaces": ["h5-preview", "site-shell", "component-preview"],
+    "platforms": ["browser", "node"],
+    "viewports": ["desktop", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "将组件预览区的布局反馈误解为全站目录反馈。",
+    "移除 site shell 的 aside.sidebar、建立 #/catalog，并同步把目录规则改成全宽平铺。",
+    "用户明确更正：全局 Sidebar 应保留，反馈目标是预览区。"
+  ],
+  "expected": "全局 Sidebar、目录筛选、九分区和反馈序号保持既有站点导航职责；任何 Sidebar 组件预览修复只触及 PreviewDevice 内的 H5 镜像、专属合同和专项测试。",
+  "actual": "错误修改曾移除全局 Sidebar 并把 #/catalog 作为详情页之外的目录入口，导致站点导航职责与组件预览职责混淆。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 当前任务对话", "note": "用户明确指出“你取消我全局的 sidebar 干什么，我说的是预览区的”。"},
+    {"kind": "file", "ref": "preview/index.html", "note": "修正后恢复 aside.sidebar、componentSearchMount 和 componentGroups；不再存在 catalogPage。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "修正后移除 catalog 路由/状态分支，renderGroups 继续服务全局 Sidebar。"},
+    {"kind": "test", "ref": "scripts/test-preview-navigation-search.js", "note": "专项门禁锁定全局 Sidebar、稳定反馈序号、PUI Button/Badge 目录组合和搜索。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/sidebar", "note": "修正后实测 aside.sidebar=1、catalogPage=false，PreviewDevice 仍仅有一个内部组件预览 viewport。"}
+  ],
+  "rootCause": "没有把用户所说的“预览区”限定到组件 PreviewDevice，错误地将视觉问题外推到站点级信息架构。",
+  "decision": {
+    "outcome": "撤回全局目录平铺与 #/catalog 改动，恢复全局 Sidebar；后续 Sidebar 相关视觉修改仅在 #/components/sidebar 的 PreviewDevice、Sidebar 专属合同、专项测试与其 H5 镜像中进行。",
+    "rationale": "全局站点导航和组件演示是两层不同职责。修复预览不能改变用户未要求改变的站点导航。",
+    "alternativesRejected": [
+      "保留全宽目录并只在文档中说明它与预览无关：仍违反用户明确的全局 Sidebar 需求。",
+      "用全局 CSS 隐藏 Sidebar：会掩盖职责错误并破坏目录、搜索和反馈序号路径。",
+      "未定位 PreviewDevice 就继续改 Sidebar 组件源码：会将 H5 预览问题错误扩大为公开 API 变化。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/index.html", "preview/app.js", "preview/styles.css", "scripts/test-preview-navigation-search.js", "scripts/test-preview-infrastructure-composition.js", "scripts/test-design-contracts.js", "docs/UI_DESIGN_CONTRACT.md", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "AGENTS.md", "feedback/records/pui-fb-0282-flat-catalog-no-sidebar-badge-misuse.json"],
+    "dependencies": ["global Sidebar navigation", "metadata component catalog", "PUI Button/Badge/Input", "Sidebar PreviewDevice contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-navigation-search.js", "scripts/test-preview-infrastructure-composition.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-preview-navigation-search.js", "node scripts/test-preview-infrastructure-composition.js", "node scripts/test-design-contracts.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["2026-07-23：#/components/sidebar 实测全局 aside.sidebar=1、catalogPage=false；组件 PreviewDevice 保留唯一 data-preview-scroll-contract=component-preview viewport。"],
+    "deviceRisks": ["本项只恢复 H5 官网站点导航，不修改小程序 Sidebar 源码或公开 API。微信真机下 Sidebar scroll-view、sticky、rpx、Button 触摸与读屏仍需合法 AppID 验证。"]
+  },
+  "ai": {
+    "summary": "用户点名预览区时，必须先定位 PreviewDevice 与组件专属镜像；不得顺手重构全局 Sidebar。",
+    "rules": [
+      "先区分站点 Shell、PreviewDevice 和组件自身三层 DOM；只修改用户点名的层级。",
+      "全局 Sidebar 是目录、搜索和反馈序号的站点导航，除非用户明确要求，不得因组件预览问题移除或替换。",
+      "Sidebar 组件预览变更必须先阅读 SIDEBAR 合同和原始 Ledger，再同步专属测试；不能只靠全局目录截图推断。",
+      "若范围存在歧义，先恢复未授权的扩大改动，再以路由和截图确认目标。"
+    ],
+    "tags": ["sidebar", "preview-device", "scope", "site-shell", "regression", "ai-usability"]
+  }
+}

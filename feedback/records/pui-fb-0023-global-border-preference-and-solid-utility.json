@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0023",
+  "title": "官网缺少全局边框开关且实线工具类不可发现",
+  "scope": "global",
+  "components": ["preview-site", "switch", "config-provider", "style-utilities"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "在现有全局外观设置中增加可持久化的边框总开关，并让 Style Utilities 的 solid 边框能力可发现、可组合、双端一致。",
+  "environment": {
+    "surfaces": ["h5-preview", "style-utilities", "miniprogram-utilities"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网顶部外观设置，只能切换主题、阴影、毛玻璃、大圆角和渐变，无法统一关闭中性边框。",
+    "打开 Style Utilities 的视觉分类，源码虽已有 pui-border-solid，但分类列表、实时组合、生成 WXML 与 H5 镜像均未展示该能力。",
+    "首版把 data-border=off 的 Token 透明化写在 App Shell 根节点，导致 PreviewDevice 外框、API 表和站点面板也失去边框；用户明确指出开关目标应是组件，而不是预览框。"
+  ],
+  "expected": "新增默认开启并持久化的 PUI Switch 组件边框开关；关闭只隐藏 PreviewDevice 内真实 PUI 组件的中性 Surface 与分割线边界。PreviewDevice 外框、API、PROP、导航、工具栏和文档面板保持原边框，焦点、错误、选中等状态边界和布局不受破坏。pui-border-solid 进入双端演示、文档和测试。",
+  "actual": "旧站点没有 border 偏好且 solid utility 不可发现；首版新增开关后又误把中性边框 Token 写在 App Shell 根作用域，组件与站点基础设施边界被一起关闭。",
+  "evidence": [
+    { "kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求新增全局边框开关，并要求 Style Utilities 提供 border solid 快速样式。" },
+    { "kind": "user-report", "ref": "当前任务对话", "note": "用户进一步纠正边框开关应影响组件而不是预览框，确认站点基础设施必须退出作用域。" },
+    { "kind": "file", "ref": "preview/app.js", "note": "border 已进入偏好默认值、白名单恢复、PUI Switch 定义、Shell data 属性与本地存储；Style Utilities 组合真实使用 pui-border-solid。" },
+    { "kind": "test", "ref": "scripts/test-global-border-preference.js", "note": "专项合同锁定默认值、持久化、中性 Token 透明化、状态边界保护与 solid utility 双端发布。" }
+  ],
+  "rootCause": "全局视觉偏好逐项追加时没有先区分站点基础设施边界与组件视觉边界；首版直接在 App Shell 根重映射通用 --border，错误地把预览框和 API 面板也纳入组件外观。Style Utilities 的 solid 选择器虽已发布，预览分类与生成代码也尚未把它纳入可发现合同。",
+  "decision": {
+    "outcome": "以第六个共享 PUI Switch 增加 border=on/off，默认 on 并写入同一偏好对象。off 的 Token 重映射只挂在 .preview-device__viewport，使组件中性边框透明，同时让 PreviewDevice、API、PROP、导航、工具栏和文档面板继续读取站点根 Token。保留语义状态色与盒模型。复用已有 pui-border-solid，补齐视觉分类、实时组合、WXML、H5 镜像、文档和示例，不新增重复选择器。",
+    "rationale": "在组件 viewport 建立继承边界既能统一覆盖所有真实组件，又不会污染站点外壳；保留状态边界确保可访问性和操作反馈。复用已有 utility 避免同义实现漂移。",
+    "alternativesRejected": [
+      "全局使用 border:none 或 !important 会改变盒模型，并抹掉焦点、错误和选中边界。",
+      "在 App Shell 根节点透明化 --border 会同时移除 PreviewDevice、API 和导航边界，混淆组件外观与官网基础设施。",
+      "逐组件新增 data-border 规则会造成覆盖遗漏和维护分叉。",
+      "再创建一个 solid 类会与已发布 pui-border-solid 重复。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/index.html", "preview/app.js", "preview/styles.css", "common/style/utilities.wxss", "docs/STYLE_UTILITIES.md", "AGENTS.md", "CONTRIBUTING.md", "docs/UI_DESIGN_CONTRACT.md", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-global-border-preference.js", "scripts/test-style-utilities.js"],
+    "dependencies": ["switch", "design-tokens", "style-utilities"]
+  },
+  "verification": {
+    "tests": ["scripts/test-global-border-preference.js", "scripts/test-style-utilities.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "Dialog light：border=on 时 PreviewDevice 与 .pui-dialog--preview 均为 1px solid rgb(228,228,231)；border=off 后 Dialog 变为 transparent，PreviewDevice 外框保持 1px solid rgb(228,228,231)。",
+      "API 与 Style Utilities：border=off 时 .api-table 和 .utility-doc__live 仍为 1px solid rgb(228,228,231)，证明站点基础设施与文档面板未进入组件边框作用域。",
+      "持久化：border=off 后刷新 Dialog 路由，Switch aria-checked=false 且 Dialog 仍透明、PreviewDevice 仍保留边框；验收后已恢复 light / border=on。",
+      "2026-07-18 全局收口复验：边框与另外五项外观一起切换并刷新，Shell 继续恢复 border=off、边框 Switch aria-checked=false，390px document 保持 375/375 无溢出；随后逐项恢复并再次刷新确认 border=on 与浅色标准组合。"
+    ],
+    "deviceRisks": ["官网偏好作用域已有浏览器验证；后续 PUI-FB-0025 已将 bordered 扩展为 ConfigProvider 消费者 API。pui-border-solid 和 Provider 的微信 npm 产物由静态合同覆盖，目标真机的 Token 继承与样式隔离仍需消费项目复核。"]
+  },
+  "ai": {
+    "summary": "边框是默认开启的第六项外观偏好，但只控制 PreviewDevice 内真实 PUI 组件；站点外框与文档边界不受影响。solid 线型统一复用 pui-border-solid。",
+    "rules": [
+      "全局边框关闭不得使用 border:none 或清除焦点、错误、选中和危险操作边界。",
+      "官网边框 Token 重映射必须从 .preview-device__viewport 开始，禁止写在 App Shell 根节点并误伤 PreviewDevice、API、PROP、导航或文档面板；安装端使用 ConfigProvider 的 bordered/useGlobalConfig，不能照搬官网 DOM 作用域。",
+      "边框偏好必须使用共享 PUI Switch、白名单恢复并写入 poemui-preview-preferences.border。",
+      "实线边框使用 pui-border-solid，并与 pui-border 或方向边框类组合；不得重复创建同义 utility。",
+      "验收边框开关必须检查代表组件的计算样式和刷新持久化，不能只检查 data-border。"
+    ],
+    "tags": ["preview-site", "border", "switch", "persistence", "style-utilities", "accessibility", "design-token"]
+  }
+}

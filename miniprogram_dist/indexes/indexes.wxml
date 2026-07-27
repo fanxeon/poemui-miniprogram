@@ -1,0 +1,33 @@
+<view class="{{rootClass}} {{customClass}}" style="{{rootStyle}};{{customStyle}}" role="region" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}">
+  <view class="pui-indexes__body">
+    <scroll-view class="pui-indexes__scroll {{stateType === 'content' ? 'pui-indexes__scroll--active' : 'pui-indexes__scroll--inactive'}}" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="{{!reduceMotion}}" bindscroll="onScroll" aria-label="{{semanticLabel}}内容">
+      <view wx:for="{{groups}}" wx:key="id" id="{{item.id}}" class="pui-indexes__group {{item.disabled ? 'pui-indexes__group--disabled' : ''}}">
+        <view class="pui-indexes__heading {{sticky ? 'pui-indexes__heading--sticky' : ''}}"><text>{{item.title}}</text></view>
+        <view class="pui-indexes__entries">
+          <view wx:for="{{item.children}}" wx:for-item="entry" wx:for-index="entryIndex" wx:key="id" class="pui-indexes__entry {{entry.disabled ? 'pui-indexes__entry--disabled' : ''}}">
+            <pui-cell custom-class="pui-indexes__cell" title="{{entry.label}}" description="{{entry.description}}" note="{{entry.note}}" image="{{entry.image}}" left-icon="{{entry.icon}}" right-icon="{{entry.rightIcon}}" arrow="{{entry.arrow}}" bordered="{{entryIndex < item.children.length - 1}}" clickable="{{clickable && !readonly && !disabled && !item.disabled && !entry.disabled && entry.clickable}}" color-scheme="{{colorScheme}}" data-group-index="{{index}}" data-item-index="{{entryIndex}}" bind:click="onEntryClick">
+              <pui-badge wx:if="{{entry.badge !== '' || entry.badgeDot}}" slot="right" count="{{entry.badge}}" dot="{{entry.badgeDot}}" max-count="{{entry.badgeMax}}" size="small" aria-label="{{entry.label}}徽标" color-scheme="{{colorScheme}}" />
+            </pui-cell>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="pui-indexes__bar {{navigation.length ? 'pui-indexes__bar--active' : 'pui-indexes__bar--inactive'}}" role="navigation" aria-label="索引导航" catchtouchstart="onIndexTouchStart" catchtouchmove="onIndexTouchMove" catchtouchend="onIndexTouchEnd" catchtouchcancel="onIndexTouchEnd">
+      <view wx:for="{{navigation}}" wx:key="groupIndex" class="pui-indexes__bar-item-wrap {{item.active ? 'pui-indexes__bar-item-wrap--active' : ''}}">
+        <pui-button custom-class="pui-indexes__bar-item" custom-style="width:42rpx;min-width:42rpx;height:36rpx;min-height:36rpx;padding:0;color:inherit;line-height:36rpx;" theme="default" variant="text" surface="transparent" size="small" content="{{item.display}}" disabled="{{disabled || loading || error || item.disabled}}" aria-label="定位到{{item.title}}" color-scheme="{{colorScheme}}" data-group-index="{{item.groupIndex}}" bind:click="onIndexClick" />
+      </view>
+    </view>
+
+    <view class="pui-indexes__state {{stateType === 'loading' ? 'pui-indexes__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'loading'}}">
+      <pui-loading loading="{{stateType === 'loading'}}" size="36rpx" text="{{loadingText}}" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
+    </view>
+    <view class="pui-indexes__state pui-indexes__state--error {{stateType === 'error' ? 'pui-indexes__state--active' : ''}}" role="alert" aria-hidden="{{stateType !== 'error'}}">
+      <pui-empty custom-class="pui-indexes__empty" description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
+      <pui-button wx:if="{{retryText}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled || stateType !== 'error'}}" bind:click="onRetry">{{retryText}}</pui-button>
+    </view>
+    <view class="pui-indexes__state {{stateType === 'empty' ? 'pui-indexes__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'empty'}}">
+      <pui-empty custom-class="pui-indexes__empty" description="{{emptyText}}" icon="inbox" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" />
+    </view>
+  </view>
+</view>

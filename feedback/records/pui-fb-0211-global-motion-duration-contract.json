@@ -1,0 +1,156 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0211",
+  "title": "全局动效默认 500ms 与 1000ms 上限",
+  "scope": "global",
+  "components": [
+    "preview-site",
+    "popup",
+    "loading",
+    "swiper",
+    "direction"
+  ],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "PoemUI 全部交互动效使用统一时长合同：默认 500ms，允许调用方调整但最长不超过 1000ms，同时保留低动效与业务计时的正确边界。",
+  "environment": {
+    "surfaces": [
+      "miniprogram-component",
+      "h5-preview",
+      "component-api",
+      "design-contract"
+    ],
+    "platforms": [
+      "browser",
+      "node"
+    ],
+    "viewports": [
+      "390x844",
+      "desktop"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "全局设计合同此前要求动画不超过 400ms，与用户指定的默认 500ms 冲突。",
+    "组件源码、H5 镜像和 API 文档中并存 180ms、240ms、300ms、400ms 与 500ms 上限，调用方无法形成稳定预期。",
+    "Popup 的 duration、reduceMotion 和退场卸载时序可作为公开动效合同的代表路径进行真实验证。"
+  ],
+  "expected": "交互进入、离开、位移与状态切换默认 500ms；公开 duration/motionDuration 接受 0–1000ms，非法值回退 500ms、超上限收敛到 1000ms；reduceMotion 和系统低动效压缩为 1ms；退场节点保留至时长完成。Toast 停留、Loading delay、Swiper interval、CountDown 刷新与 Watermark moveInterval 等功能计时不受该上限影响。",
+  "actual": "修复前的全局规则、组件默认值、运行时 clamp、H5 fallback、API 范围与专项测试不是同一个时长合同，且旧规则仍把 400ms 当作上限。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-22 当前任务",
+      "note": "用户明确确认全局动效合同调整为默认 500ms、上限 1000ms，并授权直接实施。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/UI_DESIGN_CONTRACT.md",
+      "note": "新增全局动效合同，明确默认值、范围、低动效、退场节点和功能计时排除项。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "跨端 fast/normal 动效 Token 统一为 500ms。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 通过 previewMotionDuration 统一 fallback、合法 0、1000ms clamp 与 1ms 低动效。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-global-motion-contract.js",
+      "note": "专项扫描锁定 Token、合同、代表组件默认值、1000ms 上限及功能计时排除项。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/popup",
+      "note": "390px 真实调整 duration=1000 与 reduceMotion，读取中间帧、完成态、计算样式和横向溢出。"
+    }
+  ],
+  "rootCause": "PoemUI 过去按组件逐次 battle 收敛动效，却没有先建立唯一全局默认值、上限和功能计时排除边界，导致旧组件、预览镜像和文档持续漂移。",
+  "decision": {
+    "outcome": "把 500ms 设为 PoemUI 交互动效统一默认值，把 1000ms 设为所有公开可调交互动效的硬上限；合法 0 保留为即时完成，非法值回退 500ms，低动效压缩为 1ms。所有组件源码、H5、API、专属合同和测试使用同一口径，业务停留/延迟/轮播/刷新计时不机械套用动效上限。",
+    "rationale": "默认值统一后，用户可以稳定感知组件节奏；1000ms 上限允许更慢的业务场景但避免交互长期阻塞；区分动效与功能计时可防止 Toast 提前消失、轮播过快或倒计时失真。",
+    "alternativesRejected": [
+      "继续保留 400ms 上限：直接违背用户指定的 500ms 默认值。",
+      "只修改 Popup：其他组件、文档和 H5 仍会保持漂移。",
+      "把所有名为 duration/interval/delay 的字段都限制到 1000ms：会破坏业务停留与定时语义。",
+      "低动效使用 0ms：可能跳过退场生命周期与完成回调，统一使用 1ms 更稳定。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "AGENTS.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/components/",
+      "common/style/theme.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-global-motion-contract.js"
+    ],
+    "dependencies": [
+      "motion-tokens",
+      "component-runtime",
+      "preview-runtime",
+      "component-api",
+      "miniprogram-dist"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-global-motion-contract.js",
+      "scripts/test-popup.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check",
+      "npm run example:install",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project /Users/fanx/Documents/poemUI 小程序组件库/_example"
+    ],
+    "browser": [
+      "Popup 默认 Props 面板显示 duration=500；打开后计算 transition-duration 为四项 0.5s。",
+      "真实将 duration 调整为 1000 后，打开态计算 transition-duration 为四项 1s；点击关闭后中间采样节点仍存在，完成后才卸载。",
+      "duration=1000 且 reduceMotion=true 时，打开态计算 transition-duration 为四项 0.001s，关闭后节点立即完成卸载。",
+      "390px 下 innerWidth=390、document/body scrollWidth=375/375，Popup x=25、width=325、right=350，无页面级横向溢出。",
+      "light/dark 均保持同一低动效时长；深色 Popup Surface 计算背景为 rgb(24, 24, 27)。"
+    ],
+    "deviceRisks": [
+      "微信 CLI 已真实执行，但项目使用 touristappid，开发者工具内部返回 code 10（不存在此 AppID），未生成或伪造 miniprogram_npm；仍需合法 AppID 在真机复核 500/1000ms 计时精度、系统 reduce motion、后台切换和动画结束回调顺序。"
+    ]
+  },
+  "ai": {
+    "summary": "PoemUI 交互动效默认 500ms、公开上限 1000ms、低动效 1ms；功能计时不属于交互动效。",
+    "rules": [
+      "新增或修改交互动效时默认使用 500ms，公开范围只能是 0–1000ms。",
+      "运行时必须处理非法值与超上限值，不能只依赖属性面板的 min/max。",
+      "reduceMotion 或系统低动效统一为 1ms，并保证完成态和生命周期仍执行。",
+      "退场节点必须保留至动效结束，不得用 display:none 或提前卸载制造瞬移。",
+      "Toast 停留、Loading delay、Swiper interval、CountDown 刷新和 Watermark moveInterval 按业务合同保留。",
+      "合同变更必须同步源码、H5、API、专属合同、dist、示例安装与专项扫描。"
+    ],
+    "tags": [
+      "motion",
+      "duration",
+      "500ms",
+      "1000ms",
+      "reduce-motion",
+      "preview-parity",
+      "global-contract"
+    ]
+  }
+}

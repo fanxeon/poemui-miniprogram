@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0415",
+  "title": "SideBar 恢复入口示例语义不清",
+  "scope": "component",
+  "components": ["sidebar", "miniprogram"],
+  "type": "ai-usability",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "SideBar 页面应展示真实且容易理解的核心状态，不出现无法解释的恢复入口。",
+  "environment": {
+    "surfaces": ["sidebar component page"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 SideBar 独立页。",
+    "旧示例显示分类读取失败和恢复入口，但组件本身没有数据请求或恢复方法语义。",
+    "用户无法理解恢复的是分类、网络还是 SideBar 状态。"
+  ],
+  "expected": "基础示例突出可切换分类；第二示例用真实 readonly 状态说明权限受限时仍可查看但不可切换。",
+  "actual": "页面把业务请求失败和 retry 伪装成 SideBar 自身能力，增加无来源的恢复按钮。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/sidebar/index.wxml", "note": "删除恢复入口，替换为可读的只读状态示例。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/sidebar/index.js", "note": "移除无真实动作的 onSidebarRetry。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-navigation-pages.js", "note": "锁定只读文案、readonly Prop 和恢复入口不存在。"},
+    {"kind": "browser", "ref": "/tmp/poemui-sidebar-after.png", "note": "390x844 模拟器确认基础分类与只读状态说明按自然文档流展示。"}
+  ],
+  "rootCause": "通用错误恢复模板被套到没有加载动作的 SideBar 页面，页面文案超出了组件真实 API 和示例边界。",
+  "decision": {
+    "outcome": "删除错误和恢复入口；保留基础受控切换，再用 readonly=true 展示固定分类的真实能力与限制。",
+    "rationale": "示例只呈现 SideBar 自身存在的交互状态，不伪造业务请求、失败或 retry。",
+    "alternativesRejected": [
+      "只把按钮改名仍无法说明它调用什么真实动作。",
+      "增加假请求状态会让示例偏离组件合同。",
+      "完全删除第二示例会遗漏 readonly 能力。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/components/sidebar/index.wxml", "miniprogram/pages/components/sidebar/index.js", "scripts/test-miniprogram-navigation-pages.js", "docs/components/SIDEBAR.md"],
+    "dependencies": ["PUI SideBar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-navigation-pages.js"],
+    "commands": ["node scripts/test-miniprogram-navigation-pages.js", "npm run miniprogram:build", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具 390x844 浅色页面确认基础切换区和只读状态区均有明确标题、说明与组件本体。"],
+    "deviceRisks": ["iOS/Android 真机的只读触摸反馈和读屏 disabled/readonly 表述仍需复核。"]
+  },
+  "ai": {
+    "summary": "组件页不得为没有真实加载动作的组件伪造错误恢复入口。",
+    "rules": [
+      "SideBar 示例只展示组件真实公开状态。",
+      "readonly 示例明确说明可查看但不可切换。",
+      "没有真实 retry 动作时不显示恢复按钮。"
+    ],
+    "tags": ["sidebar", "readonly", "example", "content", "fake-success"]
+  }
+}

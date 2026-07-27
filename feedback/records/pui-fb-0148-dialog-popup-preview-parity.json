@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0148",
+  "title": "Dialog H5 与 Popup 依赖未完整镜像遮罩、滚动保护和真实动作",
+  "scope": "component",
+  "components": ["dialog", "popup", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须是 WXML/WXSS 能力的真实可操作镜像，不允许只改提示文案、局部假遮罩或遗漏依赖能力；用户已授权在完整证据后自主验收。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-device", "popup-dependency", "property-panel", "example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 Dialog 缺少按用户任务分区的真实入口，Popup 也未完整透传 overlayProps/preventScrollThrough/usingCustomNavbar。",
+    "修改 Dialog Props 后，遮罩、动作和运行态容易只在展示文字中变化，而非真实 Surface、按钮和父级显隐回写。"
+  ],
+  "expected": "H5 使用同一个 Dialog Surface 和真实 PUI Button 入口；遮罩覆盖完整 PreviewDevice、showOverlay=false 移除遮罩、overlayProps 影响遮罩颜色、低动效为 1ms，Popup 依赖真实承接三个透传能力。",
+  "actual": "依赖和 H5 演示的能力集合未完全同源，存在局部舞台和属性只在说明层变化的风险。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续组件无需逐项确认，由 agent 在完整证据和门禁后自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/dialog", "note": "2026-07-20 实点四个分区，遮罩空白区点击真实关闭；showOverlay=false 时 scrimCount=0、aria-modal=false；390px Dialog 完整位于视口。"},
+    {"kind": "file", "ref": "popup/popup.js", "note": "Popup 当前支持 overlayProps、preventScrollThrough、usingCustomNavbar，并安全映射遮罩颜色。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Dialog H5 以基础/按钮与布局/具名插槽/遮罩与关闭四区和同节点 180ms/1ms 状态机镜像。"},
+    {"kind": "test", "ref": "scripts/test-dialog.js", "note": "专项测试锁定 Popup 透传、H5 分区、真实动作、低动效、文档和示例产物。"}
+  ],
+  "rootCause": "Dialog 仅审计自身展示层而未把 Popup 的实际透传能力和 H5 的完整交互树作为同一合同验证。",
+  "decision": {
+    "outcome": "补齐 Popup 三项依赖能力；Dialog H5 改为四个真实任务分区，Close/Cancel/遮罩回写显隐、Confirm/action 保持可见，遮罩全屏覆盖 PreviewDevice。",
+    "rationale": "依赖能力、H5 交互与 WXML 只有同源，才能避免视觉正确而真实行为错误。",
+    "alternativesRejected": [
+      "用事件结果文字模拟关闭或成功不构成真实互动。",
+      "把遮罩限制在 Dialog 周围不能验证 Popup 的完整 Overlay 语义。",
+      "仅修 Dialog 而不补 Popup 透传会留下源端能力缺口。"
+    ]
+  },
+  "impact": {
+    "files": ["popup/popup.js", "popup/popup.wxml", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_API.md", "scripts/test-dialog.js"],
+    "dependencies": ["popup", "button", "icon", "cell", "tag"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["2026-07-20 npm run site:build：通过", "2026-07-20 npm run check：通过", "2026-07-20 npm run pack:check：通过", "2026-07-20 npm run example:install：通过", "2026-07-20 npm run feedback:generate && npm run feedback:check：通过；微信 CLI build-npm 因 touristappid 返回内部 code 10，未生成 miniprogram_npm，未冒充通过"],
+    "browser": ["2026-07-20 读取正常动效 transition=0.18s、reduceMotion=true 为0.001s；actions 竖向两按钮且 action 不关闭；disabled/loading action 均不可点且 loading aria-busy=true；深色加边框关闭/阴影/毛玻璃/大圆角/渐变的 Dialog 实测透明中性边界、真实 shadow、blur(18px) saturate(1.35) 和24px圆角，随后恢复浅色标准组合。"],
+    "deviceRisks": ["微信 Popup 遮罩、catchtouchmove、custom navbar、安全区、样式隔离、复杂 Slot、高频触摸和系统低动效仍需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "检查浮层不能只看 Dialog 自身；Popup 依赖透传、真实遮罩范围和父级显隐回写必须一起 battle。",
+    "rules": ["Dialog 修改 overlayProps、滚动保护或自定义导航栏时，同时审计 Popup 源码、H5、API 与产物。", "H5 浮层必须保留真实 PUI 触发入口和实际 Surface，禁止只改事件提示。", "遮罩验收要点真实空白区，验证完整 PreviewDevice 覆盖而非中心命中。"],
+    "tags": ["dialog", "popup", "preview-parity", "overlay", "animation", "browser"]
+  }
+}

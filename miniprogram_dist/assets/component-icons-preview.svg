@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 496" width="720" height="496">
+  <rect width="720" height="496" fill="#fff"/>
+  <text x="16" y="28" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="18" font-weight="700" fill="#09090b">PoemUI Roundline · Components</text>
+  <text x="16" y="48" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">减线稿 · 56 / 32 / 20 px · 每枚不超过 3 个可见图元</text>
+  <g color="#09090b"><g transform="translate(0, 64)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="4"/><path d="M9.5 12h5"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="4"/><path d="M9.5 12h5"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="4"/><path d="M9.5 12h5"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">button</text>
+</g>
+<g transform="translate(144, 64)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h7m4 0h7"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h7m4 0h7"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h7m4 0h7"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">divider</text>
+</g>
+<g transform="translate(288, 64)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="m16 12.5 3.5 3.5-3.5 3.5-3.5-3.5z"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="m16 12.5 3.5 3.5-3.5 3.5-3.5-3.5z"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="m16 12.5 3.5 3.5-3.5 3.5-3.5-3.5z"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">icon</text>
+</g>
+<g transform="translate(432, 64)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v5"/><rect x="9" y="11" width="10" height="10" rx="2.5"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v5"/><rect x="9" y="11" width="10" height="10" rx="2.5"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v5"/><rect x="9" y="11" width="10" height="10" rx="2.5"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">popup</text>
+</g>
+<g transform="translate(576, 64)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-2.5L12 17l-2.5-3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/><circle cx="12" cy="20" r="1"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-2.5L12 17l-2.5-3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/><circle cx="12" cy="20" r="1"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-2.5L12 17l-2.5-3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/><circle cx="12" cy="20" r="1"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">popover</text>
+</g>
+<g transform="translate(0, 208)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18v-9a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9z"/><path d="M9 13h6"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18v-9a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9z"/><path d="M9 13h6"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18v-9a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9z"/><path d="M9 13h6"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">sheet</text>
+</g>
+<g transform="translate(144, 208)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18v-9a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9z"/><path d="M9 12h6m-7 4h8"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18v-9a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9z"/><path d="M9 12h6m-7 4h8"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18v-9a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9z"/><path d="M9 12h6m-7 4h8"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">action-sheet</text>
+</g>
+<g transform="translate(288, 208)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h10m3-1 2 2 2-2"/><rect x="5" y="10" width="14" height="10" rx="2.5"/><path d="M8 15h8"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h10m3-1 2 2 2-2"/><rect x="5" y="10" width="14" height="10" rx="2.5"/><path d="M8 15h8"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h10m3-1 2 2 2-2"/><rect x="5" y="10" width="14" height="10" rx="2.5"/><path d="M8 15h8"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">dropdown-menu</text>
+</g>
+<g transform="translate(432, 208)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><rect x="8" y="8" width="8" height="8" rx="2"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><rect x="8" y="8" width="8" height="8" rx="2"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><rect x="8" y="8" width="8" height="8" rx="2"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">overlay</text>
+</g>
+<g transform="translate(576, 208)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="15" height="13" rx="3"/><circle cx="18.5" cy="5.5" r="2" fill="currentColor" stroke="none"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="15" height="13" rx="3"/><circle cx="18.5" cy="5.5" r="2" fill="currentColor" stroke="none"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="15" height="13" rx="3"/><circle cx="18.5" cy="5.5" r="2" fill="currentColor" stroke="none"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">badge</text>
+</g>
+<g transform="translate(0, 352)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 12h6m4-2 2 2-2 2"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 12h6m4-2 2 2-2 2"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 12h6m4-2 2 2-2 2"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">cell</text>
+</g>
+<g transform="translate(144, 352)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M16 7v10m-3-7-2 2 2 2"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M16 7v10m-3-7-2 2 2 2"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M16 7v10m-3-7-2 2 2 2"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">swipe-cell</text>
+</g>
+<g transform="translate(288, 352)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 10h5m4-2v5"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 10h5m4-2v5"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 10h5m4-2v5"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">scroll-area</text>
+</g>
+<g transform="translate(432, 352)">
+  <rect x="8" y="8" width="128" height="128" rx="10" fill="#fff" stroke="#d4d4d8"/>
+  <g transform="translate(44, 16) scale(2.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><rect x="7" y="8" width="10" height="8" rx="2.5"/><path d="M9.5 11h5"/></g></g>
+  <g transform="translate(33, 86) scale(1.3333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><rect x="7" y="8" width="10" height="8" rx="2.5"/><path d="M9.5 11h5"/></g></g>
+  <g transform="translate(91, 92) scale(.8333)" fill="none"><g fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><rect x="7" y="8" width="10" height="8" rx="2.5"/><path d="M9.5 11h5"/></g></g>
+  <text x="72" y="130" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" fill="#18181b">dialog</text>
+</g></g>
+</svg>

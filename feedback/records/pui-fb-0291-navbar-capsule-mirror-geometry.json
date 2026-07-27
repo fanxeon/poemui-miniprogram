@@ -1,0 +1,100 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0291",
+  "title": "Navbar 只预留胶囊宽度但没有镜像原生按钮位置",
+  "scope": "component",
+  "components": ["navbar", "preview-site", "miniprogram-home", "documentation"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "自定义 Navbar 的左侧搜索按钮必须与微信右上原生胶囊关于屏幕中线对称，标题和纵向导航高度也必须来自真实平台几何。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-miniprogram", "browser", "npm"],
+    "viewports": ["390px", "custom navigation window"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在真实 miniprogram 首页打开 capsule=true 的 PUI Navbar。",
+    "旧实现只计算 windowWidth-menuButtonRect.left，并把该值作为左右标题轨。",
+    "左侧 Slot 仍从页面 padding 起点排列，且 Safe area 依赖 env、内容高度固定 96rpx；搜索按钮中心与系统胶囊中心不对称，纵向高度也没有使用原生 top/bottom/height。"
+  ],
+  "expected": "完整读取菜单矩形和窗口信息，保护标题的同时把左操作放入系统胶囊的水平镜像区域，并让导航内容与胶囊纵向中心一致。",
+  "actual": "旧代码只保护标题宽度，没有计算左操作的镜像外边距、胶囊宽度区域或状态栏到胶囊的上下等距。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-24 当前任务对话",
+      "note": "用户明确指出 Navbar 未修复，要求搜索官方文档并按小程序原生按钮位置做对称。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://developers.weixin.qq.com/miniprogram/dev/api/ui/menu/wx.getMenuButtonBoundingClientRect.html",
+      "note": "微信官方 API 返回以屏幕左上角为原点的 width/height/top/right/bottom/left。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getWindowInfo.html",
+      "note": "微信官方窗口 API 提供 windowWidth、statusBarHeight 和 safeArea。"
+    },
+    {
+      "kind": "file",
+      "ref": "navbar/navbar.js",
+      "note": "运行时现在计算 safe height、content height、capsule width/height、right inset 与 reserve，并在窗口变化时重测。"
+    },
+    {
+      "kind": "file",
+      "ref": "navbar/navbar.wxss",
+      "note": "胶囊模式取消额外水平 padding，左操作以 right inset 为左内距并在真实胶囊宽度区域居中。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-navbar.js",
+      "note": "390px 窗口、299–387×26–58px 胶囊固定得到 safe=20、content=44、inset=3、reserve=91，并锁定 H5 镜像规则。"
+    },
+    {
+      "kind": "file",
+      "ref": ".audit/poemui-home-2026-07-24-fixed/05-navbar-final-crop.jpeg",
+      "note": "微信开发者工具 RC 2.02.2607161、iPhone 12/13 Pro 390px 模拟器截图显示 PUI 搜索按钮与原生胶囊分处标题两侧的镜像轨道，且没有重绘或覆盖系统胶囊。"
+    },
+    {
+      "kind": "file",
+      "ref": ".audit/poemui-home-2026-07-24-fixed/06-home-legal-appid-final.png",
+      "note": "关闭并从项目列表重新打开后，开发者工具运行 URL 已确认 appid=wx23aa017375535746；同一会话完成微信 npm 构建和普通编译，首页及 Navbar 正常加载。"
+    }
+  ],
+  "rootCause": "PUI-FB-0271 首轮只解决了标题与右上胶囊不重叠，没有区分标题安全轨和左操作镜像区，也没有把官方矩形的垂直字段纳入 Navbar 高度。",
+  "decision": {
+    "outcome": "保留现有 15 Props，不新增页面调参；共享 Navbar 改为完整平台几何计算，H5 同步左操作镜像位置，fixed placeholder 复用同一运行时高度。",
+    "rationale": "原生胶囊位置是设备和窗口运行态，必须由平台矩形派生；页面私有 padding 或固定高度无法证明对称，也会在窗口变化时漂移。",
+    "alternativesRejected": [
+      "只继续增大左右 reserve，仍不能让左操作中心与胶囊中心对称。",
+      "在首页写私有 margin 或绝对定位，会绕过共享 Navbar 合同并复制机型假设。",
+      "绘制或点击一份 PUI 胶囊会重复微信系统控件。"
+    ]
+  },
+  "impact": {
+    "files": ["navbar/navbar.js", "navbar/navbar.wxml", "navbar/navbar.wxss", "preview/styles.css", "docs/components/NAVBAR.md", "docs/UI_DESIGN_CONTRACT.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_API.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "scripts/test-navbar.js", "miniprogram_dist/navbar/navbar.js", "miniprogram_dist/navbar/navbar.wxml", "miniprogram_dist/navbar/navbar.wxss"],
+    "dependencies": ["wx.getMenuButtonBoundingClientRect", "wx.getWindowInfo", "PUI Button", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-navbar.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-navbar.js", "npm run miniprogram:build", "微信开发者工具：工具 → 构建 npm", "微信开发者工具：普通编译"],
+    "browser": ["H5 镜像锁定 7px 外边距和 88px 胶囊宽度，左操作在同宽镜像区居中；胶囊保持 aria-hidden 和 pointer-events:none。", "微信开发者工具 RC 2.02.2607161、iPhone 12/13 Pro 390px 模拟器完成普通编译；最终截图确认搜索按钮与真实原生胶囊不重叠且视觉中心对称。", "重新从项目列表打开后运行 URL 确认为 appid=wx23aa017375535746；该身份下微信 npm 构建完成，耗时 283ms，普通编译后首页正常加载。"],
+    "deviceRisks": ["微信真机仍需确认真实胶囊中心差、状态栏高度、横竖屏重测、样式隔离与读屏。"]
+  },
+  "ai": {
+    "summary": "Navbar 的标题安全轨和左操作镜像区是两套几何，必须由完整菜单矩形与窗口信息共同派生。",
+    "rules": [
+      "windowWidth-left 只用于对称标题轨，不能单独证明左操作位置正确。",
+      "左操作必须以 windowWidth-right 为外边距，并在菜单 width 的镜像区域内居中。",
+      "内容高度必须使用 top/bottom/height 与 statusBarHeight，窗口尺寸变化后重新测量。",
+      "禁止用页面私有 margin、固定状态栏高度或重绘系统胶囊修补共享 Navbar。"
+    ],
+    "tags": ["navbar", "wechat", "capsule", "mirror-geometry", "safe-area", "custom-navigation"]
+  }
+}

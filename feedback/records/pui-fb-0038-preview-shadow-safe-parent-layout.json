@@ -1,0 +1,160 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0038",
+  "title": "预览父布局把组件阴影裁切在滚动视口边缘",
+  "scope": "global",
+  "components": [
+    "preview-site",
+    "preview-device",
+    "all-components"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "所有组件开启阴影时都能完整展示，并由统一、符合组件真实使用场景的父容器布局决定安全内距或全屏贴边，而不是每个页面自行补 margin。",
+  "environment": {
+    "surfaces": [
+      "h5-preview",
+      "preview-device"
+    ],
+    "platforms": [
+      "browser"
+    ],
+    "viewports": [
+      "390x844",
+      "desktop"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "开启官网全局阴影并打开 Card 或 Button 概览。",
+    "测量 PreviewDevice、内部滚动 viewport、直接 demo root 与首个带 box-shadow 的组件。",
+    "修复前 viewport 计算 padding 为 0px，Card 和 Button 的 demo root 与阴影 Surface 均从 top=0、left=0 开始；PreviewDevice 的 14px padding 位于滚动 viewport 外，无法成为阴影外扩空间。",
+    "同时检查 Dialog：浮层必须覆盖完整设备，不能机械继承普通组件为了阴影设置的内容 padding。"
+  ],
+  "expected": "普通组件在滚动裁切以内拥有稳定、足以覆盖 PUI card shadow 的共享安全区；浮层和屏幕附着组件保持 edge-to-edge。阴影开关只改变阴影视觉，不增删父级 padding，不造成布局跳动或页面横向溢出。",
+  "actual": "旧 PreviewDevice 把 14px padding 写在外框，内部 viewport 自身 padding 为 0且负责 overflow 裁切，导致普通组件阴影从滚动边缘开始并被切掉；所有组件又共享同一种隐式父布局，无法表达 Card 与 Dialog 的真实父容器差异。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户指出阴影普遍没有完整展示，父容器 padding 不足，组件没有根据真正父容器布局展示。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-card",
+      "note": "修复前 Card 顶层阴影 Surface 相对 viewport 为 top=0/left=0；修复后 shadow-safe 父布局 padding=28px，桌面 top/left=28px，390px 四向为 28px且阴影完整可见。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/dialog",
+      "note": "Dialog 使用 edge-to-edge，393px 设备内部 viewport、父布局、demo root 与透明 Stage 均为 391×620px且四边距离为 0。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "renderPreviewDevice 统一挂载 component-layout，并用 edgeToEdgePreviewIds 明确分类真实屏幕附着组件。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-spacing-token-contract.js",
+      "note": "专项门禁锁定 14px base + 14px bleed、shadow-safe/edge-to-edge、滚动层级和直接 demo gap。"
+    }
+  ],
+  "rootCause": "PreviewDevice 的视觉 padding 与滚动裁切职责放在不同层：padding 属于外框，overflow-x/y 属于零内距 viewport。阴影只会绘制到最近滚动裁切边界，外框 padding 对其不可见；同时缺少表示普通内容与屏幕附着组件的显式父布局模式。",
+  "decision": {
+    "outcome": "PreviewDevice 外框改为 padding:0，仅负责固定设备边界、主题、圆角和裁切；唯一滚动 viewport 内增加共享 component-layout。普通组件使用 shadow-safe，由 --pui-preview-device-padding:14px 与 --pui-preview-shadow-bleed:14px 合成 28px；Dialog、Popup、Sheet、已退役组件、Navbar、Tabbar、Toast、旧队列入口 等使用 edge-to-edge:0。滚动条不再永久预留 gutter，避免 edge-to-edge 右侧缺口。",
+    "rationale": "父布局必须位于 overflow 裁切以内才真正保护阴影。28px 足以完整承载当前 PUI Card 的 0 12px 26px 阴影，同时作为固定布局在阴影关闭时继续保留，防止外观切换改变组件几何。edge-to-edge 明确保留全屏组件的真实屏幕关系。",
+    "alternativesRejected": [
+      "逐组件增加 margin 会复制修复、破坏复用，并遗漏后续组件。",
+      "只把外框 padding 从 14px 增大仍无法越过内部 viewport 的 overflow 裁切。",
+      "只在 shadow=on 时增加 padding 会让开关改变组件宽度、换行和位置。",
+      "取消 PreviewDevice overflow 会破坏设备圆角、浮层边界和固定手机屏幕合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/index.html",
+      "AGENTS.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/SPACING.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/NEW_SESSION_PROMPT.md",
+      "docs/components/CONTRACT_TEMPLATE.md",
+      "docs/components/DIALOG.md",
+      "scripts/test-component-semantic-contracts.js",
+      "scripts/test-spacing-token-contract.js",
+      "scripts/test-preview-overview-hierarchy.js",
+      "scripts/test-dialog.js",
+      "scripts/test-style-utilities.js",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0007-global-ui-semantic-spacing.json",
+      "feedback/records/pui-fb-0014-preview-device-fixed-scroll-surface.json",
+      "feedback/records/pui-fb-0038-preview-shadow-safe-parent-layout.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": [
+      "preview-device",
+      "config-provider",
+      "shadow-tokens"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-spacing-token-contract.js",
+      "scripts/test-preview-overview-hierarchy.js",
+      "scripts/test-dialog.js",
+      "scripts/test-style-utilities.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "git diff --check"
+    ],
+    "browser": [
+      "桌面 Card：PreviewDevice 393×622px，shadow-safe=28px，Card root top/left=28px，box-shadow 为 0 12px 26px，页面无横向溢出。",
+      "390×844 Card：设备 351×622px，父布局 padding=28px，Card 根 top/right/left=28px、宽293px，document client/scroll=375/375px；截图确认阴影四边完整。",
+      "桌面 Dialog：edge-to-edge=0px，内部 viewport、父布局、demo root 与透明 Stage 均为 391×620px，四边距离为0，页面无横向溢出。"
+    ],
+    "deviceRisks": [
+      "本次只调整 H5 官网 PreviewDevice 父布局，不改变小程序组件源码；极窄设备下 28px 展示安全区会减少演示内容宽度，但390px已验证可读且无页面溢出。",
+      "微信真机业务页面的阴影是否被消费者自己的 scroll-view/overflow 裁切，仍由各组件语义合同和业务父容器负责。"
+    ]
+  },
+  "ai": {
+    "summary": "预览阴影安全区必须位于滚动 viewport 内：普通组件用 shadow-safe 28px，屏幕附着组件用 edge-to-edge 0px。",
+    "rules": [
+      "新增组件预览时先判断真实父布局：普通 Surface 使用 shadow-safe，屏幕附着/浮层使用 edge-to-edge。",
+      "禁止给单个 showcase 增加私有 margin 来修复阴影裁切。",
+      "阴影安全区必须位于负责 overflow 的 viewport 内，外框 padding 不能替代。",
+      "shadow-safe 固定为 14px base + 14px bleed，阴影开关不得改变该布局。",
+      "edge-to-edge 根必须占满 viewport，不能留下永久 scrollbar gutter 或局部遮罩。",
+      "修改分类或父布局时同步 AGENTS、UI 合同、spacing/overview 专项测试和浏览器边界测量。"
+    ],
+    "tags": [
+      "preview-site",
+      "preview-device",
+      "shadow",
+      "overflow",
+      "padding",
+      "parent-layout",
+      "shadow-safe",
+      "edge-to-edge",
+      "responsive"
+    ]
+  }
+}

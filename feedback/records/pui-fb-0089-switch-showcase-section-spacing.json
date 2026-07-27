@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0089",
+  "title": "Switch 四个演示分区标题仅有 8px 间隔",
+  "scope": "component",
+  "components": ["switch", "preview-site", "documentation"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Switch 的基础、文字图标、状态和尺寸分区必须一眼可分辨，分区标题上间距使用统一语义 Token。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Switch 概览并读取连续四个 pui-showcase-section 的几何。",
+    "三个后续分区与前一区块的实际间距均为8px，标题层级难以扫读。",
+    "通用 component-only 规则在样式表后部把 demo-section gap 重置为 content gap，覆盖了组件较早声明的分区间距。"
+  ],
+  "expected": "主要演示分区共同使用 --pui-section-gap=18px，区内条目继续使用8px content gap，不靠私有 margin 补位。",
+  "actual": "分区关系与区内组合都使用8px，标题无法形成清晰层级。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求预览分区标题的上间距更大，并授权后续共有组件由 agent 自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=switch6#/components/switch", "note": "首次测量三个连续分区间距均为8px。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 根补齐 --pui-section-gap=18px，并以 component-only 等级选择器让 Switch demo-section 消费该 Token。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=switch7#/components/switch", "note": "修复后三个连续分区间距均为18px，PreviewDevice仍固定622px并由内部 viewport滚动。"}
+  ],
+  "rootCause": "H5 虽有区内 content gap，却没有公开 section gap 根变量；后置 component-only 归一化又以更高优先级统一覆盖 demo-section。",
+  "decision": {
+    "outcome": "在 H5 Token 根定义 --pui-section-gap 对应18px，并让 Switch Showcase 根在 component-only 规则后显式消费；内部 Cell 列表仍保持8px。",
+    "rationale": "分区与区内关系分别使用18px和8px，和全局36rpx/16rpx语义镜像一致，也不会改变组件本体尺寸。",
+    "alternativesRejected": [
+      "给每个 h3 添加私有 margin 会把间距职责分散到标题本身。",
+      "增加空容器或 br 会制造无语义布局节点。",
+      "整体增加 PreviewDevice 高度会破坏固定622px合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-switch.js", "docs/components/SWITCH.md"],
+    "dependencies": ["--pui-section-gap", "PreviewDevice internal scrolling"]
+  },
+  "verification": {
+    "tests": ["scripts/test-switch.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "390px 下三处分区间距均为18px，区内 stack gap仍为8px。",
+      "PreviewDevice保持351px外宽、622px高，内部 viewport 338/338无横向溢出并可纵向滚动。",
+      "页面 document/main 均为375/375，无页面级横向溢出。"
+    ],
+    "deviceRisks": ["该问题只属于 H5 官网文档分区；微信组件本体与安装产物不受影响。"]
+  },
+  "ai": {
+    "summary": "Switch 主要演示分区用18px section gap，区内组合继续用8px content gap。",
+    "rules": [
+      "演示分区间距与区内内容间距必须使用不同语义 Token。",
+      "component-only 后置归一化不得把已声明的 section gap重新压成 content gap。",
+      "禁止用标题私有 margin、空容器或改变固定设备高度补分区层级。"
+    ],
+    "tags": ["switch", "preview", "spacing", "section-gap", "responsive"]
+  }
+}

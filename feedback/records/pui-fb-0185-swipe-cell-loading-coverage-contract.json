@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0185",
+  "title": "SwipeCell 已删除 Loading 组合但共享覆盖测试仍要求 H5 镜像",
+  "scope": "component",
+  "components": ["swipe-cell", "preview-site", "test-contract"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "SwipeCell 只保留横向操作原语；测试合同必须跟随真实 WXML 与 H5 能力，不能逼迫恢复已删除的假 loading。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "test-contract"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "运行 npm run check，test-shared-subcomponent-geometry.js 的 loadingCoverage 仍硬编码 swipe-cell。",
+    "同一测试扫描真实 SwipeCell WXML 后，nativeLoadingComponents 不含 swipe-cell，因为 usingComponents 只保留 pui-button，WXML 也不存在 <pui-loading>。",
+    "测试期望与真实实现不一致，导致断言要求 H5 swipeCellShowcase 调用 loadingComponent。"
+  ],
+  "expected": "共享 Loading 覆盖测试应只枚举真实 WXML 组合了 pui-loading 的组件；SwipeCell 不应因过期测试恢复 loading Props 或 H5 静态状态。",
+  "actual": "全库门禁把已删除 Loading 的 SwipeCell 仍列为镜像覆盖对象，使真实跨端收敛后的实现无法通过。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户授权本 Goal 后续组件按完整联网、浏览器与门禁证据自主连续验收。"},
+    {"kind": "build", "ref": "npm run check", "note": "2026-07-20 在 shared-subcomponent-geometry 断言中显示 actual 不含 swipe-cell 而 hardcoded expected 仍含它。"},
+    {"kind": "file", "ref": "swipe-cell/swipe-cell.json", "note": "真实原生依赖仅为 pui-button。"},
+    {"kind": "file", "ref": "swipe-cell/swipe-cell.wxml", "note": "真实 WXML 只有动作 PUI Button、左右 Slot 和 default Slot，不包含 pui-loading。"},
+    {"kind": "test", "ref": "scripts/test-shared-subcomponent-geometry.js", "note": "loadingCoverage 已移除 SwipeCell，仍由动态 WXML 扫描验证实际组合清单。"}
+  ],
+  "rootCause": "SwipeCell API 收敛删除 loading 能力后，共享子组件测试的静态期望表未同步删除旧组件条目。",
+  "decision": {
+    "outcome": "从 loadingCoverage 移除 swipe-cell；保留动态 nativeLoadingComponents 扫描和其他真实 Loading 组件的 H5 helper 强制验证。",
+    "rationale": "测试应证明真实组合跨端镜像，而不是用旧清单迫使组件恢复被拒绝的业务状态能力。",
+    "alternativesRejected": [
+      "在 SwipeCell 原生与 H5 重新加入 loading，只为满足过期硬编码。",
+      "删除整个共享 Loading 覆盖测试，导致其他真实组合组件失去跨端保护。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0185-swipe-cell-loading-coverage-contract.json"],
+    "dependencies": ["SwipeCell public contract", "PUI Loading composition coverage", "H5 parity tests"]
+  },
+  "verification": {
+    "tests": ["scripts/test-shared-subcomponent-geometry.js", "scripts/test-swipe-cell.js"],
+    "commands": ["npm run check", "npm run feedback:generate", "npm run feedback:check"],
+    "browser": ["390x844 SwipeCell 真实 CUA 仅验证拖拽、打开、动作点击、disabled、opened 与 low motion；预览没有伪 Loading/Empty/Error/Retry 状态。"],
+    "deviceRisks": ["合法 AppID 真机仍需核验 SwipeCell 触摸惯性、rpx 宽度、Slot 投影、样式隔离、读屏和系统低动效。"]
+  },
+  "ai": {
+    "summary": "共享子组件覆盖测试必须以真实 WXML 组合为准，不能用过期名单恢复已拒绝的状态能力。",
+    "rules": [
+      "删除某组件的 PUI 子组件组合时，同时核对所有动态扫描和硬编码覆盖名单。",
+      "不要为了测试绿灯恢复 loading/error/empty 等不属于当前公开合同的假能力。",
+      "保留共享测试对其他真实 PUI Loading 组合的跨端 helper 验证。"
+    ],
+    "tags": ["swipe-cell", "loading", "test-contract", "h5-parity", "no-fake-state"]
+  }
+}

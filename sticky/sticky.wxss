@@ -1,0 +1,13 @@
+.pui-sticky {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.pui-sticky__content {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}

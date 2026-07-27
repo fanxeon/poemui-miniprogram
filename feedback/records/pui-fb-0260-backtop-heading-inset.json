@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0260",
+  "title": "BackTop 预览分区标题贴边并被顶部裁切",
+  "scope": "component",
+  "components": ["back-top", "preview-site", "preview-device"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "BackTop 预览的分区标题应在设备安全内距内完整显示，并与下方内容保持一致的左右基线。",
+  "environment": {
+    "surfaces": ["h5-preview", "BackTop showcase", "PreviewDevice"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/back-top，在 390px 预览顶部观察第一条分区标题。",
+    "修复前 BackTop 被放进 edge-to-edge 布局，标题的 top/left 为设备内容起点，而下方预览 frame 自己拥有 14px 内距。",
+    "因此标题贴近圆角裁切边界，左右也没有和 Cell 内容形成同一条基线。"
+  ],
+  "expected": "BackTop 作为普通组件使用共享 shadow-safe 布局；标题、预览舞台和内容在设备安全内距内完整显示，标题水平内缩后与 frame 内的 Cell 内容对齐。",
+  "actual": "标题直接位于 edge-to-edge 预览顶部和左右边缘，首字可能被圆角/滚动遮罩裁切，标题与下方 Cell 的左右间距不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 BackTop 标题与左右间距反馈", "note": "用户指出标题显示不完整，并要求重新检查左右间距。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/back-top · 2026-07-23 · 390x844", "note": "修复前 computed layout class 为 preview-device__component-layout--edge-to-edge、padding=0；首个 h3 top 与 viewport top 重合，h3 left=13，而 frame 自身 padding=14px。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "移除 back-top 的 edgeToEdgePreviewIds 分类，使其回到共享 shadow-safe 父布局。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "BackTop 分区 h3 增加共享 preview-device-padding 的水平内距并使用 border-box，与 frame 内容基线一致。"}
+  ],
+  "rootCause": "BackTop 是普通导航组件而非覆盖整个屏幕的浮层，却被错误加入 edge-to-edge 集合；标题又没有消费与 frame 相同的水平安全内距。",
+  "decision": {
+    "outcome": "BackTop 使用 shadow-safe PreviewDevice 父布局，并给四个分区标题增加共享设备内距；不在 BackTop 页面私有增加任意魔法 margin。",
+    "rationale": "共享父布局负责统一上下左右安全区，标题只补齐与 frame 内容相同的语义内缩，能同时解决顶部裁切和左右基线漂移。",
+    "alternativesRejected": [
+      "只给第一条标题加 margin-top：无法修复其他分区，也会产生首项特例。",
+      "只给标题加固定 20px padding：不能与 PreviewDevice Token 和内容 frame 保持同步。",
+      "继续使用 edge-to-edge 并给 BackTop 私有补一套四向 padding：会绕过共享预览布局合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-back-top.js", "feedback/records/pui-fb-0260-backtop-heading-inset.json", "docs/components/BACKTOP.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["PreviewDevice shadow-safe layout", "BackTop showcase spacing", "390px clipping contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-back-top.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["修复后 BackTop 使用 shadow-safe 布局，标题位于共享四向安全区内，h3 与 frame 内 Cell 水平基线一致，390px 下首字完整且无页面横向溢出。"],
+    "deviceRisks": ["本轮仅修改官网预览布局；合法 AppID 真机仍需复核 BackTop fixed 位置、rpx 安全区和系统滚动遮罩。"]
+  },
+  "ai": {
+    "summary": "普通组件预览不能错误使用 edge-to-edge；分区标题必须和内容共享同一套安全内距。",
+    "rules": [
+      "只有真正覆盖屏幕的浮层或屏幕附着组件使用 edge-to-edge，普通 BackTop 使用 shadow-safe。",
+      "标题不能贴着 PreviewDevice 裁切边缘；应消费共享设备安全内距并检查首字是否完整。",
+      "标题与内容 frame 的左右基线必须用同一 Token 验证，不能只看组件本体是否有 padding。"
+    ],
+    "tags": ["back-top", "preview-device", "shadow-safe", "heading", "spacing", "390px"]
+  }
+}

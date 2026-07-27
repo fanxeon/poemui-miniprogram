@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0180",
+  "title": "Empty 专项测试错误依赖不存在的 Image 页面运行时绑定",
+  "scope": "component",
+  "components": ["empty", "image", "preview-site"],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "全库测试应验证 Empty 自己的真实 PUI 组合，不应以无关页面运行时作为通过条件。",
+  "environment": {
+    "surfaces": ["h5-preview", "contract-test"],
+    "platforms": ["Node.js"],
+    "viewports": ["不适用"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "运行 `npm run check`。",
+    "`scripts/test-empty.js` 断言 `bindImagePreviewRuntime(props)` 存在，但 Empty 本体既没有 Image 页面交互路由，也不需要该运行时绑定。"
+  ],
+  "expected": "Empty 测试检查其 H5 Showcase 以及嵌入式状态使用的 `emptySample`，并维持透明、可组合的 PUI Empty 结构。",
+  "actual": "跨组件的历史字符串断言让无关 Image 页面实现阻断 Empty 所在的全库门禁。",
+  "evidence": [
+    {"kind": "test", "ref": "scripts/test-empty.js", "note": "失败断言指向 Image 页面函数；修复后改为检查 Empty 的嵌入式 PUI Empty 组合。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "emptyShowcase 与 emptySample 是 Empty 的真实 H5 实现路径。"},
+    {"kind": "file", "ref": "docs/components/EMPTY.md", "note": "合同规定 Empty 通过 Image/Icon 子组件与三个具名 Slot 组合，不公开页面级运行时。"}
+  ],
+  "rootCause": "旧测试把页面级 Image 运行时字符串误放入 Empty 的组件合同中。",
+  "decision": {
+    "outcome": "删除无关 Image 绑定断言，改为验证 Empty 自己的嵌入式 PUI Empty 组合；运行时代码不变。",
+    "rationale": "测试覆盖真实责任边界，并防止 Empty 因无关页面重构被误报失败。",
+    "alternativesRejected": [
+      "人为创建空的 bindImagePreviewRuntime 占位函数。",
+      "恢复跨组件的字符串耦合。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/test-empty.js"],
+    "dependencies": ["Empty H5 Showcase", "PUI Empty 组合合同"]
+  },
+  "verification": {
+    "tests": ["scripts/test-empty.js"],
+    "commands": ["node scripts/test-empty.js", "npm run check"],
+    "browser": ["本记录只修正测试依赖；Empty 完整浏览器 battle 不在当前 DropdownMenu 范围内。"],
+    "deviceRisks": ["无新增真机风险。"]
+  },
+  "ai": {
+    "summary": "一个组件的合同测试只能依赖该组件真实实现或明确共享 helper，不能以别的页面私有运行时函数作为绿灯条件。",
+    "rules": [
+      "跨组件测试依赖必须有公开或共享合同依据。",
+      "不要为满足错误断言新增无调用的占位运行时函数。"
+    ],
+    "tags": ["empty", "image", "contract-test", "regression"]
+  }
+}

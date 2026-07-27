@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0356",
+  "title": "Search round 引用未定义 Token 并绕过全局边框外观",
+  "scope": "component",
+  "components": ["search", "input", "config-provider", "miniprogram-home", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "圆形居中 Search 必须显示满圆胶囊，并正确跟随全局主题、边框和普通圆角外观。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "首页打开组件搜索 Overlay，Search 已传 shape=round 与 center。",
+    "Search WXSS 使用未定义 --pui-radius-full，圆角声明失效。",
+    "Search 固定向 Input 传 bordered=false，切换 ConfigProvider 边框不会作用到它。"
+  ],
+  "expected": "round Search 是满圆胶囊；normal Search 跟随 --pui-radius-medium；两者均消费全局主题和边框 Token，explicit round 不随大圆角降级。",
+  "actual": "round 回退为 Input 的普通圆角，Search 无法响应全局边框开关。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户报告 Search 不圆且不受外观设置控制。"},
+    {"kind": "file", "ref": "search/search.wxss", "note": "旧实现引用未定义 --pui-radius-full。"},
+    {"kind": "file", "ref": "search/search.wxml", "note": "旧实现固定 bordered=false，绕过 Provider border Token。"},
+    {"kind": "test", "ref": "scripts/test-search.js", "note": "锁定 round Token handoff、bordered=true 与 H5 mirror。"}
+  ],
+  "rootCause": "Search 通过跨组件 selector 直接覆盖 Input Field，并使用了不存在 Token；同时把 nested Input 设为本地无边框。",
+  "decision": {
+    "outcome": "Input 新增内部 --pui-input-field-radius 语义变量；Search 按 shape 注入 --pui-radius-round 或 --pui-radius-medium，nested Input 保持 bordered=true；H5 同步改为 bordered=true。",
+    "rationale": "让圆角与外观由同一 Token 链继承，避免跨组件几何覆写；explicit round 保持稳定的圆形语义。",
+    "alternativesRejected": [
+      "继续引用 --pui-radius-full 或在 Search WXSS 穿透 Field 会导致未定义 Token 与样式隔离风险。",
+      "把 round 随 largeRadius 开关回退为普通圆角，违背显式 shape 语义。",
+      "保持 bordered=false 会让全局边框开关只对其他组件生效。"
+    ]
+  },
+  "impact": {
+    "files": ["input/input.wxss", "search/search.js", "search/search.wxml", "search/search.wxss", "preview/app.js", "preview/styles.css", "scripts/test-input.js", "scripts/test-search.js", "docs/components/SEARCH.md", "docs/components/INPUT.md", "docs/COMPONENT_API.md"],
+    "dependencies": ["pui-input", "pui-search", "pui-config-provider", "common/style/theme.wxss"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input.js", "scripts/test-search.js", "scripts/test-config-provider.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run site:build", "npm run example:install", "npm run pack:check"],
+    "browser": [],
+    "deviceRisks": ["需在合法 AppID 真机验证 round Search、border 开关、浅深色和圆角开关的计算样式与触摸输入。"]
+  },
+  "ai": {
+    "summary": "复合组件必须经已定义的语义 Token 接入子组件外观；显式 round 不与全局普通圆角混淆。",
+    "rules": [
+      "禁用 Token 扫描未定义变量；--pui-radius-full 不是主题 Token，圆形使用 --pui-radius-round。",
+      "Search 不得以 bordered=false 绕过 Provider；中性边框可见性由 --pui-border-color 决定。",
+      "Search 等组合组件不得用跨组件 selector 重写 Input Field 的高度、padding、背景、边框或圆角；只允许 Input 内部公开的语义变量。"
+    ],
+    "tags": ["search", "input", "config-provider", "radius", "border", "appearance"]
+  }
+}

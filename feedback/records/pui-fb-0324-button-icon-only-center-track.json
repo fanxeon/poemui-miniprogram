@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0324",
+  "title": "Button iconOnly 未建立统一居中轨道导致关闭图标偏心",
+  "scope": "component",
+  "components": ["button", "icon", "popup", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "圆形 PUI Button 中的 PUI Icon 必须视觉精确居中，不出现白色默认根或 Popup 私有补丁。",
+  "environment": {
+    "surfaces": ["miniprogram-component", "miniprogram-popup", "h5-preview", "component-contract"],
+    "platforms": ["wechat-devtools", "browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 Popup Header 渲染 theme=default、variant=base、shape=circle、size=small、icon=close、iconOnly=true 的 pui-button。",
+    "在 390px 开发者工具中观察关闭图标与圆形根：原实现需以 custom-style 强制根尺寸，仍会出现图标偏心和近白根的视觉问题。"
+  ],
+  "expected": "iconOnly 的原生 Button、Icon 区域和内部 pui-icon 使用同一个 Button 尺寸 Token 居中，默认弱填充不露出白色默认根；Popup 只组合公开 Button 能力，不覆盖根几何。",
+  "actual": "Button 只移除了内容和 suffix，没有建立 iconOnly 的专属单轨布局；Popup 只能额外传入 custom-style 试图固定圆形根。移除消费者补丁后的开发者工具热重载还显示，WXSS 尺寸类不足以完全约束原生 Button 根宽度。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务截图", "note": "用户报告关闭 Icon 视觉不居中且存在白色根观感，并询问 PUI Button 是否支持 PUI Icon。"},
+    {"kind": "file", "ref": "button/button.wxml", "note": "Button 的 icon 属性真实渲染 pui-icon，icon slot 也已发布；问题不是缺少图标能力。"},
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161 / iPhone 12/13 Pro 390px", "note": "首次热重载仍显示横向的默认弱填充根，证明仅靠 WXSS 类不足以覆盖原生 Button 根。"},
+    {"kind": "file", "ref": "button/button.js", "note": "修复前没有 iconOnly 的根与 Icon 单轨规则；现由 Button 运行时写入根尺寸 Token。"},
+    {"kind": "test", "ref": "scripts/test-button.js", "note": "专项测试锁定原生与 H5 的 iconOnly class、gap=0 与 line-height=0。"}
+  ],
+  "rootCause": "Button 将 iconOnly 仅实现为 WXML 内容裁剪，遗漏原生 Button 内部 Icon 容器的统一几何；Popup 因而承接了不应属于消费者的根尺寸修复。",
+  "decision": {
+    "outcome": "Button 内部新增 pui-button--icon-only：根在运行时写入 --pui-button-size 的 width/min/max-width/height/flex/padding 和圆角 Token，Icon 区域以同一尺寸填满并居中、清除行高基线；H5 同步类与几何。Popup 删除 custom-style，继续通过 icon=close 让 Button 内部渲染 pui-icon。",
+    "rationale": "同时保留 icon 属性和 icon slot 的现有公开合同，把像素几何归属回唯一的 Button 组件，可供 Navbar、Tabbar、Popup 和其他消费者复用。",
+    "alternativesRejected": [
+      "只在 Popup Header 写定位或尺寸补丁：会让其他 iconOnly Button 继续漂移。",
+      "改为原生字符叉号：会绕过 PUI Icon 资源和可访问性合同。",
+      "新增第二个 icon-button 组件：会重复 Button 的原生能力和视觉 Token。"
+    ]
+  },
+  "impact": {
+    "files": ["button/button.js", "button/button.wxss", "popup/popup.wxml", "preview/app.js", "preview/styles.css", "docs/components/BUTTON.md", "docs/components/POPUP.md", "scripts/test-button.js", "scripts/test-popup.js", "miniprogram_dist/button/button.js", "miniprogram_dist/button/button.wxss", "miniprogram_dist/popup/popup.wxml"],
+    "dependencies": ["pui-button", "pui-icon", "pui-popup", "H5 Button helper"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-popup.js"],
+    "commands": ["npm run miniprogram:build", "node scripts/test-button.js", "node scripts/test-popup.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": [],
+    "deviceRisks": ["仍需在合法 AppID 的 390px 开发者工具与 iOS/Android 真机确认不同主题、边框、阴影、毛玻璃、大圆角、系统字体和触摸反馈下的视觉同心与命中区。"]
+  },
+  "ai": {
+    "summary": "纯图标 Button 必须继续组合 PUI Button 与 PUI Icon，任何居中问题先修 Button 的 iconOnly 共享几何，禁止由 Popup、Navbar 或页面私有覆盖根样式。",
+    "rules": [
+      "优先使用 icon 属性让 Button 内部渲染 pui-icon；需要自定义时使用 icon slot，不用字符图标。",
+      "iconOnly 必须让原生根、Icon 容器和 PUI Icon 共用 Button 尺寸轨道，且内容/后缀从真实树移除。",
+      "消费者不得以 custom-style、绝对定位或白底遮盖修复共享 Button 的图标居中。"
+    ],
+    "tags": ["button", "icon", "icon-only", "popup", "visual-layout", "h5-parity"]
+  }
+}

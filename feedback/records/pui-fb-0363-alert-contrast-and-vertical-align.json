@@ -1,0 +1,100 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0363",
+  "title": "Alert 需要独立的行内纵向对齐与同色系正文",
+  "scope": "component",
+  "components": ["alert", "preview-site", "miniprogram-component-pages"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Alert 需要可单独控制内容垂直居中，并保留原有轻量主题底色、将文字换为同色系深色；小程序独立页要展示多种真实示例。",
+  "environment": {
+    "surfaces": ["alert", "miniprogram-alert-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram-webview", "wechat-devtools", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 Alert 使用多行说明、Icon 与可选关闭入口时，现有 center 同时改变垂直和水平对齐，无法只让行内元素居中。",
+    "现有 Alert 只有浅色语义背景，正文默认读取全局黑色或白色正文 Token，缺少同色系正文外观。"
+  ],
+  "expected": "verticalAlign 可只控制 top/center 行内纵向对齐；tinted 为 default/info/success/warning/danger 保留既有轻量背景，并分别提供同色系的标题/Icon 前景和辅助文字/关闭入口前景。既有 center、visible 生命周期与 soft 外观保持兼容。",
+  "actual": "修复前 center 无法单独表达纵向对齐，且没有共享的 tinted 外观 API 或 Token。首轮 tinted 虽改变了 Alert 文本 Token，但旧 Icon 将内置 SVG 当作 image 并通过 Canvas 着色，CSS 变量不能作为 Canvas 颜色，因此曾需要额外实体色表。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-25 当前对话",
+      "note": "用户明确要求先实现内容垂直居中和非黑色文字；首次 contrast 方案被纠正为保留原有轻量底色的同色系深色正文。"
+    },
+    {
+      "kind": "file",
+      "ref": "alert/alert.js",
+      "note": "既有 center 直接追加 pui-alert--center，同时影响纵向与正文水平对齐。"
+    },
+    {
+      "kind": "file",
+      "ref": "alert/alert.wxss",
+      "note": "既有主题仅替换轻量背景，正文与关闭入口消费全局文本 Token。"
+    }
+  ],
+  "rootCause": "原有 Alert 将“整块居中”作为唯一对齐能力，并把语义主题限制为浅色背景配中性文字，未区分布局轴与同色系信息层级；首轮修复还把内置 SVG 继续交给无法解析 CSS 自定义属性的 Canvas 着色通道。",
+  "decision": {
+    "outcome": "新增 verticalAlign='top|center' 与 variant='soft|tinted'。center 保留为兼容别名语义：强制 verticalAlign=center 并继续居中文本。tinted 保留既有 theme light 背景，并使用 common/style/theme.wxss 与 H5 同名的 per-theme 前景/辅助前景 Token。PUI-FB-0364 将内置 pui-icon 改为 currentColor 字体字形后，Alert 删除 JS 实体色镜像表并直接把同名 CSS Token 传给 Icon；H5 继续传同一 Token。",
+    "rationale": "布局轴与视觉层级是独立需求；Token 化可让深浅色、全局外观和 H5 镜像共享同一语义，而不是将浅色提示改为反白深底或在页面写死颜色。",
+    "alternativesRejected": [
+      "把 center 改为只负责纵向居中会破坏已有水平居中调用。",
+      "使用一个全局白色文字 Token 会把原有浅色主题误改为深色反白并丢失轻量语义。",
+      "仅在 Alert 独立页写颜色和对齐样式会造成页面私有控件并丢失 H5/API 能力。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "alert/alert.js",
+      "alert/alert.wxss",
+      "common/style/theme.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/components/alert/index.wxml",
+      "miniprogram/pages/components/alert/index.wxss",
+      "metadata/components.js",
+      "docs/components/ALERT.md",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "scripts/test-alert.js",
+      "scripts/test-miniprogram-component-pages.js"
+    ],
+    "dependencies": ["pui-icon", "pui-button", "pui-config-provider", "PUI theme tokens", "H5 Alert mirror"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-alert.js",
+      "scripts/test-icon.js",
+      "scripts/test-miniprogram-component-pages.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run example:install",
+      "npm run pack:check",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project '/Users/fanx/Documents/poemUI 小程序组件库/miniprogram'"
+    ],
+    "browser": [
+      "2026-07-25 微信开发者工具 RC 2.02.2607161 的现有主 WebView 热重载：iPhone 12/13 Pro 390px Alert 独立页中 Info 图标为蓝色、Warning 为棕金色、Danger 为红色，均与同一 Alert 的 tinted 前景一致；页面纵向滚动无横向溢出。"
+    ],
+    "deviceRisks": ["iOS/Android 真机仍需确认本地 Icon Font 的首次解析、currentColor、rpx、系统字体基线、深浅色和全局外观切换后的图标重绘及触摸命中。"]
+  },
+  "ai": {
+    "summary": "Alert 的主轴对齐与同色系正文是共享组件能力，不得通过页面私有样式或修改兼容 center 语义实现。",
+    "rules": [
+      "新增布局 API 时先拆分轴向含义，并保留既有公开 Props 的组合语义。",
+      "tinted 必须保留原有 theme light 背景，并按 theme 提供 foreground/secondary Token，标题、Icon、说明和关闭入口共同消费；内置 Icon Font 直接接收同名 CSS Token，不得在 Alert 复制第二份深浅色实体颜色表。",
+      "H5、WXML、API、独立页示例和专项测试必须同步；多示例中至少保留一个真实受控显隐链路。"
+    ],
+    "tags": ["alert", "tinted", "vertical-align", "tokens", "h5-parity", "miniprogram"]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0066",
+  "title": "Tag 把形状别名和根点击混入展示叶子公开合同",
+  "scope": "component",
+  "components": ["tag", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Tag 应以少而明确的 API 展示短标签和可关闭状态，基础用法保持最小，完整事件只在 API 与事件专项场景出现。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 tag/tag.js：shape 与 round 同时表达圆角，根 tap 又把展示标签变成不明确的点击目标。",
+    "旧基础演示把事件反馈和单块诊断内容混在一起，无法按主题、变体、尺寸、形状和关闭能力逐区筛选。",
+    "对照 tdesign-miniprogram@1.15.3 的 tag/props.js、type.d.ts、WXML/WXSS 与官方文档：核心为 8 Props、click/close 两个 Events；PoemUI 只保留符合自身展示职责的能力。"
+  ],
+  "expected": "Tag 只承担文字或短组合内容、语义外观、安全宽度和可选 Close；根点击、选中和业务动作由 Button、Cell 或选择类组件承担。",
+  "actual": "旧合同用 round 重复 shape，并公开根 click，使一个展示叶子同时承担样式别名和不清晰的业务交互。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API，并明确授权完整 battle 后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "tag/tag.js", "note": "最终固定 9 Props，只发布 close；shape 是唯一形状入口，Close 在 disabled 时不派发。"},
+    {"kind": "file", "ref": "tag/tag.wxml", "note": "默认 Slot、content 和 PUI Icon/Close 真实组合，空字符串与 0 不被默认文案覆盖。"},
+    {"kind": "test", "ref": "scripts/test-tag.js", "note": "专项锁定 9 Props、1 Event、1 Slot、0 业务 Methods，并禁止恢复 round 或根 click。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tag", "note": "基础 WXML 为最小默认 Slot 调用；Close 的 Enter/Space 请求由父级真实卸载并可重新挂载，disabled 时没有 action 和 tabindex。"}
+  ],
+  "rootCause": "旧设计没有先固定 Tag 是展示叶子，因而把形状兼容别名与一般点击事件一起当成组件能力。",
+  "decision": {
+    "outcome": "公开合同收敛为 theme/variant/size/shape/content/icon/closable/disabled/maxWidth 9 Props、close 1 Event、default 1 Slot、0 业务 Methods；删除 round 与根 click。",
+    "rationale": "shape 已完整表达 square/round/mark；Close 是 Tag 唯一自有交互，而一般点击应由语义更清晰的外层组件承接。",
+    "alternativesRejected": [
+      "机械复制 TDesign 根 click 会让展示型 Tag 与 Button、Cell、选择控件职责重叠。",
+      "同时保留 round 与 shape 会产生冲突优先级和两套调用写法。",
+      "把 content 删除会破坏数据驱动列表；因此保留 content，但静态文字优先默认 Slot。"
+    ]
+  },
+  "impact": {
+    "files": ["tag/tag.js", "tag/tag.wxml", "tag/tag.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/TAG.md", "_example/miniprogram/pages/index/index.wxml", "_example/miniprogram/pages/index/index.js", "scripts/test-tag.js"],
+    "dependencies": ["pui-icon", "pui-button", "visualConfig", "theme behavior"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tag.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "content=0 与空字符串均真实显示，非法 maxWidth 注入值被忽略，120rpx 实际限制为 60px 并保留 Close。",
+      "theme/variant/size/shape 的可见选择器真实回写为 danger/dark/large/round，计算高度 29px、圆角 999px。",
+      "关闭请求只发布 {source:close}，H5 父级真实卸载 Tag；disabled 时 Close 不可聚焦也不触发。",
+      "API 完整展示 9 Props、1 Event、1 Slot，基础 WXML 不含 bind。"
+    ],
+    "deviceRisks": [
+      "微信 tap/catchtap、rpx 字号和辅助技术播报仍需合法 AppID 真机复核。",
+      "旧消费者若使用 round 或 bind:click，需要迁移到 shape=round 和外层 PUI Button/Cell。"
+    ]
+  },
+  "ai": {
+    "summary": "Tag 是展示叶子；只允许 Close 成为组件自有交互，一般点击和选择必须由外层语义组件承担。",
+    "rules": [
+      "禁止恢复 round Boolean 或 Tag 根 click；形状只由 shape 表达。",
+      "基础用法只写最小默认 Slot，不绑定 close；完整事件只进入 API 或真实关闭专项示例。",
+      "content 必须保留空字符串和 0，不能用真假值回退到默认标签。",
+      "可关闭 Tag 只请求父级删除，组件不得自行隐藏或用 Toast 伪造关闭结果。"
+    ],
+    "tags": ["tag", "api", "tdesign", "display-leaf", "composition"]
+  }
+}

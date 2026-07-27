@@ -1,0 +1,103 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0049",
+  "title": "官网左侧代码段缺少就近复制操作",
+  "scope": "global",
+  "components": ["preview-site", "button", "icon"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "标准组件概览左侧的组件引用与基础 WXML 代码段都要有就近复制按钮，用户不应为了复制一小段代码再寻找顶部工具栏或属性页。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-overview", "clipboard"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Button 概览并查看左侧组件用法正文。",
+    "组件引用和基础用法各有代码 Surface，但标题与代码框内均没有复制操作。",
+    "页面顶部虽然能复制带环境注释的完整当前效果代码，却不能就近复制单独的 usingComponents 或基础 WXML。"
+  ],
+  "expected": "两个代码段分别提供 PUI Copy IconButton；点击复制当前段的真实内容，成功、失败和恢复态可见且可访问，390px 与深浅色不破坏代码阅读和页面宽度。",
+  "actual": "代码段只可阅读和手动选择，没有分段复制入口；已有剪贴板能力没有接入左侧代码块。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户在 Button battle 报告后明确确认代码块复制验收。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确指出左侧代码框缺少成熟代码片段组件应有的复制按钮。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "previewCodeBlockSample 组合 iconButtonSample，并从 previewCodeSectionSources 同源取得 reference/basic 文本后调用真实 writePreviewClipboard。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-normal-code-card.js",
+      "note": "专项合同锁定共享 CodeBlock helper、PUI IconButton、同源内容、真实剪贴板与成功/失败反馈。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "桌面与 390px 真实点击组件引用、基础用法两个复制按钮均进入 success，aria-label、title 与 aria-live 分别回传准确结果，1.2 秒后恢复 Copy；深色下再次点击引用复制同样成功。"
+    }
+  ],
+  "rootCause": "左侧组件用法正文只实现了代码阅读 Surface；剪贴板逻辑和 PUI IconButton 已存在于概览工具栏与属性页，但 previewCodeSectionMarkup 没有把标题、代码和分段操作收成共享 CodeBlock helper。",
+  "decision": {
+    "outcome": "将分段渲染收口为 previewCodeBlockSample，在每个标题行组合共享 iconButtonSample；按钮只携带 reference/basic 标识，点击时重新从 previewCodeSectionSources 读取 makeUsageCode 同源结果。复制继续复用 writePreviewClipboard 的安全上下文 Clipboard API 与非安全局域网 execCommand 回退，反馈使用 Copy/Check/ErrorCircle、aria-label、title 和共享 aria-live，1.2 秒后恢复。",
+    "rationale": "就近操作符合代码片段阅读路径；重新从同一生成器取值可避免把长代码塞入 DOM 属性或维护第二份字符串。复用 Button/Icon 与剪贴板能力能保持尺寸、主题、失败语义和无障碍一致。",
+    "alternativesRejected": [
+      "只保留顶部完整复制会混合视觉环境注释与两类代码，不能满足单段复用任务。",
+      "直接把源码塞进 data 属性会增加转义风险并复制一份状态。",
+      "手写原生 button 或仅显示‘已复制’文案会绕过 PUI 组合和真实失败反馈。",
+      "为官网复制能力新增小程序公开 Code 组件会扩大当前 Button battle 的 API 范围；本次只建立共享文档 CodeBlock helper。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-normal-code-card.js",
+      "docs/components/BUTTON.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["buttonSample", "iconButtonSample", "iconComponent", "makeUsageCode", "writePreviewClipboard"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-normal-code-card.js", "scripts/test-preview-code-copy.js", "scripts/test-preview-infrastructure-composition.js"],
+    "commands": ["node scripts/test-preview-normal-code-card.js", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "Button 桌面两个代码段均为 550px 宽，标题行内 PUI Copy IconButton 为 44×38px；真实点击两个 Copy 后分别得到准确 success、aria-label/title/aria-live，并在 1.2 秒后恢复 idle。",
+      "390×844 下代码正文为 340/340px client/scroll width、两个 Copy 均为 44×38px，document clientWidth/scrollWidth 为 375/375px；基础复制真实成功。",
+      "390px dark 下 Code Surface/文字/Copy 为 rgb(24,24,27)/rgb(250,250,250)/rgb(250,250,250)，引用复制再次真实成功；验收后已恢复 light 与默认视口。"
+    ],
+    "deviceRisks": [
+      "该能力只属于 H5 官网文档辅助层，不改变小程序 Button 源码、API 或安装产物。",
+      "局域网 HTTP 使用 document.execCommand('copy') 回退；自动化可验证真实返回值与反馈，最终粘贴内容仍建议用户在目标浏览器手工确认。"
+    ]
+  },
+  "ai": {
+    "summary": "标准组件左侧组件引用与基础 WXML 都必须通过共享 CodeBlock helper 提供真实分段复制。",
+    "rules": [
+      "左侧每个代码段必须调用 previewCodeBlockSample 与 iconButtonSample，禁止手写原生复制按钮。",
+      "组件引用和基础 WXML 的复制文本必须从 previewCodeSectionSources/makeUsageCode 读取，禁止维护第二份源码。",
+      "复制必须根据 Clipboard API 或 execCommand 的真实返回值显示 Check/ErrorCircle，并同步 aria-label、title 与 aria-live。",
+      "分段复制只复制当前可见代码；带视觉环境和运行态注释的完整代码继续由顶部工具栏承担。",
+      "390px 与深浅色验收必须确认按钮可见、代码可滚动且页面无横向溢出。"
+    ],
+    "tags": ["preview-site", "code-block", "copy", "clipboard", "button", "icon", "accessibility", "single-source", "390px"]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0108",
+  "title": "Search 监听了 PUI Input 不存在的 input 与 confirm 事件",
+  "scope": "component",
+  "components": ["search", "input"],
+  "type": "bug",
+  "severity": "critical",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Search 必须在微信端真实接收输入、清空与确认，不得只让 H5 演示看起来可用。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "example", "installed-package"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查 search/search.wxml，旧实现把内部 pui-input 绑定为 bind:input 与 bind:confirm。",
+    "检查 input/input.js，PUI Input 的公开值事件为 change，键盘确认事件为 enter。",
+    "在微信组件树中输入或点击键盘确认，Search 对应处理器不会收到子组件事件；清空也只能发布 clear，Search 值链路不完整。"
+  ],
+  "expected": "Search 监听 Input 的真实 change/enter；输入发布一次 change，清空按 Input 的 clear 后 change 继续形成 Search 的 clear → change，确认发布 search。",
+  "actual": "Search 监听不存在的 input/confirm，因此原生输入、确认和清空值回写无法形成真实闭环。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件无需逐项确认，由 agent 在完整证据后自主连续验收。"},
+    {"kind": "file", "ref": "search/search.wxml", "note": "组合事件改为 bind:change 与 bind:enter，并继续监听 clear/focus/blur。"},
+    {"kind": "file", "ref": "input/input.js", "note": "Input 真实公开 change、clear、enter、focus 与 blur。"},
+    {"kind": "test", "ref": "scripts/test-search.js", "note": "专项静态与 VM 合同固定子组件事件名、清空顺序、受控边界和锁定状态。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/search", "note": "真实输入、清空、Enter、取消与父级回写均在 H5 同源镜像完成。"}
+  ],
+  "rootCause": "Search 组合层沿用了浏览器原生 input/confirm 命名，没有按内部 PUI Input 的公开 change/enter 合同接线，且旧测试未校验父子事件名一致性。",
+  "decision": {
+    "outcome": "Search 只监听 PUI Input 的 change/enter/clear/focus/blur；公开值事件收敛为 change，删除重复 input，并固定清空 clear → change。",
+    "rationale": "组合组件必须以依赖组件的真实公开事件为唯一输入，才能让源码、H5、示例和安装端共享同一生命周期。",
+    "alternativesRejected": [
+      "给 Input 增加重复 input/confirm 别名会扩大公共 API 并产生双事件风险。",
+      "在 Search 内监听原生 input 会穿透子组件边界并破坏 PUI Input 复用。",
+      "只修 H5 会继续让微信端保持不可用。"
+    ]
+  },
+  "impact": {
+    "files": ["search/search.js", "search/search.wxml", "scripts/test-search.js", "docs/components/SEARCH.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0108-search-child-event-mismatch.json"],
+    "dependencies": ["input", "button", "icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-search.js", "scripts/test-input-composition-coverage.js"],
+    "commands": ["node scripts/test-search.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "390px 页面真实输入 Button 搜索后 value 与 change 同步，清空得到 clear → change，Enter 得到 search，取消保持值不变。",
+      "disabled 与 readonly 均阻断输入、清空、确认和取消，并分别暴露 aria-disabled 与 aria-readonly。"
+    ],
+    "deviceRisks": [
+      "微信软键盘 confirm-type、原生焦点顺序、组件事件冒泡与读屏语义仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Search 组合 PUI Input 时必须监听 change/enter，禁止恢复 input/confirm。",
+    "rules": [
+      "修改复合组件前必须核对依赖组件实际 triggerEvent 名称。",
+      "Search 真实输入只公开 change，不生成重复 input。",
+      "清空必须保持 Input clear 后 change 到 Search clear → change 的顺序。"
+    ],
+    "tags": ["search", "input", "child-event", "clear-order", "native-bug"]
+  }
+}

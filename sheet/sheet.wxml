@@ -1,0 +1,40 @@
+<pui-popup
+  visible="{{innerVisible}}"
+  placement="bottom"
+  close-btn="{{false}}"
+  close-on-overlay-click="{{showOverlay}}"
+  show-overlay="{{showOverlay}}"
+  z-index="{{zIndex}}"
+  duration="{{duration}}"
+  reduce-motion="{{reduceMotion}}"
+  aria-label="{{ariaLabel || title}}"
+  custom-class="{{popupClass}}"
+  custom-style="{{popupStyle}}"
+  bind:visible-change="onPopupVisibleChange"
+>
+  <view class="pui-sheet__header">
+    <view
+      wx:if="{{showHandle}}"
+      class="pui-sheet__handle-area {{draggable && !disabled ? 'pui-sheet__handle-area--draggable' : ''}}"
+      aria-label="{{draggable ? '向下拖动关闭面板' : '面板拖拽柄'}}"
+      bindtouchstart="onDragStart"
+      catchtouchmove="onDragMove"
+      bindtouchend="onDragEnd"
+      bindtouchcancel="onDragCancel"
+    ><view class="pui-sheet__handle"></view></view>
+    <slot wx:if="{{customHeader}}" name="header"></slot>
+    <view wx:elif="{{showHeader}}" class="pui-sheet__header-row">
+      <view class="pui-sheet__title-area"><view wx:if="{{title}}" class="pui-sheet__title">{{title}}</view><view wx:if="{{description}}" class="pui-sheet__description">{{description}}</view></view>
+      <view wx:if="{{showClose}}" class="pui-sheet__header-action"><pui-button theme="default" variant="base" shape="circle" size="small" icon="close" icon-only disabled="{{disabled}}" aria-label="关闭底部面板" bind:click="onCloseTap" /></view>
+    </view>
+  </view>
+
+  <view class="pui-sheet__body" style="{{bodyStyle}}">
+    <scroll-view scroll-y class="pui-sheet__content {{stateType === 'content' ? 'pui-sheet__content--active' : ''}}" enable-flex bindscroll="onScroll"><slot><text class="pui-sheet__fallback">{{content}}</text></slot></scroll-view>
+    <view class="pui-sheet__state {{stateType === 'loading' ? 'pui-sheet__state--active' : ''}}"><pui-loading loading="{{stateType === 'loading'}}" text="{{loadingText}}" duration="{{motionDuration}}" easing="{{easing}}" reduce-motion="{{reduceMotion}}" /></view>
+    <view class="pui-sheet__state pui-sheet__state--error {{stateType === 'error' ? 'pui-sheet__state--active' : ''}}" catchtap="noop"><pui-empty description="{{errorText}}" icon="error-circle" reduce-motion="{{reduceMotion}}" /><pui-button theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" bind:click="onRetry">{{retryText}}</pui-button></view>
+    <view class="pui-sheet__state {{stateType === 'empty' ? 'pui-sheet__state--active' : ''}}"><pui-empty description="{{emptyText}}" icon="inbox" reduce-motion="{{reduceMotion}}" /></view>
+  </view>
+
+  <view wx:if="{{showFooter || customFooter}}" class="pui-sheet__footer"><view class="pui-sheet__footer-content"><slot name="footer"></slot></view></view>
+</pui-popup>

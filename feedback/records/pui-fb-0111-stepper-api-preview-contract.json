@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0111",
+  "title": "Stepper 公开合同混入重复事件、私有动效与误导 Slot",
+  "scope": "component",
+  "components": ["stepper", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Stepper 应像 TDesign 文档一样分区展示真实常见用法，API 克制、基础 WXML 最小且全部文字完整可读。",
+  "environment": {
+    "surfaces": ["h5-preview", "props-panel", "api-reference", "wxml-copy"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查旧 Stepper 合同，同时公开 input/change、duration/easing 和默认 Slot，但源码没有可信的单位 Slot 生命周期。",
+    "打开旧概览，只能看到单一加减壳和静态事件反馈，不能筛选主题、尺寸、边界、输入锁定与受控行为。",
+    "把 value 从受控值切回 null，旧 H5 无法稳定证明退控后延续最后一次受控值。"
+  ],
+  "expected": "Stepper 只公开数值步进所需 14 Props/4 Events/0 Slots/0 Methods，官网按基础、主题与尺寸、步长与边界、状态与输入分区，基础 WXML 零 bind。",
+  "actual": "重复事件、私有动效和默认 Slot 扩大公共面，单一演示无法证明真实输入、边界、受控回写和状态门禁。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API，并授权完整证据后自主验收。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "公开合同固定为 14 Props、4 Events、0 Slots、0 Methods。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增四区 Stepper snapshot、markup 与真实 runtime，复用 PUI Input/Button/Icon helper。"},
+    {"kind": "file", "ref": "docs/components/STEPPER.md", "note": "记录定位、受控边界、输入提交、边界事件、动效与 TDesign 取舍。"},
+    {"kind": "test", "ref": "scripts/test-stepper.js", "note": "专项合同覆盖源码、H5、metadata、API、示例、dist 与安装产物。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/stepper", "note": "390px 下实际操作全部 Props、严格值、输入提交、边界、外观和 API 全文。"}
+  ],
+  "rootCause": "旧 Stepper 在多轮演示补丁中把诊断事件、可配置动效和业务单位一起塞进原子组件，H5 又没有按真实源码构建分区状态机。",
+  "decision": {
+    "outcome": "对照 TDesign 1.15.3 收敛 Stepper 为 14 Props/4 Events/0 Slots/0 Methods；删除 input、duration/easing 和默认 Slot，补齐主题、尺寸、输入宽度、只读、严格退控与固定 500ms/1ms。",
+    "rationale": "Stepper 只负责一个数值的步进、输入与边界意图；单位和业务状态由消费者相邻组合，事件和动效保留单一真相源。",
+    "alternativesRejected": [
+      "照搬 TDesign 全部平台实现细节会引入 PoemUI 不需要的穿透参数。",
+      "保留 input/change 双事件会迫使消费者去重。",
+      "公开 duration/easing 会为固定状态反馈增加无必要配置面。",
+      "用静态事件 Cell 或提示文字代替父级回写不构成真实交互。"
+    ]
+  },
+  "impact": {
+    "files": ["stepper/stepper.js", "stepper/stepper.wxml", "stepper/stepper.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/STEPPER.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-stepper.js", "feedback/records/pui-fb-0111-stepper-api-preview-contract.json"],
+    "dependencies": ["inputControlSample", "iconButtonSample", "makeUsageCode"]
+  },
+  "verification": {
+    "tests": ["scripts/test-stepper.js", "scripts/test-design-contracts.js", "scripts/test-input-composition-coverage.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["node scripts/test-stepper.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "390px 下四个分区覆盖基础、三种主题、三档尺寸、小数步长、边界、disableInput、readonly、disabled 与受控实例；document scrollWidth/clientWidth 为 375/375。",
+      "value=0、false、空字符串均安全规整，value=null 退控延续最后一次受控值；inputWidth=200rpx 镜像为 100px。",
+      "API 完整展示 14 Props 与 4 Events，全部单元格 14px、自然换行，无 ellipsis、nowrap、裁切或页面横向溢出。",
+      "light/dark、border、shadow、frost、large-radius、gradient 全部实点，开关只改变视觉且 Stepper 几何保持 150×46px。"
+    ],
+    "deviceRisks": [
+      "微信数字键盘、focus/blur 顺序、浮点步长、rpx 中间帧、样式隔离、系统低动效和辅助技术仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Stepper 只承担数值步进与输入提交，单位和业务状态必须由消费者组合。",
+    "rules": [
+      "基础 Stepper WXML 不展示 bind 事件；事件全集只进入 API Events。",
+      "H5 必须复用 PUI Input/Button/Icon 并保持受控、退控、输入提交和边界同源。",
+      "不得恢复重复 input、duration/easing、默认 Slot 或假事件面板。",
+      "API 表格必须完整换行展示，Props 面板演示范围不得冒充组件 API 边界。"
+    ],
+    "tags": ["stepper", "tdesign", "api-contract", "controlled", "preview-parity"]
+  }
+}

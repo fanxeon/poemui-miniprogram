@@ -1,0 +1,165 @@
+.pui-switch {
+  position: relative;
+  display: inline-flex;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 92rpx;
+  height: 56rpx;
+  overflow: hidden;
+  color: var(--pui-text-secondary);
+  font-family: var(--pui-font-family-sans);
+  background: var(--pui-bg-active);
+  border: 2rpx solid var(--pui-border-color);
+  border-radius: var(--pui-radius-round);
+  transition: color var(--pui-switch-duration) var(--pui-ease-standard), background-color var(--pui-switch-duration) var(--pui-ease-standard), border-color var(--pui-switch-duration) var(--pui-ease-standard), opacity var(--pui-switch-duration) var(--pui-ease-standard);
+}
+
+.pui-switch--hover {
+  opacity: 0.78;
+}
+
+.pui-switch__thumb {
+  position: absolute;
+  top: var(--pui-space-step-3);
+  left: var(--pui-space-step-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 42rpx;
+  height: 42rpx;
+  color: var(--pui-text-primary);
+  background: var(--pui-glass-surface-strong);
+  border: 1rpx solid var(--pui-glass-border);
+  border-radius: var(--pui-radius-round);
+  box-shadow: var(--pui-glass-shadow-soft);
+  transform: translateX(0);
+  transition: color var(--pui-switch-duration) var(--pui-ease-standard), background-color var(--pui-switch-duration) var(--pui-ease-standard), border-color var(--pui-switch-duration) var(--pui-ease-standard), transform var(--pui-switch-duration) var(--pui-ease-standard);
+}
+
+.pui-switch--checked {
+  color: var(--pui-text-inverse);
+  background: var(--pui-color-brand);
+  border-color: var(--pui-color-brand);
+}
+
+.pui-switch--checked .pui-switch__thumb {
+  color: var(--pui-color-brand);
+  transform: translateX(40rpx);
+}
+
+.pui-switch__status {
+  position: absolute;
+  top: 0;
+  right: var(--pui-space-step-5);
+  bottom: 0;
+  left: var(--pui-space-step-24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 24rpx;
+  font-weight: var(--pui-font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  transition: right var(--pui-switch-duration) var(--pui-ease-standard), left var(--pui-switch-duration) var(--pui-ease-standard);
+}
+
+.pui-switch--checked .pui-switch__status {
+  right: var(--pui-space-step-24);
+  left: var(--pui-space-step-5);
+}
+
+.pui-switch--label {
+  width: 112rpx;
+}
+
+.pui-switch--label.pui-switch--checked .pui-switch__thumb {
+  transform: translateX(60rpx);
+}
+
+.pui-switch--small {
+  width: 76rpx;
+  height: 44rpx;
+}
+
+.pui-switch--small .pui-switch__thumb {
+  top: var(--pui-space-xxs);
+  left: var(--pui-space-xxs);
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.pui-switch--small.pui-switch--checked .pui-switch__thumb {
+  transform: translateX(34rpx);
+}
+
+.pui-switch--small.pui-switch--label {
+  width: 96rpx;
+}
+
+.pui-switch--small.pui-switch--label.pui-switch--checked .pui-switch__thumb {
+  transform: translateX(54rpx);
+}
+
+.pui-switch--small .pui-switch__status {
+  right: var(--pui-space-xs);
+  left: var(--pui-space-step-19);
+  font-size: 24rpx;
+}
+
+.pui-switch--small.pui-switch--checked .pui-switch__status {
+  right: var(--pui-space-step-19);
+  left: var(--pui-space-xs);
+}
+
+.pui-switch--large {
+  width: 108rpx;
+  height: 64rpx;
+}
+
+.pui-switch--large .pui-switch__thumb {
+  top: var(--pui-space-step-3);
+  left: var(--pui-space-step-3);
+  width: 50rpx;
+  height: 50rpx;
+}
+
+.pui-switch--large.pui-switch--checked .pui-switch__thumb {
+  transform: translateX(48rpx);
+}
+
+.pui-switch--large.pui-switch--label {
+  width: 132rpx;
+}
+
+.pui-switch--large.pui-switch--label.pui-switch--checked .pui-switch__thumb {
+  transform: translateX(72rpx);
+}
+
+.pui-switch--large .pui-switch__status {
+  right: var(--pui-space-sm);
+  left: var(--pui-space-xxl);
+  font-size: 24rpx;
+}
+
+.pui-switch--large.pui-switch--checked .pui-switch__status {
+  right: var(--pui-space-xxl);
+  left: var(--pui-space-sm);
+}
+
+.pui-switch--readonly {
+  border-style: dashed;
+}
+
+.pui-switch--disabled,
+.pui-switch--loading {
+  color: var(--pui-text-disabled);
+  opacity: 0.48;
+}
+
+.pui-switch--reduced-motion,
+.pui-switch--reduced-motion .pui-switch__thumb,
+.pui-switch--reduced-motion .pui-switch__status {
+  transition-duration: 1ms;
+}

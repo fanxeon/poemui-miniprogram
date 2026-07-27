@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0184",
+  "title": "SwipeCell H5 动作层引用未定义的反色文字 Token",
+  "scope": "component",
+  "components": ["swipe-cell", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "每个组件的 H5 预览必须使用完整的 PUI Token，完整检查不能因未定义 CSS 变量而失败。",
+  "environment": {
+    "surfaces": ["h5-preview", "style-token-contract"],
+    "platforms": ["node", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "完成 SwipeCell H5 动作层重构后执行 npm run check。",
+    "test-preview-css-token-contract.js 扫描 preview/styles.css，报告 --text-inverse 没有定义且没有 fallback。",
+    "定位 .pui-swipe-cell-preview__action-wrap 使用 var(--text-inverse)，而现有跨端反色语义 Token 是 --pui-text-on-inverse。"
+  ],
+  "expected": "SwipeCell 的动作层文字应使用已定义的 PUI 语义 Token，浅深色下都可计算且通过全样式表 Token 合同。",
+  "actual": "样式使用了不存在的 --text-inverse，导致全库 CSS Token 门禁失败，且在不同主题下可能解析为不透明的继承色。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户授权本 Goal 后续组件按完整联网、浏览器与门禁证据自主连续验收。"},
+    {"kind": "build", "ref": "npm run check", "note": "2026-07-20 首次完整检查在 test-preview-css-token-contract.js 报告唯一未定义变量 --text-inverse。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "动作层规则已改用既有 --pui-text-on-inverse；该 Token 在 root 的浅深色语义定义中存在。"},
+    {"kind": "test", "ref": "scripts/test-preview-css-token-contract.js", "note": "全站样式扫描作为修复后的回归门禁。"}
+  ],
+  "rootCause": "SwipeCell H5 动作层新增时沿用了未纳入 PoemUI Token 体系的缩写变量名，未在首次局部专项测试中触发全站样式变量扫描。",
+  "decision": {
+    "outcome": "统一改为 var(--pui-text-on-inverse)，不新增 --text-inverse 别名或页面私有 fallback。",
+    "rationale": "反色文字已经有跨端语义 Token；复用它可以保持主题、可读性与全库 Token 扫描的一致性。",
+    "alternativesRejected": [
+      "临时定义 --text-inverse，会制造与现有 --pui-text-on-inverse 重复的 Token。",
+      "给 var(--text-inverse) 增加局部 fallback，会掩盖未接入设计 Token 的根因。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "feedback/records/pui-fb-0184-swipe-cell-preview-token-contract.json"],
+    "dependencies": ["PUI theme tokens", "preview CSS token contract", "SwipeCell action layer"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-css-token-contract.js", "scripts/test-swipe-cell.js"],
+    "commands": ["npm run check", "npm run feedback:generate", "npm run feedback:check"],
+    "browser": ["SwipeCell 动作层已在 390x844 的 light/dark 外观切换中真实显示；修复仅替换为同一反色语义 Token，不改变展开、拖拽或动作点击路径。"],
+    "deviceRisks": ["合法 AppID 真机仍需核验微信 WXSS 对自定义属性、动作层样式隔离和深色反色文字的最终呈现。"]
+  },
+  "ai": {
+    "summary": "H5 组件样式只能使用已定义的 PUI 语义 Token，不能用页面私有缩写绕过 Token 合同。",
+    "rules": [
+      "修改 preview/styles.css 后必须运行全样式表 Token 扫描，不以局部组件测试替代。",
+      "存在同义 PUI Token 时必须复用，不新增缩写别名或 fallback 掩盖未定义变量。",
+      "Token 修复后仍要复核对应组件的 light/dark 实际交互，不能只把静态扫描绿灯当成视觉验收。"
+    ],
+    "tags": ["swipe-cell", "css-token", "preview-parity", "theme", "regression"]
+  }
+}

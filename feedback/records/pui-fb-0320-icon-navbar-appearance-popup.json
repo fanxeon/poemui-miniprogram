@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0320",
+  "title": "Icon 独立页 Navbar 增加返回与外观菜单双操作",
+  "scope": "component",
+  "components": ["icon", "navbar", "popup", "switch", "config-provider", "miniprogram"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Icon 独立页的 Navbar 与主页保持同一操作模型，提供一个真实返回按钮和一个菜单按钮；菜单打开可修改并持久化全局外观的底部 Card Popup，并在 Header 左侧提供恢复默认图标按钮。",
+  "environment": {
+    "surfaces": ["miniprogram-component-page"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "从首页进入 miniprogram/pages/components/icon/index。",
+    "原 Navbar 仅使用默认 leftArrow 返回，没有独立菜单入口。",
+    "用户无法在 Icon 浏览路径中直接打开主页已有的外观设置 Popup。"
+  ],
+  "expected": "Icon Navbar 在不占用微信系统胶囊右轨的前提下展示返回与菜单两个独立 PUI 图标按钮；菜单打开受控 bottom Card Popup，遮罩和默认关闭按钮可真实关闭，Header 左侧重置可恢复公开默认配置，所有 Switch、重置均通过共享 Store 或页面画布偏好持久化并立即作用于当前页。",
+  "actual": "Icon 页只有默认返回箭头；外观设置只能返回首页后再打开，组件浏览动线被中断。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务对话", "note": "用户明确要求当前页面 Navbar 像主页一样有返回和菜单两个按钮，菜单弹出外观选择 Popup。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/icon/index.wxml", "note": "Icon Navbar 左 Slot 等分组合 chevron-left 返回与 menu 两个 PUI Button/Icon，并像首页一样分别直接 bind:click 到独立页面方法；页面内使用受控 bottom Popup 组合七项外观设置。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/icon/index.js", "note": "页面订阅 visualConfig 与画布偏好，处理 Popup visible-change、单项设置、渐变和果味组合。"},
+    {"kind": "file", "ref": "miniprogram/styles/component-page.wxss", "note": "共享页面壳以 PUI Token 定义胶囊左轨双操作布局和中性页面渐变。"},
+    {"kind": "file", "ref": "docs/components/NAVBAR.md", "note": "capsule=true 时右轨必须留给系统胶囊；多个自定义操作应在左 Slot 镜像轨内组合。"},
+    {"kind": "file", "ref": "docs/components/POPUP.md", "note": "Popup 受控 visible-change、bottom placement、唯一 Surface、关闭与滚动防护合同。"},
+    {"kind": "file", "ref": "miniprogram/components/component-page-navbar/component-page-navbar.wxml", "note": "共享详情页 Navbar 的 bottom Card Popup 在 Header 左侧组合 PUI refresh 重置按钮，右侧保留 Popup 默认关闭按钮。"},
+    {"kind": "file", "ref": "miniprogram/components/component-page-navbar/component-page-navbar.js", "note": "重置同时调用 visualConfig.reset 与页面画布偏好 false，继续复用全局 Store 和本地持久化。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-component-pages.js", "note": "锁定双按钮几何语义、Card Popup、PUI 重置按钮、共享 Store 订阅、七项设置、果味推导和真实关闭回写。"}
+  ],
+  "rootCause": "基础组件独立页初版只替换了首页搜索入口为默认返回箭头，没有把首页后来确立的双操作 Navbar 与外观 Popup 用户动线同步到 Icon 浏览页。",
+  "decision": {
+    "outcome": "Icon 页关闭 Navbar 默认 leftArrow，在胶囊镜像左 Slot 中等分放置 chevron-left 返回与 menu 两个 PUI 图标按钮；完全沿用首页双按钮的直接 bind:click 结构，返回绑定 onBack、菜单绑定 onOpenAppearance。菜单打开与首页同合同的 bottom Card Popup；Header 左侧 theme=primary 的 PUI refresh 按钮执行 visualConfig.reset 与背景渐变关闭。组件视觉写入 visualConfig，页面渐变复用持久化画布偏好，果味由实际组合推导。",
+    "rationale": "Navbar 的 capsule 合同禁止在系统胶囊右轨叠加业务按钮；左侧镜像轨已经被主页验证可承载两个独立操作。复用 Popup、Cell、Switch 与 visualConfig 可保持当前路径完整且不创建页面私有视觉状态。",
+    "alternativesRejected": [
+      "把菜单放进 Navbar right Slot 会与 capsule=true 的微信系统胶囊职责冲突。",
+      "保留默认返回并把菜单放到内容区会让页面级外观入口与主页位置不一致。",
+      "复制一份页面私有主题对象或静态 Switch 会绕过 visualConfig 的持久化和 Provider 订阅。",
+      "用 Overlay 或自制面板替代 Popup 会重复遮罩、关闭、滚动防护与 Surface 职责。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/components/component-page-navbar/component-page-navbar.json", "miniprogram/components/component-page-navbar/component-page-navbar.wxml", "miniprogram/components/component-page-navbar/component-page-navbar.js", "miniprogram/pages/components/icon/index.wxml", "miniprogram/pages/components/icon/index.js", "miniprogram/pages/components/icon/index.json", "miniprogram/styles/component-page.wxss", "miniprogram/pages/index/index.wxml", "scripts/test-miniprogram-component-pages.js", "docs/MINIPROGRAM_HOME.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0320-icon-navbar-appearance-popup.json"],
+    "dependencies": ["pui-navbar", "pui-button", "pui-icon", "pui-popup", "pui-cell-group", "pui-cell", "pui-switch", "visualConfig", "page-background-preference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-component-pages.js", "scripts/test-miniprogram-home.js", "scripts/test-navbar.js", "scripts/test-popup.js", "scripts/test-config-provider.js", "scripts/test-switch.js", "scripts/test-page-background-preference.js"],
+    "commands": ["node scripts/test-miniprogram-component-pages.js", "node scripts/test-miniprogram-home.js", "node scripts/test-navbar.js", "node scripts/test-popup.js", "node scripts/test-config-provider.js", "node scripts/test-switch.js", "node scripts/test-page-background-preference.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "当前微信开发者工具热重载"],
+    "browser": ["2026-07-24：Card 版共享 Popup 与 Header 左侧重置按钮完成后，须仅使用当前已打开的微信开发者工具 RC 2.02.2607161 自动热重载复核；历史无卡 Popup 验收不能替代本次 Card 形态和重置入口的可视验证。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认原生胶囊镜像左轨内双按钮触摸区、Card Popup backdrop-filter 合成、安全区、重置后 storage 写回、软键盘与菜单切换、深浅色及读屏。"]
+  },
+  "ai": {
+    "summary": "带微信系统胶囊的独立页需要两个自定义 Navbar 操作时，应在左侧镜像轨内组合独立 PUI 图标按钮；外观菜单复用受控 bottom Popup 与共享 visualConfig。",
+    "rules": [
+      "capsule=true 时禁止在 Navbar right Slot 放业务按钮；返回和菜单等多个操作应在左 Slot 镜像轨内等分组合。",
+      "每个 Navbar 操作使用独立 PUI Button + Icon、准确 ariaLabel，并像首页一样在 Button 上直接 bind:click；Icon 页返回使用 chevron-left 并调用共享 onBack，菜单使用 menu 并调用 onOpenAppearance。",
+      "外观 Popup 使用 placement=bottom、card=true、showHeader、closeBtn、blurOverlay、preventScrollThrough，并由 visible-change 回写受控状态；Card 只由 Popup 本身提供。",
+      "边框、阴影、毛玻璃、大圆角与主题只写 visualConfig；渐变只作用页面画布；果味 checked 由真实组合推导。",
+      "Header 左侧重置使用 theme=primary 的 PUI Button + refresh Icon，同时调用 visualConfig.reset 与画布偏好 false；不要复制页面私有默认外观对象。"
+    ],
+    "tags": ["miniprogram", "icon", "navbar", "appearance", "popup", "visual-config", "capsule"]
+  }
+}

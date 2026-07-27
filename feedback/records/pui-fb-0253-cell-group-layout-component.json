@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0253",
+  "title": "CellGroup 作为 Cell 体系内部布局组件",
+  "scope": "component",
+  "components": ["cell", "popup", "preview-site"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "多个 Cell 需要有统一的标题、间距和卡片外观，并且这套分组能力要能在小程序和官网预览中复用。",
+  "environment": {
+    "surfaces": ["Cell 小程序组件", "Popup H5 预览", "微信示例"],
+    "platforms": ["browser", "wechat-miniprogram-source"],
+    "viewports": ["390x844 browser", "desktop browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "查看 Popup 预览中的多个 Cell；内容组和配置组此前由页面重复拼接 pui-cell-group HTML。",
+    "在小程序端尝试复用同一分组结构时，仓库没有 cell-group 组件路径，标题、间距和卡片外观只能由消费者重复实现。"
+  ],
+  "expected": "Cell 体系提供不占顶层组件编号的 cell/cell-group 布局组件；title/description 位于列表上方，card 统一提供圆角卡片、边界和连续 Cell 行，card=false 只提供分组间距，业务交互仍由组内 Cell 和父级承担。",
+  "actual": "仓库只有 Cell，预览中的 pui-cell-group 只是页面私有 HTML 结构，无法在小程序端直接复用，也没有统一的 card/title 语义。",
+  "evidence": [
+    {"kind": "file", "ref": "cell/cell-group.js", "note": "新增 title/description/card/bordered/ariaLabel 与真实 Slot 结构，CellGroup 不接管业务事件。"},
+    {"kind": "file", "ref": "cell/cell-group.wxss", "note": "card 模式使用 PUI radius、background、border Token，组内 Cell 透明并由分组根裁切圆角。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Popup 改用共享 cellGroupSample，内容组和外部配置组保持独立语义。"},
+    {"kind": "test", "ref": "scripts/test-cell-group.js", "note": "覆盖 0/false 标题、card/bordered 类、Slot、Token 与 H5 镜像。"}
+  ],
+  "rootCause": "Cell 只有单行职责，项目此前把集合分组当作页面私有结构，没有把标题、Surface 和连续行边界抽成 Cell 家族内部布局能力。",
+  "decision": {
+    "outcome": "新增 cell/cell-group 四件套并纳入 Cell 专项测试；不加入 metadata/packageComponents，不新增目录编号或独立官网路由。",
+    "rationale": "CellGroup 是 Cell 的布局组合能力而非独立业务组件；内部路径可供小程序复用，同时避免组件目录和 API 规模膨胀。",
+    "alternativesRejected": [
+      "继续在 Popup 或页面内手写 pui-cell-group HTML：小程序端无法复用，标题和卡片规则会继续漂移。",
+      "把 CellGroup 作为顶层发布组件：会污染组件目录、编号和 TDesign 对照队列，超出当前用户目标。",
+      "让 Cell 自己承担分组标题和兄弟布局：会破坏 Cell 单行语义并增加不可组合的隐式状态。"
+    ]
+  },
+  "impact": {
+    "files": ["cell/cell-group.js", "cell/cell-group.json", "cell/cell-group.wxml", "cell/cell-group.wxss", "miniprogram_dist/cell/cell-group.js", "preview/app.js", "preview/styles.css", "_example/miniprogram/pages/components/index.json", "_example/miniprogram/pages/components/index.wxml", "scripts/test-cell-group.js", "docs/COMPONENT_API.md", "docs/components/CELL.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md"],
+    "dependencies": ["Cell Slot composition", "Preview cellGroupSample", "PUI theme tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-cell-group.js", "scripts/test-cell.js", "scripts/test-popup.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["Popup 预览使用共享 CellGroup 镜像，内容组与外部配置组不混合；后续需在 390px、深浅色和卡片开关下完成真实页面复核。"],
+    "deviceRisks": ["合法 AppID 真机仍需复核 styleIsolation: shared 下组根对内部 pui-cell 的透明 Surface、圆角裁切、Slot 投影、rpx 行高和辅助技术朗读。"]
+  },
+  "ai": {
+    "summary": "CellGroup 是 Cell 体系的布局组件，不是新的业务组件；它统一标题、间距和可选 card Surface，不能接管组内 Cell 的状态或事件。",
+    "rules": [
+      "CellGroup 默认只负责布局；card=true 才建立一次圆角卡片 Surface，组内 Cell 不再各自形成卡片。",
+      "CellGroup 不加入顶层 metadata、目录编号或组件搜索；小程序通过 cell/cell-group 路径复用。",
+      "不同语义层的 Cell 必须分成不同 CellGroup，弹窗内容与外部演示配置不能混组。"
+    ],
+    "tags": ["cell", "cell-group", "layout", "card-surface", "popup-preview"]
+  }
+}

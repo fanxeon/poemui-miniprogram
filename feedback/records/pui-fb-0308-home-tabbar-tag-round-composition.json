@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0308",
+  "title": "首页未启用 Tabbar 已有 tag 与 round 视觉形态",
+  "scope": "component",
+  "components": ["tabbar", "miniprogram-home"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页底部导航不应退化为弱短指示器，应调用 PUI Tabbar 已有的更完整视觉形态，同时保持四等分、安全区、非 fixed 根布局和真实禁用语义。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "wechat-component"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页并观察底部四项纯图标 Tabbar。",
+    "旧页面显式传入 theme=normal 与 shape=normal，只有短活动指示器，未调用组件已提供的 tag 活动形态与 round 容器形态。"
+  ],
+  "expected": "首页通过真实 PUI Props 使用 tag 活动弱色背景与 round 容器，外层以 Token 化页面内距承托，同时四项仍在组件内等分、非首页项禁用且 safe area 由 Tabbar 自身处理。",
+  "actual": "组件具备可用形态，但首页把它固定为 normal/normal，视觉表现弱于可复用组件已有能力。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户指出当前 Tabbar 不如原先好看，并要求调用组件自身形态。"},
+    {"kind": "file", "ref": "docs/components/TABBAR.md", "note": "合同明确 shape=round 是容器形状，theme=tag 是活动项视觉主题，二者职责独立。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "首页消费 theme=tag、shape=round、safe-area-inset-bottom 与非 fixed。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxss", "note": "home-tabbar 只提供 Token 化页面内距，不参与横向等分或活动项视觉。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项锁定 tag/round 消费、非 fixed 测量包装器和 Token 化承托。"}
+  ],
+  "rootCause": "首页初版遵循 normal 全宽要求而显式固定 normal/normal，后来纯图标等分修复完成后没有重新采用组件现有的活动与容器形态。",
+  "decision": {
+    "outcome": "首页 Tabbar 改为 theme=tag + shape=round；home-tabbar 保持用于真实高度测量的普通 view，并仅使用 panel/content Token 提供外部留白。",
+    "rationale": "theme 和 shape 是 Tabbar 已公开且已测试的组件 API；页面只承担卡片在根布局中的摆放，四等分、选中、禁用、安全区和外观开关继续由组件负责。",
+    "alternativesRejected": [
+      "在 normal 主题上手写活动背景或圆角会复制 Tabbar 的视觉能力。",
+      "用 fixed 让圆角卡片悬浮会破坏现有三行根布局和真实剩余高度测量。",
+      "修改 Tabbar 共享源码不必要，因为 tag/round 合同已存在。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.wxml", "miniprogram/pages/index/index.wxss", "scripts/test-miniprogram-home.js", "docs/MINIPROGRAM_HOME.md", "feedback/records/pui-fb-0308-home-tabbar-tag-round-composition.json"],
+    "dependencies": ["pui-tabbar theme=tag", "pui-tabbar shape=round", "Tabbar safeAreaInsetBottom"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js", "scripts/test-tabbar.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "node scripts/test-tabbar.js", "npm run feedback:generate", "npm run feedback:check", "微信开发者工具普通编译"],
+    "browser": ["合法 AppID wx23aa017375535746 的微信开发者工具 RC 2.02.2607161、iPhone 12/13 390px 模拟器普通编译后确认了 round 容器、tag 活动弱色面、四项等分及底部安全区；点击 disabled 的任务后首页仍保持选中。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 round 容器在不同安全区、全局 bordered/shadow/frostedGlass/largeRadius 与字体回流下的视觉和触摸区。"]
+  },
+  "ai": {
+    "summary": "页面想要更完整 Tabbar 视觉时优先组合已公开 theme 与 shape；页面只提供 Token 化摆放，不重写组件活动态或等分几何。",
+    "rules": [
+      "Tabbar 的 theme=tag 与 shape=round 职责不同，允许组合使用，不要用页面 CSS 模拟。",
+      "非 fixed 的三行根布局仍由普通 view 测量 Tabbar 高度，round 外部留白不能变成 fixed 或横向补丁。",
+      "页面组合既有 Tabbar Props 不改变共享组件 API 时，不为同步而改 H5 组件预览。"
+    ],
+    "tags": ["tabbar", "tag", "round", "miniprogram-home", "visual-composition"]
+  }
+}

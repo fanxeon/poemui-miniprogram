@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0027",
+  "title": "Dialog 不再把 loading/error/retry 伪装为根级公开状态",
+  "scope": "component",
+  "components": ["dialog", "loading", "empty", "popup"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-20",
+  "userGoal": "Dialog 只负责确认与承载关键内容；请求状态由内容 Slot 组合真实 PUI Loading、Empty、Button 和父级业务回写，不能留下伪状态 API。",
+  "environment": {
+    "surfaces": ["miniprogram", "h5-preview", "api-reference", "example"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["393px PreviewDevice", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Dialog 曾公开 error、retryText 等请求状态，并把重试操作塞入 Header/Content。",
+    "在线对照 TDesign Dialog 固定包后，其公开边界是 visible、标题/内容、actions、遮罩和关闭，不包含请求状态机。"
+  ],
+  "expected": "Dialog 只公开确认对话框的显隐、内容、动作、遮罩和关闭合同；复杂 Loading、Empty、错误和 Retry 由 content/middle/actions Slot 消费者组合。",
+  "actual": "旧根级状态会把业务请求结果与 Dialog 容器混为一谈，并产生无法由组件真实完成的成功或重试暗示。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续组件无需逐项确认，由 agent 在完整证据和门禁后自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/dialog", "note": "2026-07-20 实点具名插槽场景，content 使用 PUI Cell 与 Badge；确认和 action 均不伪造业务成功。"},
+    {"kind": "file", "ref": "dialog/dialog.js", "note": "当前公开 Props 为 16 项，不含 error/loading/retryText。"},
+    {"kind": "file", "ref": "dialog/dialog.wxml", "note": "当前只投影 top/title/content/middle/actions/cancel-btn/confirm-btn 七个真实具名 Slot。"},
+    {"kind": "test", "ref": "scripts/test-dialog.js", "note": "专项合同禁止旧请求状态 Props，并锁定 Slot 组合边界。"}
+  ],
+  "rootCause": "早期将页面请求状态当作 Dialog 自身状态，导致容器 API 扩张并和 TDesign 的确认对话框边界不一致。",
+  "decision": {
+    "outcome": "移除根级 loading/error/empty/retry 与 Header Retry 规则；内容状态统一由消费者在公开 Slot 中组合，Dialog 保留有界 Content 布局和关闭事件。",
+    "rationale": "业务请求归属父级，Dialog 只提供可组合 Surface，才能避免 fake success 与重复状态机。",
+    "alternativesRejected": [
+      "保留 error/retryText 并换一个位置展示，仍会继续扩大容器 API。",
+      "让 Dialog 自动把 Retry 写成成功或关闭，违背父级业务回写边界。",
+      "为旧状态保留兼容别名会误导新调用方。"
+    ]
+  },
+  "impact": {
+    "files": ["dialog/dialog.js", "dialog/dialog.wxml", "dialog/dialog.wxss", "preview/app.js", "docs/components/DIALOG.md", "docs/COMPONENT_API.md", "scripts/test-dialog.js"],
+    "dependencies": ["popup", "loading", "empty", "button"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "npm run feedback:generate", "npm run feedback:check"],
+    "browser": ["2026-07-20 API 实际显示 16 Props、5 Events、7 Slots、close()；不再出现根级 loading/error/retry，插槽场景保持真实 PUI 组合。"],
+    "deviceRisks": ["微信端复杂 Slot 的动态高度、滚动、读屏与样式隔离仍需合法 AppID 真机复核。"]
+  },
+  "ai": {
+    "summary": "Dialog 是确认 Surface，不是请求状态容器；状态必须通过具名 Slot 与父级业务组合。",
+    "rules": ["不得为 Dialog 新增 loading/error/empty/retry 根 Props。", "需要请求状态时在 content/middle/actions Slot 组合 PUI Loading、Empty、Button。", "confirm/action 只能请求业务处理，不得自动写成功或关闭。"],
+    "tags": ["dialog", "api-contract", "slots", "loading", "error", "retry", "no-fake-success"]
+  }
+}

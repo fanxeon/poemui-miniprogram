@@ -1,0 +1,23 @@
+<view
+  wx:if="{{rendered && preventScrollThrough}}"
+  class="{{rootClass}} {{entered ? 'pui-overlay-layer--entered' : ''}} {{customClass}}"
+  style="{{layerStyle}} {{customStyle}}"
+  role="button"
+  aria-label="{{semanticLabel}}"
+  aria-hidden="{{!entered}}"
+  catchtouchmove="noop"
+  bind:tap="onTap"
+>
+  <slot></slot>
+</view>
+<view
+  wx:elif="{{rendered}}"
+  class="{{rootClass}} {{entered ? 'pui-overlay-layer--entered' : ''}} {{customClass}}"
+  style="{{layerStyle}} {{customStyle}}"
+  role="button"
+  aria-label="{{semanticLabel}}"
+  aria-hidden="{{!entered}}"
+  bind:tap="onTap"
+>
+  <slot></slot>
+</view>

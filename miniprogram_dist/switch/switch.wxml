@@ -1,0 +1,24 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="switch"
+  aria-label="{{semanticLabel}}"
+  aria-checked="{{innerChecked}}"
+  aria-disabled="{{disabled || loading}}"
+  aria-busy="{{loading}}"
+  aria-readonly="{{readonly}}"
+  hover-class="{{interactive ? 'pui-switch--hover' : 'none'}}"
+  catchtap="onTrackTap"
+>
+  <view wx:if="{{statusText}}" class="pui-switch__status" aria-hidden="true">{{statusText}}</view>
+  <view class="pui-switch__thumb" aria-hidden="true">
+    <pui-loading
+      wx:if="{{loading}}"
+      size="{{iconSize}}"
+      inherit-color="{{true}}"
+      aria-label="开关处理中"
+      reduce-motion="{{reduceMotion}}"
+    />
+    <pui-icon wx:elif="{{thumbIcon}}" name="{{thumbIcon}}" size="{{iconSize}}" />
+  </view>
+</view>

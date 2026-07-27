@@ -1,0 +1,100 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0036",
+  "title": "Dialog 默认取消操作不应使用线框按钮",
+  "scope": "component",
+  "components": ["dialog", "button", "h5-preview"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "让 Dialog 默认 Cancel 使用正常的中性按钮，不以 outline 线框制造额外边界；Confirm 继续用主色表达主要动作。",
+  "environment": {
+    "surfaces": ["dialog", "h5-preview", "miniprogram"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Dialog 默认动作示例，观察 Footer 中 Cancel 与 Confirm 两个按钮。",
+    "检查 dialog/dialog.wxml，确认默认 Cancel 显式写入 variant=outline。",
+    "检查 preview/app.js，确认 H5 默认 Cancel 同样传入 variant: outline。"
+  ],
+  "expected": "默认 Cancel 消费 PUI Button 的普通 base 中性样式，默认 Confirm 使用 primary base；层级由中性与主色表达，尺寸、对齐和 Footer 等距规则不变。",
+  "actual": "默认 Cancel 在小程序和 H5 两端都被硬编码为 outline，导致次要动作依赖额外线框建立层级，与当前克制边框的视觉偏好不一致。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确决定此场景不要 outline，使用正常按钮即可。"
+    },
+    {
+      "kind": "file",
+      "ref": "dialog/dialog.wxml",
+      "note": "默认 Cancel 已移除显式 outline，继续复用 PUI Button 默认 base 变体。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 Dialog 默认 Cancel 已同步移除 outline 参数。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dialog.js",
+      "note": "专项测试锁定源码、H5、dist、示例 node_modules 和微信 miniprogram_npm 的默认 Cancel 不得恢复 outline。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/dialog",
+      "note": "真实预览中 Cancel 为 default/base，Confirm 为 primary/base；浅色与深色均同为 130×44px，主题切换后层级清楚且没有 outline 变体。"
+    }
+  ],
+  "rootCause": "旧实现把次要操作默认等同于 outline；但 Dialog 已有明确的中性 Cancel 与主色 Confirm 层级，线框不是区分主次所必需，还会增加视觉边界。",
+  "decision": {
+    "outcome": "移除小程序 WXML 与 H5 镜像中默认 Cancel 的 outline 设置，让它使用 Button 默认 base 中性样式；Confirm 保持 primary base。自定义 actions 数组和 actions Slot 仍可由调用者显式选择 variant。",
+    "rationale": "默认动作应提供克制且稳定的主次层级。中性与主色已足够表达 Cancel/Confirm，去掉线框也符合边框总开关与 Less is more 原则，不改变按钮尺寸、操作区等距或业务语义。",
+    "alternativesRejected": [
+      "继续固定 outline 会把某种视觉偏好误当成取消操作的语义合同。",
+      "把 Cancel 改成 text 会进一步削弱点击面积和动作重量，不符合 Footer 双操作的并列可操作性。",
+      "同时改动自定义 actions 会越过调用者已经公开的视觉配置边界。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "dialog/dialog.wxml",
+      "preview/app.js",
+      "docs/components/DIALOG.md",
+      "docs/COMPONENT_API.md",
+      "scripts/test-dialog.js",
+      "CHANGELOG.md",
+      "feedback/records/pui-fb-0036-dialog-default-cancel-normal-button.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md",
+      "miniprogram_dist/dialog/dialog.wxml"
+    ],
+    "dependencies": ["button", "preview-device"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js", "scripts/test-design-contracts.js", "scripts/test-layout-contracts.js"],
+    "commands": ["node scripts/test-dialog.js", "npm run miniprogram:build", "npm run example:install", "微信开发者工具 CLI build-npm", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run pack:check"],
+    "browser": [
+      "Dialog 默认可见态：浅色 Cancel 为 default/base 白色中性面，Confirm 为 primary/base 深色主面，二者均为 130×44px。",
+      "深色模式：Cancel 为 default/base #18181b 中性面，Confirm 为 primary/base #fafafa 主面，二者仍为 130×44px；验证后恢复浅色。"
+    ],
+    "deviceRisks": [
+      "微信 CLI 已使用 touristappid 完成 build-npm 且 0 warnings，源码、dist、示例安装和 miniprogram_npm 一致；合法 AppID 真机的最终视觉仍需消费者在实际主题和业务文案下验收。"
+    ]
+  },
+  "ai": {
+    "summary": "Dialog 默认 Cancel 使用普通中性 PUI Button，默认 Confirm 使用主色 Button；不要把 outline 当成取消动作的固定语义。",
+    "rules": [
+      "生成 Dialog 默认 Footer 时，Cancel 不传 outline，Confirm 使用 primary base。",
+      "Cancel 与 Confirm 的主次层级由中性/主色表达，继续保持同尺寸和共享 Footer gap。",
+      "自定义 actions 或 actions Slot 可以显式配置 variant，默认合同不得覆盖调用者选择。",
+      "小程序和 H5 镜像必须同步，专项测试要阻止默认 outline 回归。"
+    ],
+    "tags": ["dialog", "cancel", "button", "outline", "base", "footer", "visual-hierarchy", "design-decision"]
+  }
+}

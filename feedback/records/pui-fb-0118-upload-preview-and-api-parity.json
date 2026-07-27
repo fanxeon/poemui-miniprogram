@@ -1,0 +1,78 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0118",
+  "title": "Upload 官网单块诊断预览与真实组件结构不一致",
+  "scope": "component",
+  "components": ["upload", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Upload 官网应像成熟组件文档一样按用户用法分区，基础代码极简，Props/API 全文可读，交互与视觉必须对应真实 WXML/WXSS。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-panel", "usage-code"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "351px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览只有一个 Attachment 状态块、Tag 说明与方法诊断，无法比较 list/grid、文件状态、限制和禁用。",
+    "旧基础 WXML 展示 16 个 bind 事件及默认 Slot，与用户要求的基础必须基础直接冲突。",
+    "旧 H5 为 Upload 自建整体 Empty/Loading/Error 和方法面板，静态样例保留无真实回写的控件。",
+    "初次收敛后仍发现 files 边界切换会被 H5 runtime 清空、API Array 被显示为 object、maxSize 被显示为 string，添加入口也未复用共享 PUI Button。"
+  ],
+  "expected": "概览固定按基础、网格与媒体、文件状态、限制与禁用陈列；只有当前实例交互；API 完整显示 20/8/1/0 和真实类型；390px、主题及视觉开关无溢出或重复 Surface。",
+  "actual": "旧官网偏向工程诊断且代码噪声很大；初次实现还存在受控边界、类型展示和子组件镜像偏差。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求演示按用法分区、基础 WXML 不展示全部 bind、API 全文不得省略，并授权 agent 后续自主连续验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区 showcase、Array-only 受控、边界保值、真实 file input、PUI Button 添加入口和专属 API 类型来自同一 Props 源。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Upload 根与默认添加布局透明，真实 Button/文件项承担 Surface；固定 180/1ms 且无父级几何穿透。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "20 Props、8 Events、1 Slot、0 Methods、零 bind 基础用法与事件专项示例完整记录。"},
+    {"kind": "test", "ref": "scripts/test-upload.js", "note": "锁定四分区、PUI 组合、静态无假 input、API 类型、最小 WXML、原生控件边界与文档。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/upload", "note": "390px 下真实 Props、删除/Retry、复制、API 全文、Tabs 几何、主题与全部视觉开关已验证。"}
+  ],
+  "rootCause": "旧预览复用了通用单例状态/方法模板，没有区分当前交互实例、静态文档样例与平台能力桥接，也没有把 metadata/apiType 和受控 runtime 作为同一合同测试。",
+  "decision": {
+    "outcome": "官网重建四个用法区；基础实例使用真实透明 input 桥接并组合共享 PUI Button，静态样例移除假 input/操作；基础 WXML 零 bind；API 类型显式标注 Array/number；受控退控与 Props 视图共享同一状态源。",
+    "rationale": "用户需要快速筛选真实用法、复制最小调用并在 API 查完整事件；静态样例不能伪装可操作，H5 也不能画出原生没有的第二层 Surface。",
+    "alternativesRejected": [
+      "在旧单块预览下追加说明卡会继续堆叠诊断信息。",
+      "让静态限制样例保留 input 会把操作错误回写到当前实例。",
+      "只给原生 label 补 PUI 类名不能满足 Button/Icon 的尺寸、主题和辅助语义合同。",
+      "用 ellipsis 缩短 API detail 会让事件对象和限制信息不可见。"
+    ]
+  },
+  "impact": {
+    "files": ["metadata/components.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/UPLOAD.md", "scripts/test-upload.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-shared-subcomponent-geometry.js", "scripts/test-design-contracts.js", "feedback/records/pui-fb-0118-upload-preview-and-api-parity.json"],
+    "dependencies": ["PreviewDevice", "PUI Tabs", "Props helpers", "buttonSample", "iconButtonSample", "previewCodeBlockSample"]
+  },
+  "verification": {
+    "tests": ["scripts/test-upload.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node scripts/test-upload.js", "npm run site:build", "npm run check", "npm run feedback:check", "npm run pack:check"],
+    "browser": [
+      "390x844 概览四个分区完整存在，基础引用只注册 pui-upload，基础 WXML 为无 bind 的 pui-upload。",
+      "API 三表为 20/8/1 条数据，合计 136 个 cell 全部 14px，ellipsis/nowrap/内容溢出为 0；Array 和 maxSize 类型已按真实合同修正。",
+      "概览/API/属性/概览 Tabs 均为 x=13、y=349、349x38px；document/body 为 375px、window 为 390px，无页面级横向溢出。",
+      "light 基线文件添加 Surface 为白底、8px、无阴影/毛玻璃；dark+shadow+frost+large-radius+border-off 后真实 Button/文件 Surface 为深色、14px、双层阴影与 blur(18px)，Upload 布局根仍透明。",
+      "组件引用复制按钮通过真实剪贴板进入 Check/已复制状态；reduceMotion 后文件项 transition 为 0.001s，常规为固定 0.18s。"
+    ],
+    "deviceRisks": [
+      "H5 File/Blob/input 只能近似微信选择器和平台预览；内置浏览器未提供 setInputFiles，因此系统文件选取仍需人工浏览器与合法 AppID 真机复核。",
+      "H5 window.open 在当前内置浏览器被策略阻止时会真实显示 error，不会冒充预览成功；移动浏览器 Blob 打开、字体回流与辅助技术仍需设备确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Upload 官网按用户任务分区；当前实例真实交互，静态样例只读，代码最小，API 全文可读。",
+    "rules": [
+      "Upload 概览固定为基础、网格媒体、文件状态、限制禁用四区，分区标题保持清晰上间距。",
+      "基础 WXML 禁止 bind:*；完整 8 个事件只进入 API，事件专项示例只绑定所需事件。",
+      "静态 Upload 样例不得保留无回写 input、删除、Retry 或预览假控件。",
+      "H5 添加入口必须调用共享 buttonSample，原生 file input 只做透明平台桥接并独占可访问操作语义。",
+      "API 类型、说明和 detail 必须完整换行，禁止 object/string 误标或 ellipsis。"
+    ],
+    "tags": ["upload", "preview", "api-docs", "pui-composition", "responsive", "accessibility"]
+  }
+}

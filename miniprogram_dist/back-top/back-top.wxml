@@ -1,0 +1,18 @@
+<view class="{{rootClass}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" aria-hidden="{{!visible}}">
+  <pui-fab
+    custom-class="pui-back-top__fab"
+    theme="{{buttonTheme}}"
+    variant="base"
+    icon="{{buttonIcon}}"
+    content="{{buttonContent}}"
+    size="medium"
+    disabled="{{!visible}}"
+    aria-label="{{semanticLabel}}"
+    reduce-motion="{{reduceMotion}}"
+    color-scheme="{{colorScheme}}"
+    bind:click="onTap"
+  >
+    <slot name="icon"></slot>
+    <slot></slot>
+  </pui-fab>
+</view>

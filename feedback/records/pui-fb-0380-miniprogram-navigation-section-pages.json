@@ -1,0 +1,86 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0380",
+  "title": "小程序缺少导航分区九个真实独立页与统一路由入口",
+  "scope": "global",
+  "components": ["miniprogram-home", "navbar", "navigation-menu", "tabs", "breadcrumb", "tabbar", "steps", "back-top", "indexes", "sidebar"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "把导航区的九个组件搬到真实微信小程序，并让用户能从首页导航分区、搜索和独立路由进入可操作的组件示例。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "miniprogram-component-pages", "documentation", "feedback-ledger"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开小程序首页，原导航区没有完整的九个组件分区入口，搜索也无法进入这些真实页面。",
+    "即使组件已发布，缺少页面级父级编排会让受控 value、retry、固定导航、安全区和局部滚动等边界无法在微信端验证。"
+  ],
+  "expected": "首页显示导航分区并提供九条显式路由；每页复用统一详情页壳，组合真实 PUI 组件，保留受控状态、事件回写、错误恢复和组件自身的滚动边界。",
+  "actual": "迁移前小程序没有导航分区的九个独立页面和对应专项契约，用户只能从其他端或包级示例了解这些组件。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 当前 Goal", "note": "用户确认继续搬运一个组件区并要求按已提出计划启动 Goal 模式完成。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "新增 NAVIGATION_COMPONENTS 与导航分区；同一目录数据驱动首页、搜索和 URL。"},
+    {"kind": "file", "ref": "miniprogram/app.json", "note": "显式登记九条 pages/components/<component>/index 路由。"},
+    {"kind": "file", "ref": "miniprogram/utils/component-page.js", "note": "九页共同复用页面行为、外观 Provider、返回路由和动态 ScrollArea 高度。"},
+    {"kind": "file", "ref": "docs/MINIPROGRAM_NAVIGATION_PAGES.md", "note": "记录九页的真实交互边界、共享页面壳和验证入口。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-navigation-pages.js", "note": "锁定九页路由、共享壳、PUI 组件依赖和关键 VM 事件回写。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "锁定导航分区、搜索候选、图标映射和九条首页 URL。"},
+    {"kind": "test", "ref": "scripts/test-appearance-contract-matrix.js", "note": "外观矩阵已覆盖小程序 WXML 实际直接渲染的 37 个 PUI 根。"}
+  ],
+  "rootCause": "此前小程序已迁移基础、反馈和浮层页面，但导航区没有统一的分区目录、显式路由和页面级父级状态编排；直接复制 H5 页面会绕过小程序的组件合同和滚动边界。",
+  "decision": {
+    "outcome": "新增导航首页分区、九条显式路由和九个薄页面适配层；共享页面行为使用 createComponentPage，组件差异由各页自己的 usingComponents、Slot 和事件处理承接。",
+    "rationale": "共享页面壳可以稳定 Navbar、外观、唯一滚动区和 390px 布局，独立路由则保留九个组件真实不同的公开 API 和交互边界。",
+    "alternativesRejected": [
+      "只增加静态目录或跳转 H5，无法验证微信端真实组件交互。",
+      "用一个查询参数页面压平九个组件，会让 usingComponents、Slot、事件和页面级滚动合同混在一起。",
+      "复制 H5 预览 DOM 或工程诊断面板，会制造跨端视觉和状态漂移。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/app.json",
+      "miniprogram/pages/index/index.js",
+      "miniprogram/pages/components/navbar/",
+      "miniprogram/pages/components/navigation-menu/",
+      "miniprogram/pages/components/tabs/",
+      "miniprogram/pages/components/breadcrumb/",
+      "miniprogram/pages/components/tabbar/",
+      "miniprogram/pages/components/steps/",
+      "miniprogram/pages/components/back-top/",
+      "miniprogram/pages/components/indexes/",
+      "miniprogram/pages/components/sidebar/",
+      "miniprogram/styles/navigation-pages.wxss",
+      "scripts/test-miniprogram-navigation-pages.js",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/appearance-contract-matrix.js",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/MINIPROGRAM_NAVIGATION_PAGES.md"
+    ],
+    "dependencies": ["component-page", "component-page-navbar", "component-page-section", "visualConfig", "pui-scroll-area"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-navigation-pages.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-appearance-contract-matrix.js"],
+    "commands": ["npm run feedback:generate && npm run feedback:check：通过（364 records）", "npm run site:build：通过（530 classes、69 component directories）", "npm run check：通过", "npm run example:install：通过", "npm run pack:check：通过", "微信 CLI islogin：true；build-npm：通过（cost=1383ms、warnings=[]）"],
+    "browser": [],
+    "deviceRisks": ["本轮在记录生成时尚未完成微信 390px 模拟器与 iOS/Android 真机逐页验收；Tabs 横向惯性、BackTop 局部回顶、fixed Tabbar 安全区、深浅色、读屏和低动效仍需真实设备确认。"]
+  },
+  "ai": {
+    "summary": "导航区迁移必须同时交付首页分区、显式路由、共享详情页壳和真实父级交互；构建或页面静态存在不等于微信设备验收。",
+    "rules": [
+      "九个导航组件保留独立路由，页面行为可以共享但组件 API、Slot 和事件边界不能被查询参数路由压平。",
+      "Tabs 必须同时覆盖四项等分和超过四项半露；BackTop 必须等待真实 ScrollArea scroll 回写，不得提前伪造回顶完成。",
+      "导航页面错误态的 retry 只表示父级恢复请求；不得把显示、隐藏或状态切换叙述成业务成功。",
+      "真机和 390px 视觉未实测时保持 pending-user 与 deviceRisks，不以 check、build 或 npm 产物代替设备验收。"
+    ],
+    "tags": ["miniprogram", "navigation", "routing", "component-page", "tabs", "tabbar", "back-top", "no-fake-success"]
+  }
+}

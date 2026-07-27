@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0101",
+  "title": "Picker 公开合同退化为与 Select 重复的单值 options API",
+  "scope": "component",
+  "components": ["picker", "select", "documentation", "metadata", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Picker 应承担滚轮、多列和级联选择，公开合同克制且能清楚区别于已有 Select，不为对齐数量暴露无关能力。",
+  "environment": {
+    "surfaces": ["wechat-component", "api-reference", "props-panel", "example"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 picker 目录、metadata、API 与示例，发现公开入口以 options 和单个标量 value 表达原生 picker，核心任务与 Select 重复。",
+    "对照 TDesign Miniprogram 1.15.3 Picker 源码和文档，确认其核心边界是多列/级联、value 数组、显隐与确认流程，而不是补齐 Button 式通用属性。",
+    "以 0、false 和空字符串作为选项值运行旧数据形态，无法稳定表达多列路径与逐列草稿。"
+  ],
+  "expected": "Picker 使用 columns + value/defaultValue 数组表达单列、二维独立列和 children 级联，明确值与显隐受控边界，并保留严格原始值。",
+  "actual": "旧合同只覆盖单值原生 picker，与 Select 重复，无法形成逐列 pick、确认提交、取消回滚和级联路径。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权共有组件按 TDesign 逐项参考并由 agent 自主连续验收。"},
+    {"kind": "file", "ref": "picker/picker.js", "note": "重建为 25 Props、8 Events、6 Methods，支持单列、多列、级联、严格值、草稿与受控回写。"},
+    {"kind": "file", "ref": "docs/components/PICKER.md", "note": "记录 Picker 与 Select 的边界、TDesign 取舍、事件顺序和禁止恢复旧 API。"},
+    {"kind": "test", "ref": "scripts/test-picker.js", "note": "覆盖 0、false、空字符串、禁用项、受控值与显隐、确认/取消、方法和源码/dist 一致性。"}
+  ],
+  "rootCause": "旧 Picker 直接包装微信单列 picker 并沿用通用 options/value 思路，没有把滚轮列模型、草稿提交和现有 Select 的职责边界作为公开合同。",
+  "decision": {
+    "outcome": "以 columns、值数组、Popup/内联和确认草稿为核心重建 Picker；拒绝照搬 TDesign PickerItem 子组件，PoemUI 统一由数据驱动 columns 表达列。",
+    "rationale": "数据驱动列能覆盖小程序常用动态数据并减少额外注册组件，同时仍保留 TDesign 已验证的多列、级联和显隐语义。",
+    "alternativesRejected": [
+      "保留 options + 标量 value 会继续和 Select 重复且无法表达级联路径。",
+      "逐项复制 TDesign PickerItem 会增加第二套列声明方式和包体复杂度。",
+      "把完整事件绑定放进基础用法会违背最小示例与零 bind 规则。"
+    ]
+  },
+  "impact": {
+    "files": ["picker/picker.js", "picker/picker.wxml", "picker/template.wxml", "picker/picker.wxss", "picker/picker.json", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/PICKER.md", "_example/miniprogram/pages/components/index.wxml"],
+    "dependencies": ["popup", "button", "icon", "loading", "empty"]
+  },
+  "verification": {
+    "tests": ["scripts/test-picker.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "受控 value 从 [input,false] 经真实级联选择与确认回写为 [basic,button]。",
+      "受控 visible=true 打开后取消固定产生 cancel → visible-change → close，并由父级回写关闭。",
+      "API 实际渲染 25 Props、8 Events、6 Methods，基础 WXML 零 bind。"
+    ],
+    "deviceRisks": [
+      "picker-view 在 iOS/Android 的惯性、触感与 disabled 项吸附差异仍需目标真机确认。",
+      "自定义 keys 与超长中文标签在低版本基础库的渲染性能需真机抽样。"
+    ]
+  },
+  "ai": {
+    "summary": "Picker 专注滚轮列、级联和确认草稿；Select 继续负责下拉选择，二者不得复用旧 options 单值合同。",
+    "rules": [
+      "生成 Picker 时使用 columns 与值数组，禁止恢复 options + 标量 value。",
+      "严格保留 0、false 和空字符串，禁止用 truthy 判断选项值。",
+      "基础 Picker WXML 不绑定事件；受控和事件顺序只进入专项示例与 API。"
+    ],
+    "tags": ["picker", "api", "tdesign", "cascade", "controlled", "strict-values"]
+  }
+}

@@ -1,0 +1,4 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{iconStyle}}" role="img" aria-hidden="{{!ariaLabel}}" aria-label="{{ariaLabel}}">
+  <text wx:if="{{fontGlyph}}" class="pui-icon__glyph">{{fontGlyph}}</text>
+  <text wx:else class="pui-icon__fallback">{{fallbackGlyph}}</text>
+</view>

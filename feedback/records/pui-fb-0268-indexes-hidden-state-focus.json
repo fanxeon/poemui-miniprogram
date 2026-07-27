@@ -1,0 +1,87 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0268",
+  "title": "Indexes 隐藏状态层仍保留可键盘操作的滚动区与重试按钮",
+  "scope": "component",
+  "components": ["indexes", "button", "preview-site"],
+  "type": "accessibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Indexes 在 content、loading、error、empty 间切换时，键盘和读屏只能接触当前真实状态，不能操作视觉上已经隐藏的内容。",
+  "environment": {
+    "surfaces": ["h5-preview", "native-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开第 18 号 Indexes 概览，检查六个示例根的隐藏状态层。",
+    "旧 H5 的非 content 示例仍给透明 scroll 区 `tabindex=0`。",
+    "每个非 error 示例的透明错误层都保留一个未禁用的“重新加载”Button；父层只有 aria-hidden、opacity:0 和 pointer-events:none。",
+    "aria-hidden 和 pointer-events 不会自动从键盘 Tab 序列移除后代控件。"
+  ],
+  "expected": "只有当前状态可以聚焦和操作；隐藏内容、导航和状态层同时具备 aria-hidden 与 inert，隐藏滚动区 tabindex=-1；小程序隐藏错误层的 Retry Button 同步 disabled。",
+  "actual": "隐藏层只在视觉和指针层面不可见，滚动区与 Retry Button 仍可能被键盘聚焦，形成不可见操作和读屏噪音。",
+  "evidence": [
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/navigation/indexes",
+      "note": "修复前每个 content 示例的隐藏 error 层都有可用 Retry；loading/error/empty 示例的隐藏 scroll 区 tabindex=0。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "状态生成器现为非当前层增加 inert；隐藏 scroll 使用 tabindex=-1 与 aria-hidden，隐藏 nav 同步 inert。"
+    },
+    {
+      "kind": "file",
+      "ref": "indexes/indexes.wxml",
+      "note": "原生隐藏错误层的 Retry Button 仅在 stateType=error 时可用。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-indexes.js",
+      "note": "专项断言锁定隐藏层 inert、滚动区 Tab 退出与原生 Retry disabled。"
+    }
+  ],
+  "rootCause": "旧状态镜像把 opacity、pointer-events 与 aria-hidden 当成完整交互隔离，但它们不会禁用后代原生 Button，也不会移除显式 tabindex。",
+  "decision": {
+    "outcome": "H5 为非当前内容、导航和状态层增加 inert 与 aria-hidden，并把隐藏滚动区 tabindex 改为 -1；原生 Retry 增加 stateType 锁定。",
+    "rationale": "保留节点和 500ms 视觉状态结构不变，同时把键盘与辅助技术的可操作范围限制到当前真实状态。",
+    "alternativesRejected": [
+      "只设置 pointer-events:none 不能阻止 Tab 和键盘激活。",
+      "只设置 aria-hidden 不能让可聚焦后代自动退出 Tab 序列。",
+      "用 display:none 会破坏既定的 retained-state 过渡语义。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "indexes/indexes.wxml", "scripts/test-indexes.js", "docs/components/INDEXES.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["PUI Button", "Indexes retained state layers", "browser inert support"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["2026-07-23 node --check preview/app.js 与 node scripts/test-indexes.js：通过", "2026-07-23 npm run site:build、npm run check 与 npm run example:install：通过", "2026-07-23 微信 CLI build-npm：IDE server 已启动，touristappid 不存在，code 10；未生成或伪造 miniprogram_npm"],
+    "browser": [
+      "修复后所有 `.pui-indexes-preview [aria-hidden=true]` 中不属于 inert 子树的可聚焦 Button 与 tabindex=0 节点为 0。",
+      "三个非 content 示例的滚动区均为 tabindex=-1、aria-hidden=true 且 inert。",
+      "当前 content 滚动区仍为 tabindex=0，索引导航与 Cell 操作保持可用。"
+    ],
+    "deviceRisks": [
+      "微信 WXML 没有浏览器 inert；合法 AppID 真机仍需验证 aria-hidden、disabled Button、scroll-view 与读屏组合行为。"
+    ]
+  },
+  "ai": {
+    "summary": "视觉隐藏不等于交互隐藏；保留节点的状态层必须同时治理焦点、键盘和辅助技术。",
+    "rules": [
+      "检查隐藏层时枚举真实 focusable 后代，不能只看 opacity 或 pointer-events。",
+      "H5 非当前 retained layer 使用 aria-hidden + inert，显式 tabindex 同步切到 -1。",
+      "原生隐藏状态中的可操作子组件必须同步 disabled，不能依赖父级透明。",
+      "不得用 display:none 简化问题而破坏中间帧与完成态合同。"
+    ],
+    "tags": ["indexes", "accessibility", "focus", "inert", "retained-state"]
+  }
+}

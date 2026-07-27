@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0385",
+  "title": "小程序反馈区缺少 Dialog 的受控独立页面与可搜索路由",
+  "scope": "global",
+  "components": ["miniprogram-home", "dialog", "feedback-pages"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "补齐反馈区的 Dialog 页面，使用户可从首页和搜索进入真实的受控对话框示例。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "miniprogram-dialog-page", "feedback-ledger"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在迁移前打开小程序首页，反馈分区只有 Alert 至 Toast 的八个入口；Dialog 虽已发布，却没有小程序页面或可搜索路由。",
+    "用户无法在微信端验证 Dialog 的父级 visible 回写、confirm/cancel/close、遮罩关闭与 content Slot 的组合边界。"
+  ],
+  "expected": "反馈区应有九个真实组件页；Dialog 独立页复用统一详情页壳，展示受控显隐、关闭策略和调用方 content Slot，不伪造 Dialog 自身的请求状态。",
+  "actual": "反馈目录、app.json、搜索候选和专项页面测试均未登记 Dialog，导致已发布组件在小程序中不可进入。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/dialog/index.js", "note": "页面分别回写基础与长内容 Dialog 的 visible，并将内容状态保留在父级。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/dialog/index.wxml", "note": "页面组合真实 pui-dialog、Button、Loading、Empty 和 Cell，未重写遮罩或 Dialog API。"},
+    {"kind": "file", "ref": "miniprogram/app.json", "note": "登记 pages/components/dialog/index 显式路由。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "反馈目录与 Search 从同一项加入 Dialog 的真实 URL。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-feedback-pages.js", "note": "覆盖 visible 回写、遮罩禁止关闭、content Slot 和真实组件依赖。"}
+  ],
+  "rootCause": "此前反馈区搬迁只建立八个组件的页面适配层，未把 Dialog 的受控可见性、事件边界和 Slot 组合纳入小程序目录。",
+  "decision": {
+    "outcome": "新增 Dialog 独立路由和页面；基础 Dialog 由 confirm/cancel/close/overlay-click 交给父级回写，长内容 Dialog 显式关闭遮罩关闭，Loading 与 Empty 仅作为 content Slot 内容。",
+    "rationale": "这与 Dialog 的公开合同一致，同时让小程序端具备可操作、可返回且不伪造业务结果的示例。",
+    "alternativesRejected": [
+      "只在首页写静态 Dialog 说明，无法验证受控显隐与事件回写。",
+      "把 Loading、Empty、请求成功或重试加入 Dialog Props，违反组件的公开边界。",
+      "把 Dialog 压入其他反馈页面，无法提供可搜索的独立组件路由。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/app.json", "miniprogram/pages/index/index.js", "miniprogram/pages/components/dialog/", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-miniprogram-feedback-pages.js", "docs/MINIPROGRAM_FEEDBACK_PAGES.md"],
+    "dependencies": ["pui-dialog", "pui-popup", "component-page", "component-page-navbar", "component-page-section"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-miniprogram-feedback-pages.js"],
+    "commands": ["node scripts/test-dialog.js：通过", "node scripts/test-miniprogram-home.js：通过", "node scripts/test-miniprogram-component-pages.js：通过", "node scripts/test-miniprogram-feedback-pages.js：通过"],
+    "browser": [],
+    "deviceRisks": ["尚未在微信 390px 模拟器、iOS 或 Android 真机验证 Dialog 的内容滚动、遮罩命中、系统焦点、低动效和外观组合；当前通过的 Node 合同测试不能替代这些验收。"]
+  },
+  "ai": {
+    "summary": "Dialog 小程序页必须提供独立路由并由父级回写 visible；状态组件只放在 content Slot，不能伪造成 Dialog 自身能力。",
+    "rules": [
+      "Dialog 的 confirm、cancel、close 和 overlay-click 都是父级意图，页面必须决定是否以及何时写回 visible。",
+      "closeOnOverlayClick=false 时点击遮罩不得提前收起；Header 关闭仍走同一父级 close 回写。",
+      "Loading、Empty、Cell 等只能作为 content Slot 的业务组合，不能新增 Dialog 请求状态或成功提示。",
+      "反馈区新增页面时，同步更新 app.json、首页目录、Search、专项测试、页面文档和 Ledger。"
+    ],
+    "tags": ["miniprogram", "dialog", "feedback", "routing", "controlled", "slots", "no-fake-success"]
+  }
+}

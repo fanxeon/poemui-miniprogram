@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0146",
+  "title": "API 通用 Slot 引言把不存在的 default Slot 宣传为可用能力",
+  "scope": "global",
+  "components": ["toast", "preview-site", "api-reference"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "API、WXML 和真实实现必须逐项一致；没有的 Slot 不能以通用文案虚构出来。",
+  "environment": {
+    "surfaces": ["api-reference", "metadata", "wxml"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Toast metadata 和 WXML 只声明 icon/message 两个具名 Slot，没有 default Slot。",
+    "官网 API 渲染器仍向所有存在 Slot 的组件展示“普通文字优先使用默认 slot”。"
+  ],
+  "expected": "API Slot 引言必须按当前组件的真实 Slot 集合生成；没有 default 时明确说明只公开列出的具名 Slot。",
+  "actual": "Toast API 表格条目正确，但引言仍让调用方误以为可以传入默认 Slot。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授权后续组件在完整审计、浏览器、测试、文档与构建门禁后自主验收，并要求 API 文字完整且与真实能力一致。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/toast", "note": "2026-07-20 修复前 Slots 引言称默认 Slot 可用；修复后实际显示“仅列出组件实际公开的具名 Slot；未列出的 default Slot 不存在。”"},
+    {"kind": "file", "ref": "toast/toast.wxml", "note": "只存在 name=icon 和 name=message 的 Slot，且没有无名 slot。"},
+    {"kind": "test", "ref": "scripts/test-toast.js", "note": "专项测试锁定 Toast API 中不存在 default Slot 说明。"}
+  ],
+  "rootCause": "API 的通用引言把默认 Slot 视作所有可插槽组件的隐含能力，没有读取 metadata 实际 Slot 集合。",
+  "decision": {
+    "outcome": "API 渲染器检查 detail.slots 是否包含 default：仅此时展示默认 Slot 指引，否则明确仅有列出的具名 Slot。",
+    "rationale": "这将真实元数据作为唯一 API 事实源，并同时保护其他无默认 Slot 的组件。",
+    "alternativesRejected": [
+      "给 Toast 添加空默认 Slot 会违反命令式单条反馈的收敛边界。",
+      "在 Toast 文档单独加注释不能修复通用 API 的错误生成逻辑。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-toast.js"],
+    "dependencies": ["metadata/components.js API slots", "API Reference generator"]
+  },
+  "verification": {
+    "tests": ["scripts/test-toast.js"],
+    "commands": ["npm run example:install（含 site:build，2026-07-20 通过）", "npm run check"],
+    "browser": ["Toast API 实际显示 icon/message 两行，并明确 default Slot 不存在；API 96 个单元格未使用 ellipsis、nowrap、hidden 或固定最大高度裁切。"],
+    "deviceRisks": ["无额外真机 API 风险；小程序运行时仍需以合法 AppID 复核 named Slot 投影。"]
+  },
+  "ai": {
+    "summary": "API 的说明性文案也属于公开合同，不能由通用模板虚构未实现的 Slot。",
+    "rules": [
+      "渲染 API 的 Slots 前先读取真实 metadata；没有 default 就不得建议使用 default Slot。",
+      "WXML、metadata、API 表和兼容说明应由同一 Slot 集合交叉验证。"
+    ],
+    "tags": ["toast", "api-reference", "slots", "metadata"]
+  }
+}

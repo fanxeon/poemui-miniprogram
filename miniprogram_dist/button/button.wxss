@@ -1,0 +1,181 @@
+.pui-button {
+  --pui-button-size: 88rpx;
+  --pui-button-tone: var(--pui-text-primary);
+  --pui-button-contrast: var(--pui-text-inverse);
+  --pui-button-soft: var(--pui-bg-muted);
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pui-space-xs);
+  width: auto;
+  height: var(--pui-button-size);
+  min-width: 132rpx;
+  margin: 0;
+  padding: 0 var(--pui-space-step-15);
+  overflow: hidden;
+  color: var(--pui-text-primary);
+  font-family: var(--pui-font-family-sans);
+  font-size: var(--pui-font-size-medium);
+  font-weight: var(--pui-font-weight-semibold);
+  line-height: 1;
+  text-align: center;
+  background: var(--pui-glass-surface-strong);
+  border: 2rpx solid var(--pui-border-color);
+  border-radius: var(--pui-radius-medium);
+  box-shadow: var(--pui-shadow-card);
+  -webkit-backdrop-filter: var(--pui-frosted-filter);
+  backdrop-filter: var(--pui-frosted-filter);
+  transition: opacity var(--pui-button-duration, var(--pui-duration-normal)) var(--pui-button-ease, var(--pui-ease-standard)), color var(--pui-button-duration, var(--pui-duration-normal)) var(--pui-button-ease, var(--pui-ease-standard)), background-color var(--pui-button-duration, var(--pui-duration-normal)) var(--pui-button-ease, var(--pui-ease-standard)), border-color var(--pui-button-duration, var(--pui-duration-normal)) var(--pui-button-ease, var(--pui-ease-standard)), transform var(--pui-button-duration, var(--pui-duration-normal)) var(--pui-button-ease, var(--pui-ease-standard)), box-shadow var(--pui-button-duration, var(--pui-duration-normal)) var(--pui-button-ease, var(--pui-ease-standard));
+}
+
+.pui-button::after { border: 0; }
+
+.pui-button--extra-small {
+  --pui-button-size: 64rpx;
+  min-width: 88rpx;
+  padding: 0 var(--pui-space-sm);
+  font-size: var(--pui-font-size-small);
+}
+
+.pui-button--small {
+  --pui-button-size: 72rpx;
+  min-width: 104rpx;
+  padding: 0 var(--pui-space-normal);
+  font-size: var(--pui-font-size-small);
+}
+
+.pui-button--medium { --pui-button-size: 88rpx; }
+
+.pui-button--large {
+  --pui-button-size: 100rpx;
+  min-width: 172rpx;
+  padding: 0 var(--pui-space-lg);
+  font-size: var(--pui-font-size-large);
+}
+
+.pui-button--block { display: flex; width: 100%; min-width: 0; max-width: 100%; flex: 1 1 100%; align-self: stretch; }
+
+.pui-button--round,
+.pui-button--circle { border-radius: var(--pui-radius-round); }
+
+.pui-button--square,
+.pui-button--circle {
+  width: var(--pui-button-size);
+  min-width: var(--pui-button-size);
+  padding-right: 0;
+  padding-left: 0;
+}
+
+/* iconOnly 不是“没有文字的普通 Button”：原生 Button、Icon 容器与 PUI Icon
+   使用同一个尺寸轨道，避免空 Slot、基线或默认 gap 影响视觉中心。 */
+.pui-button--icon-only {
+  gap: 0;
+}
+
+.pui-button--icon-only .pui-button__icon {
+  width: var(--pui-button-size);
+  min-width: var(--pui-button-size);
+  height: var(--pui-button-size);
+  min-height: var(--pui-button-size);
+  line-height: 0;
+}
+
+.pui-button--primary { --pui-button-tone: var(--pui-color-brand); }
+.pui-button--danger { --pui-button-tone: var(--pui-color-danger); }
+
+.pui-button--default.pui-button--base {
+  background: var(--pui-button-soft);
+  border-color: var(--pui-border-color);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.pui-button--primary.pui-button--base,
+.pui-button--danger.pui-button--base {
+  color: var(--pui-button-contrast);
+  background: var(--pui-button-tone);
+  border-color: var(--pui-button-tone);
+  box-shadow: var(--pui-shadow-brand);
+}
+
+.pui-button--outline {
+  color: var(--pui-button-tone);
+  background: transparent;
+  border-color: currentColor;
+  box-shadow: none;
+}
+
+.pui-button--text,
+.pui-button--ghost,
+.pui-button--transparent {
+  color: var(--pui-button-tone);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.pui-button--text {
+  min-width: 0;
+  padding-right: var(--pui-space-xs);
+  padding-left: var(--pui-space-xs);
+  border-color: transparent;
+}
+
+/* 由复合导航容器承载唯一 Surface 时，Button 仍保留真实原生点击根，
+   但不再泄露自身的背景、边界、圆角、阴影或毛玻璃。 */
+.pui-button--surface-transparent,
+.pui-button--surface-transparent.pui-button--disabled {
+  background: transparent;
+  /* 微信原生 button 仍可能保留平台默认的 background-color / ::after 边框。
+     复合容器的 transparent Surface 必须在组件根彻底清空它们，不能依赖
+     外层 custom-class 跨组件覆盖。 */
+  background-color: transparent !important;
+  border-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.pui-button--surface-transparent::after { border: 0 !important; }
+
+.pui-button--disabled {
+  color: var(--pui-text-disabled);
+  background: var(--pui-bg-muted);
+  border-color: var(--pui-border-color);
+  box-shadow: none;
+  opacity: .58;
+}
+
+.pui-button--loading { pointer-events: none; }
+
+.pui-button--hover {
+  opacity: .76;
+  transform: scale(.98);
+  box-shadow: none;
+}
+
+.pui-button__icon,
+.pui-button__suffix,
+.pui-button__content {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.pui-button__content {
+  overflow: hidden;
+  flex: 0 1 auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pui-button__icon:empty,
+.pui-button__suffix:empty { display: none; }
+
+.pui-button__suffix { gap: var(--pui-space-xxs); }

@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0141",
+  "title": "Loading 公开合同混入私有外观、方向别名和生命周期事件",
+  "scope": "component",
+  "components": ["loading", "preview-site", "usage-code"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "以联网核验的 TDesign 主干收敛组件 API，基础用法保持最小可用，并让 API、WXML、示例和真实预览一致。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "usage-code", "api-reference", "example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Loading 公开 color、easing、showProgress、vertical 和 show/hide 生命周期事件；H5 也用状态 Cell 解释显隐。",
+    "在线 TDesign 文档和固定 tdesign-miniprogram@1.15.3 包的 loading props/type/JS/WXML/WXSS 只公开 13 个核心 Props、default/indicator/text 三个 Slot，未公开 Events 或实例方法。"
+  ],
+  "expected": "PoemUI 只保留 TDesign Loading 主干，加上统一的 ariaLabel/reduceMotion；基础 WXML 零 bind，只输出非默认 Props，显隐阶段不充当业务结果。",
+  "actual": "旧公开面把私有视觉调参、重复方向开关和内部显隐过程误当成消费者 API，基础示例与文档无法表达最小真实调用。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求联网参考 TDesign、基础必须基础，并明确授权后续组件在完整证据后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/loading", "note": "2026-07-20 访问官方 Loading 页面；固定 npm 包的 props/type/JS/WXML/WXSS 另以对照清单记录。"},
+    {"kind": "file", "ref": "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "note": "记录 tdesign-miniprogram@1.15.3 固定包的 Loading Props、Slot、Event 与方法对照结论。"},
+    {"kind": "file", "ref": "loading/loading.js", "note": "最终公开 15 Props，且无 triggerEvent 调用。"},
+    {"kind": "test", "ref": "scripts/test-loading.js", "note": "专项测试锁定 Props、三 Slot、零 Events/Methods、基础 WXML、示例与产物一致性。"}
+  ],
+  "rootCause": "旧实现把演示层的颜色、进度显示开关、方向别名和内部渲染阶段直接暴露，未按 TDesign 公开边界审计。",
+  "decision": {
+    "outcome": "公开合同收敛为 13 个 TDesign 主干 Props 加 ariaLabel/reduceMotion、三 Slot、零 Events、零 Methods；删除 color/easing/showProgress/vertical/show/hide，并重写示例、API、WXML 生成与 H5 分区。",
+    "rationale": "Loading 只表示正在处理；可验证的无障碍和低动效属于全库横向合同，但业务结果和私有渲染过程不应进入 API。",
+    "alternativesRejected": [
+      "继续保留 show/hide 事件会把视觉退场误导为业务完成。",
+      "保留 vertical 兼容别名会与 layout 重复并增加调用歧义。",
+      "在基础示例罗列不存在的 bind 会违背最小用法要求。"
+    ]
+  },
+  "impact": {
+    "files": ["loading/loading.js", "loading/loading.wxml", "loading/loading.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.wxml", "scripts/test-loading.js"],
+    "dependencies": ["shared usage-code generator", "shared Loading H5 helper", "Button loadingProps"]
+  },
+  "verification": {
+    "tests": ["scripts/test-loading.js"],
+    "commands": ["node scripts/test-loading.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["2026-07-20 真实属性面板切换 circular/spinner、horizontal/vertical、indicator、inheritColor、size、text 和 progress=0/100；预览、API 与复制的基础 WXML 都同步变化。", "API 实际显示 15 Props、3 Slots、0 Events、0 Methods，所有可见单元格无省略或横向裁切。"],
+    "deviceRisks": ["微信 Slot 投影、rpx 尺寸、fixed 全屏、样式隔离和辅助技术需使用合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "Loading 的内部可见性阶段、颜色透传和展示别名不是默认公共 API；基础 WXML 只保留可安装的声明式调用。",
+    "rules": [
+      "先以在线官方文档和固定 npm 包源码确定公开 Props、Slots、Events、Methods，再决定 PoemUI 增量。",
+      "Loading 的业务成功、失败、重试和完成不能从 show/hide 或退场阶段推导。",
+      "基础用法不得绑定不存在的事件；生成器只输出真实非默认 Props。"
+    ],
+    "tags": ["loading", "api-contract", "tdesign", "usage-code", "no-fake-success"]
+  }
+}

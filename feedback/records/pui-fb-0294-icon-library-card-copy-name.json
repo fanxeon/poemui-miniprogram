@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0294",
+  "title": "Icon 资源卡只回写名称，无法直接复制图标名",
+  "scope": "component",
+  "components": ["icon", "button", "preview-site"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "官网 Icon 资源库中点击任意图标后，应直接复制对应稳定图标名，方便开发者粘贴到 WXML。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-documentation", "component-contract"],
+    "platforms": ["browser"],
+    "viewports": ["desktop browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 #/icons 的“图标资源”，点击任意资源卡。",
+    "旧实现只调用 updateCurrentProp('name')，当前 Icon 预览会变化，但开发者仍需要手动选中和复制图标名。"
+  ],
+  "expected": "每张资源卡保持 PUI Button 组合；点击先真实回写当前 name，再通过共享剪贴板路径复制同一名称，并复用 Toast 根据真实成功或失败结果提供短暂、可访问反馈。",
+  "actual": "资源卡可筛选并回写 Icon 的 name，但没有复制动作、失败分支或连续点击的异步结果保护；首次修复后虽有行内状态文字，仍不足以作为明确的短时提示。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求 Icon 组件中点击每一个图标都复制对应 icon 名；此前用户已授权后续组件在完整审计、真实浏览器和构建证据后由 Agent 自主验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "资源卡继续调用共享 buttonSample，点击先回写 name，再复用 writePreviewClipboard，并以请求序号忽略过期异步结果；复制结果调用共享 toastPreviewMarkup 映射为 Toast success/error。"},
+    {"kind": "file", "ref": "docs/components/ICON.md", "note": "合同明确资源卡复制属于官网 PUI Button 行为，不为展示叶子 pui-icon 新增 click API。"},
+    {"kind": "test", "ref": "scripts/test-icon.js", "note": "专项测试锁定共享剪贴板调用、可访问反馈、连续点击保护与 API 边界。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/icons", "note": "真实点击唯一的 arrow-left 卡片后，name 回写为 arrow-left，状态区显示成功；1.6 秒后回到常规提示。"}
+  ],
+  "rootCause": "资源库把卡片选择仅当作 Props 演示，没有把开发者最常见的“获取可粘贴图标名”任务接入已有真实复制能力。",
+  "decision": {
+    "outcome": "资源卡的单次点击固定为 name 回写后复制同一稳定名称；反馈复用 Toast 的 H5 镜像并以 success/error 主题呈现，实际复制失败显示失败而不伪造成功，连续点击只允许最后一次结果更新反馈。",
+    "rationale": "名称选择与复制属于同一个资源发现任务；复用共享 clipboard helper 可同时覆盖安全上下文 Clipboard API 与 LAN HTTP 的真实 document.execCommand fallback。",
+    "alternativesRejected": [
+      "给 pui-icon 增加 click 会破坏展示叶子与 Button + Icon 的职责边界。",
+      "额外放置每卡复制按钮会增加 200 个重复操作点并压缩资源卡可读性。",
+      "不显示失败反馈会把浏览器权限或 fallback 失败伪装成成功。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-icon.js", "docs/components/ICON.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0294-icon-library-card-copy-name.json"],
+    "dependencies": ["pui-button", "pui-icon", "pui-toast", "writePreviewClipboard"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["node scripts/test-icon.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 CLI build-npm（已尝试，touristappid code 10）"],
+    "browser": [
+      "在 #/icons 真实点击 arrow-left，验证唯一可操作卡片、name=arrow-left、success 状态文案与 1.6 秒后 idle 状态。",
+      "资源卡 aria-label 明确为“复制图标名 + 名称 + 分类”；复制结果复用 Toast 的 role=status 与 success/error aria-live 语义。"
+    ],
+    "deviceRisks": [
+      "本次仅修改官网资源库，不改变小程序 Icon 四件套或微信事件；小程序 Canvas、src 着色和读屏风险仍按 PUI-FB-0051 由合法 AppID 真机复核。",
+      "HTTP 局域网预览可能走 document.execCommand fallback；真实系统剪贴板权限策略仍取决于用户浏览器。",
+      "微信 CLI 已实际尝试，但 touristappid 查询 AppID 详情返回 code 10，未生成也未伪造 miniprogram_npm。"
+    ]
+  },
+  "ai": {
+    "summary": "Icon 是展示叶子；官网资源卡可以作为 PUI Button 完成选名与复制，并复用 Toast 提示结果，但不能向 Icon 公共 API 注入 click。",
+    "rules": [
+      "图标资源库卡片必须由共享 PUI Button 和同源 iconComponent 组成，不能把图标 SVG 本体变成点击根。",
+      "复制必须复用 writePreviewClipboard 并依真实返回值以 Toast success 或 error 提示，不得只更新提示文字伪造成功。",
+      "异步复制连续触发时必须让旧请求结果失效，避免反馈名称与当前 name 不一致。"
+    ],
+    "tags": ["icon", "clipboard", "pui-button", "accessibility", "preview-site"]
+  }
+}

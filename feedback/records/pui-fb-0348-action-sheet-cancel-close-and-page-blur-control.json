@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0348",
+  "title": "ActionSheet 取消没有关闭请求且独立页缺少局部毛玻璃入口",
+  "scope": "component",
+  "components": ["action-sheet", "switch", "config-provider", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "点击 ActionSheet 取消应得到可见关闭结果；组件独立页需要直接控制当前遮罩是否使用毛玻璃。",
+  "environment": {"surfaces": ["miniprogram", "preview-site"], "platforms": ["wechat-miniprogram", "web"], "viewports": ["390x844"], "themes": ["light", "dark"]},
+  "reproduction": ["在受控 ActionSheet 独立页打开面板，点击取消。旧组件只发 cancel，页面没有收到 visible-change(false)，面板保持打开。", "打开 ActionSheet 独立页，旧页面没有 PUI Switch 可将 blurOverlay 传入当前组件。"],
+  "expected": "取消固定按 cancel → close({ trigger: 'cancel' }) → visible-change(false) 请求关闭；独立页通过 PUI Switch 即时把局部 blurOverlay 写入当前 ActionSheet。",
+  "actual": "取消只发出 cancel，受控页面没有关闭回写；页面没有局部毛玻璃入口。",
+  "evidence": [
+    {"kind": "file", "ref": "action-sheet/action-sheet.js", "note": "onCancelTap 现先发 cancel，再走 requestClose('cancel')，复用受控和非受控的 close/visible-change 路径。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/action-sheet/index.wxml", "note": "独立页以真实 pui-switch 暴露局部毛玻璃入口，并将 actionSheetBlurOverlay 绑定到 blur-overlay。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 取消动作按同一事件顺序调用显隐回写。"},
+    {"kind": "test", "ref": "scripts/test-action-sheet.js", "note": "覆盖取消事件顺序与非受控关闭；页面 Switch 回写由 test-miniprogram-overlay-pages.js 覆盖。"}
+  ],
+  "rootCause": "ActionSheet 旧取消处理与受控页的显隐回写链断开；独立页未暴露已有 blurOverlay API。",
+  "decision": {"outcome": "将取消定义为固定关闭路径，并在 ActionSheet 独立页增加局部毛玻璃 PUI Switch。", "rationale": "取消是退出动作，必须有可见结果；局部开关复用 nullable blurOverlay，而不复制全局外观状态。", "alternativesRejected": ["只让页面 cancel 回调手写 visible=false：会让组件默认交互继续不一致。", "新增第二份页面级视觉配置：会绕过 visualConfig/ConfigProvider 语义。"]},
+  "impact": {"files": ["action-sheet/action-sheet.js", "miniprogram/pages/components/action-sheet/index.js", "miniprogram/pages/components/action-sheet/index.wxml", "miniprogram/pages/components/action-sheet/index.json", "preview/app.js", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/ACTION-SHEET.md", "scripts/test-action-sheet.js", "scripts/test-miniprogram-overlay-pages.js"], "dependencies": ["config-provider", "switch", "visualConfig"]},
+  "verification": {"tests": ["scripts/test-action-sheet.js", "scripts/test-miniprogram-overlay-pages.js"], "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check"], "browser": [], "deviceRisks": ["未在合法 AppID 真机确认 iOS/Android backdrop-filter、取消触摸命中及 390px 安全区。"]},
+  "ai": {"summary": "ActionSheet 的取消不是状态通知；它必须通过标准 close/visible-change 链请求关闭。", "rules": ["取消需要保留 cancel 业务通知，但随后必须发 close(cancel) 与 visible-change(false)。", "独立页的局部毛玻璃必须使用 PUI Switch 并绑定现有 blurOverlay，不复制全局外观对象。"], "tags": ["action-sheet", "cancel", "visible-change", "blur-overlay", "miniprogram-page"]}
+}

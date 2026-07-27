@@ -1,0 +1,21 @@
+<view class="{{rootClass}} {{customClass}}" style="{{rootStyle}} {{customStyle}}" role="group" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}" aria-readonly="{{readonly}}" aria-busy="{{loading}}">
+  <view class="pui-combobox__trigger" role="combobox" aria-label="{{semanticLabel}}" aria-expanded="{{currentVisible}}" aria-haspopup="listbox" aria-disabled="{{disabled}}" aria-readonly="{{readonly}}" catchtap="onTriggerTap">
+    <slot wx:if="{{customTrigger}}" name="trigger"></slot>
+    <block wx:elif="{{multiple && selectedItems.length}}">
+      <view class="pui-combobox__chips"><pui-tag wx:for="{{selectedItems}}" wx:key="key" data-index="{{index}}" content="{{item.label}}" icon="{{showIcon ? item.icon : ''}}" size="small" variant="outline" closable="{{!disabled && !readonly}}" bind:close="onTagClose" /></view>
+    </block>
+    <view wx:else class="pui-combobox__selection"><pui-icon wx:if="{{showIcon && selectedItems[0].icon}}" name="{{selectedItems[0].icon}}" size="28" /><text class="pui-combobox__selection-label">{{selectedItems[0].label || placeholder}}</text></view>
+    <view class="pui-combobox__trigger-actions"><view wx:if="{{clearable && selectedItems.length && !disabled && !readonly}}" class="pui-combobox__clear" catchtap="onClearTap"><pui-button icon="close-circle" size="extra-small" variant="text" shape="round" aria-label="清空选择" /></view><pui-icon name="chevron-down" size="28" custom-class="pui-combobox__chevron" /></view>
+  </view>
+  <view class="pui-combobox__panel" role="presentation" aria-hidden="{{!currentVisible}}" style="height: {{currentVisible ? listViewportHeight : 0}}rpx; opacity: {{currentVisible ? 1 : 0}}; transform: translateY({{currentVisible ? 0 : (placement === 'top' ? 8 : -8)}}rpx);" bindtransitionend="onTransitionEnd">
+    <view class="pui-combobox__panel-inner" style="height: {{listViewportHeight}}rpx;">
+      <view wx:if="{{stateType === 'error'}}" class="pui-combobox__state pui-combobox__state--error"><pui-empty custom-class="pui-combobox__empty" description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" /><pui-button wx:if="{{retryText}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" bind:click="onRetry">{{retryText}}</pui-button></view>
+      <view wx:elif="{{stateType === 'loading'}}" class="pui-combobox__state pui-combobox__state--loading"><pui-loading loading text="{{loadingText}}" size="small" duration="{{motionDuration}}" easing="{{easing}}" reduce-motion="{{reduceMotion}}" aria-label="{{loadingText}}" /></view>
+      <scroll-view wx:elif="{{stateType === 'content'}}" class="pui-combobox__list" scroll-y enhanced show-scrollbar="{{false}}" role="listbox" aria-label="{{semanticLabel}}选项" aria-multiselectable="{{multiple}}" bindscroll="onScroll">
+        <view wx:for="{{optionItems}}" wx:key="key" class="pui-combobox__option {{item.selected ? 'pui-combobox__option--selected' : ''}} {{item.disabled ? 'pui-combobox__option--disabled' : ''}}" data-index="{{index}}" role="option" aria-selected="{{item.selected}}" aria-disabled="{{item.disabled}}" catchtap="onOptionTap"><text wx:if="{{item.showGroupHeader}}" class="pui-combobox__group">{{item.group}}</text><view class="pui-combobox__option-row"><view wx:if="{{showIcon && item.icon}}" class="pui-combobox__option-icon"><pui-icon name="{{item.icon}}" size="30" /></view><view class="pui-combobox__option-copy"><text class="pui-combobox__option-label">{{item.label}}</text><text wx:if="{{showDescription && item.description}}" class="pui-combobox__option-description">{{item.description}}</text></view><view wx:if="{{showCheck && item.selected}}" class="pui-combobox__option-check"><pui-icon name="check" size="28" custom-class="pui-combobox__check" /></view></view></view>
+      </scroll-view>
+      <view wx:else class="pui-combobox__state pui-combobox__state--empty"><slot wx:if="{{customEmpty}}" name="empty"></slot><pui-empty wx:else custom-class="pui-combobox__empty" description="{{emptyText}}" icon="search" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" /></view>
+      <view wx:if="{{customFooter}}" class="pui-combobox__footer"><slot name="footer"></slot></view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,33 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}} {{customStyle}}"
+  role="status"
+  aria-label="{{semanticLabel}}"
+>
+  <view class="pui-empty__visual" aria-hidden="true">
+    <pui-image
+      wx:if="{{image}}"
+      src="{{image}}"
+      mode="aspectFit"
+      width="192rpx"
+      height="192rpx"
+      aria-label="{{semanticLabel}}插图"
+      reduce-motion="{{reduceMotion}}"
+    />
+    <pui-icon
+      wx:elif="{{resolvedIconName}}"
+      name="{{resolvedIconName}}"
+      size="{{resolvedIconSize}}"
+      color="{{resolvedIconColor}}"
+      color-scheme="{{colorScheme}}"
+    />
+    <slot wx:else name="image"></slot>
+  </view>
+
+  <view class="pui-empty__description">
+    <text wx:if="{{description}}">{{description}}</text>
+    <slot name="description"></slot>
+  </view>
+
+  <view class="pui-empty__actions"><slot name="action"></slot></view>
+</view>

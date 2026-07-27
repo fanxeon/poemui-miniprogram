@@ -1,0 +1,108 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0447",
+  "title": "更新公告缺少唯一 ScrollArea 与 78vh 内容上限",
+  "scope": "component",
+  "components": ["miniprogram-me", "popup", "scroll-area"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "更新公告 Popup 的内部内容必须使用 PUI ScrollArea，滚动区域最大高度为 78vh，Header 与 Footer 固定在滚动区外。",
+  "environment": {
+    "surfaces": ["miniprogram me update announcement", "popup content", "scroll-area"],
+    "platforms": ["wechat-miniprogram", "h5-preview", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/me/index 并打开更新公告。",
+    "公告内容原本直接投影到 Popup 自带的 scroll-view，没有显式组合 PUI ScrollArea，也没有 78vh 的业务内容上限。",
+    "直接在 Popup Content 内再嵌套 ScrollArea 会让两个同方向滚动所有者同时启用。"
+  ],
+  "expected": "Popup Header/Footer 固定；Content 关闭自身滚动，只由一个高度 78vh 且受父级可用高度约束的 PUI ScrollArea 承担公告滚动。",
+  "actual": "公告只使用 Popup 默认内容滚动，无法消费 ScrollArea 的遮罩、尾部安全区和统一滚动合同。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户明确要求更新公告内部使用 ScrollArea，最大高度 78vh。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "公告 Popup 关闭 contentScrollable，Content Slot 改为 height=78vh 的 PUI ScrollArea。"
+    },
+    {
+      "kind": "file",
+      "ref": "popup/popup.wxml",
+      "note": "Popup 公开 contentScrollable，将默认 Content scroll-y 与消费者 ScrollArea 互斥。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "锁定公告 ScrollArea、78vh、零尾部空白和 Popup 滚动所有权移交。"
+    }
+  ],
+  "rootCause": "Popup 默认总是拥有 Content 纵向滚动，应用页无法在不产生双滚动的前提下组合统一 ScrollArea；ScrollArea height 也尚未接受正 vh。",
+  "decision": {
+    "outcome": "Popup 新增默认 true 的 contentScrollable；false 时保留 Content 分区但关闭 scroll-y。ScrollArea height 同步接受正 vh。更新公告使用 contentScrollable=false、height=78vh、contentPaddingBottom=0，Footer 固定在滚动区外。",
+    "rationale": "显式滚动所有权比嵌套两个 scroll-view 更稳定；复用现有 ScrollArea 能共享渐变、滚动和可访问性合同，正 vh 同步小程序/H5。",
+    "alternativesRejected": [
+      "直接嵌套两个可滚动 scroll-view 会造成手势竞争和末项不可达。",
+      "页面手写原生 scroll-view 会绕过 PUI ScrollArea 合同。",
+      "把 Footer 放入滚动内容会让主要关闭动作随长公告离开视口。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "popup/popup.js",
+      "popup/popup.wxml",
+      "scroll-area/scroll-area.js",
+      "miniprogram/pages/me/index.wxml",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/POPUP.md",
+      "docs/components/SCROLL-AREA.md"
+    ],
+    "dependencies": ["PUI Popup", "PUI ScrollArea"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-popup.js",
+      "scripts/test-scroll-area.js",
+      "scripts/test-miniprogram-me-page.js"
+    ],
+    "commands": [
+      "node scripts/test-popup.js：通过",
+      "node scripts/test-scroll-area.js：通过",
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "npm run feedback:generate：通过，共 429 条记录",
+      "npm run feedback:check：通过",
+      "npm run site:build：通过"
+    ],
+    "browser": [
+      "微信开发者工具 390px：公告 ScrollArea 宿主 336×553px，553px 对应当前视口的 78vh；初始位置 left=27/top=178。",
+      "运行态临时追加第二条长公告后，通过受控 scrollTop=700 真实滚到后续公告；Header 保持顶部，Footer Button 滚动前后均为 left=27/top=772、336×45px。",
+      "/tmp/poemui-me-announcement-scroll-78vh-top.png",
+      "/tmp/poemui-me-announcement-scroll-78vh-overflow.png"
+    ],
+    "deviceRisks": [
+      "微信开发者工具已验证受控滚动和固定 Footer；真实手指连续拖动、边缘渐变显隐仍需真机复核。",
+      "iOS/Android 真机的嵌套组件触摸、vh 计算、惯性滚动和读屏顺序仍待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "Popup 内组合 ScrollArea 时必须先关闭 Popup Content 自滚动，确保同方向只有一个滚动所有者。",
+    "rules": [
+      "Popup contentScrollable 默认 true；只有消费者提供唯一 PUI ScrollArea 时才设为 false。",
+      "ScrollArea 正 vh 高度必须在小程序和 H5 同步，非法值继续安全回退。",
+      "更新公告 ScrollArea 最大 78vh，Header/Footer 固定在滚动区外。",
+      "已有固定 Footer 时按业务需要关闭 ScrollArea 默认 10vh 尾部空白。"
+    ],
+    "tags": ["popup", "scroll-area", "78vh", "scroll-owner", "miniprogram-me"]
+  }
+}

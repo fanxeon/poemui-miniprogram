@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0377",
+  "title": "Tabs content 区域高度过大导致 390px 窄屏下空间浪费",
+  "scope": "component",
+  "components": ["tabs"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "Tabs 组件不应占用过多垂直空间，特别是在 390px 窄屏下。",
+  "environment": {
+    "surfaces": ["miniprogram tabs", "h5 tabs preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在快速样式页面使用 Tabs 组件切换分类。",
+    "旧版 content 区域 min-height 为 96rpx (48px)，padding-top 为 20rpx (10px)，导致额外占用 58px 垂直空间。"
+  ],
+  "expected": "Tabs content 区域使用紧凑的最小高度和间距，不占用过多垂直空间。",
+  "actual": "content 区域 min-height 和 padding-top 过大，在 390px 窄屏下显得臃肿。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 用户指出 tabs 占用过高高度", "note": "用户反馈 tabs 组件在 390px 窄屏下占用过多垂直空间"},
+    {"kind": "file", "ref": "tabs/tabs.wxss", "note": "content 区域 min-height 96rpx、padding-top 20rpx"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 镜像同样 min-height 96px、padding-top 10px"}
+  ],
+  "rootCause": "content 区域的 min-height 和 padding-top 是为通用场景设计的，但在窄屏下占用过多空间。",
+  "decision": {
+    "outcome": "min-height 从 96rpx 减少到 48rpx，padding-top 从 space-normal (20rpx) 减少到 space-sm (12rpx)；H5 同步调整。",
+    "rationale": "在 390px 窄屏下，每节省 14px 的垂直空间都能显著提升内容可见性；48rpx 的最小高度仍能保证空状态下的基本可读性。",
+    "alternativesRejected": [
+      "完全移除 min-height 会导致空内容时 tabs 高度塌陷。",
+      "只减少 padding-top 不足以解决整体高度问题。"
+    ]
+  },
+  "impact": {
+    "files": ["tabs/tabs.wxss", "miniprogram_dist/tabs/tabs.wxss", "preview/styles.css", "docs/components/TABS.md"],
+    "dependencies": ["pui-button", "pui-icon", "pui-badge"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabs.js"],
+    "commands": ["node scripts/test-tabs.js", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["390px 下验证 tabs 高度不再占用过多空间"],
+    "deviceRisks": ["真机仍需复核 tabs 高度在不同内容量下的表现"]
+  },
+  "ai": {
+    "summary": "Tabs content 区域的 min-height 和 padding-top 需要在窄屏下保持紧凑。",
+    "rules": [
+      "Tabs content 区域使用 space-sm 作为顶部间距，避免占用过多垂直空间。",
+      "min-height 保持 48rpx 以确保空状态下的基本可读性。",
+      "小程序和 H5 镜像必须同步高度和间距调整。"
+    ],
+    "tags": ["tabs", "height", "spacing", "390px", "miniprogram"]
+  }
+}

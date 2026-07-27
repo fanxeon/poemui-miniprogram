@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0284",
+  "title": "Tabbar 预览缩进、整高分隔与纵向节奏错误",
+  "scope": "component",
+  "components": ["tabbar", "preview-site", "preview-device"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "普通 Tabbar 必须全宽贴合预览底部，不被画成四个拥挤的 Cell。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-preview", "miniprogram"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Tabbar 的基础用法预览，保持 shape=normal、split=true。",
+    "修复前普通导航在预览中出现左右内缩，且相邻项的 border-left 贯穿整个导航高度。"
+  ],
+  "expected": "shape=normal 从 PreviewDevice viewport 左右边缘贴合；split 仅显示以 space-normal 上下收口的中性短分隔；图标、标签与活动指示器拥有不拥挤的垂直节奏。",
+  "actual": "预览视觉像被放进内层面板，整高分隔把四项误读为连续 Cell，52px 高度与内边距使图标、文字和分隔线显得过挤。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 当前任务对话与截图", "note": "用户明确指出左右缩进、整高竖线和拥挤的纵向节奏。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "edge-to-edge PreviewDevice 现显式标记 viewport，避免 Tabbar 继承对称 scrollbar gutter。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 split 已从 item 整高 border-left 改为 inset ::before；edge-to-edge viewport 隐藏 classic scrollbar，并在共享 small Button 基线之后锁定 56px 点击区。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxss", "note": "小程序与 H5 同步使用 wrapper 的上下收口分隔，并将导航内容高度统一为 112rpx。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "专项测试锁定 inset 分隔和 56px/112rpx 跨端高度。"}
+  ],
+  "rootCause": "H5 和小程序均把 split 实现为条目的整高左边框，同时旧的 52px/104rpx 内容高度没有给图标、标签和活动指示器留下舒展的垂直空间。",
+  "decision": {
+    "outcome": "normal Tabbar 保持 edge-to-edge；split 改为 item wrapper 的短 ::before 分隔；导航高度统一为 56px/112rpx。",
+    "rationale": "分隔仍保留一级目的地的可扫描边界，但不再改变导航的连续整体感；height 调整只改善内部节奏，不新增公开调参。",
+    "alternativesRejected": [
+      "关闭 split 默认值：会偏离已确认的 TDesign 对齐基线。",
+      "保留整高 border-left：视觉上继续把导航项误导成 Cell。",
+      "只在 H5 隐藏竖线：会制造小程序与预览不一致。"
+    ]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.wxss", "preview/app.js", "preview/styles.css", "docs/UI_DESIGN_CONTRACT.md", "docs/components/TABBAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-tabbar.js", "feedback/records/pui-fb-0284-tabbar-edge-to-edge-inset-divider.json"],
+    "dependencies": ["PUI Button", "PUI Icon", "PUI Badge", "PreviewDevice edge-to-edge layout", "Tabbar split contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js", "scripts/test-layout-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run check", "npm run site:build", "npm run example:install", "npm run pack:check", "微信开发者工具 cli build-npm --project _example"],
+    "browser": ["2026-07-23 以 390×844 真实浏览器复核：normal Tabbar 与 PreviewDevice viewport 同为 349px 且左右边界一致；四项点击区均为 56px，split 为 34px 高的短分隔，document 无横向溢出。"],
+    "deviceRisks": ["微信真机尚未复核 112rpx 高度、safe-area、样式隔离和触摸热区。", "微信 CLI 已启动 IDE 但 touristappid 返回 code 10 不存在，miniprogram_npm 未生成；需要合法 AppID 后重新执行 build-npm。"]
+  },
+  "ai": {
+    "summary": "屏幕附着导航必须是连续的 edge-to-edge 底部区域，不能因分隔和父级 padding 被画成列表 Cell。",
+    "rules": [
+      "shape=normal 的 Tabbar 不得继承 PreviewDevice shadow-safe 左右内距。",
+      "split 只能用上下收口的中性短分隔，禁止整高 border-left。",
+      "图标、标签、活动指示器应在固定 56px/112rpx 导航高度内保留 Token 化垂直节奏。"
+    ],
+    "tags": ["tabbar", "preview-device", "edge-to-edge", "divider", "spacing", "h5-parity"]
+  }
+}

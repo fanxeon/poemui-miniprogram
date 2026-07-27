@@ -1,0 +1,85 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0327",
+  "title": "Navbar 的 Grid Slot 百分比布局在 Skyline 真机偏离原生胶囊几何",
+  "scope": "component",
+  "components": ["navbar", "preview-site", "miniprogram-home", "miniprogram"],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "real-device",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "自定义 Navbar 在微信真机必须遵循原生胶囊的真实位置，标题、左侧多个操作和安全区不能与开发者工具 WebView 出现明显差异。",
+  "environment": {
+    "surfaces": ["wechat-component", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools-webview", "wechat-skyline", "browser"],
+    "viewports": ["390px", "iPhone custom-navigation"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 navigationStyle=custom、capsule=true 的首页向 Navbar left Slot 放入搜索与菜单两个 PUI 图标按钮。",
+    "使用开发者工具 WebView 渲染模式观察 Navbar 后，在 iPhone 微信真机打开同一页面。",
+    "真机中左 Slot 的 width:100% 不再收敛至 Grid 左轨，搜索与菜单横向分离，标题落到与胶囊不一致的视觉行。"
+  ],
+  "expected": "Navbar 以 wx.getMenuButtonBoundingClientRect 的 right/width 和窗口宽度生成明确的左镜像命中区；标题用 windowWidth-left 生成的左右安全轨绝对居中，且不依赖 Grid 或 Slot 百分比宽度。",
+  "actual": "旧实现将原生胶囊 Token 填入 CSS Grid，并由 left Slot 分组的 width:100% 决定内部宽度。WebView 画面正常，但 Skyline 真机未保持同一轨道约束，导致顶部几何明显偏离。",
+  "evidence": [
+    {
+      "kind": "real-device",
+      "ref": "/Users/fanx/Downloads/截屏 2026-07-24 16.46.26.png",
+      "note": "真机首页截图显示搜索、菜单、标题与原生胶囊不在同一正确几何行。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/app.json",
+      "note": "真实工程声明 navigationStyle=custom 与 renderer=skyline。"
+    },
+    {
+      "kind": "file",
+      "ref": "navbar/navbar.wxss",
+      "note": "修复前以 Grid 和 Slot 百分比宽度组织胶囊轨；修复后使用绝对定位的镜像操作区与标题安全轨。"
+    },
+    {
+      "kind": "file",
+      "ref": "navbar/navbar.js",
+      "note": "组件从完整原生菜单矩形派生 safe height、content height、mirror-left、capsule width 和 title reserve。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-navbar.js",
+      "note": "锁定 390px 原生矩形的 mirror-left=3px、width=88px、reserve=91px，并禁止 Navbar 重新依赖 Grid。"
+    }
+  ],
+  "rootCause": "PUI-FB-0271/0291 的几何变量已存在，但实际 WXSS 仍以 CSS Grid 及 left Slot 的百分比宽度承载这些变量；该布局在开发者工具 WebView 和 Skyline 真机的 Slot 尺寸语义不一致，造成真机偏移。",
+  "decision": {
+    "outcome": "Navbar 组件级改为绝对几何层：left action 固定在 windowWidth-right 外边距和原生胶囊 width 对应的镜像区，title 固定在 windowWidth-left 对称安全轨，right action 只在 capsule=false 时存在。H5 镜像同步相同模型。",
+    "rationale": "运行时矩形仍由微信平台提供，但命中区与标题约束不再交给 Grid 或投影 Slot 计算，因此 WebView、Skyline 和不同胶囊尺寸都消费同一组明确坐标。",
+    "alternativesRejected": [
+      "为首页增加私有 margin 或负偏移，会绕过 Navbar 的共享原生胶囊合同。",
+      "固定某台 iPhone 的状态栏、胶囊宽度或顶距，无法覆盖其他设备和横竖屏。",
+      "在 PUI 中重绘或接管微信原生胶囊，会制造重复控件和错误点击语义。"
+    ]
+  },
+  "impact": {
+    "files": ["navbar/navbar.js", "navbar/navbar.wxss", "preview/styles.css", "scripts/test-navbar.js", "docs/components/NAVBAR.md", "miniprogram_dist/navbar/navbar.js", "miniprogram_dist/navbar/navbar.wxss"],
+    "dependencies": ["wx.getWindowInfo", "wx.getMenuButtonBoundingClientRect", "微信 navigationStyle=custom", "Skyline", "PUI Button"]
+  },
+  "verification": {
+    "tests": ["scripts/test-navbar.js", "scripts/test-miniprogram-home.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["node scripts/test-navbar.js", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具热重载后重新构建 npm"],
+    "browser": ["H5 Navbar 镜像同步使用绝对左镜像区和对称标题安全轨，保持原生胶囊镜像 aria-hidden 与 pointer-events:none。"],
+    "deviceRisks": ["需由用户在 iOS/Android 真机确认当前设备的 rect、双按钮命中区、横竖屏、系统低动效和读屏；本轮未读取用户手机的运行时 rect 原始值。"]
+  },
+  "ai": {
+    "summary": "微信 custom Navbar 的原生胶囊几何必须在组件内转换为明确的绝对定位轨道，不能把跨渲染器的 Slot 百分比尺寸当作平台坐标。",
+    "rules": [
+      "capsule=true 时，left action 的 left 必须等于 windowWidth-right，width 必须等于原生胶囊 width。",
+      "title 必须以 windowWidth-left 作为左右对称安全轨，不能被 left Slot 的内容宽度或数量推开。",
+      "小程序 Navbar 禁止以 CSS Grid 或 Slot width:100% 计算原生胶囊几何；页面不得用私有偏移补丁。",
+      "变更原生几何时同步 H5 镜像、dist、专项测试、Ledger 和真机风险声明。"
+    ],
+    "tags": ["navbar", "wechat", "skyline", "native-capsule", "slot", "absolute-geometry"]
+  }
+}

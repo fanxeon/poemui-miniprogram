@@ -1,0 +1,111 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0016",
+  "title": "H5 组件引用未定义视觉 Token 导致样式静默失效",
+  "scope": "global",
+  "components": ["preview-site", "calendar", "dialog", "combobox", "action-sheet", "upload", "table", "documentation"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "深浅色、阴影、毛玻璃和大圆角不仅要切换根节点状态，还必须真实作用于所有相关 PUI 组件并保持统一 Token 合同。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件页并开启阴影，确认 app-shell 已进入 data-shadow=on。",
+    "检查 Combobox、Calendar、Dialog、ActionSheet、Upload 与 Table 的计算样式。",
+    "审计 preview/styles.css，发现八处使用 var(--shadow-card)，但整个 H5 样式表没有定义 --shadow-card。",
+    "在首次修复后继续扫描全部 var(--*)：仍发现 --shadow-popup×3、--frost-filter×2、--text-muted、--surface-muted、--surface-hover、--accent 与 --pui-preview-doc-body-line 共 10 个无定义且无 fallback 的引用。",
+    "这些残留分别影响 Combobox 浮层阴影、ActionSheet/Dialog 毛玻璃、旧状态样式、Table 按压、Upload 进度和文档正文行高；已有测试只禁止 --shadow-card，无法覆盖其他变量名。"
+  ],
+  "expected": "H5 中所有无 fallback 的 CSS 自定义属性引用都能追溯到 CSS 根或组件运行时 inline style/setProperty；普通 Surface 使用 --shadow-soft，浮层使用 --shadow，毛玻璃使用 --blur，交互与语义颜色使用已有 brand/subtle/surface Token。外观开启时代表组件计算样式真实生效，关闭时由统一选择器收敛。",
+  "actual": "根节点和 Switch 状态虽然正确切换，但未定义变量会让对应 CSS 声明在浏览器中静默失效。首次只清除 --shadow-card 后，仍有 10 个不同名称的失效引用，说明按已知名称写断言无法证明全站 Token 完整。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "八处未定义 var(--shadow-card) 已统一替换为现有 --shadow-soft，样式表不再保留该引用。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "全局设计合同禁止 preview CSS 再次出现 var(--shadow-card)，并要求继续消费已定义 --shadow-soft。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-css-token-contract.js",
+      "note": "解析全样式表 var()，对无 fallback 引用同时查询 CSS、helper inline style 与 setProperty 定义；锁定未定义 Token 为 0，并禁止十个失效别名回归。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "浮层、毛玻璃、状态色、Table 按压、Upload 进度与文档行高已分别回归 --shadow、--blur、--subtle/surface-soft、--brand-soft、--brand 与既有行高 Token。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/combobox",
+      "note": "390px 下 Combobox 浮层恢复 popup 阴影，ActionSheet 恢复真实 blur；深色+阴影+毛玻璃+大圆角刷新后 Combobox 为 24px、0 18px 44px rgba(0,0,0,.34) 且 document=375/375。"
+    }
+  ],
+  "rootCause": "H5 预览经历多轮视觉重构，组件复制了不同阶段的私有变量名和一处拼写缩写；测试只验证开关 data 属性、已知 --shadow-card 名称与少数计算样式，没有从语法层面建立“每个无 fallback var() 都必须有定义”的完整引用合同。",
+  "decision": {
+    "outcome": "删除全部 --shadow-card、--shadow-popup、--frost-filter 等无定义引用，普通 Surface 统一使用 --shadow-soft，浮层使用 --shadow，毛玻璃使用 --blur，交互/语义颜色与行高回归现有 Token；新增全样式表自定义属性引用扫描和真实计算样式验证。",
+    "rationale": "复用现有语义 Token 让四项外观与内容状态保持单一事实源；语法级扫描覆盖未来所有变量名，计算样式验证则证明根状态之外的组件声明真实生效。",
+    "alternativesRejected": [
+      "新增一个与 --shadow-soft 数值相同的 --shadow-card 别名，会继续扩大重复命名且没有新的语义价值。",
+      "分别为 --shadow-popup、--frost-filter、--accent 等补同值别名，会把历史命名永久固化并继续漏掉拼写错误。",
+      "只验证 app-shell[data-shadow]，无法证明组件实际获得阴影。",
+      "逐组件写固定 box-shadow 魔法数，会破坏主题和开关的一致性。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/styles.css",
+      "preview/index.html",
+      "scripts/test-design-contracts.js",
+      "scripts/test-preview-css-token-contract.js",
+      "scripts/test-style-utilities.js",
+      "package.json",
+      "AGENTS.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0016-h5-undefined-shadow-token.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["config-provider", "switch", "theme-tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-layout-contracts.js", "scripts/test-style-utilities.js", "scripts/test-preview-css-token-contract.js", "scripts/test-upload.js", "scripts/test-table.js", "scripts/test-combobox.js", "scripts/test-dialog.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "390x844 刷新后本地偏好恢复 dark/on/on/large，四项 aria-checked 均为 true。",
+      "Combobox 的计算 box-shadow 为 rgba(0,0,0,.28) 0 8px 22px；Calendar surface 为双层 popup 阴影。",
+      "Calendar、Combobox 的 document client/scroll 均为 375/375px。",
+      "第二轮 390x844 浅色实测 Combobox 浮层为 rgba(9,9,11,.1) 0 14px 36px；ActionSheet 为 blur(14px) saturate(1.2)，Dialog 为 blur(18px) saturate(1.35)。",
+      "dark/on/on/large 刷新后四个 Switch aria-checked 全为 true，Combobox popup 为 24px 圆角、rgba(0,0,0,.34) 0 18px 44px 与真实 blur；所有页面 document=375/375。验收后刷新确认恢复 light/off/off/normal。"
+    ],
+    "deviceRisks": [
+      "本记录修复 H5 官网 Token；小程序端使用 --pui-shadow-* 原生 Token，不受 --shadow-soft 名称影响，真机阴影性能仍需目标设备复核。"
+    ]
+  },
+  "ai": {
+    "summary": "H5 每个无 fallback 的 CSS 变量都必须有静态或运行时定义；外观开关还必须真实改变组件计算样式。",
+    "rules": [
+      "新增或修改 H5 CSS Token 引用前必须确认定义存在；所有无 fallback 的 var(--*) 必须通过全样式表扫描。",
+      "普通组件 Surface 使用 --shadow-soft，浮层使用 --shadow，毛玻璃使用 --blur，不创建数值重复的私有别名。",
+      "组件运行变量必须由对应 helper 的 inline style 或 setProperty 明确提供；拼写缩写不能替代完整语义 Token。",
+      "验收阴影开关时除根 data 属性外，至少测量一个普通 Surface 和一个浮层 Surface 的计算 box-shadow。",
+      "阴影关闭时计算值应为 none；开启时需要非 none，并在 light/dark 下读取各自 Token。"
+    ],
+    "tags": ["preview-site", "shadow", "frost", "color", "typography", "token", "undefined-variable", "appearance", "css-custom-property", "preview-parity", "390px"]
+  }
+}

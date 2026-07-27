@@ -1,0 +1,97 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0011",
+  "title": "Dialog 默认预览堆叠工程诊断面板并留下空黑舞台",
+  "scope": "component",
+  "components": ["dialog", "preview-site", "button", "icon"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "Dialog 默认预览必须像真实用户路径，只保留打开入口和弹窗本体；隐藏后不能留下空黑底，组件下方不能堆叠方法、事件链和内部状态卡，图标与文字必须按 PUI Button 合同对齐。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Dialog H5 预览并关闭弹窗。",
+    "观察隐藏状态仍保留 292px 空舞台，并继续套用大尺寸 preview canvas 与 phone Surface。",
+    "观察组件下方同时出现 open()/close()、真实事件、内容与动作三组工程信息；禁用 close() Button 的 Icon 与文字挤压并出现裁切。"
+  ],
+  "expected": "默认预览只显示一个真实“打开 Dialog”入口或正在运行的 Dialog；显隐前后复用全局固定 PreviewDevice，没有空黑舞台、额外装饰面板或工程诊断卡。所有入口与动作复用 PUI Button/Icon 镜像合同。",
+  "actual": "旧预览把实例方法、事件链和布局枚举作为三个额外块堆在 Dialog 下方；关闭后只剩空舞台和黑色嵌套 Surface，close() 工程按钮还受通用 demo 样式影响而发生 Icon 对齐与文字裁切问题。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "codex-clipboard-67b4e538-0ce4-4c59-9ed1-c81b3b1606c5.png",
+      "note": "用户截图明确指出黑底、工程化浮窗、关闭图标未居中和文字裁切。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "默认 Dialog showcase 已收敛为真实打开入口与 Dialog 本体，删除 methods、runtime、事件和布局状态卡，全部 Dialog Button 使用 previewContract。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dialog.js",
+      "note": "专项合同禁止旧工程块回流，并锁定稳定舞台、全局固定 PreviewDevice 和 PUI Button 镜像。"
+    },
+    {
+      "kind": "file",
+      "ref": "feedback/records/pui-fb-0014-preview-device-fixed-scroll-surface.json",
+      "note": "后续全局设备合同取消 Dialog 的透明 auto-height 私有例外，但继续禁止在统一设备边界内部增加第二层装饰面板。"
+    }
+  ],
+  "rootCause": "预览站把组件 API 调试、生命周期可视化和用户演示混在同一个默认画布中，同时给已经是浮层 Surface 的 Dialog 再套 preview canvas、phone 和状态 Cell，导致信息层级、容器职责和按钮样式边界同时失控。",
+  "decision": {
+    "outcome": "默认预览只保留一个 PUI Button 打开入口与受限 Dialog 舞台；移除 open()/close() 方法栏、运行状态、事件链和布局枚举卡。Dialog 不增加私有 canvas/card Surface，改为与其他组件复用全局固定 PreviewDevice；所有 Dialog 动作统一启用 PUI Button previewContract。",
+    "rationale": "演示区应回答用户如何触发和使用组件，工程诊断属于代码、API 或 PROP；统一设备边界负责稳定尺寸和滚动，Dialog 自身只负责浮层 Surface，避免重复面板。",
+    "alternativesRejected": [
+      "给事件卡继续加 text-cut 只会隐藏信息和布局问题，仍保留无意义工程内容。",
+      "只修 close() Button 的局部 Icon margin 会留下整组无用户价值的方法按钮。",
+      "关闭后直接折叠舞台会让点击前后页面跳高，违背稳定预览边界。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/index.html",
+      "scripts/test-dialog.js",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "feedback/records/pui-fb-0011-dialog-preview-engineering-panels.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["button", "icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dialog.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "最新统一设备合同下，桌面 Dialog 复用 393x622px PreviewDevice，内部 viewport 为 361x590px；methods/runtime/event/label 四类工程节点仍全部为 0，Dialog 不再建立透明 auto-height 私有外壳。",
+      "390x844 实测 document scrollWidth=clientWidth=375px；Dialog 宽 279px，关闭按钮 36x36px、Icon 16x16px，中心偏差 x=0/y=0，取消与确认 Button 均无文字溢出。",
+      "深色 + 阴影 + 毛玻璃 + 大圆角同时开启时 Dialog 为 24px 圆角、blur(18px) saturate(1.35) 与双层阴影，关闭按钮仍为 999px 圆形且 Icon 中心偏差为 0；验收后已恢复四项默认关闭。"
+    ],
+    "deviceRisks": [
+      "本次默认预览信息层级调整仅影响 H5 官网；原生 Dialog API 与 WXML/WXSS 未变化，真机仍需合法 AppID 验证 Header Slot、Popup 遮罩与触摸关闭。"
+    ]
+  },
+  "ai": {
+    "summary": "默认组件预览只展示真实用户入口、组件本体和必要结果；工程方法、事件链和状态枚举必须退出默认画布。",
+    "rules": [
+      "不得在默认预览下方堆叠 open()/close()、事件链、受控状态或布局枚举卡；这些信息进入代码、API 或 Inspector。",
+      "浮层隐藏时显示真实触发入口，并保持固定舞台边界，禁止留下空黑 Surface 或点击后持续长高。",
+      "浮层已经是 Surface 时不得在全局 PreviewDevice 内再套装饰性 phone/card；演示动作必须使用 PUI Button/Icon 的真实镜像合同。"
+    ],
+    "tags": ["dialog", "preview", "information-hierarchy", "less-is-more", "stable-stage", "button", "icon", "ai-usability"]
+  }
+}

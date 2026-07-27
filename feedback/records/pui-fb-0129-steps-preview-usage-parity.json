@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0129",
+  "title": "Steps H5 演示以诊断状态壳代替真实分区用法",
+  "scope": "component",
+  "components": ["steps", "preview-site", "button", "icon"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Steps 官网应像成熟组件文档一样按真实用法分区，基础示例保持最小 WXML，并让所有 Props、复制、深浅色和视觉开关作用于真实组件镜像。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "property-panel", "appearance-menu"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 把 loading/error/empty/retry、footer 与事件诊断堆在一个演示壳中，没有按用户用法陈列方向、顺序、主题、状态和边界。",
+    "旧基础 WXML 暴露多个 bind 与调试动作，无法作为复制即用的最小示例。",
+    "旧预览值匹配和按钮状态未与原生严格值合同共用，容易出现画面变化但受控 current 没有真实父级回写。",
+    "API、属性和兼容说明仍宣传已删除的业务状态、Slot、方法与私有动画能力。"
+  ],
+  "expected": "官网按基础用法、方向与顺序、主题与状态、边界值与禁用四区展示；每个入口组合 PUI Button/Icon，受控实例真实更新 current，基础代码零 bind，API 与属性页完整同源。",
+  "actual": "旧演示优先展示工程诊断和伪状态，用户难以筛选常用用法，H5、WXML、API 与真实组件职责不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求按 TDesign 演示结构分区、基础示例保持基础，并授权本 Goal 后续组件在完整证据后自主验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四个语义分区共用严格值助手、真实 Button/Icon 组合和受控 updateCurrentProp 回写。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "分区固定 18px 上间距，标题自然换行，横向超宽只进入 Steps 自身滚动区。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "API 最终只显示 12 Props 和 1 Event，基础 WXML 零 bind，事件只进入专项示例。"},
+    {"kind": "test", "ref": "scripts/test-steps.js", "note": "锁定四分区、无 fake state/footer、基础零 bind、共享 PUI 组合和三层安装一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/steps", "note": "390px 实点四分区、属性重置、非法 JSON、空 items、三处复制、API 全文和所有外观开关，最终新页面日志为空。"}
+  ],
+  "rootCause": "旧预览以开发调试覆盖面代替产品用法信息架构，并维护了独立于原生组件的状态与代码拼装路径。",
+  "decision": {
+    "outcome": "删除 H5 业务状态壳、footer、retry 与诊断反馈；用四个真实 Steps 实例分区陈列，并让属性、WXML、工具栏和两段代码块共用同一默认值与代码生成真相源。",
+    "rationale": "组件概览应帮助用户快速筛选可用形态，工程详情进入 API/属性；共享 helper 和同源生成器能保证 H5 与原生调用合同一致。",
+    "alternativesRejected": [
+      "继续保留 fake loading/error/retry 会误导消费者把页面状态交给 Steps。",
+      "用提示文字模拟选择结果不能证明真实 current 回写。",
+      "在基础 WXML 展示所有 bind 会淹没最小调用。",
+      "用省略号压缩 API 会让长说明和可选值不可见。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "preview/index.html", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/STEPS.md", "scripts/test-steps.js", "feedback/records/pui-fb-0129-steps-preview-usage-parity.json"],
+    "dependencies": ["PreviewDevice", "PUI Button H5 helper", "PUI Icon H5 helper", "shared usage-code generator", "appearance menu"]
+  },
+  "verification": {
+    "tests": ["scripts/test-steps.js", "scripts/test-preview-code-copy.js", "scripts/test-preview-normal-code-card.js", "scripts/test-preview-theme-coverage.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["node scripts/test-steps.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "四分区标题自然文档流，首区上间距 0、后续 18px；横向边界实例 client/scroll 为 293/502px，document 仍为 375/375px。",
+      "非法 items JSON 设置 aria-invalid=true 且不写入坏值；items=[] 后基础实例无按钮、无 fake empty 状态。",
+      "属性页、组件引用和基础用法三处复制按钮都进入真实已复制状态；基础代码 bind 数为 0。",
+      "API 共 76 个单元格，字号至少 14px，ellipsis、nowrap 和裁切均为 0；概览/API/属性 Tabs 几何一致。",
+      "light/dark、border、shadow、frost、large-radius、gradient 全部实点，border-off 只透明化中性边界且组件尺寸不变，Esc 恢复外观入口焦点。"
+    ],
+    "deviceRisks": ["微信 scroll-view、Button 触摸、ARIA、系统字体换行、1rpx 连接线、样式隔离和系统低动效需合法 AppID 真机复核。"]
+  },
+  "ai": {
+    "summary": "Steps 概览固定用四个真实用法分区；基础代码零 bind，业务状态不进入组件，H5 值与父级回写必须和原生同源。",
+    "rules": [
+      "Steps 官网必须保留基础用法、方向与顺序、主题与状态、边界值与禁用四区。",
+      "基础 WXML 不展示 bind；事件只进入 API Events 与真正需要事件的专项示例。",
+      "H5 Steps 每项必须调用共享 Button/Icon helper，受控示例必须真实更新 current Prop。",
+      "API 和属性文字必须完整自然换行，禁止 ellipsis、nowrap、line-clamp 或固定高度裁切。"
+    ],
+    "tags": ["steps", "preview-parity", "usage-sections", "code-copy", "api-readability"]
+  }
+}

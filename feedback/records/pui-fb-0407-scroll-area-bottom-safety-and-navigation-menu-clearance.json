@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0407",
+  "title": "ScrollArea 缺少统一尾部安全区并导致 NavigationMenu 末项展开受阻",
+  "scope": "component",
+  "components": ["scroll-area", "navigation-menu", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "所有 ScrollArea 默认保留 10vh 尾部空间；NavigationMenu 右侧卡片阴影完整显示，最底部分区展开后仍可滚动查看全部内容。",
+  "environment": {
+    "surfaces": ["scroll-area component", "navigation-menu component page"],
+    "platforms": ["wechat-miniprogram", "h5-preview"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "滚动到使用 ScrollArea 的页面末尾，最后内容贴近视口或遮罩，无法继续滚到完整可读位置。",
+    "进入 NavigationMenu 双栏示例，右侧 Panel 下投影紧贴后续状态文字。",
+    "在页面最底部打开错误导航浮层，绝对定位面板不参与父级滚动高度，底部内容不可达。"
+  ],
+  "expected": "ScrollArea 默认提供可覆盖的 10vh 尾部安全区；NavigationMenu 常驻 Panel 阴影有 Token 化外扩空间；底部浮层打开时父级真实扩大尾部安全区。",
+  "actual": "ScrollArea 没有统一内容尾距；NavigationMenu 常驻 Panel 和底部绝对定位浮层都可能被后续内容或滚动边界裁切。",
+  "evidence": [
+    {"kind": "file", "ref": "scroll-area/scroll-area.js", "note": "新增 contentPaddingBottom，默认 10vh 并验证允许单位。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.wxml", "note": "默认 Slot 进入唯一透明内容轨并消费尾部安全区。"},
+    {"kind": "file", "ref": "navigation-menu/navigation-menu.wxss", "note": "垂直根为 Panel 阴影预留 Token 化底部空间。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/navigation-menu/index.js", "note": "底部浮层打开时把 contentPaddingBottom 提高到 680rpx，关闭恢复 10vh。"},
+    {"kind": "test", "ref": "scripts/test-scroll-area.js", "note": "锁定 10vh 默认值、合法单位、非法回退和双端镜像。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-navigation-pages.js", "note": "锁定 NavigationMenu 展开期间的尾部安全区回写。"},
+    {"kind": "user-report", "ref": "2026-07-27 当前任务对话", "note": "用户报告末项展开空间不足和右侧 Panel 阴影被裁切。"}
+  ],
+  "rootCause": "滚动容器只计算普通文档流高度，没有统一的内容尾部安全区；NavigationMenu 的 Panel 阴影和绝对定位浮层都不会自动扩大父级滚动预算。",
+  "decision": {
+    "outcome": "新增唯一纵向 API contentPaddingBottom，默认 10vh；内容轨负责 padding，根和 viewport 保持透明。NavigationMenu 常驻双栏使用现有空间 Token 保护阴影，底部浮层显隐真实回写父级安全区。",
+    "rationale": "一个受约束的纵向 API 能覆盖所有末项可达性，同时允许绝对定位浮层按真实高度临时提高空间，不引入四向布局系统。",
+    "alternativesRejected": [
+      "逐页追加 margin-bottom 会造成规则分叉且无法覆盖组件消费者。",
+      "给 ScrollArea 根加 padding 会改变 viewport 几何并产生第二层 Surface。",
+      "让 NavigationMenu 浮层改回普通文档流会改变 Overlay 和定位语义。"
+    ]
+  },
+  "impact": {
+    "files": ["scroll-area/", "navigation-menu/", "miniprogram/pages/components/navigation-menu/", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/SCROLL-AREA.md", "docs/components/NAVIGATION-MENU.md"],
+    "dependencies": ["PUI ScrollArea", "PUI NavigationMenu"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js", "scripts/test-navigation-menu.js", "scripts/test-miniprogram-navigation-pages.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具 build-npm"],
+    "browser": [
+      "微信开发者工具 390x844 打开 NavigationMenu 页面，常驻右侧 Panel 下投影完整显示并与后续状态保留安全间距。",
+      "页面方法回读确认底部浮层打开为 680rpx、关闭恢复 10vh。"
+    ],
+    "deviceRisks": ["iOS/Android 真机的 vh 计算、惯性滚动、底部安全区与浮层触摸仍需复核。"]
+  },
+  "ai": {
+    "summary": "滚动末项可达性由 ScrollArea 的单一纵向安全区负责，绝对定位浮层由消费者在打开期间提高该值。",
+    "rules": [
+      "ScrollArea contentPaddingBottom 默认 10vh，只允许非负裸数、rpx、px、vh 或 0。",
+      "绝对定位浮层打开时必须提高父级内容安全区，关闭后恢复默认。",
+      "Panel 阴影必须用现有 Token 预留外扩空间，不能用页面私有 margin 补丁。"
+    ],
+    "tags": ["scroll-area", "navigation-menu", "bottom-safety", "shadow", "390px"]
+  }
+}

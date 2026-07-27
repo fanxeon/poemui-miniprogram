@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0098",
+  "title": "Form 旧固定字段生成器混合数据、布局与操作职责",
+  "scope": "component",
+  "components": ["form", "field", "documentation", "example", "npm-dist"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Form 应参考 TDesign 的可组合父容器主干，基础用法保持最小，字段、输入控件和提交按钮由消费者使用真实 PoemUI 组件组合。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Form 的 items/value/defaultValue/disabled/showActions/submitText/resetText 七个 Props，确认组件本体固定生成 Input 与双按钮。",
+    "旧 value/defaultValue 与 items 同时决定字段和数据，消费者不能组合 Select、Switch、RadioGroup 或自定义 Field Slot。",
+    "对照 TDesign Miniprogram 1.15.3 Form 文档与 npm 安装源码，确认 Form 本体以默认 Slot、受控 data、rules、事件和实例方法为主干。"
+  ],
+  "expected": "Form 只拥有受控数据、集中规则和表单生命周期，默认 Slot 可组合任意真实字段控件，基础 WXML 零 bind。",
+  "actual": "旧 Form 是固定表单页面生成器，字段 schema、内部值、操作按钮和校验提示全部耦合在组件本体。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API、按用法分区 demo，并授权 agent 自主完成后续队列。"},
+    {"kind": "file", "ref": "form/form.wxml", "note": "最终为微信原生 form 加一个默认 Slot，不再固定生成 Input 或 Button。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "Form 固定7 Props、3 Events、1 Slot、5 Methods，并按数据规则、校验重置、语义低动效分组。"},
+    {"kind": "test", "ref": "scripts/test-form.js", "note": "专项锁定7/3/1/5、旧 API 禁入、基础零 bind、PUI Button 组合和源码/dist 一致。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/form", "note": "API 实测7 Props、3 Events、1 Slot、5 Methods；基础复制代码组合 Form/Field/Input/Button且不绑定事件。"}
+  ],
+  "rootCause": "旧实现把一次演示页面的字段 schema 和操作区直接产品化，没有先定义 Form 作为可组合状态父级的唯一职责。",
+  "decision": {
+    "outcome": "删除固定生成器 API，Form 收敛为 data/rules/showErrorMessage/scrollToFirstError/resetType/ariaLabel/reduceMotion，并由默认 Slot 承接消费者组合。",
+    "rationale": "字段控件与操作 Button 保持独立组件所有权，Form 才能复用在不同业务结构中，并避免两份值状态。",
+    "alternativesRejected": [
+      "保留 items 兼容层会继续让 Form 同时拥有字段结构和 Slot 结构。",
+      "保留 disabled 会伪装成可以递归禁用未知 Slot 子控件。",
+      "保留 showActions/按钮文案会让基础容器绑定具体页面操作布局。"
+    ]
+  },
+  "impact": {
+    "files": ["form/form.js", "form/form.json", "form/form.wxml", "form/form.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/FORM.md", "_example/miniprogram/pages/components/index.wxml", "scripts/test-form.js"],
+    "dependencies": ["pui-field", "consumer input controls", "pui-button", "native form"]
+  },
+  "verification": {
+    "tests": ["scripts/test-form.js", "scripts/test-design-contracts.js", "scripts/test-form-field-composition.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "概览分为基础用法、校验与反馈、组合字段，当前配置真实组合 Input、Switch、RadioGroup 与 Button。",
+      "属性面板逐项调整7 Props，WXML 只输出非默认 Form 属性并保留最小组合。",
+      "API 的84个表头/单元格最小14px，无 ellipsis、nowrap 或内容裁切。"
+    ],
+    "deviceRisks": [
+      "微信原生 form 对自定义 Button form-type 的事件派发仍需合法 AppID 真机复核。",
+      "消费者复杂 Slot 和多层自定义组件关系的渲染顺序需目标基础库确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Form 使用7/3/1/5可组合合同，不再接收 items 或生成固定字段与按钮。",
+    "rules": [
+      "基础 Form WXML 禁止 bind，事件全集只进入 API Events。",
+      "Form 本体不得固定生成 Input 或 Button；字段和动作必须由默认 Slot 组合。",
+      "禁止恢复 items/value/defaultValue/disabled/showActions 和按钮文案 Props。"
+    ],
+    "tags": ["form", "api", "tdesign", "composition", "controlled"]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0387",
+  "title": "小程序缺少高级区的滚动所有者页面与真实本地状态边界",
+  "scope": "global",
+  "components": ["miniprogram-home", "pull-refresh", "virtual-list", "watermark"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "把高级稳定组件迁入微信小程序，并避免伪刷新、伪虚拟化和水印遮挡操作。",
+  "environment": {"surfaces": ["miniprogram-home", "miniprogram-advanced-pages"], "platforms": ["wechat-miniprogram", "node"], "viewports": ["390px"], "themes": ["light", "dark"]},
+  "reproduction": ["迁移前 PullRefresh、VirtualList、Watermark 没有小程序独立路由。", "将 PullRefresh 或 VirtualList 放入外层 ScrollArea 会产生双纵向滚动并破坏手势或窗口化。"],
+  "expected": "两个滚动组件自己承担剩余高度，刷新和选择由父级回写；Watermark 不阻断内容操作。",
+  "actual": "高级区此前没有微信页面，无法验证真实手势、长数据和水印配置。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/pull-refresh/", "note": "只演示本地列表刷新且由页面结束，不声明远端结果。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/virtual-list/", "note": "使用120条数据、受控选择和scrollTop。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/watermark/", "note": "水印只消费公开布局与移动 Props。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-advanced-pages.js", "note": "锁定滚动所有者、长数据和状态回写。"}
+  ],
+  "rootCause": "高级组件此前只存在包级实现和H5镜像，缺失小程序页面级滚动/父级编排。",
+  "decision": {"outcome": "新增三条显式路由与高级分区；PullRefresh、VirtualList 使用滚动所有者模型，Watermark 使用标准详情页壳。", "rationale": "避免嵌套滚动并保留组件实际事件和公开状态边界。", "alternativesRejected": ["用定时器把下拉操作描述为服务器同步成功。", "用短列表冒充虚拟化。", "让水印层接管或遮挡内容交互。"]},
+  "impact": {"files": ["miniprogram/app.json", "miniprogram/pages/index/index.js", "miniprogram/pages/components/pull-refresh/", "miniprogram/pages/components/virtual-list/", "miniprogram/pages/components/watermark/", "scripts/test-miniprogram-advanced-pages.js", "docs/MINIPROGRAM_ADVANCED_PAGES.md"], "dependencies": ["component-page", "pui-pull-refresh", "pui-virtual-list", "pui-watermark"]},
+  "verification": {"tests": ["scripts/test-miniprogram-advanced-pages.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js"], "commands": ["node scripts/test-miniprogram-advanced-pages.js：通过", "node scripts/test-miniprogram-home.js：通过", "node scripts/test-miniprogram-component-pages.js：通过"], "browser": [], "deviceRisks": ["尚未在390px模拟器、iOS或Android真机验证下拉手势、虚拟窗口时序、惯性、安全区、水印渲染和系统低动效。"]},
+  "ai": {"summary": "高级区的滚动组件必须自己拥有主滚动区；本地演示不得假装远端业务成功。", "rules": ["PullRefresh 结束必须由父级显式回写 value=false。", "VirtualList 必须使用足够长的真实数据和受控选择，不用短数组伪造窗口化。", "Watermark 只负责展示层，不阻断业务操作或读屏。", "滚动所有者页禁止再嵌套同方向 ScrollArea。"], "tags": ["miniprogram", "advanced", "pull-refresh", "virtual-list", "watermark"]}
+}

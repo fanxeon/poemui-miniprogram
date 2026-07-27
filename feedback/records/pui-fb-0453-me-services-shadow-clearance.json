@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0453",
+  "title": "我的页服务 CellGroup 需要避让资料输入区的投影",
+  "scope": "component",
+  "components": ["miniprogram", "card", "input", "cell", "cell-group"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "将“我的”页的服务 Cell 卡片下移，为资料区在阴影外观下留下足够空间。",
+  "environment": {
+    "surfaces": ["miniprogram me top-level page"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 pages/me/index。",
+    "资料 Input 后的服务 CellGroup 只额外使用 --pui-content-gap。",
+    "当 Input 或上层 Surface 显示投影时，下一块不透明服务集合与投影的安全距离不足。"
+  ],
+  "expected": "资料编辑区与服务 CellGroup 保持语义分区间距，并在阴影开关变化时不改变布局或遮挡投影。",
+  "actual": "服务区仅使用内容组合间距，不能表达相邻独立 Surface 的安全距离。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求将 Cell 卡片下移，为阴影留出足够空间。"},
+    {"kind": "file", "ref": "miniprogram/pages/me/index.wxss", "note": "me-page__services 现使用 --pui-section-gap，正文固定 section gap 与它共同形成不随外观开关变化的安全距离。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-me-page.js", "note": "专项测试锁定服务 CellGroup 不得退回 --pui-content-gap。"}
+  ],
+  "rootCause": "页面把资料输入区与独立服务集合误判为紧密内容组合，额外间距小于两块 Surface 的语义分区节奏。",
+  "decision": {
+    "outcome": "保留正文的 --pui-section-gap，并将服务区自身 margin-top 从 --pui-content-gap 提升为 --pui-section-gap；两段标准 Token 间距共同避让投影，阴影关闭时也不收缩布局。",
+    "rationale": "资料编辑与服务入口是两个独立任务分区，使用已有 section Token 既避免阴影被覆盖，也不创建页面私有尺寸。",
+    "alternativesRejected": [
+      "用固定 rpx margin 推开服务区：会制造页面私有魔法数。",
+      "关闭 Input 或 CellGroup 的阴影：掩盖 Surface 层级问题并破坏全局外观开关。",
+      "给每个 Cell 单独增加 margin：会破坏连续 CellGroup 的集合语义。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/me/index.wxss", "scripts/test-miniprogram-me-page.js", "docs/MINIPROGRAM_ME_PAGE.md", "feedback/records/pui-fb-0421-miniprogram-me-account-services-page.json", "feedback/records/pui-fb-0453-me-services-shadow-clearance.json"],
+    "dependencies": ["PUI Input", "PUI CellGroup", "PUI spacing tokens", "visualConfig shadow preference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-me-page.js", "scripts/test-miniprogram-tabbar-pages.js"],
+    "commands": ["node scripts/test-miniprogram-me-page.js：通过。", "node scripts/test-miniprogram-tabbar-pages.js：通过。", "微信开发者工具 compile_wxss：通过。"],
+    "browser": ["微信开发者工具 iPhone 12/13 390px 默认 visualConfig（shadow=true）：资料 Input 下方与服务 CellGroup 之间保留完整空白，服务集合未覆盖投影；截图 /tmp/poemui-me-shadow-clearance-390.png。"],
+    "deviceRisks": ["默认阴影 390px 模拟器已验证；深色、毛玻璃与大圆角组合仍需在本页运行验证。", "iOS/Android 真机的投影渲染、安全区与惯性滚动仍未验证。"]
+  },
+  "ai": {
+    "summary": "资料编辑 Surface 后接独立 CellGroup 时，使用 section 间距而非内容组合间距，为投影保留稳定空间。",
+    "rules": [
+      "相邻独立任务分区优先使用 --pui-section-gap；--pui-content-gap 只用于同一分区内部组合。",
+      "阴影安全空间必须在 shadow 关闭时继续保留，不能依赖条件 margin。",
+      "连续 CellGroup 不拆成单行卡片，也不以页面私有 margin 修补投影。"
+    ],
+    "tags": ["miniprogram", "me", "cell-group", "input", "shadow", "spacing", "visual-layout"]
+  }
+}

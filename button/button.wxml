@@ -1,0 +1,58 @@
+<button
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  disabled="{{!interactive}}"
+  open-type="{{interactive ? openType : ''}}"
+  form-type="{{interactive ? normalizedFormType : ''}}"
+  lang="{{normalizedLang}}"
+  session-from="{{sessionFrom}}"
+  send-message-title="{{sendMessageTitle}}"
+  send-message-path="{{sendMessagePath}}"
+  send-message-img="{{sendMessageImg}}"
+  show-message-card="{{showMessageCard}}"
+  app-parameter="{{appParameter}}"
+  hover-stop-propagation="{{hoverStopPropagation}}"
+  hover-class="{{interactive ? normalizedHoverClass : 'none'}}"
+  hover-start-time="{{normalizedHoverStartTime}}"
+  hover-stay-time="{{normalizedHoverStayTime}}"
+  phone-number-no-quota-toast="{{phoneNumberNoQuotaToast}}"
+  activity-type="{{normalizedActivityType}}"
+  entrance-path="{{entrancePath}}"
+  need-show-entrance="{{needShowEntrance}}"
+  aria-label="{{buttonLabel}}"
+  aria-disabled="{{!interactive}}"
+  aria-busy="{{loading}}"
+  loading="{{false}}"
+  bindtap="onTap"
+  bindgetuserinfo="forwardGetUserInfo"
+  bindcontact="forwardContact"
+  bindcreateliveactivity="forwardCreateLiveActivity"
+  bindgetphonenumber="forwardGetPhoneNumber"
+  bindgetrealtimephonenumber="forwardGetRealtimePhoneNumber"
+  binderror="forwardError"
+  bindopensetting="forwardOpenSetting"
+  bindlaunchapp="forwardLaunchApp"
+  bindchooseavatar="forwardChooseAvatar"
+  bindagreeprivacyauthorization="forwardAgreePrivacyAuthorization"
+  bindphoneoneclicklogin="forwardPhoneOneClickLogin"
+>
+  <pui-loading
+    loading="{{loading}}"
+    size="{{loadingSize}}"
+    text="{{loadingText}}"
+    theme="{{loadingTheme}}"
+    inherit-color
+    aria-label="{{loadingAriaLabel}}"
+    reduce-motion="{{reduceMotion}}"
+    color-scheme="{{colorScheme}}"
+  />
+  <view wx:if="{{!loading}}" class="pui-button__icon">
+    <pui-icon wx:if="{{icon}}" name="{{icon}}" size="{{iconSize}}" color-scheme="{{colorScheme}}" />
+    <slot name="icon"></slot>
+  </view>
+  <view wx:if="{{!iconOnly}}" class="pui-button__content">
+    <text wx:if="{{content}}">{{content}}</text>
+    <slot></slot>
+  </view>
+  <view wx:if="{{!iconOnly}}" class="pui-button__suffix"><slot name="suffix"></slot></view>
+</button>

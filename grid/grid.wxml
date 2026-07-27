@@ -1,0 +1,54 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="group"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+  aria-busy="{{status === 'loading'}}"
+  aria-invalid="{{status === 'error'}}"
+>
+  <view class="pui-grid__body">
+    <scroll-view
+      class="pui-grid__viewport {{status === 'content' ? 'pui-grid__layer--active' : ''}}"
+      scroll-x="{{horizontal}}"
+      enable-flex="{{true}}"
+      aria-hidden="{{status !== 'content'}}"
+    >
+      <view class="pui-grid__content" style="{{gridStyle}}">
+        <pui-button
+          wx:for="{{normalizedItems}}"
+          wx:key="index"
+          custom-class="pui-grid__item pui-grid__item--{{item.theme}} {{item.disabled ? 'pui-grid__item--disabled' : ''}}"
+          variant="text"
+          block
+          disabled="{{disabled || item.disabled || status !== 'content'}}"
+          data-index="{{index}}"
+          aria-label="{{item.ariaLabel}}"
+          bind:click="onItemTap"
+        >
+          <view class="pui-grid__item-content">
+            <pui-badge wx:if="{{item.showBadge}}" count="{{item.badge}}" size="small">
+              <view class="pui-grid__icon"><pui-icon wx:if="{{item.icon}}" name="{{item.icon}}" size="36" /></view>
+            </pui-badge>
+            <view wx:elif="{{item.icon}}" class="pui-grid__icon"><pui-icon name="{{item.icon}}" size="36" /></view>
+            <view wx:if="{{item.label !== '' || item.description !== ''}}" class="pui-grid__words">
+              <view wx:if="{{item.label !== ''}}" class="pui-grid__text">{{item.label}}</view>
+              <view wx:if="{{item.description !== ''}}" class="pui-grid__description">{{item.description}}</view>
+            </view>
+          </view>
+        </pui-button>
+      </view>
+    </scroll-view>
+
+    <view class="pui-grid__state {{status === 'loading' ? 'pui-grid__layer--active' : ''}}" aria-hidden="{{status !== 'loading'}}">
+      <pui-loading size="32rpx" text="{{loadingText || '加载中'}}" />
+    </view>
+    <view class="pui-grid__state {{status === 'error' ? 'pui-grid__layer--active' : ''}}" aria-hidden="{{status !== 'error'}}">
+      <pui-empty description="{{errorText || '加载失败'}}" icon="error-circle" reduce-motion="{{reduceMotion}}" />
+      <pui-button wx:if="{{retryText !== ''}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" bind:click="onRetry">{{retryText}}</pui-button>
+    </view>
+    <view class="pui-grid__state {{status === 'empty' ? 'pui-grid__layer--active' : ''}}" aria-hidden="{{status !== 'empty'}}">
+      <pui-empty description="{{emptyText || '暂无入口'}}" icon="grid" reduce-motion="{{reduceMotion}}" />
+    </view>
+  </view>
+</view>

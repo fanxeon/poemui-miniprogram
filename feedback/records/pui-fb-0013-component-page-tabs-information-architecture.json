@@ -1,0 +1,137 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0013",
+  "title": "标准组件页缺少概览 API PROP 信息架构",
+  "scope": "global",
+  "components": ["preview-site", "tabs"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "所有标准组件页使用统一 Tabs 分类内容，概览只保留预览，API 与 PROP 各自承担明确任务，并彻底取消右侧 Inspector；Tabs 独占 Header 固定一级分类行，概览工具统一进入内容区透明工具栏，切换视图时 Tabs 不得跳位。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件页，旧页面在 Header 中显示私有的预览/代码按钮。",
+    "旧工作区同时存在左侧导航、主预览和右侧 Inspector 三列，API Reference 又固定堆在概览预览下方。",
+    "在窄屏下 Inspector 被移到页面底部，Props、WXML 和兼容说明仍与当前阅读任务混在一个长页面中。",
+    "首轮信息架构重构后，机型选择和刷新/重置仍与 Tabs 排在同一行，把当前视图操作误当成与页面分类同级的导航。",
+    "二次拆行后，API 因没有二级操作而把整个操作行 display:none，工具栏高度变化并重新居中，导致 Tabs 在概览/API/PROP 切换时上下跳动。",
+    "固定两行高度后再次切换三种视图，Tabs 仍随无按钮视图发生位移；审计发现每次切换仍通过 root.innerHTML 重建整组 Tabs，并调用 renderAll 重绘无关的侧栏和 Header，浏览器焦点与滚动锚点无法稳定保留。",
+    "用户继续指出部分没有按钮的 Tab 仍会把 Tabs 挤动；审计发现桌面 Header 仍继承旧 align-items:center Flex，会按标题说明与导航两侧高度重新垂直居中，同时机型和动作子节点仍用 hidden/display:none 删除自身尺寸。",
+    "后续完成性审计发现 docs/H5_PREVIEW_COMPATIBILITY.md 的“当前页面结构”仍描述中间预览/代码切换和右侧 Inspector，与已删除的旧三列界面冲突。"
+  ],
+  "expected": "标准组件页复用 PUI Tabs 提供概览/API/属性三个互斥视图；概览只含预览，API 只含 API Reference，原 Inspector 全量迁入属性，工作区不再保留第三列。Header 只保留固定 Tabs；概览以透明工具栏承载模式、机型、刷新与重置，模式在左、其余操作整组居右；属性重置留在 Props 标题区。Tabs DOM 跨视图稳定复用，三态几何与视口坐标一致。",
+  "actual": "旧页面使用私有预览/代码 Tab，右侧 Inspector 独立占列且 API 与预览混排；首轮重构把局部操作与 Tabs 放在同一行，二次拆行又在 API 用 display:none 折叠操作行；固定行高与稳定 DOM 后，桌面 Header 仍沿用垂直居中的 Flex，隐藏视图的机型和动作子节点仍被 hidden/display:none 移出布局，骨架合同没有彻底覆盖跨组件和空操作槽；重构完成后 H5 兼容文档还残留旧三列结构说明。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求每个标准组件页使用概览/API/PROP、将右侧 Inspector 全部迁入 PROP、机型选择和刷新放到 Tabs 下方，并进一步要求没有按钮的视图不得挤动 Tabs。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/index.html",
+      "note": "右侧 Inspector DOM 与旧预览/代码 Tab 已删除；Header 的 component-page-navigation 只保留 Tabs，概览工具迁入 PreviewDevice 上方的独立透明工具栏。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "标准组件页按 overview/api/prop 独立渲染，PROP 承接元信息、Props、WXML 与兼容说明并过滤默认 Props；概览工具栏只在 overview 显示，Tabs 只在首次进入时创建，后续只更新选中态、tabIndex 和指示器，分类切换走 renderComponentPageView 而不重绘侧栏。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "全局设计合同锁定两列布局、PUI Tabs 三视图、固定 40px Tabs 行、桌面顶对齐固定导航列、概览透明工具栏及右侧操作组；同时锁定 Inspector 删除和默认值过滤入口。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "note": "当前结构已改为左侧目录 + 主区 Header/Tabs，并分别说明概览、API、PROP；删除中间预览/代码切换和右侧 Inspector 的过期描述。"
+    },
+    {
+      "kind": "browser",
+      "ref": "390x844 与 1280x720 浏览器实测",
+      "note": "390px 四态 Tabs 均为 12/401.93/351×40px，API 的机型和动作槽仍分别占 307×32px、36×36px；桌面三态及 Dialog/Button/Table/Collapsible 均为 963/81/270×40px。"
+    }
+  ],
+  "rootCause": "官网从早期组件调试台逐步扩展，预览/代码切换、右侧调参、设备控制和下方 API 分别追加，却没有形成面向组件消费者的统一信息架构；拆分页面分类与局部操作后先把“没有可见操作”等同于“删除结构行”，随后又保留旧 Header 的 align-items:center Flex、子节点 hidden 逻辑和未同步的三列结构文档。即使导航父区已固定，外层垂直对齐、子槽删除与过期说明仍会让实现和维护认知漂移。",
+  "decision": {
+    "outcome": "标准组件页统一复用 PUI Tabs 的 H5 镜像；概览、API、PROP 互斥渲染，原常驻 Inspector 内容迁入 PROP，文档页用内联配置区承接原控制能力。Tabs 固定为 Header 中唯一 40px 一级行；桌面 Header 固定为标题说明 minmax(0,1fr) 与 270px 导航列的顶对齐 Grid。概览的模式、机型、刷新与重置迁入 PreviewDevice 上方的透明工具栏，模式在左，机型与动作整组居右；API/PROP 可整体隐藏该内容工具栏，PROP 重置在 Props 标题区。Tabs DOM 跨视图稳定复用，分类切换只刷新 Tabs 状态与主内容，并以 overflow-anchor 阻止滚动漂移。元素选择 Inspector 仍只作为概览内按需浮层，不承载元信息、WXML、兼容说明或完整 Props。",
+    "rationale": "三个视图分别回答看效果、查合同和调参数；Header 只承担分类，内容工具栏只承担概览操作，层级更清晰。固定导航列和稳定 Tabs 节点让几何不再依赖按钮数量或标题说明高度；透明工具栏的左右分组又让操作可扫描而不增加容器 Surface。",
+    "alternativesRejected": [
+      "只隐藏 Inspector 而不迁移内容，会丢失 Props 调试与 WXML 复制能力。",
+      "在 PROP 复制 Inspector 同时保留右栏，会产生双份状态和维护漂移。",
+      "继续把 API 放在概览下方，会破坏概览只呈现真实预览的阅读目标。",
+      "把机型、刷新与 Tabs 保持同一行，会继续把局部操作伪装成一级导航，并在 390px 下挤压标签。",
+      "在 API 用 display:none 删除整条操作行虽然隐藏了按钮，但会改变工具栏高度并移动 Tabs。",
+      "每次切换调用 renderAll 并重建 Tabs，虽然视觉结构相同，仍会丢失节点身份、焦点和滚动锚点。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "scripts/test-design-contracts.js",
+      "scripts/test-style-utilities.js",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0013-component-page-tabs-information-architecture.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["tabs", "button", "icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-layout-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "桌面 1265px 实测工作区为 244px + 1021px 两列，Inspector 节点为 0；Dialog 概览只有 preview-canvas，API 只有 41 行 API 表，PROP 只有 40 个 Props、WXML 与兼容说明。",
+      "390px 浏览器覆盖下内容视口 document client/scroll 均为 375px；Dialog 与 Button 的 PROP 工作区 client/scroll 均为 343px，Tabs 三个标签完整显示，API 表只在自身 341/640px 内横向滚动。",
+      "Dialog 修改 title 后 WXML 立即出现新 title，默认 description/duration 不输出；复制按钮写入完整 pui-dialog WXML。",
+      "Button 的长事件名从 1045px 溢出改为兼容说明内自然换行，compat 与工作区均保持 343/343px；重置图标按钮为 36x36px、内部 Icon 16x16px。",
+      "Style Utilities 文档页不显示组件 Tabs，原 9 个筛选、WXML 与兼容说明以内联配置区保留；深色模式下 PROP 仍为 343/343px 且主题表面真实切换。",
+      "1280px 桌面实测 Tabs bottom=127.54px、操作行 top=135.54px，使用 content-gap 形成 8px 上下分层；操作行宽 270px，刷新按钮 36x36px、Icon 16x16px，二者中心坐标完全一致。",
+      "1280px 下概览/API/PROP 的 Tabs 外框均为 left=966.13px、top=87.54px、270x40px，导航区均为 84px 高；API 操作行保持 270x36px，以 is-empty、aria-hidden=true、visibility:hidden 隐藏控件而不折叠结构。",
+      "390x844px 覆盖下 document client/scroll 均为 375px，概览/API/PROP 的 Tabs 外框均为 left=12px、top=401.93px、351x40px，导航区均为 351x84px；三项标签无裁切，36px 操作行位于 Tabs 下方 8px，API 只隐藏控件并保留相同行高。",
+      "Dialog title 改为“保留参数测试”后切回概览并点击刷新，刷新前后标题节点均为 1，回到 PROP 后 title 值仍为“保留参数测试”，证明刷新只重建运行态并保留 Props。",
+      "本轮使用真实坐标点击而非会主动滚动目标的语义自动化点击：390x844 下概览/API/PROP/返回概览的 Tabs 均为 left=12px、top=507.93px、351x40px，导航区始终 351x84px，scrollY 始终为 0；API 操作行保持 351x36px 且仅 visibility:hidden，document client/scroll 为 375/375px。",
+      "1280x720 桌面真实坐标点击 Dialog 概览/API/PROP 后，Tabs 均为 left=966.13px、top=87.54px、270x40px，操作行均为 270x36px、top=135.54px，scrollY 始终为 0；API 仅隐藏操作行内容。",
+      "390x844 下 Button 概览/API/PROP/概览四次切换均保持 Tabs top=401.93px、高 40px，操作行 top=449.93px、高 36px，导航父区高 84px，Toolbar 高 235.93px、内容起点 498.93px；API 的操作行 visibility:hidden，但父区几何不变。",
+      "继续在 Combobox 标准页复验：页面位于 scrollY=106px 时，概览/API/PROP/概览四次切换的 Tabs top 均为 402.93px，操作行 top 均为 449.93px，导航父区均高 84px；API 只把第二行设为 visibility:hidden，滚动锚点和几何均未变化。",
+      "用户再次指出无按钮视图会挤动 Tabs 后，继续在 Cell/Radio 标准页双端复验：390x844 下概览/API/PROP 均为 left=12px、top=402.09px、351x40px，操作行 351x36px、导航父区 84px、scrollY=87；1280x720 下三态均为 left=966.13px、top=87.54px、270x40px，操作行 270x36px、scrollY=0。API 仅 visibility:hidden，document 为 375/375px。",
+      "最终收口外层骨架后，390x844 下 Dialog 概览/API/PROP/概览的 Tabs 均为 left=12px、top=401.93px、351x40px，操作行均为 351x36px；API 的机型槽与动作槽仍为 307x32px、36x36px，hidden=false、disabled=true、aria-hidden=true、visibility:hidden，document 为 375/375px、scrollY=106。",
+      "1280x720 下 Dialog 概览/API/PROP/概览的 Tabs 均为 left=963px、top=81px、270x40px，操作行均为 left=963px、top=129px、270x36px；Dialog/Button/Table/Collapsible 跨组件切换同样保持 Tabs 为 963/81/270x40px。深色、阴影、毛玻璃与大圆角同时开启时三态几何不变，验收后恢复浅色全关。"
+    ],
+    "deviceRisks": [
+      "本次只调整 H5 官网的信息架构，不改变小程序组件 API；真机组件行为风险不增加。"
+    ]
+  },
+  "ai": {
+    "summary": "标准组件页固定使用 PUI Tabs 的概览/API/属性，Header 只保留 Tabs；概览工具进入透明内容工具栏，模式在左、机型/刷新/重置居右。原常驻 Inspector 的完整内容只存在于属性页。",
+    "rules": [
+      "标准组件概览只能呈现统一预览容器和真实组件，不得追加 API、WXML 或工程诊断卡。",
+      "API Reference 只进入 API；元信息、完整 Props、WXML 与兼容说明只进入属性页，禁止恢复常驻 Inspector 第三列。元素选择模式的上下文 Inspector 只允许显示当前元素相关的父组件公开 Props。",
+      "Tabs 是一级分类并独占 Header 唯一一行；模式、机型、刷新和重置不得与 Tabs 并排。",
+      "概览工具必须进入 PreviewDevice 上方透明工具栏：模式切换在左，机型、刷新、重置和复制整组居右，复制固定在最右；API/PROP 可整体隐藏该内容工具栏。",
+      "桌面标准组件 Header 必须使用标题说明与固定导航列顶对齐的 Grid，禁止垂直居中让 Tabs 受两侧内容高度影响。",
+      "390px 下概览工具栏允许换行，但机型与动作组仍须右对齐；工具栏本体不得建立背景、边框、阴影或毛玻璃 Surface。",
+      "Tabs 导航节点必须跨视图复用；切换只更新选中态、指示器和主内容，禁止通过 root.innerHTML + 全页面 render 重建公共导航，并必须保持当前滚动锚点。",
+      "概览刷新只重建演示运行态和滚动位置，必须保留用户已配置的 Props；概览重置与 PROP 重置必须共用同一默认值源并恢复默认 Props/运行态；API 不显示无关操作。",
+      "WXML 示例默认省略与组件默认值相同的 Props，只输出调用者改动。",
+      "动态 PROP 内容的输入和复制交互必须绑定到持久父节点，不能依赖初始页面中不存在的静态节点。"
+    ],
+    "tags": ["preview-site", "tabs", "information-architecture", "toolbar", "prop", "api", "inspector", "responsive", "wxml", "layout-shift", "placeholder-slot"]
+  }
+}

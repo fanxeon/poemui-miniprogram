@@ -1,0 +1,44 @@
+<view class="{{rootClass}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="navigation" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}">
+  <view wx:if="{{stateType === 'error'}}" class="pui-breadcrumb__state pui-breadcrumb__state--error" role="alert">
+    <pui-icon name="error-circle" size="{{iconSize}}" color-scheme="{{colorScheme}}" />
+    <text>{{errorText}}</text>
+    <pui-button wx:if="{{retryText}}" size="small" variant="outline" icon="refresh" content="{{retryText}}" disabled="{{disabled}}" aria-label="{{retryText}}" color-scheme="{{colorScheme}}" bind:click="onRetry" />
+  </view>
+  <view wx:elif="{{stateType === 'loading'}}" class="pui-breadcrumb__state" role="status" aria-label="{{loadingText}}">
+    <pui-loading loading size="{{iconSize}}rpx" text="{{loadingText}}" duration="{{resolvedDuration}}" easing="{{easing}}" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
+  </view>
+  <view wx:elif="{{stateType === 'empty'}}" class="pui-breadcrumb__state" role="status">
+    <pui-icon name="inbox" size="{{iconSize}}" color-scheme="{{colorScheme}}" />
+    <text>{{emptyText}}</text>
+  </view>
+  <view wx:else class="pui-breadcrumb__content">
+    <view wx:if="{{customPrefix}}" class="pui-breadcrumb__prefix"><slot name="prefix"></slot></view>
+    <scroll-view class="pui-breadcrumb__scroller" scroll-x="{{!wrap}}" enable-flex enhanced show-scrollbar="{{false}}">
+      <view class="pui-breadcrumb__list" role="list">
+        <block wx:for="{{normalizedItems}}" wx:key="id">
+          <view class="pui-breadcrumb__item-wrap" role="listitem">
+            <pui-button
+              custom-class="pui-breadcrumb__item {{item.active ? 'pui-breadcrumb__item--current' : ''}}"
+              theme="default"
+              variant="text"
+              size="small"
+              disabled="{{item.disabled}}"
+              aria-label="{{item.ariaLabel}}"
+              color-scheme="{{colorScheme}}"
+              data-index="{{index}}"
+              bind:click="onSelect"
+            >
+              <pui-icon wx:if="{{showIcon && item.icon}}" name="{{item.icon}}" size="{{iconSize}}" color-scheme="{{colorScheme}}" />
+              <text class="pui-breadcrumb__label">{{item.label}}</text>
+            </pui-button>
+          </view>
+          <view wx:if="{{index < normalizedItems.length - 1}}" class="pui-breadcrumb__separator" aria-hidden="true">
+            <pui-icon wx:if="{{separatorIcon}}" name="{{separatorIcon}}" size="{{separatorIconSize}}" color-scheme="{{colorScheme}}" />
+            <text wx:else>{{separator}}</text>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+    <view wx:if="{{customSuffix}}" class="pui-breadcrumb__suffix"><slot name="suffix"></slot></view>
+  </view>
+</view>

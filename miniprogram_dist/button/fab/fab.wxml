@@ -1,0 +1,21 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}}" aria-label="{{semanticLabel}}">
+  <pui-button
+    custom-class="pui-fab__button"
+    theme="{{buttonTheme}}"
+    variant="{{variant}}"
+    size="{{size}}"
+    shape="{{buttonShape}}"
+    icon="{{icon}}"
+    icon-only="{{!buttonContent}}"
+    content="{{content}}"
+    loading="{{loading}}"
+    disabled="{{disabled}}"
+    aria-label="{{semanticLabel}}"
+    reduce-motion="{{reduceMotion}}"
+    color-scheme="{{colorScheme}}"
+    bind:click="onButtonClick"
+  >
+    <slot name="icon"></slot>
+    <slot></slot>
+  </pui-button>
+</view>

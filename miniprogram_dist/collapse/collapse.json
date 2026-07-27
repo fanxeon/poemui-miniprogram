@@ -1,0 +1,15 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "pui-button": "../button/button",
+    "pui-empty": "../empty/empty",
+    "pui-icon": "../icon/icon",
+    "pui-loading": "../loading/loading"
+  },
+  "componentGenerics": {
+    "collapse-panel": {
+      "default": "../cell/cell"
+    }
+  }
+}

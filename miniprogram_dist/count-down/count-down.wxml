@@ -1,0 +1,15 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}} {{customStyle}}"
+  role="timer"
+  aria-label="{{ariaLabel}}：{{formatted}}"
+  aria-live="polite"
+>
+  <view wx:if="{{contentMode === 'slot'}}" class="pui-count-down__slot"><slot></slot></view>
+  <view wx:else class="pui-count-down__segments">
+    <view wx:for="{{segments}}" wx:key="key" class="pui-count-down__part {{item.numeric ? 'pui-count-down__part--numeric' : 'pui-count-down__part--split'}}">
+      <text class="{{item.numeric ? motionClass : ''}}">{{item.value}}</text>
+      <text wx:if="{{item.unit}}" class="pui-count-down__unit">{{item.unit}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0304",
+  "title": "Tabbar 纯图标项投影层与等分轨道导致四项横向偏移",
+  "scope": "component",
+  "components": ["tabbar", "button", "icon", "preview-site", "miniprogram-home"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页四项纯图标 Tabbar 必须在 390px 和底部安全区内等分、居中并完整可见。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "tabbar", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390px", "wechat simulator"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 iPhone 12/13 Pro 390px 模拟器打开首页，观察四项纯图标 Tabbar。",
+    "活动短指示器居于第一等分，但四个图标整体右移，最右设置图标被设备边界裁切。"
+  ],
+  "expected": "Tabbar 每项的 item-wrap 内有满宽布局轨道，PUI Button 以 block 填满该轨道。图标与 Badge 都进入 Button icon Slot，标签只进入默认 Slot；纯图标项还必须以 Button iconOnly 从真实组件树移除固定生成的空默认内容/后缀轨道。纯图标项与活动指示器共享同一等分中心，四项均完整位于安全区宽度内。",
+  "actual": "纯图标项保留了 Button 固定生成的空默认内容区，仍和 icon Slot 一起参与水平排布；同时各等分轨道与 block Button 的可收缩边界不完整，四项图标整体右移，最右设置被裁切。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务截图", "note": "截图显示第一项短指示器居中而所有图标右移，设置图标被右边界截断。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxml", "note": "图标与 Badge 锚点进入 icon Slot，标签留在默认 Slot；纯图标项传入 Button iconOnly，透明 host 与显式 block Button 共同填满可收缩等分轨道，未使用行内样式绕过宿主几何。"},
+    {"kind": "file", "ref": "button/button.wxml", "note": "iconOnly 从真实 WXML 树移除默认内容和 suffix 区域，不让空区块继续参与 Tabbar 的纯图标水平居中。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxss", "note": "items、item-wrap 与作为 PUI Button 外部宿主的 button-host 共同声明 width/min-width/flex 的等分收缩边界。"},
+    {"kind": "file", "ref": "button/button.wxml", "note": "Button 固定先渲染 icon region、再渲染默认 content region，Slot 分工决定横向几何。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 buttonSample 接收原始 icon Slot 内容，Tabbar 镜像将图标/Badge 与标签分别传入对应区域。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "专项测试锁定小程序与 H5 的 icon Slot 分工和可收缩等分轨道。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "首页专项测试锁定用于真实高度测量的全宽普通 view 包装器、正常 pui-tabbar 消费方式和四项目录。"},
+    {"kind": "browser", "ref": "微信开发者工具 iPhone 12/13 Pro 390px simulator, 2026-07-24", "note": "保持同一开发者工具会话热编译后，首页、任务、我的、设置四个图标与四等分中心对齐，首页活动短指示器同心，最右设置完整可见。"}
+  ],
+  "rootCause": "PUI Button 固定渲染 icon、默认内容与后缀三个内部区块；Tabbar 的显式 label:'' 只让默认 Slot 为空，却没有让空的默认内容/后缀区块退出 flex 排布，因而图标中心相对活动指示器右移。跨组件 CSS 不能可靠地移除 Button 内部节点，因此需要 Button 的 iconOnly 语义在真实 WXML 树移除这两个区块。更关键的是原实现把等分 Flex 放在 Button 外层 view，而小程序 PUI Button 自定义组件宿主仍按其内置最小宽度参与排布；需要把该外部宿主自身设为 button-host Flex 子项。Button block 的默认最小宽度也会放大窄轨道冲突，已在独立记录 PUI-FB-0305 修复。小程序自定义组件节点又不能被 SelectorQuery 直接测高，页面必须保留不带视觉补丁的普通 view 测量包装器。",
+  "decision": {
+    "outcome": "Tabbar 保持普通组件节点；图标与 Badge 均使用 icon Slot，标签使用默认 Slot。显式空标签项传入 Button iconOnly，在 Button 的真实组件树移除空默认内容/后缀区块；item-wrap 内的 PUI Button 外部宿主自身使用 button-host Flex 等分轨道，内置 Button 以 block 填满。H5 buttonSample 按相同分工镜像。页面仅以全宽普通 view 测量 Tabbar 高度，不参与横向视觉几何。",
+    "rationale": "Button 的真实 icon Slot 保留 Badge 定位能力，空内容轨道退出后纯图标与活动指示器共用同一等分中心；把组件宿主而不是额外 view 放入等分轨道后，内置 block Button 以真实可用宽度排布，无需页面私有偏移或新增 Tabbar API。",
+    "alternativesRejected": [
+      "用页面私有 translateX、负 margin 或宽度补丁对齐会随条目数与安全区失效。",
+      "隐藏 Button icon region 会破坏 Button 的通用 Slot 结构。",
+      "缩小图标或删除最右设置项会掩盖而非解决布局问题。"
+    ]
+  },
+  "impact": {
+    "files": ["button/button.js", "button/button.wxml", "preview/app.js", "tabbar/tabbar.js", "tabbar/tabbar.wxml", "tabbar/tabbar.wxss", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/BUTTON.md", "docs/components/TABBAR.md", "scripts/test-button.js", "scripts/test-tabbar.js", "scripts/test-miniprogram-home.js", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["PUI Button icon Slot", "PUI Icon", "PUI Badge", "Tabbar safeAreaInsetBottom"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": ["在保持打开的微信开发者工具热重载中确认 390px 首页四个图标与各自等分和活动短指示器居中对齐，设置完整可见且 disabled 不触发切换。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 env(safe-area-inset-bottom)、外部 Slot 样式隔离、四项触摸热区、图标基线与读屏名称。"]
+  },
+  "ai": {
+    "summary": "组合 PUI Button 时，Tabbar 图标与 Badge 应进入 icon Slot、标签进入默认 Slot；显式空标签还必须通过 Button iconOnly 让空默认内容/后缀轨道从真实树退出。PUI Button 的外部宿主必须是 Tabbar 的等分 Flex 子项，页面不能用横向补丁掩盖问题。",
+    "rules": [
+      "Tabbar 使用 icon Slot 时，显式 label:'' 的纯图标项必须传入 Button iconOnly，使空默认内容/后缀轨道从真实组件树移除；item-wrap 内的 PUI Button 外部宿主应以透明满宽 Flex 子项固定等分轨道，并让 Button block 填满它。",
+      "小程序 SelectorQuery 不能直接测量常规自定义组件节点时，消费者可以使用全宽普通 view 包装器测量高度，但不能在该层添加横向定位或宽度补丁。",
+      "纯图标 Tabbar 必须让图标中心和活动指示器中心落在同一等分轨道。",
+      "跨端修复 Slot 几何时，同步原生 WXML、H5 helper/镜像、合同、专项测试、Ledger 和安装产物。"
+    ],
+    "tags": ["tabbar", "button", "icon-slot", "alignment", "miniprogram-home", "h5-parity"]
+  }
+}

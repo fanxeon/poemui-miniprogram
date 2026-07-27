@@ -1,0 +1,10 @@
+<view class="{{rootClass}} {{customClass}}" style="{{rootStyle}} {{customStyle}}">
+  <scroll-view class="pui-scroll-area__viewport" style="{{viewportStyle}}" type="list" scroll-y enhanced show-scrollbar="{{false}}" scroll-with-animation="{{true}}" scroll-top="{{targetScrollTop}}" scroll-into-view="{{targetId}}" bindscroll="onViewportScroll" bindscrolltolower="onViewportScrollToLower" role="region" aria-label="{{semanticLabel}}">
+    <view class="pui-scroll-area__content" style="{{contentStyle}}">
+      <slot></slot>
+      <view class="pui-scroll-area__edge-sentinel pui-scroll-area__edge-sentinel--bottom" aria-hidden="true"></view>
+    </view>
+  </scroll-view>
+  <view wx:if="{{showTopGradient}}" class="pui-scroll-area__gradient pui-scroll-area__gradient--top" style="{{gradientOverlayStyle}}" aria-hidden="true"></view>
+  <view wx:if="{{showBottomGradient}}" class="pui-scroll-area__gradient pui-scroll-area__gradient--bottom" style="{{gradientOverlayStyle}}" aria-hidden="true"></view>
+</view>

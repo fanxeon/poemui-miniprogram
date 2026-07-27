@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0339",
+  "title": "第二 Tab 不能保留空白页，需成为真实 Style Utilities 页面",
+  "scope": "component",
+  "components": ["miniprogram-home", "navbar", "tabbar", "tabs", "search", "popup", "style-utilities"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "第二个 Tab 必须成为示例优先的 Style Utilities 页面；先完成五类分类，并复用首页 Navbar 搜索和外观入口，不能保留空白占位或把复制作为主要操作。",
+  "environment": {
+    "surfaces": ["miniprogram 第二 Tab", "Style Utilities 目录", "组合示例"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["iPhone 12/13 Pro 390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入第二个 Tab，页面只有空白主体和 Tabbar，无法查看或使用已发布的 utilities。",
+    "官网有分类浏览器，但真实小程序没有目录、搜索、可观察的组合示例或外观入口。"
+  ],
+  "expected": "第二 Tab 为真实 styles 路由，使用 PUI Tabs 的五个用户分区覆盖全部 530 个发布 class；Navbar 左右按钮分别打开搜索与外观设置，搜索或条目选择只更新当前分类和示例。",
+  "actual": "原空白路由已删除，styles 页面以生成目录完整覆盖 530 个 class，并提供五分区、示例优先的搜索 Overlay 与首页同合同的外观 Popup；不调用剪贴板或 Toast。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务对话", "note": "用户明确指定把 Style Utilities 放入第二个 Tab 并使用 Tabs 分类。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "真实组合 PUI Navbar 双按钮、Tabs、Search Overlay、Popup、CellGroup、ScrollArea 和 Tabbar。"},
+    {"kind": "file", "ref": "scripts/generate-miniprogram-style-utilities-catalog.js", "note": "从发布 utilities 源码生成完整小程序目录。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "锁定 530 项覆盖、五分区、Navbar 双事件、搜索选择和无剪贴板边界。"}
+  ],
+  "rootCause": "第二个 Tab 初始只为空白占位，没有把已经发布的静态 utilities 形成真实小程序内的发现与使用路径。",
+  "decision": {
+    "outcome": "以 pages/styles/index 替换旧空白页面；Tabbar 第二项为 styles/palette。目录由 utilities.wxss 生成，Tabs 归纳为布局、尺寸与间距、字体与内容、背景与外观、主题与行为；Navbar 复用首页的 leftBtn 搜索和 rightBtn 外观入口。",
+    "rationale": "不复制 WXSS 或 H5 DOM，目录始终与发布 class 同步；移动端先呈现用户能观察的五类示例，选择 class 只切换示例，不把复制当成页面任务。",
+    "alternativesRejected": [
+      "在 Tabbar 组件加入 url 或自动 wx.navigateTo 会破坏其公开职责边界。",
+      "保留空白页或别名会污染当前导航口径。",
+      "手写 530 项 class 清单会与发布 WXSS 漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/app.json", "miniprogram/common/utils/tabbar-navigation.js", "miniprogram/pages/styles/", "miniprogram/common/data/style-utilities-catalog.js", "scripts/generate-miniprogram-style-utilities-catalog.js", "scripts/test-miniprogram-style-utilities-page.js"],
+    "dependencies": ["PUI Navbar", "PUI Tabbar", "PUI Tabs", "PUI Search", "PUI Overlay", "PUI Popup", "appearance-settings", "PUI CellGroup"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js", "scripts/test-miniprogram-tabbar-pages.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 DevTools build-npm --project miniprogram（成功，warnings=[]）", "微信 DevTools build-npm --project _example（touristappid code 10，未伪造产物）"],
+    "browser": ["H5 `#/foundation/style-utilities` 于 390×844：五个分类卡均为 337px 宽，document 无横向溢出；点击“背景与外观”后 data-utility-category=visual，目录只保留该分类卡。"],
+    "deviceRisks": ["微信真机仍需验证 390px 下五个 Tabs 的横滚、长目录惯性滚动、搜索焦点、外观 Popup、安全区和深浅色。", "_example 的 DevTools build-npm 受 touristappid code 10 阻断，需使用有效 AppID 后重跑。"]
+  },
+  "ai": {
+    "summary": "Style Utilities 在小程序中必须由发布 WXSS 自动生成目录，并用真实 PUI 组合完成五类示例、搜索和首页同合同的外观入口。",
+    "rules": [
+      "不要复制 utilities.wxss 或手写完整 class 清单；从公开源码生成目录并纳入构建。",
+      "Tabs 用于五类页面内分类，Tabbar 只负责一级目的地。",
+      "Navbar 的双图标入口必须使用 leftBtn/rightBtn 与 bind:leftBtn/bind:rightBtn，不能依赖 Slot 事件跨组件边界。",
+      "选择 class 只更新当前分类与示例，不能把 wx.setClipboardData 或 Toast 作为快速样式的默认行为。",
+      "背景渐变可直接挂在业务 View 或布局容器，不能作为 CellGroup 或组件内部 Surface 背景。"
+    ],
+    "tags": ["miniprogram", "tabbar", "navbar", "style-utilities", "tabs", "search", "popup", "background"]
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0404",
+  "title": "Navbar 与 NavigationMenu 小程序示例混淆组件主体和页面控制",
+  "scope": "component",
+  "components": [
+    "navbar",
+    "navigation-menu",
+    "switch",
+    "miniprogram"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Navbar 页面应像首页一样在左侧胶囊镜像轨展示双操作，右侧必须留给微信原生胶囊，显隐必须作用于 Navbar 本体；NavigationMenu 页面应由组件自身入口展开，并区分水平浮层、垂直工作区和按需错误恢复。",
+  "environment": {
+    "surfaces": [
+      "wechat-miniprogram",
+      "component-detail-page"
+    ],
+    "platforms": [
+      "wechat-devtools",
+      "wechat-miniprogram"
+    ],
+    "viewports": [
+      "390px simulator",
+      "iPhone simulator"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开 pages/components/navbar/index，可见正文中连续堆叠三个 Navbar，并以整行主按钮承担隐藏与恢复。",
+    "Navbar 的双操作、visible 和页面控制被拆成多个示例，用户无法确认显隐作用的是 Navbar 本体。",
+    "首次收敛时误把双操作解释成左右各一个 Slot，并以 capsule=false 占用了真实微信页面必须留给原生胶囊的右侧区域。",
+    "打开 pages/components/navigation-menu/index，页面先显示外部打开按钮，组件自身又显示一组根 Trigger。",
+    "NavigationMenu 基础实例同时配置 vertical、bottom 与 Overlay，错误实例永久 visible=true 且没有 retry 回写，进入页面即被遮罩与面板占据。"
+  ],
+  "expected": "Navbar 以一个稳定舞台展示左侧双操作与受控 visible，并始终为右侧原生胶囊留白；NavigationMenu 只使用自身 Trigger，并分别展示水平浮层、无 Overlay 垂直双栏以及按需展开且可恢复的错误态。",
+  "actual": "修复前示例重复组件和入口、混合互斥几何；首次收敛又错误占用 Navbar 右 Slot。NavigationMenu 的诊断按钮与永久错误浮层同时抢占视觉和交互中心。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求参考首页 Navbar：双操作都在左侧胶囊镜像轨，右侧必须留给微信原生胶囊，显隐直接作用于 Navbar。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/navbar/index.wxml",
+      "note": "单一 Navbar 使用首页同源 leftBtn/rightBtn 双操作、capsule=true 与受控 visible，PUI Switch 只修改同一页面真相源。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/navigation-menu/index.wxml",
+      "note": "删除外部打开按钮，水平、垂直与错误恢复实例使用各自一致的几何和受控状态。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-navigation-pages.js",
+      "note": "锁定 Navbar 左侧双操作、原生胶囊安全轨、本体显隐、NavigationMenu 无重复 Trigger、无永久错误浮层、垂直无 Overlay、浮层互斥层级与 retry 父级回写。"
+    }
+  ],
+  "rootCause": "首次迁移导航分区时按 API 能力逐段堆叠示例，没有先确定组件主体与页面控制的层级；首次收敛又把用户所说的双 Slot 机械理解成 left/right Slot，没有回读首页实际使用的 leftBtn/rightBtn 左侧双操作合同；NavigationMenu 也没有把浮层模式和同层工作区作为互斥几何处理。",
+  "decision": {
+    "outcome": "Navbar 合并为一个与首页同源的左侧双操作受控示例，leftBtn/rightBtn 都位于胶囊镜像轨，capsule=true 保护右侧原生胶囊，PUI Switch 直接回写 visible；NavigationMenu 删除外部打开按钮，水平浮层、垂直双栏和错误恢复分别受控；两个浮层实例互斥且活动实例独占高层级，Retry 由页面移除 error。",
+    "rationale": "用户应先看到并操作组件本体，页面控制只解释受控边界；互斥布局拆开后，每个示例都能对应一条真实调用路径。",
+    "alternativesRejected": [
+      "继续保留三个 Navbar 会重复标题栏并维持卡片堆叠感。",
+      "使用隐藏与显示主按钮会让按钮成为视觉主体，不能表达 visible 属于 Navbar。",
+      "关闭 capsule 并向 right Slot 放业务按钮会侵占微信 custom navigation 固定保留的原生胶囊区域。",
+      "让垂直 NavigationMenu 继续使用 bottom 与全屏 Overlay 会同时出现工作区和浮层两套空间语义。",
+      "永久打开错误面板会阻断页面阅读，且没有用户触发路径。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/components/navbar/index.js",
+      "miniprogram/pages/components/navbar/index.json",
+      "miniprogram/pages/components/navbar/index.wxml",
+      "miniprogram/pages/components/navbar/index.wxss",
+      "miniprogram/pages/components/navigation-menu/index.js",
+      "miniprogram/pages/components/navigation-menu/index.json",
+      "miniprogram/pages/components/navigation-menu/index.wxml",
+      "miniprogram/pages/components/navigation-menu/index.wxss",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-navigation-pages.js",
+      "docs/MINIPROGRAM_NAVIGATION_PAGES.md",
+      "feedback/records/pui-fb-0404-miniprogram-navbar-navigation-menu-example-hierarchy.json"
+    ],
+    "dependencies": [
+      "PUI Navbar",
+      "PUI NavigationMenu",
+      "PUI Button",
+      "PUI Switch",
+      "component-page-section"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-navigation-pages.js",
+      "scripts/test-navbar.js",
+      "scripts/test-navigation-menu.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-navigation-pages.js",
+      "node scripts/test-navbar.js",
+      "node scripts/test-navigation-menu.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run check",
+      "npm run pack:check",
+      "wechatide simulator_open_page / simulator_screenshot / automation_evaluate"
+    ],
+    "browser": [
+      "WeChatIDE 2.02.2607252 成功编译并打开 Navbar 页面；390px 模拟器截图显示搜索与菜单都在左侧镜像轨，示例右侧无业务内容。",
+      "Navbar 运行态为 capsule=true、leftBtn/rightBtn 均存在且 rootClass 包含 pui-navbar--with-capsule；两个组件事件分别回写搜索与菜单状态，PUI Switch 让页面与组件 visible 在 false/true 间同步切换。",
+      "NavigationMenu 初始页无全屏灰遮罩，水平实例只保留组件根 Trigger，垂直实例以左 rail 和右 panel 同层展示。",
+      "错误实例在运行时为 visible=true/error=true/stateType=error；调用公开 retry 后页面把 errorMenuError 回写为 false，并显示页面重新提供本地数据的状态。"
+    ],
+    "deviceRisks": [
+      "WechatIDE automator 对自定义组件宿主执行 tap 不穿透内部原生 Button；当前已验证事件绑定与 Props 回写，但水平 Overlay 的真实手指点击、关闭和截图仍需真机复核。",
+      "微信真机的 Navbar 双操作触摸、系统胶囊几何、全屏 Overlay、低动效和读屏仍需 iOS 与 Android 复核。"
+    ]
+  },
+  "ai": {
+    "summary": "组件独立页必须让组件本体成为视觉与交互主体；页面控制只回写 Props，不得创建重复入口或永久诊断浮层。",
+    "rules": [
+      "微信 custom navigation 的 Navbar 双操作必须复用 leftBtn/rightBtn，并在 capsule=true 时都渲染于左侧胶囊镜像轨；不得向 right Slot 放业务内容。",
+      "Navbar visible 控制必须直接绑定 Navbar，本体隐藏后由稳定舞台承接布局，不用主按钮替代。",
+      "NavigationMenu 不得在默认 Trigger 外再增加打开按钮。",
+      "NavigationMenu 水平浮层与垂直双栏必须拆分实例；垂直模式关闭 Overlay 且不配置无意义的 placement。",
+      "同页多个 NavigationMenu 浮层必须互斥，并让活动实例高于常驻工作区，禁止后序实例穿透 Overlay。",
+      "Error NavigationMenu 不得永久 visible=true，retry 必须由页面真实回写 error Props。"
+    ],
+    "tags": [
+      "navbar",
+      "navigation-menu",
+      "miniprogram",
+      "example",
+      "controlled-state"
+    ]
+  }
+}

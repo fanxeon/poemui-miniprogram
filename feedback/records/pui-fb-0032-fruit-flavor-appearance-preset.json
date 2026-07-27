@@ -1,0 +1,94 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0032",
+  "title": "顶栏增加一键果味复合外观预设",
+  "scope": "global",
+  "components": ["preview-site", "switch", "config-provider"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "在外观图标按钮左侧增加一个一键果味 Switch；开启组合毛玻璃、大圆角、阴影并关闭边框、渐变，当前配置只要偏离果味组合就自动关闭。",
+  "environment": {
+    "surfaces": ["h5-preview", "topbar", "appearance-menu"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网任意页面，旧顶栏只有外观 IconButton，没有快速应用复合视觉组合的入口。",
+    "用户需要进入菜单逐项开启阴影、毛玻璃、大圆角，再逐项关闭边框和渐变。",
+    "如果为果味另存一个 Boolean，它可能与六项真实偏好不一致并显示假开启。"
+  ],
+  "expected": "外观按钮左侧出现真实 PUI Switch；开启立即应用 fruit 组合，关闭恢复 standard 组合，theme 保持当前值。Switch checked 始终由五项实际值推导，用户修改任一项后立即自动关闭，刷新后也不会漂移。",
+  "actual": "原实现没有复合预设入口；六项只能分别调整。",
+  "evidence": [
+    { "kind": "user-report", "ref": "当前任务对话", "note": "用户明确指定果味组合为毛玻璃/大圆角/阴影开启，边框/渐变关闭，并要求任何配置差异自动关闭 Switch。" },
+    { "kind": "file", "ref": "preview/app.js", "note": "新增 standard/fruit 两个站点预设、逐项匹配函数、共享持久化写入和由当前值同步的果味 PUI Switch。" },
+    { "kind": "test", "ref": "scripts/test-preview-fruit-flavor-preset.js", "note": "专项合同锁定五项值、主题独立、PUI Switch 复用、左侧顺序、派生 checked、标准关闭和禁止第二个存储键。" },
+    { "kind": "browser", "ref": "http://127.0.0.1:4179/#/components/dialog", "note": "真实点击开启后五项为 off/on/on/large/off；手动打开渐变后果味自动变 false；重新开启纠正配置，关闭恢复 on/off/off/normal/off，刷新可重新推导 true。390px 还复现并修复毛玻璃使 static Topbar 菜单落到页面 Header 后方的堆叠问题。" }
+  ],
+  "rootCause": "官网偏好已有单项真相源，但没有在其上建立可逆的复合预设；若直接增加独立 Boolean，会使快捷入口与真实五项状态分叉。移动端 Topbar 原为 position:static，果味开启毛玻璃后建立堆叠上下文，已有 z-index 不生效，使展开菜单落到后续页面 Header 下方。",
+  "decision": {
+    "outcome": "在外观 IconButton 左侧调用 switchPreviewMarkup 渲染“一键果味”。fruit 预设固定为 shadow=on、frost=on、radius=large、border=off、gradient=off；关闭应用 standard=off/off/normal/on/off。两者都不包含 theme。previewAppearanceMatches 对五项逐项全等，syncFruitFlavorControl 据此更新 checked；所有写入继续调用 storePreviewPreferences，不增加 fruit storage 字段。移动端 Topbar 改用 position:relative 激活既有 z-index，保证毛玻璃开启时菜单仍高于页面内容。",
+    "rationale": "派生状态保证快捷入口永远反映真实效果，复用现有偏好存储可让刷新自然恢复；主题保持独立，用户可在浅色和深色下使用同一果味视觉。主动关闭恢复标准组合，符合 Switch 的双向操作预期。",
+    "alternativesRejected": [
+      "单独持久化 fruit=true 会在用户修改单项后产生假开启。",
+      "只提供一次性按钮无法表达当前组合是否仍匹配，也不符合用户指定的 Switch。",
+      "关闭 Switch 但不改变配置会让控件语义与实际状态冲突。",
+      "把 theme 强制为深色或浅色超出用户指定的五项组合。",
+      "直接调用安装端 visualConfig 会混淆 H5 官网偏好与小程序消费者 Store，并且该 Store 不包含渐变。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/index.html",
+      "scripts/test-preview-fruit-flavor-preset.js",
+      "scripts/test-preview-appearance-menu.js",
+      "scripts/test-style-utilities.js",
+      "package.json",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0031-topbar-appearance-menu.json",
+      "feedback/records/pui-fb-0032-fruit-flavor-appearance-preset.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["switchPreviewMarkup", "poemui-preview-preferences"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-fruit-flavor-preset.js", "scripts/test-preview-appearance-menu.js", "scripts/test-design-contracts.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "桌面浅色初始标准组合下果味 unchecked；点击后 Shell 为 border=off、shadow=on、frost=on、radius=large、gradient=off，theme 仍为 light。",
+      "菜单六项与果味组合同步；单独把 gradient 改为 on 后果味立即变为 aria-checked=false，其余四项保持用户值。",
+      "偏离后再次开启果味会把 gradient 纠正为 off；再次关闭则恢复 border=on、shadow/frost=off、radius=normal、gradient=off，主题不变。",
+      "果味开启后刷新，五项从既有本地偏好恢复，果味由匹配函数重新推导为 true。",
+      "390x844 下果味入口为 66x22px、外观 IconButton 为 36x36px，品牌右缘与控件左缘间隔 20px，document client/scroll width 为 375/375px。",
+      "390x844 果味开启时 Topbar 计算为 position:relative；菜单最下方深色 Switch 的 elementFromPoint 命中自身且位于 appearance-menu 内。深色切换后菜单保持展开、果味继续 checked、Surface 为 rgb(24,24,27)。"
+    ],
+    "deviceRisks": ["本次果味是 H5 官网预览捷径，不新增安装端 visualConfig 预设；消费者若需要同名预设，应另行明确公共 API 与版本迁移。"]
+  },
+  "ai": {
+    "summary": "一键果味是由五项官网外观偏好实时推导的复合 PUI Switch，不拥有独立状态。",
+    "rules": [
+      "果味开启固定为 shadow/frost/radius 开、border/gradient 关；关闭恢复 standard，theme 始终不变。",
+      "果味 checked 必须逐项比较真实偏好，禁止创建独立 Boolean 或 storage key。",
+      "用户在外观菜单修改任一果味字段后，syncShell 必须立即让果味 Switch 反映新的匹配结果。",
+      "果味入口必须调用 switchPreviewMarkup，并位于外观 IconButton 左侧，不能手写 Switch DOM。",
+      "390px 验收必须同时检查品牌与控件不重叠、详细菜单不越界和页面无横向溢出。",
+      "果味开启毛玻璃时必须验证移动端外观菜单的 elementFromPoint 命中菜单自身，不能只检查 aria-expanded。",
+      "官网果味预设不得冒充安装端 visualConfig 公共预设。"
+    ],
+    "tags": ["preview-site", "appearance", "preset", "fruit-flavor", "switch", "derived-state", "local-storage", "responsive"]
+  }
+}

@@ -1,0 +1,51 @@
+.pui-avatar {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--pui-text-inverse);
+  background: var(--pui-text-primary);
+  /* Avatar 是展示叶子；身份图片不建立脱离内容流的浮层。 */
+  box-shadow: none;
+  vertical-align: middle;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity var(--pui-avatar-duration, var(--pui-duration-normal)) var(--pui-ease-standard), transform var(--pui-avatar-duration, var(--pui-duration-normal)) var(--pui-ease-standard);
+}
+
+.pui-avatar--small { width: 56rpx; height: 56rpx; font-size: 24rpx; }
+.pui-avatar--medium { width: 80rpx; height: 80rpx; font-size: 30rpx; }
+.pui-avatar--large { width: 112rpx; height: 112rpx; font-size: 38rpx; }
+.pui-avatar--circle { border-radius: var(--pui-radius-round); }
+.pui-avatar--round { border-radius: var(--pui-radius-medium); }
+.pui-avatar--square { border-radius: var(--pui-radius-small); }
+.pui-avatar--bordered { border: 2rpx solid var(--pui-border-color); outline: 1rpx solid var(--pui-border-color); }
+.pui-avatar--leaving { opacity: 0; transform: scale(.96); }
+
+.pui-avatar__fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.pui-avatar__slot { overflow: hidden; }
+.pui-avatar__image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--pui-avatar-duration, var(--pui-duration-normal)) var(--pui-ease-standard);
+}
+.pui-avatar__image--loaded { opacity: 1; }

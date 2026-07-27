@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0119",
+  "title": "Calendar 公开合同重复暴露事件、Slot、方法与动效配置",
+  "scope": "component",
+  "components": ["calendar", "button", "loading", "empty", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Calendar 应对照成熟小程序日历保留日期选择、面板、显隐与状态主干，基础调用简单，API 事件完整但不在基础示例堆满 bind。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "349px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Calendar 公开 40 Props、select/input/change、month/year、input-visible/open/close/today 等重复事件、三个 Slot 和八个实例方法。",
+    "旧基础 WXML 绑定大量事件并组合自定义 Footer 与 Tag，无法表达最小调用。",
+    "旧 duration/easing、showToday/todayText、confirmBtn/cancelBtn 与 locale 文案形成多组可互相冲突的配置。",
+    "TDesign MiniProgram 1.15.3 的 Calendar 主干集中在 value/defaultValue、type、日期边界、面板、显隐、确认与取消，不要求 PoemUI 保留工程诊断面。"
+  ],
+  "expected": "Calendar 只公开跨微信/H5 可真实闭环的 26 Props、7 Events、0 Slots、0 Methods；日期和值/显隐双受控稳定，基础 WXML 零 bind。",
+  "actual": "旧合同过度暴露且职责重复，受控与非受控连续性、状态文案和自动关闭边界难以从 API 判断。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项对照 TDesign 收敛 API、按用法分区，基础示例不写全部 bind，并授权 agent 完整证据后自主验收。"},
+    {"kind": "file", "ref": "calendar/calendar.js", "note": "最终 26 Props、严格日期、值与显隐双受控、三种选择、上限、状态与 7 个事件。"},
+    {"kind": "file", "ref": "calendar/calendar.wxml", "note": "固定 Header/42 格 Body/Footer，组合 PUI Button/Loading/Empty，0 Slot。"},
+    {"kind": "file", "ref": "docs/components/CALENDAR.md", "note": "记录 TDesign 1.15.3 的保留、增加、拒绝、状态优先级和真机风险。"},
+    {"kind": "test", "ref": "scripts/test-calendar.js", "note": "VM 与静态合同覆盖 26/7/0/0、严格日期、受控退控、上限、状态、事件、180/1ms 和文档。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/calendar", "note": "390px 下真实验证单选、范围父级回写、panel-change、confirm、disabled/readonly、loading/error/empty/retry、显隐与低动效。"}
+  ],
+  "rootCause": "旧实现按整改清单逐项增加配置和诊断能力，没有先限定 Calendar 只负责日期、面板、显隐请求与内部状态，也未用 TDesign 与真实微信能力共同校准最小合同。",
+  "decision": {
+    "outcome": "收敛为 26 Props；事件固定 change/limit/panel-change/visible-change/confirm/cancel/retry；localeText 统一文案与操作显隐；固定 180ms/1ms；不公开 Slot 和实例方法。",
+    "rationale": "声明式值与显隐、单一事件职责和内部 PUI 状态组合足以形成闭环；重复生命周期事件、任意 Slot 和实例写方法会让调用和跨端镜像失控。",
+    "alternativesRejected": [
+      "保留 select/input/change 三连发会迫使消费者无价值去重。",
+      "保留 month/year/today 与 panel-change 并行会拆散同一面板变化语义。",
+      "保留 header/footer/default Slot 会绕过固定网格、操作和状态结构。",
+      "直接照搬 format 函数、customNavbar 和 confirm/title Slot 会引入当前无法序列化并跨端验证的能力。"
+    ]
+  },
+  "impact": {
+    "files": ["calendar/calendar.js", "calendar/calendar.json", "calendar/calendar.wxml", "calendar/calendar.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/CALENDAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "README.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-calendar.js", "feedback/records/pui-fb-0119-calendar-api-and-state-contract.json"],
+    "dependencies": ["pui-button", "pui-loading", "pui-empty", "TDesign MiniProgram 1.15.3 Calendar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-calendar.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node scripts/test-calendar.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "点击 2026-07-12 后非受控选择与 change 同步；范围 value=2026-07-10 后点 15 日，父级真实回写两个端点。",
+      "下一月只发布 panel-change；确认只发布 confirm；错误 Retry 后 error 保持不变并明确等待消费者重新请求。",
+      "disabled 同时锁定日期与导航；readonly 锁定日期但允许导航；error 覆盖 loading，日期全禁用进入真实 Empty。",
+      "visible=false 受控关闭后打开入口回写 visible=true；reduceMotion 的运行时 style 为 1ms。"
+    ],
+    "deviceRisks": [
+      "微信触摸命中、fixed 遮罩、rpx 七列网格、样式隔离、系统低动效、ARIA 与读屏顺序仍需合法 AppID 真机复核。",
+      "微信开发者工具当前使用 touristappid，CLI build-npm 只能保留 pending-cli，不能冒充安装产物已在工具内成功生成。"
+    ]
+  },
+  "ai": {
+    "summary": "Calendar 只负责严格日期、三种选择、面板、显隐和内部状态；业务提交与结果属于消费者。",
+    "rules": [
+      "Calendar 不得恢复 select/input/month-change/year-change/input-visible/open/close/today 等重复事件。",
+      "localeText 是 today/confirm/cancel/loading/error/retry/empty 的唯一文案与操作显隐入口。",
+      "defaultValue/defaultVisible 只初始化一次，受控转非受控必须保留最后渲染状态。",
+      "limit 与 retry 只发真实请求，不截断选择、不清除错误、不伪造成功。"
+    ],
+    "tags": ["calendar", "tdesign", "api-contract", "controlled", "date-selection"]
+  }
+}

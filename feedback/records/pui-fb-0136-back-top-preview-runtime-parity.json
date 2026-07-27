@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0136",
+  "title": "BackTop H5 概览归一化后丢失真实滚动运行时绑定",
+  "scope": "component",
+  "components": ["back-top", "preview-site", "button", "cell"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "BackTop 官网不能用静态提示冒充回顶；Props、局部真实滚动、显隐、代码和 API 必须与小程序调用合同同源。",
+  "environment": {
+    "surfaces": ["h5-preview", "property-panel", "api-reference", "usage-code", "appearance-menu"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 运行时要求已被 component-only 归一化删除的 data-back-top-event 节点存在，导致绑定提前返回。",
+    "滚动位置 Props 虽能显示数值，当前 BackTop 点击却没有真实控制局部滚动容器。",
+    "旧概览混入工程事件状态和未收敛的目标/状态演示，基础 WXML 与最终合同不一致。"
+  ],
+  "expected": "当前 Props 实例必须用真实 PreviewDevice 局部滚动容器：外部 scrollTop 控制可见态，点击回到 0，浏览器 scroll 再回写 Props；展示、WXML、复制和 API 只表达最终合同。",
+  "actual": "component-only 清理与运行时查询形成隐藏耦合，真实绑定被提前中止，概览有把静态状态当成交互成功的风险。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求官网用法按 TDesign 分区、基础示例保持基础，并明确授权后续组件在完整证据后自主验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终 bindPreviewRuntime 直接绑定 data-back-top-scroll=current；BackTop click 调用同一局部容器的 scrollTo。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "backTopPreviewMarkup 最终四区共用 buttonSample、cellSample 与单一 backTopPreviewState，没有 event 状态卡或原生按钮壳。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "显隐使用 max-width/max-height/opacity/transform，普通与低动效分别为 500ms/1ms，未用 display:none 或 height:auto。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/back-top", "note": "实际打开 Props、填入 scrollTop=300、选择 half-round-dark、切换 fixed/text；可见态和展示即时变化，点击使真实局部滚动容器归零。"},
+    {"kind": "test", "ref": "scripts/test-back-top.js", "note": "锁定 H5 四区、共享 PUI helper、无旧 data-back-top-event、基础代码零 bind 与产物一致性。"}
+  ],
+  "rootCause": "H5 运行时通过一个只用于旧事件反馈的 DOM 标记判断 BackTop 是否存在；component-only 正确清理该标记后，运行时没有改为查找真实滚动根。",
+  "decision": {
+    "outcome": "删除对 data-back-top-event 的依赖；以 current sample 的 data-back-top-scroll 与真实 PUI Button 为运行时锚点，统一由 scrollTop 和 current visibility 驱动。",
+    "rationale": "滚动容器和可见入口是用户可见、可交互的真实节点，不应依赖已归一化删除的工程诊断 DOM。",
+    "alternativesRejected": [
+      "只修改事件提示文字不能让按钮真实回顶。",
+      "保留工程事件 Cell 会破坏 component-only 概览并误导用户。",
+      "用 document 滚动或手写原生 button 会偏离 PreviewDevice 与 PUI Button 合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/BACKTOP.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-back-top.js"],
+    "dependencies": ["PreviewDevice", "PUI Button H5 helper", "PUI Cell H5 helper", "shared usage-code generator"]
+  },
+  "verification": {
+    "tests": ["scripts/test-back-top.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node scripts/test-back-top.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "默认 scrollTop=0 时 BackTop 隐藏并禁用；Props 填入 300 后变为可见。",
+      "点击可见入口实际使局部 area.scrollTop 从 300 归零；内置浏览器没有向页面桥接该程序化原生 scroll 回调，因此该工具内不能把回写状态伪称为点击成功。",
+      "half-round-dark、静态定位和返回顶部文案均通过 Props 面板真实重绘；393px PreviewDevice 与页面均无横向溢出，390px 规则另由专项合同覆盖。"
+    ],
+    "deviceRisks": ["内置浏览器工具不转发 programmatic scroll 的原生回调；需普通浏览器和微信真机复核 scroll 事件回写。", "微信 onPageScroll、fixed 安全区、rpx、触摸反馈、样式隔离、低动效和读屏仍需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "BackTop H5 必须锚定真实局部滚动容器和 PUI Button，归一化时不得依赖被删除的工程诊断 DOM。",
+    "rules": [
+      "BackTop 运行时只查询当前 PreviewDevice 内的真实 scroll 根和 BackTop 交互根。",
+      "点击必须调用局部容器真实 scrollTo，不能只更新提示文本或滚动官网文档页。",
+      "component-only 删除事件诊断节点后，要同步审计所有运行时选择器。",
+      "自动化工具不桥接原生事件时，记录限制并保留真机风险，不能伪造回写证据。"
+    ],
+    "tags": ["back-top", "preview-parity", "scroll", "component-only", "browser-limit"]
+  }
+}

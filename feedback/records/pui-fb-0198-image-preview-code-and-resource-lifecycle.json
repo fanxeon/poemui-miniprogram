@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0198",
+  "title": "Image H5 代码分区缺失且资源失败停留在加载态",
+  "scope": "component",
+  "components": ["image", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "逐组件 battle 时，Image 的代码区应提供可筛选的真实用法示例，H5 预览必须反映真实图片资源状态，不能用提示文案伪造交互。",
+  "environment": {
+    "surfaces": ["Image 常规模式代码正文", "Image H5 PreviewDevice", "API 文档"],
+    "platforms": ["Chrome", "H5 preview", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "375px document", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 H5 `#/components/image` 的概览；组件本体已分为基础、加载与失败、裁切、形状与覆盖内容四个区域，但左侧代码正文只有“组件引用”和“基础用法”两段。",
+    "在属性页为 `src` 填入 `/__poemui__/missing-image.png`，返回概览。修复前浏览器真实请求失败后，Image 仍保持 loading 图层，未进入错误回退。"
+  ],
+  "expected": "代码正文应给出与概览一致且可直接复用的基础、状态、裁切和覆盖内容示例；每段使用同一 WXML 真相源和 PUI Copy 操作。H5 必须由浏览器真实 `<img>` 的 load/error 与缓存完成状态驱动 loading、loaded、error、empty，外部 loading/error 只覆盖显示且不伪造公开事件。",
+  "actual": "旧代码正文只暴露引用 JSON 与基础 WXML，遗漏三个实际展示分区；H5 `<img>` 没有 load/error 监听，初始化带 src 的节点固定推断为 loading，真实失败资源没有进入 error。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 用户反馈", "note": "用户指出第 08 项 Image 代码区只显示一个代码，要求提供几个示例。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/image", "note": "Chrome 390x844 实测修复前缺失资源在 350ms 后仍为 loading；修复后真实有效、外部 loading 与缺失资源分别为 loaded、loading、error。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "旧 `imageNode` 没有为浏览器 img 绑定 load/error；代码正文只读取 basic/reference 两个来源。"},
+    {"kind": "test", "ref": "scripts/test-image.js", "note": "专项测试锁定同源示例代码、基础零 bind、真实资源生命周期和外部状态优先级。"}
+  ],
+  "rootCause": "H5 Image 镜像在首次渲染时只根据 props 推导静态状态，未订阅浏览器图片生命周期；代码正文的数据模型也未承接 Image showcase 已存在的后三个用户用法分区。",
+  "decision": {
+    "outcome": "新增从 `makeUsageCode` 提取 WXML 的 Image 示例源，正文固定显示组件引用、基础、加载与失败、裁切模式、形状与覆盖内容五段；每段沿用 `previewCodeBlockSample` 的 PUI Copy IconButton。H5 Image 直接监听 img load/error，并以 complete/naturalWidth 处理缓存资源，统一更新可见状态和 aria-busy。",
+    "rationale": "这样代码与实际预览、属性默认值和复制内容同源，同时真实响应浏览器资源结果；没有扩张小程序公开 API、增加伪事件或加入状态切换按钮。",
+    "alternativesRejected": [
+      "为每个示例维护手写 WXML：会与属性默认值和复制代码漂移。",
+      "用定时器、点击按钮或提示文字模拟 load/error：不反映真实资源状态。",
+      "只在失败示例中硬编码 error=true：会掩盖浏览器资源失败路径。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-image.js", "scripts/test-preview-normal-code-card.js", "docs/components/IMAGE.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0198-image-preview-code-and-resource-lifecycle.json"],
+    "dependencies": ["makeUsageCode", "previewCodeBlockSample", "PUI IconButton copy contract", "loadingComponent", "Image 原生 load/error 合同"]
+  },
+  "verification": {
+    "tests": ["scripts/test-image.js", "scripts/test-preview-normal-code-card.js"],
+    "commands": ["2026-07-20：`node --check preview/app.js`、`node scripts/test-image.js`、`node scripts/test-preview-normal-code-card.js`、`npm run feedback:generate && npm run feedback:check`、`npm run site:build`、`npm run check`、`npm run pack:check`、`npm run example:install` 全部通过。npm pack dry-run 为 554 files、325.4 kB、shasum cceed4d9f9f3216effeafe6b94e6e9ac898b124f。", "2026-07-20：微信 CLI `build-npm --project _example` 实际启动 IDE 服务，但示例 `touristappid` 权限查询返回不存在 AppID（code 10）；未生成且未手工伪造 `miniprogram_npm`。", "2026-07-20：Image JS/JSON/WXML/WXSS 在源码、miniprogram_dist、示例 tarball 安装中逐字节一致，SHA256 依次为 b882fda02e09c3b2eaba6f539000ea7a54408be5b1662937bedcb5bb0cdbb9db、2741d6a65c81b666a0c2bfc000aad91619246893407874def343126b9a8b99ca、9550722a3be250b44ab0c9ad18000de449b799228fbad9087a09fca3574b3644、eb470fd3a6138589b0e55849bc53bdb95781ca6f552b2e93b11bcab0422c85de。"],
+    "browser": ["Chrome 390x844 实测代码正文显示五段；页面 document/body 为 375/375，代码正文为受限纵向滚动，宽度 340/340，无页面级横向溢出。", "默认有效图片实际 loaded 并隐藏状态层；外部 loading 保持 loading；真实缺失图片实际进入 error，error 优先于同时开启的 loading。", "API 四张表在 375px 文档宽度均为 clientWidth=scrollWidth，未发现 ellipsis 或 nowrap 截断；light/dark 和 shadow/frost/large-radius/gradient/border 开关均已实际切换并恢复标准组合。"],
+    "deviceRisks": ["合法 AppID 真机仍需核验微信图片域名、webp、lazy-load、widthFix/heightFix、rpx 抗锯齿、长按菜单、样式隔离、系统低动效与辅助技术。", "浏览器自动化环境没有暴露剪贴板读取权限；复制按钮走真实 Clipboard API / execCommand 结果，最终粘贴内容仍需在用户浏览器或真机手工确认。"]
+  },
+  "ai": {
+    "summary": "展示分区存在不代表代码正文已经覆盖；资源组件的 H5 状态必须由真实平台资源事件驱动。",
+    "rules": [
+      "为概览补代码时，必须从同一份 WXML 生成器生成，不能另写第二份演示字符串。",
+      "图片、音视频等资源镜像必须处理真实成功、失败和缓存完成；不能只从初始 Props 推断永久 loading。",
+      "基础用法保持最小并不绑定事件；事件只进入 API 或专门事件示例。",
+      "复制结果必须来自真实剪贴板调用，自动化环境拿不到剪贴板时记录未验证，不能声称复制成功。"
+    ],
+    "tags": ["image", "h5-preview", "code-example", "resource-lifecycle", "copy", "390px", "t-design-alignment"]
+  }
+}

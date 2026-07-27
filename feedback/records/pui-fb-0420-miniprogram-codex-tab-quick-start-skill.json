@@ -1,0 +1,133 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0420",
+  "title": "第三 Tab 需要真实 Codex 快速开始页与 Skill 留白",
+  "scope": "component",
+  "components": ["miniprogram", "tabbar", "icon", "card", "button", "scroll-area"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "把第三个纯图标 Tabbar 目的地改为 Codex，并提供可复制的快速开始代码区；另设“让你的 AI 懂得用它”分区，Skill 尚未完成时保持明确留白。",
+  "environment": {
+    "surfaces": ["miniprogram tabbar", "codex top-level page", "h5 icon catalog"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开小程序第三个 Tab。",
+    "原目标为 explore/orbit，页面只组合空白 tabbar-placeholder，没有快速安装、代码复制或 AI Skill 信息结构。",
+    "Icon manifest 中不存在 codex，直接只改 item.icon 会产生空白图标。"
+  ],
+  "expected": "第三项使用当前 Icon manifest 已发布的 code Icon 并进入 pages/codex/index；页面以 PUI 组件组合快速开始与 Skill 留白，代码复制来自真实 wx.setClipboardData 回调。",
+  "actual": "旧 explore 页面没有内容，orbit 也不能表达 Codex；未建立代码阅读和复制路径，Skill 无明确但克制的占位边界。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户先要求第三 Tab 进入 Codex 页面，随后明确将 Tabbar 图标从 codex 改为 code；页面内 Skill 仍暂时留白。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/utils/tabbar-navigation.js",
+      "note": "第三项固定为 codex/code/Codex 并路由到 /pages/codex/index；图标与目的地 value 解耦。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/codex/index.wxml",
+      "note": "真实组合 ConfigProvider、Navbar、ScrollArea、Card、Icon、Section、code-snippet 与 Tabbar。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/components/code-snippet/code-snippet.js",
+      "note": "复制通过 wx.setClipboardData 的 success/fail 回写 check/error-circle 与 aria-live 状态。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-tabbar-pages.js",
+      "note": "锁定真实路由、两分区、PUI 组合、代码内容、剪贴板写入和 Skill 无假动作边界。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-icon.js",
+      "note": "锁定 codex 来自 Lucide bot，并进入 218 glyph 的小程序/H5 共用字体链。"
+    }
+  ],
+  "rootCause": "第三目的地最初只是为四项信息架构预留的 explore 空白路由；没有与后续 Codex 接入任务同步，也没有可复用的小程序代码阅读与真实复制组合。",
+  "decision": {
+    "outcome": "删除 pages/explore/index，新增 pages/codex/index；第三 Tab value/icon/ariaLabel 当前为 codex/code/Codex。新增页面级共享 code-snippet，以 PUI Card、Button、Icon 组合代码 Surface，原生 scroll-view 只承担横向阅读，复制使用真实微信剪贴板。Skill 区仍显示 PUI Card + codex Icon + SKILL。",
+    "rationale": "目的地语义、图标资源和页面路由保持一致；复制结果由平台回调证明。Skill 未交付前明确留白，避免空白页面和假下载两种极端。小程序应用页面不伪造成 H5 组件页，但 codex glyph 通过同一生成字体同步 H5 Icon 资源。",
+    "alternativesRejected": [
+      "只把 orbit 字符串改成不存在的 codex：会重演 Tabbar 空白图标问题。",
+      "继续保留 explore 路由作为别名：会让当前信息架构和测试长期出现两个语义。",
+      "用原生 button 或字符复制图标：绕过 PUI Button/Icon 组合合同。",
+      "为尚未交付的 Skill 放置下载按钮或示例正文：会制造不可执行能力和假成功。",
+      "把小程序应用页复制成官网标准组件页：Codex 页不是 npm 组件，H5 只需同步 Icon 与已有代码块规则。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scripts/generate-icons.js",
+      "assets/icons-src/abstract/codex.svg",
+      "assets/icons-src/manifest.json",
+      "icon/icon-font-map.js",
+      "icon/icon-font-catalog.js",
+      "icon/icon-font.wxss",
+      "preview/icon-font.css",
+      "preview/icons-data.js",
+      "miniprogram/common/utils/tabbar-navigation.js",
+      "miniprogram/app.json",
+      "miniprogram/pages/codex/",
+      "miniprogram/components/code-snippet/",
+      "scripts/test-icon.js",
+      "scripts/test-miniprogram-tabbar-pages.js",
+      "scripts/test-miniprogram-home.js",
+      "docs/MINIPROGRAM_CODEX_PAGE.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/components/TABBAR.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md"
+    ],
+    "dependencies": ["PUI ConfigProvider", "PUI Navbar", "PUI ScrollArea", "PUI Card", "PUI Button", "PUI Icon", "PUI Tabbar", "Lucide 1.24.0"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-icon.js",
+      "scripts/test-miniprogram-tabbar-pages.js",
+      "scripts/test-miniprogram-home.js"
+    ],
+    "commands": [
+      "npm run icons:generate",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check",
+      "npm run example:install",
+      "微信 DevTools build-npm"
+    ],
+    "browser": [
+      "微信开发者工具 390x844 首页运行态 #home-tabbar 的第三项实际 PUI Icon 为 name=code、ariaLabel=Codex；截图 /tmp/poemui-home-version-code-tab-390.png 可见通用代码括号图标。",
+      "微信运行态通过 #codex-install-snippet 调用真实复制链后，wx.getClipboardData 返回 npm i poemui-miniprogram -S --production，组件回写 copyIcon=check、copyLabel=已复制、copyStatus=代码已复制。",
+      "H5 Icon 资源页在 390x844 显示 218 个图标；搜索 codex 唯一命中，真实 glyph 节点计算字体为 PoemUI Roundline、字号 28px，document clientWidth/scrollWidth=375/375，控制台 warning/error 为 0。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机仍需确认 Tabbar code glyph 与页面 codex glyph 的字体抗锯齿、基线、触摸命中、代码横向滚动、选择文本、剪贴板权限和读屏；本轮未把模拟器结论冒充真机。",
+      "小程序 Codex 页面深色及边框、阴影、毛玻璃、大圆角、等距组合的运行态视觉仍未逐项检查。",
+      "SKILL 尚未实现；当前留白不是可安装或可复制能力。"
+    ]
+  },
+  "ai": {
+    "summary": "第三 Tab 是真实 Codex 接入页：目的地图标使用已发布的 code，页面 Skill 留白仍可使用 codex 品牌图标。",
+    "rules": [
+      "Codex 目的地 value 保持 codex，但 Tabbar 图标使用当前 Icon manifest 的 code；不要因名称不同而改错真实路由。",
+      "一级目的地语义改变时同步 value、ariaLabel、真实路由、app.json、页面状态和专项测试，不保留旧空白别名。",
+      "小程序代码区优先组合 PUI Card/Button/Icon；原生 scroll-view 只承担代码横向阅读。",
+      "复制成功或失败必须来自 wx.setClipboardData 回调，不能在点击时直接显示成功。",
+      "Skill 未交付前只保留 SKILL 留白，不提供假下载、假复制或示例内容。",
+      "小程序应用页不伪造成 H5 组件页；共享 Icon 字体和已有 H5 代码块合同必须继续同步。"
+    ],
+    "tags": ["miniprogram", "tabbar", "codex", "icon", "quick-start", "code-copy", "skill", "pui-composition"]
+  }
+}

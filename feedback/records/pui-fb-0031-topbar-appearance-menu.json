@@ -1,0 +1,111 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0031",
+  "title": "顶栏六项外观开关收纳为单一外观菜单",
+  "scope": "global",
+  "components": ["preview-site", "button", "icon", "switch"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "主页面右上角不再平铺六个详细外观开关，只保留一个外观图标按钮并用一个菜单收纳全部设置；后续允许在按钮左侧增加一个派生的果味复合预设 Switch。",
+  "environment": {
+    "surfaces": ["h5-preview", "topbar"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意官网页面并查看 Topbar 右侧。",
+    "旧结构直接平铺边框、阴影、毛玻璃、大圆角、渐变和深色六个 Switch，占用主导航宽度。",
+    "在较窄视口下六项会改为两列整行布局，使顶栏明显增高。"
+  ],
+  "expected": "Topbar 右侧只显示一个可识别的详细外观 PUI 图标按钮；点击后在一个主题安全、边界稳定的菜单中展示六个真实 PUI Switch，原有作用域和持久化不变，并支持键盘与 390px。按钮左侧可承载一个不会复制六项状态的果味复合预设 Switch。",
+  "actual": "六个 Switch 虽已复用 PUI 组件并持久化，但入口层级没有收纳，仍直接与品牌和导航并列。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求把主页面右上方开关收成一个外观图标按钮和一个菜单。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "ensurePreviewPreferenceControls 通过 iconButtonSample + palette Icon 建立唯一入口，并在同一非模态 panel 中挂载六个 switchPreviewMarkup。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "外观菜单使用共享 panel/content spacing、主题 Surface、语义圆角和 normal/standard 动效，并限制 390px 宽高边界；全局 PUI Button 镜像的空内容 Slot 不再占据 gap，Palette Icon 精确居中。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-appearance-menu.js",
+      "note": "专项合同锁定 PUI Button/Icon/Switch 复用、ARIA、焦点、Esc/点击外部关闭、低动效、响应式和无 Hover 依赖。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/dialog",
+      "note": "桌面与 390x844 实测入口为 36px 圆形 PUI IconButton，菜单为 264px 宽并包含六个 Switch；深色切换和刷新恢复有效，页面无横向溢出。"
+    }
+  ],
+  "rootCause": "六项视觉能力按需求逐步加入时只统一了 Switch 组件与存储模型，没有同步建立顶栏的信息收纳层级，导致设置数量增长后仍平铺。",
+  "decision": {
+    "outcome": "Topbar 静态 HTML 继续只保留 previewPreferenceControls Mount；运行时调用 iconButtonSample + medium palette Icon 渲染唯一 36px 外观入口，使用 aria-haspopup=dialog、aria-expanded 和 aria-controls 连接非模态菜单。菜单内部按单列等宽行调用六次 switchPreviewMarkup；打开聚焦首个 Switch，Esc 关闭并恢复入口焦点，点击外部关闭。菜单使用 PUI Token、主题 Surface、normal/standard 动效和低动效覆盖，六项持久化模型完全不变。",
+    "rationale": "单入口降低顶栏噪音并释放导航宽度，菜单仍保留设置的可发现性；继续复用既有 PUI helper 和存储真相源可避免重新实现控件或引入第二套状态。非模态 dialog 语义比 menuitem 更适合承载多个可交互 Switch。",
+    "alternativesRejected": [
+      "继续平铺六项会持续挤压主导航，并在窄屏制造额外整行高度。",
+      "只在移动端收纳会形成两套入口结构和维护分支。",
+      "把 Switch 改成普通 menuitem 会损失开关状态的 role=switch 与 aria-checked 语义。",
+      "静态复制按钮或 Switch DOM 会绕过共享 PUI helper 与原生控件边界合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-appearance-menu.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-design-contracts.js",
+      "package.json",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0031-topbar-appearance-menu.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["button", "icon", "switch", "localStorage"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-appearance-menu.js", "scripts/test-preview-infrastructure-composition.js", "scripts/test-design-contracts.js", "scripts/test-preview-css-token-contract.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "1280x720 下入口为 36x36px，Palette Icon 与按钮中心偏差为 0/0；菜单为 264x286px，六个 Switch 完整可见，打开后首个边框 Switch 获得焦点。",
+      "390x844 下 document client/scroll width 为 375/375px，菜单右边界 363px、宽 264px，六个 Switch 全部在视口内。",
+      "深色 Switch 点击后 Shell 进入 dark，菜单 Surface 为 rgb(24,24,27)、文字为 rgb(250,250,250)，刷新后深色与 aria-checked=true 恢复。",
+      "Esc 关闭后 aria-expanded=false、aria-hidden=true，并把焦点恢复到外观入口；点击菜单外的预览工具栏同样关闭。"
+    ],
+    "deviceRisks": ["本次只重组 H5 官网 Topbar 基础设施，不改变小程序组件 API、ConfigProvider 或安装端 visualConfig；触摸端辅助技术仍需目标设备复核。"]
+  },
+  "ai": {
+    "summary": "官网六项外观偏好必须收纳在一个由 PUI Palette IconButton 打开的非模态菜单中，PUI Switch 与持久化真相源保持不变。",
+    "rules": [
+      "Topbar 详细外观设置只允许一个 PUI IconButton 入口，禁止重新平铺六个详细 Switch；左侧允许一个由六项真相源推导的复合预设 Switch。",
+      "外观入口必须调用 iconButtonSample + palette Icon，菜单内每项继续调用 switchPreviewMarkup。",
+      "所有 PUI IconButton 的空内容 Slot 必须 display:none，不能让空节点与 gap 破坏图标双轴居中。",
+      "Switch 菜单使用非模态 dialog 语义，不要把 role=switch 降级成普通 menuitem。",
+      "菜单必须维护 aria-expanded/controls/hidden/inert，打开聚焦首项，Esc 恢复入口焦点，点击外部关闭。",
+      "菜单宽高、padding、gap、圆角、Surface 和动效必须消费 PUI Token，390px 不得横向越界，低动效为 1ms。",
+      "收纳入口不得改变六项本地持久化字段、默认值、组件作用域或 ConfigProvider 合同。"
+    ],
+    "tags": ["preview-site", "topbar", "appearance", "menu", "icon-button", "switch", "accessibility", "responsive", "local-storage"]
+  }
+}

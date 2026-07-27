@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0212",
+  "title": "Popup 官网进退场因整段重绘丢失中间帧",
+  "scope": "component",
+  "components": ["popup", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "Popup 在官网预览中先显示全屏 Overlay，再让弹层从默认 bottom 方向真实升起；关闭时反向完成 500ms 动画后再卸载，不能瞬间跳到终态。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-contract"],
+    "platforms": ["browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/popup，真实点击底部的打开弹层按钮。",
+    "修复前在触发后约 19ms 采样 Overlay 和 Popup：进入节点已被 renderStage 整段替换，opacity 直接为 1、transform 直接为 0，没有 500ms 中间帧。",
+    "修复前点击关闭时节点同样被替换为离场终态，虽然延后约 500ms 才卸载，但用户看不到连续退场过程。"
+  ],
+  "expected": "Overlay 与 Popup Surface 在一次进入或离开期间始终保留同一 DOM 节点，只切换 entering/entered/leaving 状态类；默认 500ms 内应能读取连续 opacity/transform 中间值，离场完成后才能恢复关闭态入口。",
+  "actual": "旧官网运行时在阶段定时器和点击事件尾部调用 renderStage，以 stage.innerHTML 重建整棵预览树，CSS transition 的起点节点被销毁，500ms 配置只剩延迟卸载而不是真实可见动画。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-22 当前任务", "note": "用户明确确认 Popup 当前表现不符合 Overlay 先出现、面板再从底部升起的顺序，并要求直接修复。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Popup 生命周期改为 updatePopupPreviewDom 原地切换状态类，打开/遮罩/关闭分支显式 return，离场完成后才允许重建关闭入口。"},
+    {"kind": "file", "ref": "docs/components/POPUP.md", "note": "组件合同锁定同一 Overlay/Surface 节点贯穿完整进退场。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项测试锁定稳定节点助手、阶段类、时序调度和三个点击分支不得落入全局 renderStage。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/popup", "note": "390x844 真实点击与逐帧采样确认进入和离开均保留同一节点并出现连续中间帧。"}
+  ],
+  "rootCause": "Popup 官网镜像把生命周期状态推进和整页预览重绘绑定在一起；renderStage 使用 innerHTML 替换节点，破坏 CSS transition 所需的稳定元素身份。",
+  "decision": {
+    "outcome": "新增 Popup 局部 DOM 状态同步，只更新 active/phase class、data-popup-phase 与 aria-hidden；进入阶段不再重绘，离场等待实际 motion duration 后才卸载并重建关闭入口。",
+    "rationale": "CSS transition 只有在同一节点从起始样式切换到结束样式时才会产生中间帧；局部状态同步同时保留 Overlay 先挂载、面板 bottom 位移、滚动保护和父级显隐回写。",
+    "alternativesRejected": [
+      "继续整段 renderStage 并增加 setTimeout：延时无法修复节点身份丢失。",
+      "用关键帧动画强行覆盖：仍会被节点替换中断，也复制一套与组件合同分离的动效逻辑。",
+      "只延后显示 Popup：无法提供连续中间帧，也会让 Overlay 与 Surface 时序继续漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-popup.js", "docs/components/POPUP.md", "docs/UI_DESIGN_CONTRACT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "CHANGELOG.md"],
+    "dependencies": ["popup-preview-runtime", "preview-stage", "motion-contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project /Users/fanx/Documents/poemUI 小程序组件库/_example"],
+    "browser": [
+      "390x844 进入：约 36ms opacity=0、translateY=24px；116ms opacity=0.216735、translateY=18.7984px；259ms opacity=0.786415、translateY=5.12605px；619ms 完成 opacity=1、translateY=0。",
+      "进入期间从挂载到完成始终为同一 Popup 节点，并检测到 0 与 1 之间的真实中间 opacity。",
+      "390x844 离开：约 119ms opacity=0.590633、translateY=9.82482px；261ms opacity=0.169674、translateY=19.9278px；501ms opacity=0.00238363、translateY=23.9428px；约 545ms 后卸载。",
+      "离开期间节点身份保持不变；真实点击 Popup 之外可见遮罩区域后，同样完成退场并恢复打开入口。",
+      "390px 下 innerWidth=390、document/body scrollWidth=375/375，无页面级横向溢出。"
+    ],
+    "deviceRisks": [
+      "本次修复位于官网 H5 预览运行时，不改变小程序 Popup 源码；微信 CLI 已真实执行但项目使用 touristappid，开发者工具内部返回 code 10（不存在此 AppID），未生成或伪造 miniprogram_npm。仍需合法 AppID 验证安装产物与真机动画时序，不能用 H5 结果替代真机结论。"
+    ]
+  },
+  "ai": {
+    "summary": "Popup 等浮层的进退场必须保留同一 Overlay 与 Surface 节点，局部切换阶段类，离场完成后才能卸载。",
+    "rules": [
+      "不得在浮层进入或离开的中间阶段调用会替换预览根 innerHTML 的整段 render。",
+      "验证动效不能只读 transition-duration，必须采样中间帧并核对节点身份。",
+      "进入时先挂载 Overlay 与起始位移 Surface，再在下一帧切换 entered；离开时先切 leaving，再按真实 duration 卸载。",
+      "点击事件分支完成局部生命周期处理后必须显式 return，避免落入通用重绘。",
+      "遮罩点击测试必须命中未被 Popup Surface 覆盖的真实可见区域。"
+    ],
+    "tags": ["popup", "overlay", "retained-node", "transition", "h5-preview", "500ms", "preview-parity"]
+  }
+}

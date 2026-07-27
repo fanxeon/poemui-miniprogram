@@ -1,0 +1,33 @@
+<view wx:if="{{mounted}}" class="{{hostClass}}" style="{{rootStyle}}" aria-hidden="{{!active}}">
+  <view wx:if="{{usePopup}}" class="pui-calendar__overlay {{active ? 'pui-calendar__overlay--active' : ''}}" catchtap="onOverlayTap"></view>
+  <view class="{{rootClass}} {{active ? 'pui-calendar--active' : 'pui-calendar--inactive'}} pui-calendar--{{stateType}} {{customClass}}" style="{{customStyle}}" role="group" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}" aria-readonly="{{readonly}}" aria-busy="{{loading}}">
+    <view class="pui-calendar__header">
+      <view class="pui-calendar__heading">
+        <text class="pui-calendar__title">{{title}}</text>
+        <pui-button wx:if="{{locale.today}}" variant="text" size="small" disabled="{{disabled || loading || error}}" bind:click="onToday">{{locale.today}}</pui-button>
+      </view>
+      <view class="pui-calendar__switch">
+        <pui-button variant="text" shape="square" size="small" icon="chevron-left" icon-only disabled="{{previousDisabled || loading || error}}" aria-label="上一个{{switchMode === 'year' ? '年份' : '月份'}}" bind:click="onPrevious" />
+        <text>{{monthText}}</text>
+        <pui-button variant="text" shape="square" size="small" icon="chevron-right" icon-only disabled="{{nextDisabled || loading || error}}" aria-label="下一个{{switchMode === 'year' ? '年份' : '月份'}}" bind:click="onNext" />
+      </view>
+    </view>
+
+    <view class="pui-calendar__body">
+      <view class="pui-calendar__content {{stateType === 'content' ? 'pui-calendar__content--active' : ''}}" aria-hidden="{{stateType !== 'content'}}">
+        <view class="pui-calendar__week" aria-hidden="true"><text wx:for="{{weekdayNames}}" wx:key="index">{{item}}</text></view>
+        <view class="pui-calendar__days" role="grid">
+          <view wx:for="{{days}}" wx:key="key" class="pui-calendar__day {{item.current ? '' : 'pui-calendar__day--other'}} {{item.selected ? 'pui-calendar__day--selected' : ''}} {{item.between ? 'pui-calendar__day--between' : ''}} {{item.start ? 'pui-calendar__day--start' : ''}} {{item.end ? 'pui-calendar__day--end' : ''}} {{item.today ? 'pui-calendar__day--today' : ''}} {{item.disabled ? 'pui-calendar__day--disabled' : ''}}" role="button" aria-label="{{item.ariaLabel}}" aria-selected="{{item.selected}}" aria-disabled="{{disabled || readonly || item.disabled}}" data-index="{{index}}" bindtap="onDateTap"><text>{{item.label}}</text></view>
+        </view>
+      </view>
+      <view class="pui-calendar__state {{stateType === 'loading' ? 'pui-calendar__state--active' : ''}}" aria-hidden="{{stateType !== 'loading'}}"><pui-loading loading="{{stateType === 'loading'}}" text="{{locale.loading}}" reduce-motion="{{reduceMotion}}" /></view>
+      <view class="pui-calendar__state pui-calendar__state--error {{stateType === 'error' ? 'pui-calendar__state--active' : ''}}" aria-hidden="{{stateType !== 'error'}}"><pui-empty description="{{locale.error}}" icon="error-circle" reduce-motion="{{reduceMotion}}" /><pui-button wx:if="{{locale.retry}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" bind:click="onRetry">{{locale.retry}}</pui-button></view>
+      <view class="pui-calendar__state {{stateType === 'empty' ? 'pui-calendar__state--active' : ''}}" aria-hidden="{{stateType !== 'empty'}}"><pui-empty description="{{locale.empty}}" icon="calendar" reduce-motion="{{reduceMotion}}" /></view>
+    </view>
+
+    <view wx:if="{{locale.cancel || locale.confirm}}" class="pui-calendar__footer">
+      <pui-button wx:if="{{locale.cancel}}" size="small" disabled="{{disabled}}" bind:click="onCancel">{{locale.cancel}}</pui-button>
+      <pui-button wx:if="{{locale.confirm}}" theme="primary" size="small" disabled="{{disabled || loading || error}}" bind:click="onConfirm">{{locale.confirm}}</pui-button>
+    </view>
+  </view>
+</view>

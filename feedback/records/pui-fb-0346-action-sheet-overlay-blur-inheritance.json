@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0346",
+  "title": "ActionSheet 遮罩未继承全局毛玻璃且不能局部覆盖",
+  "scope": "component",
+  "components": ["action-sheet", "config-provider", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "ActionSheet 遮罩默认跟随全局毛玻璃，同时调用方可单独启用或关闭当前遮罩模糊。",
+  "environment": {"surfaces": ["miniprogram", "preview-site"], "platforms": ["wechat-miniprogram", "web"], "viewports": ["390x844"], "themes": ["light", "dark"]},
+  "reproduction": ["开启 ConfigProvider 的 frostedGlass 后打开 ActionSheet，旧遮罩仍只有固定半透明底色。", "调用方没有 ActionSheet 局部遮罩模糊 API。"],
+  "expected": "blurOverlay 未传继承全局毛玻璃；true 强制当前遮罩毛玻璃；false 强制当前遮罩保持纯半透明。",
+  "actual": "旧遮罩固定 rgba 背景，既不消费 Provider 毛玻璃类，也无局部覆盖路径。",
+  "evidence": [
+    {"kind": "file", "ref": "action-sheet/action-sheet.js", "note": "blurOverlay 采用 null/true/false 三态，生成继承、强制模糊或强制清晰的遮罩 class。"},
+    {"kind": "file", "ref": "action-sheet/action-sheet.wxss", "note": "Provider frosted class 默认作用于遮罩，局部 clear class 在同一组件内覆盖。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 镜像按同一三态和站点 frost 状态计算 overlay class。"},
+    {"kind": "test", "ref": "scripts/test-action-sheet.js", "note": "专项断言三态 class、全局继承 CSS 与 H5 镜像判断。"}
+  ],
+  "rootCause": "ActionSheet 作为独立浮层 Surface 没有接入既有 Overlay/ConfigProvider 毛玻璃语义。",
+  "decision": {"outcome": "新增 nullable blurOverlay；null 继承全局，true/false 仅覆盖当前遮罩。", "rationale": "继承默认保证外观开关完整同步，显式值保留组件消费者的局部控制。", "alternativesRejected": ["固定始终模糊：会违背全局外观。", "只依赖全局开关：无法满足单个 ActionSheet 的明确视觉需求。"]},
+  "impact": {"files": ["action-sheet/action-sheet.js", "action-sheet/action-sheet.wxml", "action-sheet/action-sheet.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/ACTION-SHEET.md", "scripts/test-action-sheet.js"], "dependencies": ["config-provider", "visualConfig", "preview-appearance"]},
+  "verification": {"tests": ["scripts/test-action-sheet.js"], "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check"], "browser": [], "deviceRisks": ["未在合法 AppID 真机确认 iOS/Android backdrop-filter、系统低动效与 390px 遮罩边界。"]},
+  "ai": {"summary": "浮层遮罩必须继承全局毛玻璃，并通过三态局部 API 允许明确覆盖。", "rules": ["不要把固定 rgba 遮罩当作已适配 frostedGlass。", "局部 blur API 必须区分继承、强制开启和强制关闭。"], "tags": ["action-sheet", "overlay", "frosted-glass", "visual-config"]}
+}

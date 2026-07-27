@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0149",
+  "title": "Progress 公开面混入不确定态、业务事件与诊断方法",
+  "scope": "component",
+  "components": ["progress", "preview-site", "usage-code"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "以在线 TDesign 与固定源码为依据收敛 Progress 的真实确定进度能力，基础 WXML 保持最小，H5 和小程序不能用动画或 100% 假装业务完成。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "usage-code", "api-reference", "example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px browser viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "历史 Progress 合同公开 value 别名、indeterminate、showInfo/showStatusIcon、私有动效、change/complete/animationend 与 getProgress()，使纯确定进度组件混入业务状态和诊断能力。",
+    "2026-07-20 已在线访问 TDesign Progress 页面、官方仓库与 npm 固定包，并读取 tdesign-miniprogram@1.15.3 的 miniprogram_dist/progress/{props.js,type.d.ts,progress.js,progress.json,progress.wxml,progress.d.ts}。"
+  ],
+  "expected": "PoemUI 只保留可从真实 WXML/WXSS 闭环的确定进度：10 Props、1 个 label Slot、0 Events、0 Methods；基础用法是零 bind 的 <pui-progress id=\"delivery-progress\"/>。",
+  "actual": "旧公开合同把未知进度、业务完成、动画生命周期和 H5 诊断手段写成了 Progress 的对外能力，无法和确定进度的源码、示例及文档保持一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已确认范围化自主验收授权：后续组件无需逐项确认，agent 在完整审计、浏览器、专项测试、文档、Ledger 和构建门禁后可自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/progress", "note": "2026-07-20 访问官方 Progress 动态页，作为用法分区与产品语义来源。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "2026-07-20 访问官方仓库；npm 固定包用于复现 Props、Slot、Events 和 Methods。"},
+    {"kind": "file", "ref": "progress/progress.js", "note": "当前实现只声明 percentage/theme/label/size/status/strokeWidth/color/trackColor/ariaLabel/reduceMotion，不触发事件也不提供实例方法。"},
+    {"kind": "test", "ref": "scripts/test-progress.js", "note": "专项合同锁定精确公开面、WXML Slot、动效、H5 分区、示例和产物一致性。"}
+  ],
+  "rootCause": "历史实现把面向开发调试的可选状态和事件扩大为公共 Progress API，未按真实 WXML、TDesign 固定包和确定进度的产品边界重新审计。",
+  "decision": {
+    "outcome": "收敛为 percentage/theme/label/size/status/strokeWidth/color/trackColor/ariaLabel/reduceMotion，唯一 label Slot，0 Events、0 Methods；未知进度由 Loading 表达，业务错误/空内容/重试在外部组合。",
+    "rationale": "确定进度只应显示父级已经掌握的数值；全库 ariaLabel/reduceMotion 保持横向一致，其他历史能力没有真实、独立且可复用的组件责任。",
+    "alternativesRejected": [
+      "保留 indeterminate 或循环动画会把未知进度伪装成确定任务进度。",
+      "保留 complete/animationend 会把视觉终点误导为业务成功。",
+      "在基础 WXML 列出 bind:* 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["progress/progress.js", "progress/progress.json", "progress/progress.wxml", "progress/progress.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/PROGRESS.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-progress.js"],
+    "dependencies": ["icon", "button", "shared usage-code generator"]
+  },
+  "verification": {
+    "tests": ["scripts/test-progress.js", "scripts/test-api-reference-readability.js"],
+    "commands": ["2026-07-20 npm run site:build：通过", "2026-07-20 npm run check：通过", "2026-07-20 npm run pack:check：通过（339.1 kB / 1.8 MB / 554 files）", "2026-07-20 npm run example:install：通过；微信 CLI build-npm 因 touristappid 不存在返回内部 code 10，未生成 miniprogram_npm，未冒充通过"],
+    "browser": ["2026-07-20 浏览器实点 64%→74% 的父级 Props 回写、line/plump/circle、0/100、warning、label 字符串与 reduceMotion；中间帧读取到 pui-progress-value-line running，完成态保留目标值。"],
+    "deviceRisks": ["微信端 rpx、双半圆环形合成、label Slot 投影、颜色模式、读屏和系统低动效仍需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "Progress 必须由确定数值驱动，不能用视觉动画、100% 或预览计时器代替父级业务状态。",
+    "rules": [
+      "先以在线 TDesign 页面、固定版本包和真实 WXML 三者交叉确定公开面。",
+      "基础 WXML 仅保留最小调用，完整事件只在组件真实存在时进入 API。",
+      "未知进度使用 Loading；错误、空内容和重试必须在 Progress 外部组合。"
+    ],
+    "tags": ["progress", "tdesign", "api-contract", "no-fake-success", "usage-code"]
+  }
+}

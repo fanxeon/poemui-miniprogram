@@ -1,0 +1,66 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}};{{customStyle}}"
+  role="{{selectable ? 'option' : (clickable ? 'button' : 'listitem')}}"
+  aria-label="{{semanticLabel}}"
+  aria-selected="{{selectable ? innerSelected : ''}}"
+  aria-disabled="{{disabled || loading}}"
+  aria-readonly="{{readonly}}"
+  hover-class="{{interactive && hover && !readonly ? 'pui-cell--hover' : 'none'}}"
+  bindtap="onTap"
+>
+  <view class="pui-cell__media-slot"><slot name="media"></slot></view>
+  <view wx:if="{{hasMedia}}" class="pui-cell__media" aria-hidden="true">
+    <pui-image
+      wx:if="{{image}}"
+      src="{{image}}"
+      mode="aspectFill"
+      width="72rpx"
+      height="72rpx"
+      shape="round"
+      custom-class="pui-cell__media-visual"
+      clickable="{{false}}"
+      aria-label="{{semanticLabel}}图片"
+      duration="{{duration}}"
+      easing="{{easing}}"
+      reduce-motion="{{reduceMotion}}"
+      color-scheme="{{colorScheme}}"
+      bind:load="onImageLoad"
+      bind:error="onImageError"
+    />
+    <pui-icon wx:else custom-class="pui-cell__media-visual" name="{{leftIcon}}" size="{{normalizedSize === 'small' ? 28 : (normalizedSize === 'large' ? 40 : 34)}}" color-scheme="{{colorScheme}}" />
+  </view>
+
+  <view class="pui-cell__main">
+    <view class="pui-cell__title-row">
+      <text wx:if="{{required}}" class="pui-cell__required" aria-hidden="true">*</text>
+      <view class="pui-cell__title">
+        <text wx:if="{{displayTitle}}">{{displayTitle}}</text>
+        <slot name="title"></slot>
+      </view>
+    </view>
+    <view class="pui-cell__description">
+      <text wx:if="{{displayDescription}}">{{displayDescription}}</text>
+      <slot name="description"></slot>
+    </view>
+    <view class="pui-cell__note">
+      <text wx:if="{{displayNote}}">{{displayNote}}</text>
+      <slot name="note"></slot>
+    </view>
+    <view class="pui-cell__extra"><slot></slot></view>
+  </view>
+
+  <view class="pui-cell__right">
+    <view class="pui-cell__value">
+      <text wx:if="{{displayValue}}">{{displayValue}}</text>
+      <slot name="value"></slot>
+    </view>
+    <pui-icon wx:if="{{rightIcon && !loading}}" name="{{rightIcon}}" size="30" color-scheme="{{colorScheme}}" />
+    <view class="pui-cell__right-slot" catchtap="stopPropagation"><slot name="right"></slot></view>
+    <view wx:if="{{loading}}" class="pui-cell__loading">
+      <pui-loading loading size="28rpx" inherit-color aria-label="{{semanticLabel + '处理中'}}" duration="{{duration}}" easing="{{easing}}" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
+    </view>
+    <pui-icon wx:if="{{selectable && innerSelected && !loading}}" custom-class="pui-cell__selected-icon" name="check-circle" size="30" color-scheme="{{colorScheme}}" />
+    <pui-icon wx:if="{{arrow && !loading}}" custom-class="pui-cell__arrow" name="chevron-right" size="30" color-scheme="{{colorScheme}}" />
+  </view>
+</view>

@@ -1,0 +1,244 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0331",
+  "title": "独立 Surface 等距模式与阴影资格需要双端统一治理",
+  "scope": "global",
+  "components": [
+    "config-provider",
+    "popup",
+    "card",
+    "sheet",
+    "action-sheet",
+    "popover",
+    "dropdown-menu",
+    "navigation-menu",
+    "collapse",
+    "collapsible",
+    "combobox",
+    "select",
+    "picker",
+    "date-time-picker",
+    "calendar",
+    "upload",
+    "swiper",
+    "cell-group",
+    "preview-site"
+  ],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "通过外观菜单一键切换等距模式，并让阴影只作用于具备独立 Surface 资格的组件，同时保持小程序与 H5 一致。",
+  "environment": {
+    "surfaces": [
+      "miniprogram",
+      "h5-preview",
+      "documentation",
+      "npm-package"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390x844",
+      "desktop"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "首页与详情页各自维护外观 Popup WXML，设置项没有等距能力。",
+    "现有间距 Token 只能表达常规 panel/content/section 层级，无法在不污染全局 space 的前提下按 Surface 统一 inset 与结构 gap。",
+    "阴影开关如果只按 CSS 后代覆盖，会把 Cell、Field、Empty、Tag 等非独立 Surface 误当作可投影容器。"
+  ],
+  "expected": "visualConfig.equalSpacing 默认关闭并持久化；ConfigProvider 输出 pui-spacing--equal/normal；独立 Surface 消费 Surface 专用别名；Popup 与共享外观设置组件作为 reference implementation；连续列表和展示叶子不获得大间距或外投影；H5 使用 data-spacing 和同名语义 Token。",
+  "actual": "原有 Store、Provider、Popup 与 H5 菜单没有 equalSpacing 公共字段或 Surface 专用别名，首页与详情页存在重复设置面板。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "common/utils/visual-config.js",
+      "note": "新增 equalSpacing 默认值、白名单归一化、有效配置与旧存储回退。"
+    },
+    {
+      "kind": "file",
+      "ref": "config-provider/config-provider.js",
+      "note": "新增 equalSpacing Prop、全局订阅映射及 pui-spacing--equal/normal 根状态。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "新增 --pui-surface-inset、--pui-surface-stack-gap、--pui-surface-section-gap。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/components/appearance-settings/appearance-settings.wxml",
+      "note": "首页与详情页共用同一外观设置组件，包含间距相等开关。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 菜单、恢复、持久化和 ConfigProvider 镜像接入 equalSpacing。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-equal-spacing-visual-config.js",
+      "note": "专项合同覆盖 Store、Provider、Token、Popup、共享外观组件和 H5 data-spacing。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-appearance-settings.js",
+      "note": "组件运行态测试验证等距开关即时写回、与果味/标准预设独立，以及挂载/卸载订阅闭环。"
+    },
+    {
+      "kind": "file",
+      "ref": "popup/popup.wxss",
+      "note": "Popup 及同批组件的小程序 equal 分支将私有 section/stack gap alias 重映射到该 Surface 自己的 inset，避免仅引用 normal --pui-surface-section-gap。"
+    },
+    {
+      "kind": "file",
+      "ref": "upload/upload.wxss",
+      "note": "Upload 根保持透明，仅将文件 Surface 集合的直接 stack gap alias 在 equal 模式重映射到当前 Surface inset，与 H5 文件列表镜像保持同一边界。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/components/appearance-settings/appearance-settings.wxss",
+      "note": "共享外观设置列表的 equal gap 改为消费宿主 Surface inset，避免固定 panel padding 绕过 compact/spacious Surface 密度。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-equal-spacing-visual-config.js",
+      "note": "契约锁定私有 alias 重映射；重新生成 miniprogram_dist 后由组件合同测试比对源码/产物。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-non-elevated-shadow-semantics.js",
+      "note": "正例校验 Popup、Card、Upload 文件 Surface、Swiper Viewport 消费共享阴影 Token；反例继续校验 Cell、Field、Tag、Avatar、Progress 等无外投影。"
+    },
+    {
+      "kind": "browser",
+      "ref": "微信开发者工具 RC 2.02.2607161 / pages/index/index → pages/components/icon/index",
+      "note": "同一热重载窗口内构建 npm 后打开外观菜单，开启间距相等；进入 Icon 页面、返回首页、执行清除文件缓存后再次打开菜单，开关仍为开启，证明小程序运行态即时写回、跨页面恢复与文件缓存清理后的偏好保留。"
+    }
+  ],
+  "rootCause": "视觉 Store、Provider、组件 Surface 与官网菜单此前没有共同的等距语义边界；重复的页面设置面板也使双端能力容易漂移。",
+  "decision": {
+    "outcome": "扩展现有 visualConfig 字段而不升级存储版本，equalSpacing 独立于 effectsEnabled 与果味预设；以三项 Surface 别名约束组件级消费；浮层、展开面板、独立容器按真实根节点迁移；共享 appearance-settings 消除小程序重复 WXML。",
+    "rationale": "保持旧存储可恢复、避免全局间距污染，并让组件自行决定 Surface 资格，才能同时满足一键调整与局部几何稳定。",
+    "alternativesRejected": [
+      "全局改写 --pui-space-* 会污染连续列表、控件内部和 PreviewDevice。",
+      "把 equalSpacing 合并进 effectsEnabled 会使用户无法独立保持布局偏好。",
+      "继续复制首页/详情页外观 WXML 会产生不同的持久化与事件合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/utils/visual-config.js",
+      "config-provider/config-provider.js",
+      "common/style/theme.wxss",
+      "popup/popup.wxss",
+      "card/card.wxss",
+      "sheet/sheet.wxss",
+      "action-sheet/action-sheet.wxss",
+      "popover/popover.wxss",
+      "dropdown-menu/dropdown-menu.wxss",
+      "navigation-menu/navigation-menu.wxss",
+      "collapse/collapse.wxss",
+      "collapsible/collapsible.wxss",
+      "combobox/combobox.wxss",
+      "picker/picker.wxss",
+      "calendar/calendar.wxss",
+      "upload/upload.wxss",
+      "swiper/swiper.wxss",
+      "dialog/dialog.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/components/appearance-settings/appearance-settings.js",
+      "miniprogram/components/appearance-settings/appearance-settings.wxml",
+      "miniprogram/components/appearance-settings/appearance-settings.wxss",
+      "miniprogram/components/appearance-settings/appearance-settings.json",
+      "docs/EQUAL_SPACING_VISUAL_CONFIG_SPEC.md",
+      "docs/SHADOW_SWITCH_COMPONENT_PLAN.md"
+    ],
+    "dependencies": [
+      "config-provider",
+      "popup",
+      "card",
+      "visualConfig",
+      "preview-site"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-equal-spacing-visual-config.js",
+      "scripts/test-appearance-settings.js",
+      "scripts/test-config-provider.js",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-spacing-token-contract.js",
+      "scripts/test-preview-appearance-menu.js",
+      "scripts/test-popup.js",
+      "scripts/test-sheet.js",
+      "scripts/test-action-sheet.js",
+      "scripts/test-popover.js",
+      "scripts/test-dropdown-menu.js",
+      "scripts/test-navigation-menu.js",
+      "scripts/test-collapse.js",
+      "scripts/test-collapsible.js",
+      "scripts/test-combobox.js",
+      "scripts/test-picker.js",
+      "scripts/test-calendar.js",
+      "scripts/test-non-elevated-shadow-semantics.js"
+    ],
+    "commands": [
+      "npm run test:equal-spacing",
+      "npm run test:appearance-settings",
+      "node scripts/test-miniprogram-home.js",
+      "node scripts/test-miniprogram-component-pages.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check"
+    ],
+    "browser": [
+      "http://127.0.0.1:4179/#/foundation/popup 在外观菜单开启间距相等后，App Shell data-spacing=equal；Popup 计算 gap=14px，Header→Scroll=14px、Scroll→Footer=14px，Scroll overflow-y=auto，页面横向 overflow-x=clip。",
+      "关闭间距相等后恢复 data-spacing=normal、Popup gap=0px、Header padding=10px 10px 8px、Scroll padding=10px，Popup 的唯一内部滚动区仍为 Scroll。",
+      "http://127.0.0.1:4179/#/foundation/card 刷新后开启间距相等，Card Surface computed display=flex、gap=14px；Header/Content/Footer 相邻 gap 均为 14px，三段左右内距均为 14px，根 Surface 保持唯一边框与 shadow Prop 语义。",
+      "390x844 浏览器几何复核：Popup 在 data-spacing=equal 时 Surface gap=14px，Header→Scroll=14px、Scroll→Footer=14px，四向结构边界仅保留 1px 边框，内部 Scroll 为唯一 overflow-y:auto；切换 data-spacing=normal 后 gap=0px，Header padding=10px 10px 8px、Scroll padding=10px、Footer padding=8px 10px 10px，仍无横向溢出。",
+      "390x844 浏览器几何复核：Card 在 data-spacing=equal 时根 Surface computed gap=14px，Header/Content/Footer 相邻 gap 均为 14px，三段左右 inset 均为 14px；equal 与 normal 切换均保持 overflowX=false。",
+      "H5 CSS 级联修复后 390x844 复核：Sheet 的 root gap=14px，Header→Body=14px、Body→Footer=14px，Content/Footer 使用 14px Surface inset；关闭后恢复 root gap=0px 与原有 padding。Dialog 的 root/body gap 均为 14px；Combobox root gap 与 panel-inner gap/padding 均为 14px。以上样本均 overflowX=false。",
+      "H5 390x844 阴影运行证据：Popup 开启 shadow 时 computed box-shadow 为非 none，关闭时为 none；两种状态 Popup rect 均为 [25,649.4765625,325,290]，等距状态保持不变；Popup 内 Cell computed box-shadow 始终为 none。",
+      "H5 390x844 展开面板复核：Picker 与 DateTimePicker 的真实 .pui-picker-h5__layer > .pui-picker-h5__panel 在 equal 模式均为 display:grid、padding=14px、gap=14px，Header→Wheels=14px；切换 normal 后恢复 display:block、padding=0、gap=normal。",
+      "H5 Select 390x844 运行复核：真实 .pui-select-menu 在 equal 模式 gap=14px、padding=14px、相邻选项 gap=14px，左右边界距 PreviewDevice viewport 均为 39px，document/body 均无横向溢出；切换 normal 后恢复 gap=4px、padding=5px。小程序 Select 使用平台原生 Picker，未伪造自定义面板。",
+      "H5 Upload 运行复核：真实 .pui-upload-preview__files 在 equal 模式 gap=14px，文件 Surface 内部 padding 仍为 7px；切换 normal 后 files gap 恢复 8px、文件内部 padding 保持 7px，页面无横向溢出，证明等距只作用于文件 Surface 集合的直接 stack gap。"
+    ],
+    "deviceRisks": [
+      "微信开发者工具热重载窗口已完成首页 → Icon → 首页、清除文件缓存后的开关恢复验证；真实 iOS/Android 真机的 rpx、安全区、触摸命中、系统胶囊与读屏仍未验证。",
+      "H5 Popup/Card 浏览器计算几何已完成，其余迁移组件的浏览器组合矩阵仍未逐项完成；Popup 真机唯一滚动区与 390px 边界仍需真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "等距与阴影都按独立 Surface 资格治理，不做全局后代覆盖。",
+    "rules": [
+      "只在独立 Surface 根消费 Surface inset/stack/section 别名。",
+      "连续列表行、控件内部、展示叶子和 PreviewDevice 基础设施不得因 equalSpacing 获得大间距或外投影。",
+      "visualConfig.equalSpacing 不参与 effectsEnabled 或果味组合。",
+      "首页和详情页外观入口优先复用 miniprogram/components/appearance-settings。"
+    ],
+    "tags": [
+      "equal-spacing",
+      "surface",
+      "shadow",
+      "config-provider",
+      "miniprogram",
+      "h5"
+    ]
+  }
+}

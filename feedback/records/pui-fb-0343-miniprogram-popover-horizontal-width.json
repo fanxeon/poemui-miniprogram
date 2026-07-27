@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0343",
+  "title": "小程序 Popover 入口未回写显隐且横向定位偏离请求方向",
+  "scope": "component",
+  "components": ["popover", "miniprogram-component-pages"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "小程序 Popover 的显示气泡入口必须真实打开；左右触发时保持可读宽度且绝不移出屏幕。",
+  "environment": {
+    "surfaces": ["miniprogram-component-pages", "miniprogram-dist"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 miniprogram/pages/components/popover/index 的基础用法。",
+    "基础触发器随 Section 默认流左对齐，且其 Button 没有绑定页面的受控 visible 回写。",
+    "切换 left 或 right 后，未定义宽度的气泡会收窄成中文列；方向按钮是 placement 控制，气泡应继续相对“点击显示气泡”的唯一 default Slot 锚点展示，不能为方向按钮另建锚点。"
+  ],
+  "expected": "详情页基础触发器在其 Section 中居中且真实回写 visible；left/right 及其 start/end 气泡优先留在请求侧，以实际可用宽度保持可读，只有两侧均低于最小可读宽度才回落上下。",
+  "actual": "入口没有页面级对齐容器或 click 回写；横向 placement 没有宽度合同；方向控制曾被错误实现为第二组 Popover 锚点。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/popover/index.wxml", "note": "修复前 Popover 直接作为 Section 首项，未包裹居中入口轨，Button 也没有 bind:click 回写受控 visible。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/popover/index.wxml", "note": "详情页只有一个 pui-popover；方向按钮只写 placement，唯一“点击显示气泡” Button 始终是被 SelectorQuery 测量的 default Slot 锚点。"},
+    {"kind": "file", "ref": "popover/popover.js", "note": "SelectorQuery 后以请求侧实际可用宽度写入仅组件内部使用的 --pui-popover-side-width；请求侧有任意物理宽度就保持 left/right，避免 390px 中心锚点错误回落上下。"},
+    {"kind": "file", "ref": "popover/popover.wxss", "note": "left/right 六个 placement 消费 --pui-popover-side-width，默认仍为 360rpx，不穿透 Slot。"},
+    {"kind": "test", "ref": "scripts/test-popover.js", "note": "专项合同锁定入口 click 回写、全宽居中轨、请求侧优先收窄、反向侧翻转及双侧不足才纵向回落。"},
+    {"kind": "build", "ref": "npm run miniprogram:build", "note": "生成后 source 与 miniprogram_dist/popover/popover.wxss 逐字节一致。"}
+  ],
+  "rootCause": "把 H5 镜像中的居中与宽度修复误当成小程序实现；第一轮小程序修复再将固定宽度误当作可读性的唯一条件，随后又把方向控制误改为第二组实际锚点，混淆了 placement 选择和 default Slot 触发职责。",
+  "decision": {
+    "outcome": "页面以 popover-page__reference 建立 width:100% + justify-content:center 的唯一入口轨，并由 Button click 写回受控 visible；方向按钮只切换同一 Popover 的 placement；组件横向 Surface 默认 360rpx，测量后以内部 side-width Token 收窄至请求侧可用宽度，只要请求侧仍有物理宽度就保留左右方向，只有该侧为 0 才翻向或在两侧皆为 0 时回落 top/bottom。",
+    "rationale": "详情页必须以一个稳定 default Slot 演示各 placement；气泡宽度、请求方向优先级与碰撞回退属于 Popover Surface 职责；内部 CSS 变量不扩张公开 API，也不接管消费者 Slot 样式。",
+    "alternativesRejected": [
+      "只修改 H5 镜像：不会影响微信小程序实际渲染。",
+      "以通配或后代选择器拉宽 content Slot：违反 Slot 边界且会被微信 WXSS 编译器拒绝。",
+      "把横向宽度写入页面私有样式：其他 Popover 消费者仍会产生窄列。",
+      "让方向控制按钮成为第二组锚点：会把 placement 设置和真实触发器的职责混淆。",
+      "固定 288rpx 后立即回落上下：会在请求侧仍有可读空间时改变 left/right 语义。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "popover/popover.js",
+      "popover/popover.wxss",
+      "miniprogram/pages/components/popover/index.wxml",
+      "miniprogram/pages/components/popover/index.wxss",
+      "miniprogram_dist/popover/popover.wxss",
+      "docs/components/POPOVER.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "scripts/test-popover.js"
+    ],
+    "dependencies": ["pui-popover", "pui-button", "component-page-section"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popover.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-wxss-universal-selector-compatibility.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:generate", "npm run feedback:check"],
+    "browser": [],
+    "deviceRisks": [
+      "尚未在合法 AppID 的 390px 模拟器或 iOS/Android 真机热重载确认入口点击、左右收窄后的箭头指向、最终边界与触摸外部关闭。"
+    ]
+  },
+  "ai": {
+    "summary": "小程序与 H5 的视觉修复必须分别落到真实渲染源码；页面负责 visible 回写，组件优先保持请求方向，并以实测可用宽度治理横向 Surface 与碰撞回退。",
+    "rules": [
+      "不要把 H5 镜像 CSS 当作小程序组件修复的证据。",
+      "left/right Popover 必须以自身 Surface 声明默认可读宽度，测量后只能通过内部 Token 收窄，不能向 Slot 子树写宽度。",
+      "详情页使用一个居中的 default Slot 作为唯一锚点；方向按钮只切换 placement 并触发该实例。",
+      "left/right 必须先保留请求侧；只要该侧仍有物理宽度就以组件自身 side-width Token 收窄，只有该侧为 0 才翻向，两个方向都为 0 才回落 top 或 bottom。"
+    ],
+    "tags": ["popover", "miniprogram", "placement", "collision", "width", "slot-boundary"]
+  }
+}

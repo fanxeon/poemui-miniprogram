@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0075",
+  "title": "Swiper 官网箭头文字、图片事件重放与代码分行偏离真实组件",
+  "scope": "component",
+  "components": ["swiper", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Swiper 官网必须按常见用法分区，真实点击、拖拽、自动播放、状态和属性回写；代码可复制，视觉与小程序组合一致。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "1280x720", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "浏览器视觉截图显示左右圆形箭头通过 buttonSample 渲染了默认“按钮”文字，内容在轮播边缘被裁切；DOM/构建检查无法发现该视觉错误。",
+    "Props 或演示动作重建 H5 DOM 后，同一缓存图片反复发布 image-load，覆盖 click、loading 或 error 的最新状态反馈。",
+    "公共 compactPreviewWxml 对已在单行闭合的长标签提前返回，Swiper 基础 WXML 长达147个字符；customItem 代码又引用未注册的 swiper-card Generic。"
+  ],
+  "expected": "箭头使用真实 PUI IconButton 且无空文字占位；图片资源只对真实新资源报告一次；状态操作与 click 不被缓存加载噪音覆盖；基础 WXML按80字符/每行3属性换行且复制即可运行。",
+  "actual": "箭头组合、事件输出、单行代码格式与 Generic 注册分别绕过共享合同，使预览看似可操作但视觉、事件顺序和复制产物不可靠。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "四个分区共用同一 Swiper；箭头改用 iconButtonSample，图片报告按 type/index/src 去重，customItem 同步注册 swiper-card。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Swiper Surface 使用全局主题、边框、阴影、毛玻璃和圆角 Token；箭头 blur 改为外观开关变量。"},
+    {"kind": "test", "ref": "scripts/test-swiper.js", "note": "专项锁定 IconButton、图片去重、Generic usingComponents 和单行 WXML 的80字符/3属性分行。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-swiper", "note": "修复前截图显示箭头文字和单行长代码；修复后箭头 content 为空、两行长度80/66，click 与状态反馈不再被缓存 image-load 覆盖。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-swiper", "note": "API 六张表行数5/12/7/2/7/7，ellipsis/nowrap/clipped 均为0；393px PreviewDevice viewport clientWidth=scrollWidth=380。"}
+  ],
+  "rootCause": "H5 镜像最初复用了普通 Button 的缺省文案、在每次 DOM 重建时重新监听缓存图片，并让代码格式器跳过单行闭合标签；这些都是共享 helper 边界而非 swiper 本身的问题。",
+  "decision": {
+    "outcome": "保留基础用法、自动播放与导航、方向与多项、加载空错误四区；箭头迁到 iconButtonSample，图片事件在 items 不变时去重，非 content 状态不覆盖反馈；公共 WXML 格式器处理单行标签，customItem 代码注册 Generic alias。",
+    "rationale": "H5 必须镜像真实子组件组合与事件事实；缓存 DOM 重建不是新的业务资源加载，复制代码必须满足同源、可读和可运行三项合同。",
+    "alternativesRejected": [
+      "只用 CSS 隐藏“按钮”文字仍保留错误组合树和 gap，不能证明 IconButton 复用。",
+      "延迟状态提示以等待 image-load 会制造时间竞态，按资源身份去重更接近原生节点语义。",
+      "让代码块继续横向滚动可以避免布局破裂，但违反80字符软上限并降低复制阅读效率。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-swiper.js", "preview/index.html", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/SWIPER.md"],
+    "dependencies": ["PreviewDevice", "buttonSample", "iconButtonSample", "loadingComponent", "emptySample", "visualConfig", "API Reference", "previewCodeSectionSources"]
+  },
+  "verification": {
+    "tests": ["scripts/test-swiper.js", "scripts/test-preview-normal-code-card.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node --check preview/app.js", "npm run precheck", "npm run catalog:generate", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "四个分区标题可见；真实拖拽、箭头、分页、方向、同屏、自动播放、状态、Retry、图片失败和父级回写均作用于同一预览。",
+      "普通状态层过渡0.18s、swiper0.3s，reduceMotion两者均0.001s；中间 transform 与 animationfinish 完成态可观察。",
+      "深浅色、边框、阴影、毛玻璃、大圆角和渐变逐项实点：Viewport 边线透明/恢复、阴影 none/多层、blur none/18px、圆角8/14px，主题 Surface同步变化。",
+      "桌面 document clientWidth=scrollWidth=1265；393px PreviewDevice viewport clientWidth=scrollWidth=380，Swiper 只在自身 viewport 裁切循环克隆项。浏览器 warning/error 日志为空。"
+    ],
+    "deviceRisks": [
+      "当前浏览器宿主外层视口固定1280px；页面级390px由响应式合同测试覆盖，真实393px PreviewDevice已无横向溢出，仍需在可缩放宿主和真机复核整页导航换行。",
+      "H5 Pointer Events、px transform 与缓存图片事件只能镜像微信 swiper/Image；真实触摸惯性、系统低动效和网络图片缓存策略仍需真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Swiper H5 必须复用 IconButton/Loading/Empty，去重缓存图片事件，基础代码按80字符分行并注册 Generic。",
+    "rules": [
+      "Swiper 纯图标 Controls 必须调用 iconButtonSample，content 为空且 aria-label 完整；不得用普通 Button 再隐藏文字。",
+      "H5 DOM 重建不得把同一 type/index/src 的缓存图片报告成新的业务事件；items 变化后才重置资源报告。",
+      "单行闭合 WXML 同样必须经过 compactPreviewWxml，行长不超过80且每行最多3个属性。",
+      "生成 generic:swiper-slide 时必须在同一 usingComponents 代码中注册对应 alias。"
+    ],
+    "tags": ["swiper", "preview", "icon-button", "image-event", "wxml", "generic", "api-reference"]
+  }
+}

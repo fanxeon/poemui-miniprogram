@@ -1,0 +1,78 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0120",
+  "title": "Calendar 官网单块诊断预览、局部遮罩与无效高度动画",
+  "scope": "component",
+  "components": ["calendar", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Calendar 官网应像成熟组件文档一样按用户用法分区，Props 真实作用，API 全文可读，弹层遮罩必须覆盖完整手机视口。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-panel", "usage-code"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "349x620 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览只有一个 Calendar native mirror、方法按钮、事件 Cell 和 Slot 标签，无法快速比较范围、多选、日期限制与状态。",
+    "旧 H5 使用 max-height 从 0 到 300px 伪装状态展开，并让 duration/easing 穿透组件。",
+    "旧 usePopup 只在组件附近建立最小 530px 遮罩，没有动态切换 PreviewDevice edge-to-edge。",
+    "旧 Header CSS 穿透覆盖共享 PUI Button 尺寸，标题还使用 ellipsis 隐藏完整文字。"
+  ],
+  "expected": "概览固定按基础、范围多选、日期限制、状态反馈陈列；当前实例真实交互；Popup 覆盖完整 PreviewDevice；API 完整显示 26/7/0/0 且 390px 不裁切。",
+  "actual": "旧官网偏向工程诊断，遮罩与动效偏离真实 WXML/WXSS，组件标题、子 Button 和 API 可读性不符合全局合同。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求演示按用法分区、分区标题上间距清晰、基础 WXML 不展示全部 bind、API 全文不得省略，并授权 agent 后续自主连续验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区 showcase、严格日期/受控镜像、真实事件、动态 edge-to-edge 与最小 WXML 同源。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "状态使用 opacity/visibility/transform，Popup host 与 viewport 等尺寸，标题换行且不穿透 Button 几何。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "26 Props、7 Events、0 Slots、0 Methods和零 bind 基础用法完整记录。"},
+    {"kind": "test", "ref": "scripts/test-calendar.js", "note": "锁定四分区、无 max-height/display:none、PUI 组合、最小代码、动态布局、API 和文档。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/calendar", "note": "390px 真实 Props、交互、Popup、API 全文、主题和所有视觉开关已验证。"}
+  ],
+  "rootCause": "旧预览复用通用单实例诊断模板，没有区分当前交互实例与静态用法样例，也没有把 usePopup 参与 PreviewDevice 布局模式和共享 PUI 子组件几何合同。",
+  "decision": {
+    "outcome": "官网重建四个用法区；静态样例只读；当前实例承担真实回写；Popup 动态切换 edge-to-edge 并覆盖完整 viewport；状态改为固定 180ms opacity/visibility/transform；API 全文换行。",
+    "rationale": "用户需要快速筛选真实用法、复制最小代码并在 API 查完整事件；H5 必须与原生固定网格和完整遮罩能力一致。",
+    "alternativesRejected": [
+      "在旧诊断块下追加说明卡会继续堆叠方法和事件噪声。",
+      "保留 max-height 动画会把固定网格误当成未知高度内容并产生中间帧几何漂移。",
+      "只扩大局部 host 不切 edge-to-edge 仍无法覆盖 PreviewDevice 基础安全内距。",
+      "覆盖 Header 内所有 button 尺寸会破坏共享 PUI Button 的主题、禁用与可访问合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/CALENDAR.md", "scripts/test-calendar.js", "scripts/test-preview-native-control-boundaries.js", "feedback/records/pui-fb-0120-calendar-preview-and-popup-parity.json"],
+    "dependencies": ["PreviewDevice", "PUI Tabs", "Props helpers", "buttonSample", "iconButtonSample", "loadingComponent", "emptySample"]
+  },
+  "verification": {
+    "tests": ["scripts/test-calendar.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-api-reference-readability.js"],
+    "commands": ["node scripts/test-calendar.js", "npm run site:build", "npm run check", "npm run feedback:check", "npm run pack:check"],
+    "browser": [
+      "390x844 概览四分区完整存在；组件引用只注册 pui-calendar，基础 WXML 为无 bind 的 pui-calendar。",
+      "usePopup=true 时布局为 edge-to-edge，Popup host 与 PreviewDevice viewport 同为 349x620；真实点击顶部遮罩后 180ms 退场并进入关闭态。",
+      "document scrollWidth=375、window innerWidth=390，PreviewDevice clientWidth/scrollWidth 均为 349，无页面级横向溢出。",
+      "light 基线恢复；dark+shadow+frost+large-radius 后 Calendar 为深色 rgba Surface、14px 圆角、双层阴影、blur(18px)；border-off 保留 1px 盒模型且边色透明，gradient 只作用画布。",
+      "API 在 390px 重排为完整字段卡，26 Props 与 7 Events 全文可读，无 ellipsis/nowrap 或页面级溢出。"
+    ],
+    "deviceRisks": [
+      "浏览器 Pointer/click 与 CSS fixed 只能近似微信 touch、rpx 和安全区；低端设备中间帧、系统低动效与辅助技术仍需真机复核。",
+      "浏览器遮罩经坐标真实点击验证；微信 scroll-view/fixed 层级和阻止背景滚动仍需开发者工具与真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Calendar 官网按用户任务分区；当前实例真实交互，静态样例只读，Popup 覆盖完整视口，API 全文可读。",
+    "rules": [
+      "Calendar 概览固定为基础、范围多选、日期限制、状态反馈四区，分区标题保留清晰上间距。",
+      "基础 WXML 禁止 bind:*；完整 7 个事件只进入 API，事件专项示例只绑定所需事件。",
+      "usePopup 必须动态使用 edge-to-edge，遮罩尺寸必须等于 PreviewDevice viewport。",
+      "Calendar 状态动画禁止 max-height、height:auto 和 display:none，固定使用 500ms opacity/visibility/transform。",
+      "Header 不得穿透覆盖共享 PUI Button 尺寸，标题和 API 文字不得 ellipsis。"
+    ],
+    "tags": ["calendar", "preview", "popup", "api-docs", "responsive", "accessibility"]
+  }
+}

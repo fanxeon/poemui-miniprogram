@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0126",
+  "title": "Tabbar 用法代码缺少源码默认值导致官网运行时崩溃",
+  "scope": "component",
+  "components": ["tabbar", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Tabbar 官网应按真实用法分区、代码可直接复制、Props 与运行态同源，不能因缺少生成器默认值让页面失去预览。",
+  "environment": {
+    "surfaces": ["h5-preview", "props-panel", "usage-code", "api-reference"],
+    "platforms": ["browser", "node"],
+    "viewports": ["390x844 browser", "349x620 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Tabbar 新增专属 makeUsageCode 分支后读取 componentPropDefaults.tabbar，但该源码默认值对象未定义。",
+    "全新浏览器打开 #/components/tabbar 时抛出 TypeError，组件用法、Stage 与后续交互都可能中断。",
+    "旧单块演示还把工程状态、事件诊断和大量 bind 当基础用法，无法快速筛选真实场景。"
+  ],
+  "expected": "全新页面无运行时错误；组件引用与基础 WXML 使用同一生成真相源，非默认 items/value 被完整输出，基础代码零 bind；受控点击真实写回 Props。",
+  "actual": "缺少 componentPropDefaults.tabbar 让代码生成路径解引用 undefined，并暴露出只在旧会话热状态下看似可用的假稳定。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权本 Goal 后续组件在完整真实浏览器与门禁证据后由 Agent 自主验收，不再逐项等待确认。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabbar", "note": "battle 新开页面复现 componentPropDefaults.tabbar 解引用错误；修复后再次新开页面 dev.logs() 返回空数组。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增 Tabbar 源码默认值、四区 showcase、per-sample 状态、严格值文本和受控 Props 直接回写。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "锁定 componentPropDefaults.tabbar、items/value 变量、零 bind、四分区和 data-tabbar-event-sequence。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "基础 WXML 与事件专项分离，API 完整记录 14 Props 与 2 Events。"}
+  ],
+  "rootCause": "代码生成分支与演示 Prop 定义同步新增，但遗漏独立的源码默认值真相源；旧浏览器会话没有强制刷新全部路径，首次没有以全新页面日志作为验收门禁。",
+  "decision": {
+    "outcome": "补齐 componentPropDefaults.tabbar，并让 makeUsageCode、属性 WXML、左侧代码块和顶部复制共同读取它；四区预览与受控回写继续使用同一 Props 状态。",
+    "rationale": "演示初值与组件源码默认值职责不同；只有独立源码默认值才能正确过滤默认 Props，同时保证必要 items/value 不被丢失。",
+    "alternativesRejected": [
+      "直接用 metadata 演示初值过滤会把必要数据误当默认值并生成不可运行空壳。",
+      "在 makeUsageCode 中写第二份散落常量会继续产生漂移。",
+      "只在当前热页面检查 DOM 无法证明全新加载没有初始化错误。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/index.html", "scripts/test-tabbar.js", "docs/components/TABBAR.md", "feedback/records/pui-fb-0126-tabbar-preview-default-source-runtime.json"],
+    "dependencies": ["makeUsageCode", "componentPropDefaults", "PreviewDevice", "Props workspace"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js", "scripts/test-preview-normal-code-card.js", "scripts/test-preview-code-copy.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "属性 WXML 和左侧基础代码均显示 items=tabbarItems、value=tabbarValue 与 aria-label，且没有 bind:*。",
+      "受控点击后属性 value 与选择态同步回写，事件序列显示 click、change 与父级已回写。",
+      "四个分区间实际空隙为 26px；组件用法代码继续提供两枚真实复制按钮。",
+      "最终全新页面加载后 dev.logs() 为空，390px 页面 document 为 375/375px。"
+    ],
+    "deviceRisks": ["剪贴板权限在局域网非安全上下文会走 execCommand 回退；微信安装端不执行官网代码生成器。"]
+  },
+  "ai": {
+    "summary": "官网源码默认值与演示初值必须分离；新增组件专属代码生成器后必须用全新页面检查初始化日志。",
+    "rules": [
+      "Tabbar 用法代码必须以 componentPropDefaults.tabbar 判断默认值，不能用 metadata 演示初值替代。",
+      "组件引用、基础 WXML、属性 WXML 和顶部复制必须共同调用 makeUsageCode。",
+      "基础 WXML 禁止 bind:*；完整事件只进入 API Events。",
+      "新增代码生成分支后必须新开浏览器页确认控制台日志为空，不能只复用热会话。"
+    ],
+    "tags": ["tabbar", "preview", "usage-code", "runtime", "source-defaults"]
+  }
+}

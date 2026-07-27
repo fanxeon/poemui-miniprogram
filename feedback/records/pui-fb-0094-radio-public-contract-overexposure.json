@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0094",
+  "title": "Radio 旧双模式与重复事件方法扩张公开合同",
+  "scope": "component",
+  "components": ["radio", "documentation", "example", "npm-dist"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Radio 应参考 TDesign 的互斥选择主干，基础用法保持基础，公开合同只保留单项状态、原始身份、内容、门禁和唯一 change。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Radio 的 options/value/defaultValue 双模式、32 Props、click/item-click/input/change/select/unselect/retry 七类事件和八个实例方法。",
+    "基础 WXML 同时绑定全部事件并展示方法面板，使一次互斥选择拥有多个重复入口。",
+    "对照 TDesign Miniprogram 1.15.3 Radio 文档与安装源码，确认单项主干围绕 checked/defaultChecked、value、内容、状态和唯一 change。"
+  ],
+  "expected": "Radio 只有一套单项选中所有权和一次 change 请求；value 始终是原始选项身份，基础 WXML 零 bind。",
+  "actual": "旧合同把组数据、状态面板、重复事件和命令式方法全部塞进 Radio，父级回写与组件职责不清晰。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API、分区 demo、基础用法不堆 bind，并授权 agent 自主完成剩余队列。"},
+    {"kind": "file", "ref": "radio/radio.js", "note": "最终固定18 Props、1 change Event、4 Slots、0 Methods，checked/defaultChecked 管状态，value 保留原始标量。"},
+    {"kind": "test", "ref": "scripts/test-radio.js", "note": "专项锁定18/1/4/0、0/false/空字符串、退控连续性、门禁、源码/dist/示例和旧 API 禁入。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/radio", "note": "属性面板逐项调整18 Props，API 实测18 Props、1 Event、4 Slots且所有表格文字无省略或裁切。"}
+  ],
+  "rootCause": "旧实现按演示能力不断追加 Props、事件和方法，没有先定义单项 Radio 的唯一状态所有权和职责边界。",
+  "decision": {
+    "outcome": "公开合同收敛为18 Props、1 Event、4 Slots、0 Methods；删除 options 双模式、状态面板、重复事件、实例方法和私有动效参数。",
+    "rationale": "单一声明式所有权可与独立 RadioGroup、Form 和父级回写组合，减少一次选择请求的重复事件表面。",
+    "alternativesRejected": [
+      "保留 click/input/change 会把一次状态请求复制为多个公开入口。",
+      "保留 loading/error/empty 会让输入叶子重复 Form 与 Field 的职责。",
+      "保留 check/reset/getValue 等方法会绕过受控父级写回。"
+    ]
+  },
+  "impact": {
+    "files": ["radio/radio.js", "radio/radio.wxml", "radio/radio.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/RADIO.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-radio.js"],
+    "dependencies": ["pui-icon", "radio-group relation", "wx://form-field", "parent controlled writeback"]
+  },
+  "verification": {
+    "tests": ["scripts/test-radio.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "逐项调整18 Props，label/content/value/name/ARIA、图标、位置、行数、三类门禁和低动效均真实作用于预览。",
+      "受控 false 点击后父级回写 true，退控后保留最后渲染值。",
+      "API 表格46行无 ellipsis、nowrap 或内容裁切。"
+    ],
+    "deviceRisks": [
+      "微信 observer、wx://form-field、Slot 投影和父级 setData 时序仍需合法 AppID 真机复核。",
+      "辅助技术朗读与系统低动效读取需目标设备确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Radio 使用18/1/4/0合同；checked 管状态，value 管原始身份，唯一请求事件是 change。",
+    "rules": [
+      "基础 Radio WXML 禁止 bind；事件只进入 API Events 或事件专项示例。",
+      "value 的0、false和空字符串都是合法身份，不得用于判断 checked。",
+      "禁止恢复 options 双模式、重复事件、状态面板或命令式状态方法。"
+    ],
+    "tags": ["radio", "api", "tdesign", "controlled", "raw-value", "events"]
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0379",
+  "title": "BackTop 覆盖 Tabbar、默认视觉错误且提前伪造回顶完成",
+  "scope": "component",
+  "components": ["back-top", "fab", "tabbar", "scroll-area", "style-utilities"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式页的 BackTop 在滚动后显示为避开 Tabbar 的 primary 圆形向上箭头按钮，并在点击后真实回到当前 ScrollArea 顶部。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "H5 component preview"],
+    "platforms": ["wechat-miniprogram", "web"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入快速样式页并滚动唯一 ScrollArea 超过 200px。",
+    "观察 BackTop 使用默认中性表面且没有稳定的向上箭头，并与底部 Tabbar 发生覆盖。",
+    "点击 BackTop；页面先把持有的 scrollTop 写为 0 并隐藏按钮，但 ScrollArea 的物理位置可能没有改变。"
+  ],
+  "expected": "BackTop 默认为 primary 圆形 arrow-up IconButton；存在 Tabbar 时位于导航、安全区和标准操作间距之上；点击只发起局部回顶，真实 scroll 事件到达 0 后才隐藏。",
+  "actual": "BackTop 默认 icon 为空、普通 round 主题映射 default FAB；fixed bottom 只考虑 safe-area；快速样式页 onBackToTop 在 scroll-into-view 生效前直接写 scrollTop=0，造成视觉假回顶。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 当前任务对话", "note": "用户指出按钮覆盖 Tabbar、应为 primary 圆形向上箭头且点击未回顶。"},
+    {"kind": "file", "ref": "back-top/back-top.js", "note": "默认 icon、FAB theme 与显隐状态的组件真相源。"},
+    {"kind": "file", "ref": "back-top/back-top.wxss", "note": "fixed BackTop 通过语义 bottom offset 保留无 Tabbar 回退。"},
+    {"kind": "file", "ref": "button/fab/fab.wxml", "note": "无文案 FAB 向内部 Button 传 iconOnly，移除空内容轨道。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.js", "note": "ScrollArea 公开受控 scrollTop 并以真实 scroll 事件回写唯一原生视口位置。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.wxml", "note": "页面组合 Tabbar 高度、安全区、标准间距，并把同一受控 scrollTop 传给 ScrollArea 与 BackTop。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "用户滚动持续回写真值；回顶请求把受控 scrollTop 写为 0，由原生 scroll-top 执行定位。"},
+    {"kind": "test", "ref": "scripts/test-back-top.js", "note": "锁定 arrow-up、primary、iconOnly、语义偏移和 H5 镜像。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "锁定 Tabbar 避让、受控 scrollTop、真实 scroll 回写，并禁止旧的交替锚点路径。"}
+  ],
+  "rootCause": "BackTop 将 TDesign 形状主题直接映射为中性 Button，源码默认 icon 又为空；fixed 几何没有与应用底部导航共享语义高度。页面最初把动作请求误当成滚动结果；随后采用的 Slot 顶部锚点在 enhanced type=list 下又无法稳定重复回顶，只切换锚点不能形成可靠的受控滚动闭环。",
+  "decision": {
+    "outcome": "BackTop 普通 round/half-round 默认映射 primary FAB，icon 默认 arrow-up；无文案 FAB 使用真实 iconOnly。新增跨端 --pui-tabbar-content-height 和 BackTop 内部 --pui-back-top-bottom-offset 消费点，快速样式 App Shell 组合导航高度、安全区与 space-normal。ScrollArea 组件级新增受控 scrollTop 与真实 scroll Event；页面把同一 scrollTop 传给 ScrollArea 与 BackTop，点击时写 0，由唯一原生 scroll-view 的 scroll-top 真正回顶。",
+    "rationale": "回顶入口必须一眼可识别且不能遮挡一级导航；BackTop 保持八项公共 API 不变，由语义 Token 处理 App Shell 几何。局部滚动控制属于 ScrollArea，受控 scrollTop 比 type=list 下重复行为不稳定的 Slot 锚点更可验证，也不需要第二滚动容器或实例方法。",
+    "alternativesRejected": [
+      "恢复 public bottom 或 withTabbar Prop 会重新扩张已收敛的定位 API。",
+      "给快速样式页写固定像素 bottom 会忽略 Tabbar 语义高度和系统安全区。",
+      "仅把 BackTop 的 scrollTop 写 0 而不把同一值传给 ScrollArea，只会改变显隐，不会移动局部视口。",
+      "交替使用 Slot 顶部锚点在微信 enhanced type=list 下会出现首次有效、重复只移动部分距离，不能作为回顶合同。",
+      "使用普通 Button 或字符箭头会绕过 PUI FAB、Icon 和可访问性合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "back-top/back-top.js",
+      "back-top/back-top.wxss",
+      "button/fab/fab.wxml",
+      "common/style/theme.wxss",
+      "miniprogram/pages/styles/index.wxml",
+      "miniprogram/pages/styles/index.js",
+      "scroll-area/scroll-area.js",
+      "scroll-area/scroll-area.wxml",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/BACKTOP.md",
+      "docs/components/SCROLL-AREA.md",
+      "docs/components/FAB.md",
+      "docs/components/TABBAR.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "scripts/test-back-top.js",
+      "scripts/test-fab.js",
+      "scripts/test-miniprogram-style-utilities-page.js"
+    ],
+    "dependencies": ["pui-back-top", "pui-fab", "pui-button", "pui-tabbar", "pui-scroll-area"]
+  },
+  "verification": {
+    "tests": ["scripts/test-back-top.js", "scripts/test-fab.js", "scripts/test-scroll-area.js", "scripts/test-miniprogram-style-utilities-page.js"],
+    "commands": ["npm run site:build", "npm run example:install", "npm run check", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": [
+      "微信开发者工具 iPhone 12/13 Pro 模拟器：重建 miniprogram_npm 后连续执行两轮“滚动超过 200px → primary 圆形 arrow-up 显示在 Tabbar 上方 → 点击 → 真实内容回到首项 → 按钮隐藏”，两轮均通过。",
+      "H5 390px 运行态：ScrollArea 真实 viewport 为 clientHeight 564 / scrollHeight 1116；属性页把 scrollTop 从 0 调到 240 后概览真实 scrollTop=240，再恢复 0 后真实 scrollTop=0。document/body scrollWidth=375 且等于 clientWidth，组件根计算样式为透明、无边框、无阴影。"
+    ],
+    "deviceRisks": ["开发者工具模拟器与 H5 不能替代 iOS/Android 真机；仍需确认实际触摸命中、安全区、惯性与 scroll-top 回写。"]
+  },
+  "ai": {
+    "summary": "BackTop 默认是 primary 圆形 arrow-up IconButton；App Shell 通过语义 Token 避让 Tabbar；局部回顶必须等待真实 scroll 回写。",
+    "rules": [
+      "无文案 BackTop 必须使用 primary circle arrow-up 与真实 iconOnly 结构。",
+      "存在 Tabbar 时用 --pui-back-top-bottom-offset 组合 --pui-tabbar-content-height、安全区和标准间距，不恢复 public bottom Prop。",
+      "局部 ScrollArea 与 BackTop 必须消费同一个受控 scrollTop；只改 BackTop 显隐不是回顶。",
+      "enhanced type=list 下不得依赖重复 Slot 顶部锚点；用 ScrollArea scrollTop + scroll 建立数值受控闭环。"
+    ],
+    "tags": ["back-top", "fab", "tabbar", "scroll-area", "icon-button", "miniprogram", "h5"]
+  }
+}

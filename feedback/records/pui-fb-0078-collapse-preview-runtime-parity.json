@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0078",
+  "title": "Collapse 官网未分区、基础代码缺数据入口且事件诊断偏离新合同",
+  "scope": "component",
+  "components": ["collapse", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Collapse 官网应像 TDesign 演示一样按常见用法分区，真实操作同一组件状态；代码、Props、API与小程序实现一致，完整文字不省略。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "1280x720", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧官网把Header/Footer、事件反馈和工程诊断堆在单一Collapse演示中，没有基础、多开互斥、主题组合和状态分区。",
+    "旧H5事件分支按String(value)查找项并显示input/change/open/close，和收敛后的严格值、change/retry合同冲突。",
+    "默认items被演示默认过滤后，基础代码变成空的<pui-collapse/>；它可复制但没有任何面板，违背最小可用基础示例。"
+  ],
+  "expected": "四个分区真实驱动同一Props与运行态；基础WXML固定包含items数据入口且零bind；严格值、键盘、Generic、状态、外观和低动效均与WXML/WXSS一致。",
+  "actual": "旧预览同时暴露已删除区域和事件，基础代码不可产生内容，视觉操作与公共API无法作为可靠筛选和复制依据。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求后续组件无需逐项确认，但仍需完整真实网页battle、完整API文字和分区演示。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区共用严格值运行态，状态操作、Generic、主题、互斥和低动效均写回Props或demo状态；基础代码固定items={{sections}}。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "default/card、内容高度、完整换行、Empty透明组合和180ms/1ms读取共享Token及外观偏好。"},
+    {"kind": "test", "ref": "scripts/test-collapse.js", "note": "专项锁定四个标题、PUI helper、零bind基础代码、无旧事件与主题、API/合同/示例一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/collapse", "note": "真实操作验证多开互斥、Space、禁用、loading/error/retry/empty、card/Generic、1ms、深色与边框/阴影/毛玻璃/圆角/渐变开关。"}
+  ],
+  "rootCause": "旧H5镜像以工程诊断覆盖用户用法，复制生成器又把演示默认items当作可省略的组件默认，导致展示、运行与代码三条真相源分离。",
+  "decision": {
+    "outcome": "重建为基础用法、多开与互斥、卡片与Generic、加载空错误四区；移除Header/Footer和事件卡，面板开合只局部更新常驻内容节点；基础代码固定items数据入口，属性与工具栏继续复用makeUsageCode。",
+    "rationale": "用户需要按真实场景筛选组件，最小示例必须可产生内容；开合动画必须在同一DOM节点上可观察，Props与代码必须同源。",
+    "alternativesRejected": [
+      "保留事件反馈卡会把工程诊断重新塞回概览，并重复API Events。",
+      "让基础代码继续省略items虽然更短，但复制后是空组件，不属于最小可用示例。",
+      "为每个分区创建独立Collapse会让操作状态彼此断裂，无法验证受控与互斥的真实顺序。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "preview/index.html", "scripts/test-collapse.js", "scripts/test-core-state-composition.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/COLLAPSE.md"],
+    "dependencies": ["PreviewDevice", "buttonSample", "cellSample", "iconComponent", "loadingComponent", "emptySample", "visualConfig", "API Reference", "previewCodeSectionSources"]
+  },
+  "verification": {
+    "tests": ["scripts/test-collapse.js", "scripts/test-preview-normal-code-card.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node --check preview/app.js", "npm run precheck", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "四个分区标题可见；多开按钮展开数字0与布尔false，互斥按钮规整到单项，全部收起与面板点按作用于同一值真相源。",
+      "loading显示共享Loading，error显示共享Empty内部Retry且点击后仍保持错误，empty为0面板并可恢复5个真实面板。",
+      "card主题、五个Generic Cell、500ms行内过渡、reduceMotion 1ms均可观察；深色和六项视觉开关逐项真实切换且组件树保留。",
+      "API完整展示17 Props和2 Events，没有bind:input/open/close；长items默认值、类型、可选值和说明全部存在于可访问树。"
+    ],
+    "deviceRisks": [
+      "当前浏览器宿主外层视口固定1280px；真实393px PreviewDevice可用，页面级390px仍由响应式合同与后续可缩放宿主复核。",
+      "H5 scrollHeight/px与键盘增强只能镜像微信SelectorQuery/rpx和触摸；Generic安装映射、系统低动效与真机读屏仍需确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Collapse H5按四个用户用法分区，基础代码必须含items，严格值与状态操作共享同一真实运行态。",
+    "rules": [
+      "Collapse基础WXML固定包含items数据入口且零bind；不得因演示默认过滤生成空组件。",
+      "面板开合只局部更新常驻内容节点，禁止整段renderStage掩盖动画。",
+      "概览不显示事件诊断、Header/Footer或方法卡；完整change/retry只进入API。",
+      "default/card、Generic、状态和视觉开关必须复用真实Props与PUI helper，不创建静态占位。"
+    ],
+    "tags": ["collapse", "preview", "wxml", "strict-value", "state", "generic", "api-reference"]
+  }
+}

@@ -1,0 +1,10 @@
+<form
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="form"
+  aria-label="{{ariaLabel || '表单'}}"
+  bindsubmit="onNativeSubmit"
+  bindreset="onNativeReset"
+>
+  <slot></slot>
+</form>

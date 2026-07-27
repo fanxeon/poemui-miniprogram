@@ -1,0 +1,41 @@
+@import "./icon-font.wxss";
+
+.pui-icon {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  /* Icon Font 通过 currentColor 着色；默认必须继承组合宿主的前景色。
+     否则 primary/danger Button 的反色文字会被重置成正文黑色。 */
+  color: inherit;
+  line-height: 1;
+}
+
+.pui-icon__glyph {
+  display: block;
+  width: 1em;
+  height: 1em;
+  color: inherit;
+  font-family: "PoemUI Roundline";
+  font-size: inherit;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-align: center;
+  speak: none;
+}
+
+.pui-icon__fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--pui-text-secondary);
+  font-size: 24rpx;
+  font-weight: 650;
+  background: var(--pui-bg-muted);
+  border-radius: var(--pui-radius-small);
+}

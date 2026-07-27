@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0052",
+  "title": "Icon 图片源着色镜像被说明文字样式覆盖",
+  "scope": "component",
+  "components": ["icon", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Icon 的 src + color 在 H5 必须镜像小程序 Canvas 实体着色，成功和失败只能来自真实图片资源结果。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-overview", "api-documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 Icon 属性页设置 color=#dc2626、src=/assets/poemui-workspace.png 并返回概览。",
+    "等待真实 img load 后读取根 Icon 与 CSS mask 计算样式：根为 rgb(220,38,38)，mask 却为 rgb(82,82,91)。",
+    "再设置不存在的资源路径，确认 img naturalWidth=0 且状态真实进入 is-error，而不是伪成功。"
+  ],
+  "expected": "有效资源加载后 mask 完整继承 Icon 根 currentColor；失败资源进入 error 回退，H5 与小程序的 src/color/load/error 语义一致。",
+  "actual": "有效资源虽然真实进入 loaded，但宽泛的 .icon-library__preview span 规则把 mask 的 currentColor 改成说明文字 muted 灰色。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    { "kind": "browser", "ref": "http://127.0.0.1:4179/#/icons", "note": "修复前有效图片根色 rgb(220,38,38)、mask 背景 rgb(82,82,91)；修复后 root/mask color/background 三者均为 rgb(220,38,38)，资源状态 loaded、naturalWidth=1254。" },
+    { "kind": "file", "ref": "preview/styles.css", "note": "说明文字样式收窄到 .icon-library__preview-copy，不再命中 pui-icon__source-mask。" },
+    { "kind": "file", "ref": "preview/app.js", "note": "预览说明增加明确 copy 容器；bindIconSourcePreview 继续以真实 img complete/naturalWidth 决定 loaded/error。" },
+    { "kind": "test", "ref": "scripts/test-icon.js", "note": "专项合同禁止恢复 .icon-library__preview span 宽泛选择器，并锁定 source mask 与真实资源绑定。" }
+  ],
+  "rootCause": "Icon 独立资源页用无直接子级限制的 span 选择器同时排版说明文本和组件内部节点，CSS mask 恰好也是 span，因继承色被父级说明样式覆盖。",
+  "decision": {
+    "outcome": "为说明文本增加 icon-library__preview-copy 语义容器，只在该容器内设置 muted 文案；source mask 继续使用 currentColor，并保留 img probe 的真实 load/error。",
+    "rationale": "文档排版不能穿透改变 PUI 子组件内部图形；限定职责容器可以保持小程序 Canvas 与 H5 mask 的颜色语义一致。",
+    "alternativesRejected": [
+      "给 mask 使用 !important 会掩盖父级穿透问题并削弱主题扩展。",
+      "直接给 mask 写死 color Prop 会复制状态且破坏 currentColor 组合。",
+      "忽略 img 错误只显示 CSS mask 会把 404 伪装成资源加载成功。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-icon.js", "docs/components/ICON.md"],
+    "dependencies": ["iconComponent", "CSS mask", "browser image loading"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["node scripts/test-icon.js", "node scripts/test-preview-css-token-contract.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "不存在的 SVG 路径得到 complete=true、naturalWidth=0、is-error 和回退；有效 PNG 得到 naturalWidth=1254、is-loaded。",
+      "有效 src + #dc2626 下 Icon 根、mask color 与 mask background 均为 rgb(220,38,38)，256rpx 仍保持 128px。"
+    ],
+    "deviceRisks": ["H5 CSS mask 只镜像单色实体着色；微信 Canvas 对跨域图片、临时文件、不同图片格式和真机 GPU 合成仍需合法 AppID 复核。"]
+  },
+  "ai": {
+    "summary": "Icon src + color 的 H5 mask 必须继承根 currentColor，文档文字样式不得穿透组件内部。",
+    "rules": [
+      "Icon 预览说明文字只能在专属 copy 容器内设色，禁止使用命中全部 span 的宽泛选择器。",
+      "src + color 镜像使用 currentColor，验收必须比较根与 mask 的计算色。",
+      "图片完成态必须依据真实 load/naturalWidth，404 或解码失败必须进入 error 回退。"
+    ],
+    "tags": ["icon", "src", "color", "css-mask", "currentColor", "preview-parity", "real-load"]
+  }
+}

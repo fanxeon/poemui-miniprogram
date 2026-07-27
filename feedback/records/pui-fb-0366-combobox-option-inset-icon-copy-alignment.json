@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0366",
+  "title": "Combobox 候选行缺少统一 inset 与图文对齐规则",
+  "scope": "component",
+  "components": ["combobox", "icon", "search", "miniprogram-home", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "首页搜索候选的左右内距必须一致；有 Icon 时，Icon 与正文之间保留明确空间，右侧 Check 或正文末端仍与左侧 Icon 起点保持对称。",
+  "environment": {
+    "surfaces": ["combobox option", "miniprogram-home search", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页搜索 Overlay，观察 Combobox 的图标候选项。",
+    "原 Option 行直接排列 Icon、正文和 Check，候选内部的左右 inset、图文间距没有独立的组件级语义。"
+  ],
+  "expected": "所有 Combobox 候选行在小程序与 H5 共享一组标准横向/纵向 inset 和图文 gap；Icon 起点、正文或 Check 的末端与候选边界保持同一横向节奏。",
+  "actual": "候选行只直接消费通用 padding/gap，缺少可追溯的 Option 几何边界，页面容易以局部样式补偿首页候选。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务对话", "note": "用户明确要求标准候选 padding、左右等距与 Icon 到正文的空间。"},
+    {"kind": "file", "ref": "combobox/combobox.wxml", "note": "Option 行以明确 option-icon、option-copy、option-check 三轨组合，不使用 Cell。"},
+    {"kind": "file", "ref": "combobox/combobox.wxss", "note": "Option 内部消费 combobox option inset 与 gap Token；左右 inset 同源。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 选项结构镜像 Icon、正文和 Check 三轨。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 使用同名语义的 preview option inset/gap Token。"},
+    {"kind": "test", "ref": "scripts/test-combobox.js", "note": "专项锁定小程序/H5 option Token、三轨结构和固定视口合同。"}
+  ],
+  "rootCause": "Combobox 已有固定列表视口和通用间距，但候选行没有独立语义 Token 与明确的 Icon/正文/Check 结构，导致候选排版难以作为组件级规则追溯。",
+  "decision": {
+    "outcome": "Combobox 根新增内部 option inline/block inset 与 option gap Token；WXML 与 H5 都采用 Icon、正文、Check 三轨。Icon 起点与右侧 Check 或正文末端共享同一 inline inset，Icon→正文固定为 content gap。",
+    "rationale": "候选项是选择组件的内部交互根，不应改用页面 Cell 或由首页私有 padding 修补；内部语义 Token 可保持标准几何并同步双端。",
+    "alternativesRejected": [
+      "把候选项替换为 PUI Cell 会混淆导航列表与 listbox option 的语义和事件边界。",
+      "只在首页 Overlay 添加 padding 会使其他 Combobox 和 H5 漂移。",
+      "将候选内距并入 equalSpacing 会污染控件内部微间距。"
+    ]
+  },
+  "impact": {
+    "files": ["combobox/combobox.wxml", "combobox/combobox.wxss", "preview/app.js", "preview/styles.css", "docs/components/COMBOBOX.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-combobox.js"],
+    "dependencies": ["pui-combobox", "pui-icon", "pui-search", "ConfigProvider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-combobox.js", "node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 CLI build-npm"],
+    "browser": ["H5 `#/foundation/combobox` 在 391px PreviewDevice 实测选中 Option 左/右 inset 均为 14px、Icon→正文为 8px，document 无横向溢出。"],
+    "deviceRisks": ["尚需在微信 390px 模拟器与 iOS/Android 真机确认长描述、带 Check、深浅色、大圆角和等距模式下的真实几何与触摸命中。"]
+  },
+  "ai": {
+    "summary": "Combobox 候选是组件内部 listbox option，不是 Cell；候选行的左右 inset 与 Icon→正文 gap 必须由 Combobox 自己的内部 Token 统一控制。",
+    "rules": [
+      "不要把 Combobox option 替换为 Cell，也不要在首页为候选行添加私有 padding。",
+      "Option 的 Icon 起点和右侧 Check/正文末端必须消费同一横向 inset。",
+      "Icon 与正文只消费 option content gap；它不参与 equalSpacing 的 Surface 结构间距。",
+      "修改 option 几何时同步小程序 WXML/WXSS、H5 结构/CSS、合同、Ledger、专项测试和发布产物。"
+    ],
+    "tags": ["combobox", "option", "spacing", "icon", "h5-parity", "miniprogram"]
+  }
+}

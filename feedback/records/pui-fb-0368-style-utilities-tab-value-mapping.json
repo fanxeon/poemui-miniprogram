@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0368",
+  "title": "快速样式 Tabs 将目录 key 错传为数字索引",
+  "scope": "component",
+  "components": ["style-utilities", "tabs", "tabbar"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "快速样式页切换任一分类 Tab 后，当前分类的标题、示例和完整候选内容必须立即切换。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "pui-tabs controlled selection"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/styles/index，点击“尺寸与间距”等非默认分类 Tab。",
+    "旧页面将 catalog.groups 直接传入 pui-tabs；对象只有 key 而没有 value。",
+    "Tabs 发出索引值，页面按字符串 group key 校验失败，visibleUtilities 保持默认分类。"
+  ],
+  "expected": "目录的稳定 group.key 必须成为 Tabs item.value；change detail 回写 activeGroup 后，标题、示例和候选目录同步更新。",
+  "actual": "原始目录对象缺少 value，Tabs 退化为数字索引，受控父级忽略 change，页面内容不切换。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务对话", "note": "用户报告 Tab 内容不切换。"},
+    {"kind": "file", "ref": "miniprogram/pages/styles/index.js", "note": "groupTabs 显式将目录 key 映射为 Tabs value。"},
+    {"kind": "file", "ref": "tabs/tabs.js", "note": "Tabs 在 item.value 缺失时回退为数字 index，并以该值发出 change。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "专项锁定 group key/value 映射和真实 change 回写。"}
+  ],
+  "rootCause": "页面数据合同误把生成目录的 key 当作 PUI Tabs 的 value；Tabs 的标准 value/defaultValue 受控协议没有被页面适配。",
+  "decision": {
+    "outcome": "快速样式页保留生成目录作为业务真相源，并派生 groupTabs 仅供 PUI Tabs 使用；每项明确提供 label、value、icon 和 ariaLabel。",
+    "rationale": "不改变 Tabs 的公共 value 合同，也不向生成目录添加 UI 组件专用字段；页面适配层保证受控选择始终使用稳定字符串 key。",
+    "alternativesRejected": [
+      "修改 Tabs 把任意 key 当 value 会破坏全组件的公开 items 合同。",
+      "在 onGroupChange 中把数字索引反查目录会把显示顺序误作为持久状态。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/styles/index.js", "miniprogram/pages/styles/index.wxml", "scripts/test-miniprogram-style-utilities-page.js", "docs/MINIPROGRAM_HOME.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["pui-tabs", "style-utilities-catalog", "pui-tabbar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js", "scripts/test-tabs.js"],
+    "commands": ["node scripts/test-miniprogram-style-utilities-page.js", "node scripts/test-tabs.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 CLI build-npm"],
+    "browser": ["H5 Style Utilities 的分类按钮直接回写 category，不经过此 key/value 适配；本次未改变其交互。"],
+    "deviceRisks": ["尚需在微信 390px 模拟器与 iOS/Android 真机确认分类点击、横向滚动、触摸取消和深浅色外观组合。"]
+  },
+  "ai": {
+    "summary": "生成目录的 key 不是 PUI Tabs item.value；把业务目录交给受控 Tabs 前必须显式派生 label/value。",
+    "rules": [
+      "PUI Tabs 的受控 value 必须与每个 items[].value 严格同型、同值。",
+      "不要把缺少 value 的业务目录对象直接传给 Tabs。",
+      "页面 Tab 切换必须有专项测试验证真实 change detail 能更新可见内容。",
+      "H5 若采用独立筛选控件，必须明确其状态写入路径，不能声称与小程序自动同构。"
+    ],
+    "tags": ["style-utilities", "tabs", "controlled-value", "miniprogram", "regression"]
+  }
+}

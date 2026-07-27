@@ -1,0 +1,139 @@
+.pui-virtual-list {
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  color: var(--pui-text-primary);
+  background: var(--pui-glass-surface);
+  border-radius: var(--pui-radius-medium);
+  box-shadow: var(--pui-shadow-card);
+  backdrop-filter: var(--pui-frosted-filter-soft);
+}
+
+.pui-virtual-list--bordered {
+  border: 1rpx solid var(--pui-glass-border);
+}
+
+.pui-virtual-list--disabled {
+  opacity: 0.56;
+}
+
+.pui-virtual-list__header,
+.pui-virtual-list__footer {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--pui-space-normal);
+}
+
+.pui-virtual-list__header {
+  box-shadow: inset 0 -1rpx 0 var(--pui-border-color);
+}
+
+.pui-virtual-list__footer {
+  box-shadow: inset 0 1rpx 0 var(--pui-border-color);
+}
+
+.pui-virtual-list__viewport {
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  background: var(--pui-bg-container);
+}
+
+.pui-virtual-list__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: 160rpx;
+  padding: var(--pui-space-xl) var(--pui-space-normal);
+}
+
+.pui-virtual-list__spacer {
+  width: 1rpx;
+  pointer-events: none;
+}
+
+.pui-virtual-list__item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--pui-bg-container);
+  box-shadow: inset 0 -1rpx 0 var(--pui-border-color);
+  transition: background-color var(--pui-virtual-list-duration) var(--pui-virtual-list-ease), color var(--pui-virtual-list-duration) var(--pui-virtual-list-ease), opacity var(--pui-virtual-list-duration) var(--pui-virtual-list-ease);
+}
+
+.pui-virtual-list__item--selected {
+  color: var(--pui-color-brand);
+  background: var(--pui-color-brand-light);
+}
+
+.pui-virtual-list__item--active {
+  box-shadow: inset 4rpx 0 0 var(--pui-color-brand), inset 0 -1rpx 0 var(--pui-border-color);
+}
+
+.pui-virtual-list__item--hover {
+  background: var(--pui-bg-active);
+}
+
+.pui-virtual-list__item--disabled {
+  opacity: 0.5;
+}
+
+.pui-virtual-list__item-body {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pui-virtual-list__item-body > pui-cell,
+.pui-virtual-list__item-body > virtual-item {
+  display: block;
+  height: 100%;
+}
+
+.pui-virtual-list__item-body .pui-cell {
+  box-sizing: border-box;
+  height: 100%;
+  padding: var(--pui-space-sm) var(--pui-space-normal);
+  background: transparent;
+}
+
+.pui-virtual-list__accessory {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--pui-space-xs);
+  max-width: 42%;
+  padding: 0 var(--pui-space-normal) 0 var(--pui-space-xs);
+}
+
+.pui-virtual-list__value,
+.pui-virtual-list__index {
+  overflow: hidden;
+  color: var(--pui-text-placeholder);
+  font-size: var(--pui-font-size-small);
+  line-height: var(--pui-line-height-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pui-virtual-list__value {
+  max-width: 160rpx;
+}
+
+.pui-virtual-list__selected-icon {
+  color: var(--pui-color-brand);
+  transform: scale(1);
+  transition: opacity var(--pui-virtual-list-duration) var(--pui-virtual-list-ease), transform var(--pui-virtual-list-duration) var(--pui-virtual-list-ease);
+}
+
+.pui-virtual-list--readonly .pui-virtual-list__item,
+.pui-virtual-list--disabled .pui-virtual-list__item {
+  cursor: default;
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0318",
+  "title": "Combobox 筛选后面板高度收缩",
+  "scope": "global",
+  "components": ["combobox", "miniprogram-home", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "Combobox 内容区域应保持固定高度，候选数量因搜索过滤减少时不能让面板随之变矮。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页搜索 Overlay，使 Combobox 展开三个候选项。",
+    "输入可匹配单项的关键词，观察 Panel 的自然内容高度随列表从三项减少为一项。"
+  ],
+  "expected": "Panel 进入后占据稳定测得高度；搜索、选择、创建或空结果仅改变内部 scroll-view 的内容，候选较少时不产生浮层高度跳动。",
+  "actual": "原实现只把测得高度传给 max-height。max-height 只是上限，Panel 仍按较少子内容自然收缩。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求 Combobox 内容固定高度，不能随选择条数减少而变矮。"},
+    {"kind": "file", "ref": "combobox/combobox.wxml", "note": "Panel 与可见 Panel inner 共同绑定稳定 height/min-height，防止微信 scroll-view 内容变少时压缩 Surface。"},
+    {"kind": "file", "ref": "combobox/combobox.js", "note": "修复前每次 selector query 都以当前内容高度覆盖 panelHeight。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 修复前以 inner.scrollHeight 直接重写 maxHeight。"},
+    {"kind": "test", "ref": "scripts/test-combobox.js", "note": "专项测试锁定较小后续测量不能降低既有 Panel 高度，且两端使用固定 height + max-height 动效。"}
+  ],
+  "rootCause": "面板测量逻辑把临时过滤结果当作最终布局高度，且渲染层没有用 height 占位，因此 max-height 无法阻止内容自然收缩。",
+  "decision": {
+    "outcome": "小程序与 H5 都把 Panel 高度记录为单调递增的稳定测量值；Panel 使用真实 height、Panel inner 使用同值 min-height，并继续以 max-height 进出动画。候选数量减少不会降低高度，更多内容仍可通过既有 scroll-view/maxHeight 边界增长和滚动。",
+    "rationale": "保留原有 0–500ms max-height 动效与局部滚动上下文，同时消除搜索输入时的浮层跳动。",
+    "alternativesRejected": [
+      "只给首页增加 min-height 会绕过共享 Combobox，H5 与其他消费者继续漂移。",
+      "固定为全局最大 maxHeight 会使少量选项的常规 Combobox 无端过高。",
+      "用 display:none 或重建 Panel 不能解决高度跳动且违反常驻节点动效合同。"
+    ]
+  },
+  "impact": {
+    "files": ["combobox/combobox.js", "combobox/combobox.wxml", "preview/app.js", "docs/components/COMBOBOX.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-combobox.js", "feedback/records/pui-fb-0318-combobox-stable-panel-height.json"],
+    "dependencies": ["pui-combobox", "pui-input", "scroll-view", "max-height transition"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-combobox.js", "node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": [],
+    "deviceRisks": ["仍需在 iOS/Android 真机确认软键盘筛选、较长选项、空结果和不同基础库下的固定高度与局部滚动。"]
+  },
+  "ai": {
+    "summary": "Combobox 的 Panel 必须以稳定测得高度占位；max-height 只负责显隐动画，不能单独承担防收缩职责。",
+    "rules": [
+      "筛选、选择、创建和空结果不能降低已建立的 Combobox Panel 高度。",
+      "小程序和 H5 都必须使用真实 height 占位并保留 max-height/opacity/transform 动效。",
+      "不要在页面消费者中为 Combobox 手写 min-height 补丁。"
+    ],
+    "tags": ["combobox", "panel-height", "filter", "h5-parity", "miniprogram-home"]
+  }
+}

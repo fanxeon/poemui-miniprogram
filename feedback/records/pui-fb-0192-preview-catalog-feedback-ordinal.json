@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0192",
+  "title": "官网组件目录缺少稳定的反馈序号",
+  "scope": "global",
+  "components": ["preview-site", "sidebar", "all-components"],
+  "type": "design-decision",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "在临时审计期间为左侧目录的每个组件提供稳定、易引用的序号，方便用户精确反馈问题。",
+  "environment": {
+    "surfaces": ["h5-preview", "site-shell", "component catalog"],
+    "platforms": ["browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网左侧组件目录并尝试反馈一个具体组件的问题。",
+    "旧目录只有英文名与中文 Badge；搜索过滤后没有一个可跨分类、跨会话引用的稳定位置标识。",
+    "若把筛选结果按可见顺序重新编号，同一组件会随搜索词变化，无法成为反馈锚点。"
+  ],
+  "expected": "每个公开目录项在既有 PUI Button 内显示完整目录派生的稳定序号；筛选仅隐藏条目、不重排编号，编号不进入组件名、路由、搜索语料或小程序 API。",
+  "actual": "旧 H5 目录没有反馈序号，用户只能描述组件名称和所属分类，长目录中的定位成本较高。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-20 当前会话", "note": "用户明确要求临时为 sidebar 的每个组件加序号，方便反馈 BUG。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-button", "note": "390x844 实测 Button 为第 08 号，目录页面宽度 client/scroll 均为 375；筛选 Button 后仅余第 08、09 号。"},
+    {"kind": "test", "ref": "scripts/test-preview-navigation-search.js", "note": "专项测试锁定编号从完整 metadata 顺序派生、筛选不重编号、PUI Button Slot 与可访问名称。"},
+    {"kind": "test", "ref": "scripts/test-preview-infrastructure-composition.js", "note": "基础设施测试锁定目录继续复用 PUI Button 与 Badge，并暴露 canonical data-catalog-order。"}
+  ],
+  "rootCause": "目录已用 metadata 生成分类和路由，但没有把完整目录顺序作为用户反馈可见锚点；筛选结果的局部顺序不能替代稳定编号。",
+  "decision": {
+    "outcome": "反馈审计期间，renderGroups 从完整 allItems 生成两位起始的 feedbackOrdinalById，并在既有目录 PUI Button 的 Slot 前显示该值、以 data-catalog-order 暴露给审计工具。筛选不改变 Map；该标识仅属 H5 目录，审计结束后可整体移除这一个渲染片段、样式和对应测试断言。",
+    "rationale": "以目录唯一源生成编号可让用户用“08 Button”精确指代问题，同时不改变已有组件名称、分类、URL 或小程序公开能力。复用 Button Slot 保持点击、焦点、状态 Badge 和主题样式的单一语义边界。",
+    "alternativesRejected": [
+      "按筛选后的可见结果重新从 01 编号，会让同一组件失去稳定反馈锚点。",
+      "把序号拼进组件名或路由，会污染搜索、文档和组件 API 语义。",
+      "另建原生标签或第二个 Badge，会重复状态表达并破坏现有 PUI Button 内容布局。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-preview-navigation-search.js", "scripts/test-preview-infrastructure-composition.js", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "feedback/records/pui-fb-0192-preview-catalog-feedback-ordinal.json", "docs/COMPONENT_FEEDBACK_LEDGER.md"],
+    "dependencies": ["metadata component catalog", "PUI Button H5 helper", "PUI Badge H5 helper", "PUI-FB-0019"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-navigation-search.js", "scripts/test-preview-infrastructure-composition.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["390x844 下 Button 目录项的编号、名称与中文 Badge 均在同一按钮内容区可读，document clientWidth/scrollWidth=375/375。", "搜索 Button 后只显示第 08 号 Button 和第 09 号 Button Group；深色模式下编号仍使用主题 Token 且无横向溢出，验收结束恢复浅色。"],
+    "deviceRisks": ["该编号只属于 H5 官网目录，不修改小程序 Sidebar、WXML 或消费者 API。", "微信开发者工具 CLI 因 touristappid 权限返回 code 10，示例 miniprogram_npm 未生成；提供合法 AppID 后仍需复跑。"]
+  },
+  "ai": {
+    "summary": "临时反馈序号必须从完整公开目录派生，筛选不重编号，且只存在于 H5 目录的既有 PUI Button Slot。",
+    "rules": [
+      "反馈序号必须读取完整 metadata 目录顺序，禁止按当前筛选结果或当前组内顺序重新编号。",
+      "序号不得进入组件显示名称、路由、搜索语料、WXML 示例或小程序 API。",
+      "目录项继续组合 PUI Button 和 PUI Badge；禁止新增原生按钮、状态 Badge 或私有外层面板。",
+      "编号使用现有字体、颜色和间距 Token，并验证 390px、深浅色和无横向溢出。",
+      "这是临时反馈辅助；审计结束时应连同渲染、样式、测试和本记录的状态一并评估移除。"
+    ],
+    "tags": ["preview-site", "catalog", "sidebar", "feedback", "temporary", "accessibility", "390px", "metadata"]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0376",
+  "title": "无文案 Tabbar 的图标与短横需要同一视觉中心",
+  "scope": "component",
+  "components": ["tabbar"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "无文案 Tabbar 不应让图标偏上、选中短横偏下；分隔线应更短、更浅。",
+  "environment": {
+    "surfaces": ["miniprogram icon-only tabbar", "h5 tabbar preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在底部 Tabbar 使用显式 label:'' 的四个图标目的地。",
+    "旧版图标保持 Button 纵向中心，短横只上移 20rpx，形成图标偏上、短横偏下的视觉组；split 使用 72rpx 长且颜色偏深的分隔线。"
+  ],
+  "expected": "纯图标导航的图标与活动短横共同位于条目视觉中心，分隔线短且低对比，仍能表达一级目的地边界。",
+  "actual": "纯图标图文轨道被删除后没有重新收拢视觉重心，短横仍过低，分隔线像贯穿的 Cell 边框。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务截图", "note": "用户指出图标偏上、短横偏下，且分隔线过长过深。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxss", "note": "icon-only 图标下移 8rpx、短横收至 40rpx 底部；split 缩至上下各 56rpx。"},
+    {"kind": "file", "ref": "common/style/theme.wxss", "note": "Tabbar split 使用独立低对比 light/dark Token，不再复用偏深 Divider。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "锁定小程序与 H5 的图标偏移、短横锚点和分隔线长度。"}
+  ],
+  "rootCause": "icon-only 仅删除了标签节点，但仍沿用图文导航的视觉坐标和通用 Divider 色。",
+  "decision": {
+    "outcome": "纯图标项图标下移 8rpx/4px，活动短横上收到距底 40rpx/20px；split 改为 56rpx/28px 短线并使用专属弱色 Token。",
+    "rationale": "图标与短横作为一个导航识别组需要共同落在视觉中心；短分隔只提示边界，不应抢占图标的视觉层级。",
+    "alternativesRejected": [
+      "恢复可见文案会改变用户指定的纯图标导航形态。",
+      "用页面级 margin 调整只会掩盖 Tabbar 组件自身的几何问题。",
+      "直接关闭 split 会丢失相邻目的地的轻量分组提示。"
+    ]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.wxss", "common/style/theme.wxss", "preview/styles.css", "docs/components/TABBAR.md", "scripts/test-tabbar.js"],
+    "dependencies": ["pui-button", "pui-icon", "pui-config-provider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run site:build", "npm run example:install", "微信开发者工具 cli build-npm"],
+    "browser": ["构建后的 390px 微信开发者工具运行态待用户视觉确认；源码已锁定纯图标几何和分隔 Token。"],
+    "deviceRisks": ["iOS/Android 真机仍需复核系统字体、safe area 与 WebView 合成后的最终视觉位置。"]
+  },
+  "ai": {
+    "summary": "纯图标 Tabbar 必须为图标和活动短横定义同一视觉组，split 是低对比短分隔而不是 Cell 边框。",
+    "rules": [
+      "显式 label:'' 时在 Tabbar 组件内调整视觉锚点，不能由页面 margin 补位。",
+      "Tabbar split 使用专属弱色 Token，不能复用一般 Divider 的强对比色。",
+      "小程序和 H5 镜像必须同步图标偏移、短横锚点与分隔线长度。"
+    ],
+    "tags": ["tabbar", "icon-only", "visual-center", "split", "miniprogram"]
+  }
+}

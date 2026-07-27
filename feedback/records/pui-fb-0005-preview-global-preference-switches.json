@@ -1,0 +1,121 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0005",
+  "title": "官网五项视觉偏好统一组件化、持久化与主题边界",
+  "scope": "global",
+  "components": ["preview-site", "switch", "config-provider"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-17",
+  "updatedAt": "2026-07-18",
+  "userGoal": "官网的大圆角、毛玻璃、阴影、渐变背景和深浅色必须使用同一种 PUI Switch 交互，并在刷新或再次访问时恢复全部选项值；渐变背景全局生效且兼容浅色与标准中性深色。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网并查看顶部全局预览开关。",
+    "切换阴影、毛玻璃或大圆角后刷新页面，三项恢复关闭；只有深浅色单独恢复。",
+    "检查 preview/index.html，三项视觉设置使用圆点按钮，主题使用另一套定制轨道，均未复用 PUI Switch 镜像。",
+    "在现有四项右侧新增渐变背景需求：旧偏好模型没有 gradient 白名单、data 属性、Switch 定义或浅色/深色渐变 Token。"
+  ],
+  "expected": "五项设置共享 PUI Switch 的结构、状态和无障碍语义，并写入同一个经过逐项校验的本地偏好对象；刷新后五项状态与视觉效果完整恢复。渐变只改变页面和 PreviewDevice 的单一背景画布，浅色与深色分别读取中性 Token。",
+  "actual": "原实现先只有 theme 写入 poemui-preview-theme，shadow、frost、radius 固定初始化且顶部存在两套控件；四项收口后又缺少 gradient 偏好模型、Switch、持久化字段和主题安全的背景 Token。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "current conversation",
+      "note": "用户先要求四项全部改用开关组件并本地保存，随后明确要求新增同级的全局渐变背景开关并兼容深浅色。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/index.html",
+      "note": "五项入口现在全部复用 pui-switch-preview 结构和 role=switch；静态 HTML 仍只保留 Mount。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "统一读取、校验和保存 poemui-preview-preferences 的 theme/shadow/frost/radius/gradient，并迁移旧主题值。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "设计合同锁定五个 PUI Switch、统一存储、合法值恢复和移动端双列布局。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-global-gradient-preference.js",
+      "note": "专项合同锁定 gradient 白名单、共享 Switch、Shell data 属性、浅深中性渐变、单一背景画布和布局零变更。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-button",
+      "note": "390x844 下四项全开后刷新仍恢复为 dark/on/on/large，aria-checked 全为 true，控件保持在视口内。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/dialog",
+      "note": "第五项渐变在浅色与深色中真实切换并刷新恢复；浅色 PreviewDevice 为 #fafafa/#f4f4f5 中性渐变，深色为 #09090b/#111113，Dialog Surface 分别保持 #ffffff/#18181b，模拟器稳定为 393×622px且无横向溢出。"
+    }
+  ],
+  "rootCause": "视觉开关在官网早期分阶段加入：主题曾使用独立 storage key，另外三项使用页面内存默认值；统一四项后，偏好 schema 和 Switch key 白名单仍是封闭枚举，没有可扩展的 gradient 字段，也没有把背景画布抽象为独立的浅深中性 Token。",
+  "decision": {
+    "outcome": "五项入口统一使用 PUI Switch H5 镜像；以 poemui-preview-preferences JSON 对象保存 theme/shadow/frost/radius/gradient，逐项白名单校验，并继续读写旧主题键以兼容已有访问者。渐变通过 data-gradient 与 --pui-global-gradient-background 只作用于 App Shell、透明 Stage 和 PreviewDevice：浅色使用 #fafafa/#f4f4f5，深色使用 #09090b/#111113 和白灰微光，组件 Surface 不变。",
+    "rationale": "统一控件减少维护分支和认知成本，单一偏好对象可原子恢复完整视觉环境；把渐变限制在背景画布可避免容器套容器和组件视觉污染，浅深中性 Token 保持主题一致；保留旧键迁移避免升级后丢失用户已选主题。",
+    "alternativesRejected": [
+      "为五项分别创建独立 localStorage key，会放大读写和迁移分支。",
+      "继续保留圆点按钮，只补存储，仍然违反 PUI 组件复用要求。",
+      "删除旧主题键而不迁移，会让已有深色偏好在升级后丢失。",
+      "把渐变写进每个组件 Surface 会制造第二套背景层级，并让深浅色、毛玻璃与组件语义互相污染。",
+      "使用蓝紫或靛蓝渐变会违反已经确认的 #09090b 中性深色合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-global-gradient-preference.js",
+      "scripts/test-design-contracts.js",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "feedback/records/pui-fb-0005-preview-global-preference-switches.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["switch", "config-provider", "localStorage"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-global-gradient-preference.js", "scripts/test-switch.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "390x844 旧四项 PUI Switch 全开后刷新，app-shell 恢复 theme=dark、shadow=on、frost=on、radius=large，四个 aria-checked 均为 true。",
+      "顶部开关区旧四项几何范围为 left 12px、right 363px、width 351px，document scrollWidth 375px 不超过 390px 视口；随后全关并刷新也正确恢复 light/off/off/normal。",
+      "Dialog 页真实验证五个 role=switch：渐变开启并刷新后仍为 gradient=on、aria-checked=true；浅色 Shell/PreviewDevice 使用 #fafafa/#f4f4f5 中性渐变，Stage 与 Viewport 透明，Dialog 仍为 #ffffff 且无 background-image。",
+      "切换深色后 Shell/PreviewDevice 使用 #09090b/#111113 中性渐变，Dialog 仍为 #18181b 且无 background-image；五项全开并刷新恢复 dark/on/on/large/on，等待 500ms 动画稳定后 Device 393×622、Dialog 304×222、Tabs 270×40、操作区 270×36，均与渐变关闭时一致且无横向溢出。",
+      "2026-07-18 全局收口复验：390×844 下逐项反转边框、阴影、毛玻璃、大圆角、渐变和深色六个 PUI Switch，刷新后完整恢复 dark/off/on/on/large/on 与六项 aria-checked；PreviewDevice 为 #09090b 中性渐变，Dialog 实算 24px 圆角、18px blur 和两层中性阴影，document client/scroll width 为 375/375。",
+      "验收结束已通过 PUI Switch 恢复并刷新确认 light/off/off/normal/off，浏览器日志为空。"
+    ],
+    "deviceRisks": [
+      "该持久化只属于 H5 官网偏好；微信小程序业务端应继续由消费者通过 ConfigProvider 和自己的存储策略管理。"
+    ]
+  },
+  "ai": {
+    "summary": "官网五项全局视觉偏好统一使用 PUI Switch，并作为一个校验后的本地对象持久化；渐变只改变主题安全的单一背景画布。",
+    "rules": [
+      "修改官网全局视觉设置时，深浅色、阴影、毛玻璃、大圆角和渐变背景必须继续复用同一 PUI Switch 结构。",
+      "新增或调整站点偏好时必须白名单校验持久化值，存储异常时安全回退，不能让非法值进入 data 属性。",
+      "验收全局视觉偏好时必须逐项切换后刷新，并验证状态、aria-checked 和实际视觉 data 属性同时恢复。",
+      "渐变背景只能作用于 App Shell、透明 Stage 和 PreviewDevice 背景，禁止给组件 Surface 或布局根增加渐变。",
+      "浅色渐变只用 #fafafa/#f4f4f5 中性层，深色保持 #09090b/#111113 与白灰微光，禁止靛蓝、蓝紫色偏。",
+      "渐变开关不得改变 padding、gap、尺寸、圆角、Tabs 坐标、设备高度或横向溢出。"
+    ],
+    "tags": ["preview-site", "switch", "preferences", "local-storage", "theme", "shadow", "frost", "radius", "gradient", "background"]
+  }
+}

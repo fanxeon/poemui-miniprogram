@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0301",
+  "title": "Combobox 延后展开时需使用真实 change 事件并允许满宽搜索行",
+  "scope": "global",
+  "components": ["combobox", "input", "miniprogram-home", "preview-site"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页点击普通 Combobox Trigger 后先显示 Overlay，再展开 Panel；Panel 中仅保留满宽真实搜索框和三个可跳转组件候选，不能保留底部操作按钮。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home", "h5-preview", "npm-dist"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "点击首页搜索入口打开 Overlay，观察到 Combobox 与 Overlay 同帧展开。",
+    "展开后点击候选以外的遮罩空白区；页面 Slot 根因 min-height:100% 覆盖全屏且 catchtap，导致 Overlay 根无法收到真实关闭事件。",
+    "早期实现将 Input 置入 Trigger，用户撤回该交互方式。",
+    "审计发现 Combobox 内嵌 PUI Input 使用 bind:input，但 Input 的公开值回写事件是 change，且 Panel 固定渲染收起按钮导致搜索行不满宽。"
+  ],
+  "expected": "Combobox 保持普通 Trigger；首页先受控显示 Overlay，在 Overlay 500ms 进入完成后再令 Combobox visible=true；内容 Slot 只包裹 Combobox，以便点击其余遮罩空白区触发 Overlay click({visible:false})；内部 PUI Input 使用 change 真实回写 query；消费者可通过 showPanelClose=false 移除 Panel 收起操作；每次仅随机排列 Button、Divider、Icon 三个真实路由，选择后关闭 Overlay 并导航。",
+  "actual": "Combobox 与 Overlay 同帧展开，且全屏 Slot 根截获了所有 tap，输入型 Trigger 偏离当前交互决策，嵌入 Input 的绑定事件不正确，Panel 搜索行也被固定收起按钮占用。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求改回普通 Trigger，点击自动展开、满宽搜索框、删除底部操作，并随机展示三个可跳转组件。"},
+    {"kind": "file", "ref": "input/input.js", "note": "PUI Input 的公开值回写事件为 change。"},
+    {"kind": "file", "ref": "combobox/combobox.wxml", "note": "Panel 内 Input 绑定 bind:change，并由 showPanelClose 控制真实 PUI Button 收起操作。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "首页先显示 Overlay，等待同一 500ms 进入时长后才展开 Combobox；关闭或选择会取消延时，并保留随机候选和 wx.navigateTo。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxss", "note": "Overlay Slot 内容绝对定位至中部且只包裹 Combobox，不再以 min-height:100% 覆盖遮罩空白区。"},
+    {"kind": "test", "ref": "scripts/test-combobox.js", "note": "专项测试锁定真实 change 绑定和 showPanelClose 默认合同。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项测试锁定自动展开、三个候选及真实导航。"}
+  ],
+  "rootCause": "Combobox 早期仅按输入型 Trigger 方案调整，未遵循后续交互决策；首页又把 Overlay 与 Combobox visible 同时置为 true，跳过了遮罩先进入的视觉阶段；全屏 Slot 容器的 catchtap 同时阻断了遮罩空白区 tap；复合组件仍沿用不存在的 input 公共事件名，且没有可关闭 Panel 收起操作的通用 API。",
+  "decision": {
+    "outcome": "删除 triggerInput 方案；新增 showPanelClose:Boolean=true。Panel 内 PUI Input 统一 bind:change 到 onQueryInput。首页先受控显示 Overlay，并复用 Overlay 默认 500ms 时长延后设置 Combobox visible=true；遮罩关闭或候选选择都会取消延时。Slot 内容改为中部绝对定位、只包裹 Combobox，catchtap 仅阻止候选区冒泡；其余遮罩空白区由 Overlay click({visible:false}) 真实关闭。传入 show-panel-close=false，不传 footer；每次打开随机排列 Button、Divider、Icon，选择后关闭 Overlay 并 wx.navigateTo。",
+    "rationale": "保留 Combobox 的单一 Trigger/Panel 结构与三重受控能力，让遮罩先完成进入、搜索框再展开；候选及跳转均对应当前可运行页面。",
+    "alternativesRejected": [
+      "在页面私有 CSS 中隐藏收起按钮会绕过共享 API 和 H5 镜像。",
+      "保留输入型 Trigger 与 Panel 内输入会造成交互决策冲突或重复控件。",
+      "用底部应用按钮或 Toast 代替候选选择会制造假完成。"
+    ]
+  },
+  "impact": {
+    "files": ["combobox/combobox.js", "combobox/combobox.wxml", "miniprogram/pages/index/index.js", "miniprogram/pages/index/index.wxml", "preview/app.js", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/COMBOBOX.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "scripts/test-combobox.js", "scripts/test-miniprogram-home.js"],
+    "dependencies": ["pui-input", "pui-combobox", "pui-overlay", "query-input", "query-change", "wx.navigateTo"]
+  },
+  "verification": {
+    "tests": ["scripts/test-combobox.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-combobox.js", "node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": ["2026-07-24 微信开发者工具 RC 2.02.2607161、合法 AppID wx23aa017375535746、iPhone 12/13 390px 热重载：点击搜索后即时 page data 为 Overlay=true / Combobox=false，560ms 后为 true / true；点击模拟器中 Combobox 外遮罩空白区后 Overlay 与候选列表均关闭。"],
+    "deviceRisks": ["真机仍需确认 iOS/Android 软键盘、焦点、清空命中、Overlay 触摸阻断、backdrop-filter 性能与读屏。"]
+  },
+  "ai": {
+    "summary": "Combobox 自动展开的搜索行必须绑定 PUI Input 的 change 事件；需要无收起按钮的搜索行时使用 showPanelClose=false，不得手写页面私有控件。",
+    "rules": [
+      "PUI Input 的值回写事件是 change；组合父级必须绑定真实公共事件。",
+      "普通 Trigger 与 Panel 内唯一搜索 Input 共同构成自动展开 Combobox，不得把 Input 伪装成 Trigger。",
+      "首页候选必须映射到真实可运行路由；没有对应页面时不得制造假导航或应用按钮。",
+      "需要遮罩后展开内容时，页面必须复用显式 Overlay duration 并在关闭、选择和卸载时取消延时；Overlay 自身仍只发布 click 请求。",
+      "Overlay Slot 内的 catchtap 容器只能包裹实际交互内容；不得以全屏或 min-height:100% 布局截获遮罩空白区关闭。"
+    ],
+    "tags": ["combobox", "input", "overlay", "query", "miniprogram-home", "navigation"]
+  }
+}

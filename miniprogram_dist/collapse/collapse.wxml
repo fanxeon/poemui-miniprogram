@@ -1,0 +1,85 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}}"
+  role="group"
+  aria-label="{{ariaLabel || '折叠面板'}}"
+  aria-busy="{{stateType === 'loading'}}"
+  aria-invalid="{{stateType === 'error'}}"
+  aria-disabled="{{disabled}}"
+>
+  <view wx:if="{{stateType === 'error'}}" class="pui-collapse__state pui-collapse__state--error">
+    <pui-empty description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
+    <pui-button wx:if="{{retryText}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" bind:click="onRetry">{{retryText}}</pui-button>
+  </view>
+  <view wx:elif="{{stateType === 'loading'}}" class="pui-collapse__state pui-collapse__state--loading">
+    <pui-loading
+      loading
+      text="{{loadingText}}"
+      size="small"
+      duration="{{motionDuration}}"
+      easing="standard"
+      reduce-motion="{{reduceMotion}}"
+      aria-label="{{loadingText}}"
+    />
+  </view>
+  <view wx:elif="{{stateType === 'empty'}}" class="pui-collapse__state pui-collapse__state--empty">
+    <pui-empty description="{{emptyText}}" icon="inbox" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" />
+  </view>
+
+  <block wx:else>
+    <view
+      wx:for="{{normalizedItems}}"
+      wx:key="id"
+      class="pui-collapse__item {{item.expanded ? 'pui-collapse__item--expanded' : ''}} {{item.disabled ? 'pui-collapse__item--disabled' : ''}}"
+    >
+      <view
+        class="pui-collapse__trigger"
+        role="button"
+        aria-label="{{item.ariaLabel}}"
+        aria-expanded="{{item.expanded}}"
+        aria-disabled="{{disabled || item.disabled}}"
+        aria-controls="pui-collapse-content-{{index}}"
+        data-index="{{index}}"
+        bindtap="onToggle"
+      >
+        <view class="pui-collapse__heading">
+          <pui-icon wx:if="{{item.icon}}" name="{{item.icon}}" size="30" custom-class="pui-collapse__item-icon" />
+          <text class="pui-collapse__label">{{item.label}}</text>
+        </view>
+        <view class="pui-collapse__aside">
+          <text wx:if="{{item.note}}" class="pui-collapse__note">{{item.note}}</text>
+          <pui-icon
+            wx:if="{{expandIcon && item.expandIcon !== false}}"
+            name="chevron-down"
+            size="30"
+            custom-class="pui-collapse__icon"
+            custom-style="transition-duration: {{motionDuration}}ms; transition-timing-function: {{motionEasing}};"
+          />
+        </view>
+      </view>
+      <view
+        id="pui-collapse-content-{{index}}"
+        class="pui-collapse__content"
+        role="region"
+        aria-label="{{item.ariaLabel}}内容"
+        aria-hidden="{{!item.expanded}}"
+        style="max-height: {{item.expanded ? item.contentHeight : 0}}px; opacity: {{item.expanded ? 1 : 0}}; transform: translateY({{item.expanded ? 0 : -8}}rpx); transition-duration: {{motionDuration}}ms; transition-timing-function: {{motionEasing}};"
+      >
+        <view class="pui-collapse__content-inner">
+          <collapse-panel
+            wx:if="{{customPanel}}"
+            item="{{item.raw}}"
+            index="{{index}}"
+            value="{{item.value}}"
+            expanded="{{item.expanded}}"
+            title="{{item.label}}"
+            description="{{item.description}}"
+            bordered="{{false}}"
+            aria-label="{{item.ariaLabel}}"
+          />
+          <text wx:else>{{item.description}}</text>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

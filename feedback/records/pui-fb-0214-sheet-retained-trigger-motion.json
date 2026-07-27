@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0214",
+  "title": "Sheet 预览需要保留入口上下文并在同一节点完成底部动效",
+  "scope": "component",
+  "components": ["sheet", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "把 Popup battle 已确认的空间、上下文、Footer 和真实动效规则推广到全部组件，不再逐个手工指出同类缺陷。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-contract", "feedback-ledger"],
+    "platforms": ["browser", "node", "miniprogram-source"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "进入 http://127.0.0.1:4179/#/components/sheet，默认打开时先点击“关闭底部面板”，等待 560ms。旧实现只保留一个“打开面板”按钮，打开后用另一套带背景、边框和圆角的 Host 替换整个预览上下文。",
+    "旧实现重新打开后，约 80ms 采样已经是 opacity=1、translateY=0；生命周期定时器调用 renderStage()，500ms 只成为延迟卸载，不产生真实可见中间帧。"
+  ],
+  "expected": "触发入口在隐藏、进入、显示和离开阶段始终保留。打开时完整 Overlay 覆盖同一 PreviewDevice，透明 Host 只定位层，Sheet Surface 从底部在同一 DOM 节点连续进入；Footer 固定在 Surface 底部，Body 独立滚动。",
+  "actual": "Sheet 使用 hidden/open 两个互斥 Showcase 返回分支，并将 Host 设计为可见底板；进入阶段和点击分支重建 Stage，导致入口上下文丢失且动效中间帧被吞掉。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户明确授权按 Popup 规则审计并优化全部组件，不再要求逐个确认；本轮可在完整浏览器、测试、文档和构建证据后自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/sheet", "note": "修复前 390x844 实点关闭后 host/panel 均不存在；打开态由独立 Host 承载，无法保留真实入口上下文。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "旧 sheetShowcase 以 if (!current.mounted) 返回独立入口，scheduleSheetPreviewPhase 在阶段回调中调用 renderStage。修复后入口恒存、Host 条件挂载，并由 updateSheetPreviewDom 原地切换阶段。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "修复后 Host 为 absolute inset:0、透明且 pointer-events:none 的布局层，只有 Overlay 和 Sheet Surface 可交互或建立 Surface。"},
+    {"kind": "test", "ref": "scripts/test-sheet.js", "note": "专项合同覆盖真实源码状态、Slot/依赖、持久入口、透明 Host、阶段更新、动作分支不重绘、文档和安装产物一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?sheet-retained-motion=20260722-192#/components/sheet", "note": "390x844 实点：关闭 160ms 时同一 Host 仍在、phase=leaving、opacity=0.0102717、translateY=395.891px，约 570ms 后才卸载；重开 110ms 时入口仍在、Host 背景透明、边框 0、opacity=0.953459、translateY=18.6165px，完成后 Sheet 贴 Host 底边且页面无横向溢出。"}
+  ],
+  "rootCause": "Sheet H5 先把入口和打开态拆成两个根，再把阶段回调与整段 renderStage 绑定；CSS transition 没有稳定节点身份，Host 也错误承担了可见 Surface 职责。",
+  "decision": {
+    "outcome": "Sheet 改为恒存的底层 PUI Button 入口、条件挂载的透明 full-viewport Host 和真实 Sheet Surface；新增本地 DOM 阶段同步，进入在下一帧切换 active，离开只切 leaving 并在完整 duration 后卸载。事件分支显式 return，避免落入通用 Stage 重绘。",
+    "rationale": "它复用 Popup 已验证的浮层空间语义：上下文属于用户场景，遮罩是上层，Surface 是唯一可见浮层；稳定节点是 500ms 动效的必要条件。",
+    "alternativesRejected": [
+      "保留独立 Host 的背景和圆角：会形成第二层卡片并遮蔽触发场景。",
+      "仅延长 setTimeout：无法恢复已被 innerHTML 替换的 CSS transition 节点。",
+      "用事件提示文本说明打开、拖拽或重试：不改变真实 Surface、滚动或父级回写，属于伪交互。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "preview/index.html", "scripts/test-sheet.js", "package.json", "docs/components/SHEET.md", "docs/components/README.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0214-sheet-retained-trigger-motion.json"],
+    "dependencies": ["sheet-preview-runtime", "popup-layer", "preview-device", "motion-contract", "component-only-overview"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sheet.js"],
+    "commands": ["node scripts/test-sheet.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["2026-07-22 390x844：关闭 160ms 仍有同一 Host，phase=leaving、opacity=0.0102717、translateY=395.891px；完成后 Host 卸载但触发入口保留。重开 110ms 时 Host 是 absolute/透明/无边框，入口仍存在，Overlay/Suface opacity=0.953459、Sheet translateY=18.6165px；约 570ms 完成 opacity=1、translateY=0，Footer 到面板底部为 12px 内距、面板贴 Host 底边、document/body 无横向溢出。"],
+    "deviceRisks": ["本次只改官网 H5 预览与合同，不改变 Sheet 小程序源码。合法 AppID 真机仍需复核 Popup 合成层、触摸拖拽、rpx 阈值、安全区、Slot 投影、系统低动效和读屏；不能以 H5 或 touristappid 结果替代。"]
+  },
+  "ai": {
+    "summary": "所有覆盖 PreviewDevice 的浮层必须把触发场景留在底层，Host 透明定位，Surface 独立可见，并在同一节点完成进退场。",
+    "rules": [
+      "浮层关闭态与打开态不得返回互斥的整块预览根；仅 Overlay/Surface layer 可以条件挂载。",
+      "Host/Canvas/Stage 只承担定位、裁切或层级时必须透明、无边框、无圆角、无阴影；禁止额外可见底板。",
+      "进入阶段先挂载起始样式节点，再在下一帧切 active；离开先切 leaving，完整 duration 后才卸载。",
+      "浮层生命周期或 close/open/overlay/drag 事件分支必须显式 return，不能落入 renderStage 的 innerHTML 重建。",
+      "浏览器验收必须采样真实 opacity/transform 中间帧、入口保留、Host 计算样式、Footer 与底边关系和 390px 页面溢出。"
+    ],
+    "tags": ["sheet", "overlay", "retained-trigger", "retained-node", "motion", "preview-parity", "footer"]
+  }
+}

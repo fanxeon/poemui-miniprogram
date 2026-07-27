@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0413",
+  "title": "InputOTP 空输入格在无边框外观下不可辨",
+  "scope": "component",
+  "components": ["input-otp", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "InputOTP 尚未输入时也能一眼识别验证码位数、每格范围和当前焦点。",
+  "environment": {
+    "surfaces": ["input-otp component page"],
+    "platforms": ["wechat-miniprogram", "h5-preview"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "关闭全局中性边框并进入 InputOTP 页面。",
+    "空格背景与页面容器同色，边框又被透明化。",
+    "基础示例看起来像没有渲染输入格。"
+  ],
+  "expected": "空输入格使用克制的 muted Surface 保持结构可见；焦点格恢复容器底并显示品牌焦点边界；错误和禁用语义不变。",
+  "actual": "空格与父级同为 container 背景，bordered=false 后缺少任何可读结构。",
+  "evidence": [
+    {"kind": "file", "ref": "input-otp/input-otp.wxss", "note": "空格改用 muted Surface，焦点格恢复 container 并保留品牌边界。"},
+    {"kind": "test", "ref": "scripts/test-input-otp.js", "note": "锁定空格与焦点格的不同 Surface 语义。"},
+    {"kind": "browser", "ref": "/tmp/poemui-input-otp-after.png", "note": "390x844 模拟器确认六个空格、掩码值和错误状态均完整可见。"}
+  ],
+  "rootCause": "InputOTP 把结构辨识完全交给可关闭的中性边框，而空格背景又与页面 Surface 相同。",
+  "decision": {
+    "outcome": "空格默认消费 bg-muted，焦点格消费 bg-container 和既有焦点边界；不新增私有描边或页面补丁。",
+    "rationale": "背景层级在 bordered=false 时仍可读，同时保持 Less is more 和现有焦点、错误 Token。",
+    "alternativesRejected": [
+      "强制显示中性 border 会破坏全局 bordered 合同。",
+      "用阴影标识每一格过重且违背展示叶子不投影规则。",
+      "只修改示例页无法修复组件安装端。"
+    ]
+  },
+  "impact": {
+    "files": ["input-otp/input-otp.wxss", "scripts/test-input-otp.js", "docs/components/INPUT-OTP.md"],
+    "dependencies": ["visualConfig.bordered", "PUI theme tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input-otp.js"],
+    "commands": ["node scripts/test-input-otp.js", "npm run miniprogram:build", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具 390x844 浅色页面确认空格、焦点、掩码、错误和禁用层级。"],
+    "deviceRisks": ["iOS/Android 真机键盘唤起、自动填充、光标时序和深色对比度仍需复核。"]
+  },
+  "ai": {
+    "summary": "结构依赖边框的输入组件必须在 bordered=false 下仍有可读 Surface 差异。",
+    "rules": [
+      "InputOTP 空格使用 muted Surface 保持位数可见。",
+      "焦点格恢复 container Surface 并保留焦点状态边界。",
+      "不得通过页面私有样式或外阴影补救。"
+    ],
+    "tags": ["input-otp", "bordered", "empty-cell", "focus", "surface"]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "pui-icon": "../icon/icon",
+    "pui-loading": "../loading/loading",
+    "pui-overlay": "../overlay/overlay"
+  }
+}

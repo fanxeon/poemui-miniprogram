@@ -1,0 +1,36 @@
+<view
+  wx:if="{{rendered}}"
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}} {{customStyle}}"
+  role="{{rootRole}}"
+  aria-live="{{ariaLive}}"
+  aria-label="{{semanticLabel}}"
+  aria-hidden="{{!innerVisible}}"
+>
+  <view wx:if="{{prefixIconName}}" class="pui-notice-bar__icon pui-notice-bar__icon--prefix" data-trigger="prefix-icon" catchtap="onClick">
+    <slot name="prefix-icon"></slot>
+    <pui-button icon="{{prefixIconName}}" variant="text" size="small" shape="square" aria-label="通知前置图标" />
+  </view>
+
+  <view wx:if="{{isVertical}}" class="pui-notice-bar__viewport pui-notice-bar__viewport--vertical" data-trigger="content" catchtap="onClick">
+    <swiper class="pui-notice-bar__swiper" autoplay circular vertical interval="{{swiperInterval}}" bindchange="onVerticalChange">
+      <swiper-item wx:for="{{verticalItems}}" wx:key="index"><view class="pui-notice-bar__vertical-text">{{item}}</view></swiper-item>
+    </swiper>
+    <slot name="content"></slot>
+  </view>
+
+  <view wx:else class="pui-notice-bar__viewport" data-trigger="content" catchtap="onClick">
+    <view class="pui-notice-bar__text" style="{{marqueeStyle}}"><text>{{displayContent}}</text><slot name="content"></slot></view>
+  </view>
+
+  <view wx:if="{{operation}}" class="pui-notice-bar__operation" data-trigger="operation" catchtap="onClick">
+    <pui-button content="{{operation}}" variant="text" size="small" />
+    <slot name="operation"></slot>
+  </view>
+  <view wx:else class="pui-notice-bar__operation" data-trigger="operation" catchtap="onClick"><slot name="operation"></slot></view>
+
+  <view wx:if="{{suffixIconName}}" class="pui-notice-bar__icon pui-notice-bar__icon--suffix" data-trigger="suffix-icon" catchtap="onClick">
+    <slot name="suffix-icon"></slot>
+    <pui-button icon="{{suffixIconName}}" variant="text" size="small" shape="square" aria-label="通知尾部图标" />
+  </view>
+</view>

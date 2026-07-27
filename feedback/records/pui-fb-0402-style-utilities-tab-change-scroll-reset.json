@@ -1,0 +1,103 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0402",
+  "title": "快速样式分类切换后应自动回到目录顶部",
+  "scope": "component",
+  "components": ["style-utilities", "tabs", "scroll-area", "back-top", "miniprogram"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "用户切换快速样式分类 Tab 后，应立即从新分类的第一项开始浏览，不需要手动寻找顶部或再点击 BackTop。",
+  "environment": {
+    "surfaces": ["miniprogram styles page"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入快速样式页，在当前分类目录向下滚动。",
+    "点击另一个分类 Tab。",
+    "候选目录已经替换，但页面继续保留旧分类的 scrollTop。"
+  ],
+  "expected": "每次切换到不同分类时，唯一目录 ScrollArea 使用现有平滑定位自动回到顶部，并显示新分类首项；当前预览与其他分类选择保持既有语义。",
+  "actual": "onGroupChange 只更新 activeGroup、visibleUtilities 和预览模型，没有重置页面持有的 scrollTop，新分类沿用旧目录滚动位置。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-26 当前任务对话",
+      "note": "用户明确要求切换 Tab 自动回滚到顶部。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/styles/index.js",
+      "note": "onGroupChange 在同一次 setData 中更新分类、候选列表、预览模型和 scrollTop=0。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/styles/index.wxml",
+      "note": "页面保持唯一 pui-scroll-area，并由同一个 scrollTop 同时驱动 ScrollArea 与 BackTop。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-style-utilities-page.js",
+      "note": "专项先回写 240px 真实滚动状态，再切换分类并断言 scrollTop 归零。"
+    }
+  ],
+  "rootCause": "页面把分类选择与目录位置当成彼此独立状态；替换长目录数据时遗漏了对应阅读起点的受控重置。",
+  "decision": {
+    "outcome": "由快速样式页面在 Tabs change 的同一次状态更新中把唯一 ScrollArea 的受控 scrollTop 写为 0，复用 ScrollArea 固定的原生平滑定位。",
+    "rationale": "滚动位置属于页面消费者持有的目录状态；现有 ScrollArea 已提供受控位置、回声保护和同值目标重放，Tabs 只需继续发布分类变化。",
+    "alternativesRejected": [
+      "给 Tabs 增加 scroll target 或回顶 Method：跨越组件职责并耦合任意消费者。",
+      "切换分类时重建 ScrollArea：会丢失组件运行态并制造不必要的闪动。",
+      "调用页面级 wx.pageScrollTo：快速样式的真实滚动上下文是内部 ScrollArea，不是页面。",
+      "只依赖 BackTop：让用户为分类切换后的错误阅读位置额外操作。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/styles/index.js",
+      "scripts/test-miniprogram-style-utilities-page.js",
+      "docs/STYLE_UTILITIES.md",
+      "docs/STYLE_UTILITIES_TAB_PLAN.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/COMPONENT_RULES_INDEX.md",
+      "docs/components/TABS.md",
+      "docs/components/SCROLL-AREA.md"
+    ],
+    "dependencies": ["pui-tabs", "pui-scroll-area", "pui-back-top"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-style-utilities-page.js",
+      "scripts/test-scroll-area.js",
+      "scripts/test-tabs.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-style-utilities-page.js",
+      "node scripts/test-scroll-area.js",
+      "node scripts/test-tabs.js"
+    ],
+    "browser": [
+      "2026-07-26 复用当前微信开发者工具窗口与热重载：先通过页面公开 scroll 事件链写入 scrollTop=300，再从真实 styles-page__tabs 宿主触发 change(value=size)；页面 activeGroup 变为 size、scrollTop 变为 0，唯一 ScrollArea 宿主和内部 scroll-view 均为 scroll-top=0、scroll-with-animation=true，首项恢复为 pui-aspect-square。截图：/tmp/poemui-styles-tab-scroll-reset-size.png。"
+    ],
+    "deviceRisks": [
+      "微信开发者工具 390px 已验证 Tabs change 绑定、受控位置归零、内部原生目标和新分类首项；自动化使用宿主 change 事件而非物理触点，iOS/Android 真机的手指点击、惯性与动画中间帧仍未验证。"
+    ]
+  },
+  "ai": {
+    "summary": "切换长目录分类时由页面同步重置唯一 ScrollArea，不扩张 Tabs API。",
+    "rules": [
+      "Tabs 只发布分类值，不得持有消费者 ScrollArea 或页面滚动 API。",
+      "同一 ScrollArea 替换长目录数据时，父级应在同一次受控状态更新中把 scrollTop 写为 0。",
+      "必须复用既有 ScrollArea 平滑定位、回声保护与唯一滚动上下文，不得重挂载组件。",
+      "H5 没有同构单目录分类切换时应记录差异，不得用静态脚本伪造同步。"
+    ],
+    "tags": ["style-utilities", "tabs", "scroll-area", "scroll-reset", "miniprogram"]
+  }
+}

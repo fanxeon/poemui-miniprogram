@@ -1,0 +1,6 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{rootStyle}}" role="slider" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}" aria-readonly="{{readonly}}" aria-valuemin="{{lowerBound}}" aria-valuemax="{{upperBound}}" aria-valuenow="{{innerValue}}" aria-valuetext="{{innerValue}}{{valueSuffix}}">
+  <text wx:if="{{showMinMax}}" class="pui-slider__bound" aria-hidden="true">{{lowerBound}}</text>
+  <slider class="pui-slider__native" name="{{name}}" min="{{lowerBound}}" max="{{upperBound}}" step="{{normalizedStep}}" value="{{innerValue}}" disabled="{{disabled || readonly}}" activeColor="{{activeColor}}" backgroundColor="{{inactiveColor}}" block-size="{{normalizedBlockSize}}" blockColor="{{blockColor}}" bindchanging="onChanging" bindchange="onChange" />
+  <text wx:if="{{showMinMax}}" class="pui-slider__bound" aria-hidden="true">{{upperBound}}</text>
+  <text wx:if="{{showValue}}" class="pui-slider__value" aria-hidden="true">{{innerValue}}{{valueSuffix}}</text>
+</view>

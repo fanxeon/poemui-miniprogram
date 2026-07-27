@@ -1,0 +1,136 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0439",
+  "title": "公司书写 Logo 以 poemcoder-mark 正式接入 pui-icon",
+  "scope": "global",
+  "components": ["brand-identity", "icon"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "把公司现有书写 Logo 转为可直接通过 `<pui-icon name=\"poemcoder-mark\" />` 使用的 SVG 与 Icon Font 字形。",
+  "environment": {
+    "surfaces": ["pui-icon", "miniprogram-icon-page", "h5-icon-library", "npm-package"],
+    "platforms": ["browser", "node", "wechat-miniprogram"],
+    "viewports": ["96px", "56px", "32px", "20px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "用户提供的 LGOGO.png 为 1573×1427 RGBA 位图，透明边缘混有浅色残边和扫描噪点，直接缩放或自动描摹都不适合 20–56px 图标。",
+    "第一轮虽然生成了独立 company-mark 字体，但 `publicPuiIcon=false`，不能通过 pui-icon 的 name API 调用。",
+    "用户进一步确认要正式放入 pui-icon，并把唯一公开名称纠正为 `poemcoder-mark`。"
+  ],
+  "expected": "PoemCoder 公司字标成为第 219 个 pui-icon 名称，位于 abstract 分类，复用 PoemUI Roundline 唯一 WOFF2、稳定码点和 H5/小程序运行时；不保留 company-mark 别名或第二套字体。",
+  "actual": "调整前公司字标与公共 manifest、map、catalog 和 PoemUI Roundline 字体隔离，调用 `<pui-icon name=\"poemcoder-mark\" />` 会进入 unknown-icon。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前对话及用户提供的 LGOGO.png",
+      "note": "用户明确要求放入 pui-icon，并确认最终名称为 poemcoder-mark。"
+    },
+    {
+      "kind": "file",
+      "ref": "scripts/generate-icons.js",
+      "note": "customIcons 维护用户自有的五段闭合轮廓，并与 Lucide 图标统一生成 SVG、manifest、码点、map、catalog 和 WOFF2。"
+    },
+    {
+      "kind": "file",
+      "ref": "assets/icons-src/abstract/poemcoder-mark.svg",
+      "note": "生成 SVG 使用 currentColor、nonzero 五段闭合轮廓，不包含 image、位图或扫描噪点。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-icon.js",
+      "note": "锁定 219 个名称、abstract 分类、自有来源、U+E0DB、五段闭合轮廓、无 company-mark 别名及跨端字体一致性。"
+    },
+    {
+      "kind": "browser",
+      "ref": ".audit/brand-mark-2026-07-27/poemcoder-mark-pui-icon-browser.png",
+      "note": "同一轮廓在浅深色 96/56/32/20px 的真实字体渲染中保持主要笔势与中央留白。"
+    },
+    {
+      "kind": "browser",
+      "ref": ".audit/brand-mark-2026-07-27/poemcoder-mark-wechat-devtools-icon-page.jpeg",
+      "note": "现有微信开发者工具会话中的真实 Icon 页面加载 219 个图标；组件分类 14 个、抽象分类 14 个，目录包含 poemcoder-mark。"
+    }
+  ],
+  "rootCause": "第一轮优先按通用品牌资产规则隔离了公司字标，但用户随后明确授权该单色公司标记成为 pui-icon 的登记例外，并指定了稳定公开名称。",
+  "decision": {
+    "outcome": "将五段闭合 Logo 轮廓以 `poemcoder-mark` 收录到 `abstract / 抽象` 分类，source 固定为 `user-owned:poemcoder-mark`，只追加稳定码点 U+E0DB；目录由 218 增至 219，分类仍为 17。删除 company-mark 独立字体、脚本、资产与旧别名，site:build 在 miniprogram_dist 之前运行 icons:generate。",
+    "rationale": "用户明确指定了 pui-icon 调用方式与公开名称；将登记自有轮廓放入现有唯一字体链可以保持 currentColor、离线交付、跨端码点和 Icon 页面目录同源，同时不伪称为 Lucide 派生。",
+    "alternativesRejected": [
+      "继续保留独立 company-mark 字体：无法通过 pui-icon name 调用，并制造第二套字体与发布链。",
+      "同时保留 company-mark 兼容别名：会产生两个公共名称和两个码点，违背用户确认的唯一名称。",
+      "把 Logo 冒充某个 Lucide sourceAlias：会形成错误的版权与来源记录。",
+      "恢复 image、inline SVG 或 Canvas 分支：会破坏 PUI-FB-0365 的纯 Icon Font 运行时合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scripts/generate-icons.js",
+      "scripts/test-icon.js",
+      "scripts/test-icon-font-outlines.js",
+      "scripts/check-package.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-site-build-order.js",
+      "assets/icons-src/abstract/poemcoder-mark.svg",
+      "assets/icons-src/manifest.json",
+      "assets/icon-codepoints.json",
+      "icon/icon-font-map.js",
+      "icon/icon-font-catalog.js",
+      "icon/icon-font.wxss",
+      "preview/icon-font.css",
+      "preview/icons-data.js",
+      "package.json",
+      "README.md",
+      "THIRD_PARTY_NOTICES.md",
+      "docs/BRAND_IDENTITY.md",
+      "docs/components/ICON.md",
+      "docs/ICONS.md",
+      "docs/COMPONENT_API.md",
+      "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["makerjs", "svg-path-commander", "svg2ttf", "wawoff2", "lucide-static"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-icon-font-outlines.js", "scripts/check-package.js", "scripts/test-miniprogram-component-pages.js"],
+    "commands": [
+      "npm run icons:generate：通过，生成 219 个名称、17 个分类和 22712-byte PoemUI Roundline WOFF2。",
+      "node scripts/test-icon.js：通过。",
+      "node scripts/test-icon-font-outlines.js：通过，59 个镂空圆与 25 个语义点保持原拓扑。",
+      "node scripts/check-package.js：通过；manifest、219 个磁盘 SVG、map、catalog 与字体一致。",
+      "npm run site:build：通过；icons:generate 在 miniprogram_dist 之前执行，生成 69 个组件目录。",
+      "npm run example:install：通过；当前 tarball 安装到 _example，0 vulnerabilities。",
+      "微信开发者工具 cli build-npm --project miniprogram：清理旧生成包后标准重建通过；最终复跑 AppID wx23aa017375535746，cost 1031ms，warnings 为空。",
+      "四层发布哈希一致：icon-font-map.js=974d30d709ac6ed8900735cd6031a3b58e3bd7edd5e84ad0e23c04fc3f4a25a6，icon-font-catalog.js=a548461ece5538f9fe8db1432684ba8b1a5292bbedcda9e538a99f807e676c1c，icon-font.wxss=bb3020112ce0a2b4272472aa75ffc9abd24088b9fd61d8c416585321fa9d16cd，manifest.json=9c85e64d2a78e0d836dd9154c660f60f2588cc65324e9300fb111bb9f9bc643e；源码、miniprogram_dist、示例安装和 miniprogram_npm 逐字节一致。",
+      "npm run pack:check：通过；340.8 kB、解包 1.6 MB、535 files、shasum 03f67304e7645d0731b45ea1d008c39340b685bb，包含 poemcoder-mark.svg 且不包含 company-mark。",
+      "npm run check：precheck 含 Icon 在内全部通过；正式 check 的 Ledger、site:build 顺序和 WXSS 门禁通过，随后被并行 dirty worktree 新增 dynamic-message / top-loading 但未同步 test-component-catalog-pruning.js 的发布集合阻断，本记录未覆盖该无关组件工作。"
+    ],
+    "browser": [
+      "主 PoemUI Roundline WOFF2 测试页 document.fonts.status=loaded、20px 字体检查为 true；浅深色八个样本均为 U+E0DB 和准确的 96/56/32/20px 正方形，控制台无 error/warning。",
+      "H5 Icon 资源页在 390×844 下显示 219 icons / 17 categories；搜索 poemcoder-mark 只返回 abstract 的一张卡片，字形为 U+E0DB、PoemUI Roundline 28px，名称完整换行，卡片内 SVG/image/Canvas 均为 0。",
+      "390px H5 页面 document/body clientWidth 与 scrollWidth 均为 375px，无横向溢出；截图为 .audit/brand-mark-2026-07-27/poemcoder-mark-h5-icon-390.png，控制台无 error/warning。",
+      "微信开发者工具 Nightly 2.02.2607252 复用现有 pui 会话，AppID 为 wx23aa017375535746，主 WebView 的 pages/components/icon/index 实际显示 219 个图标；组件分类列出 14 个专属组件图标，抽象分类列出 14 个名称并包含 poemcoder-mark。开发者工具控制台保留 13 条既有基础库、page.json、selector、IntersectionObserver 与 preload 警告，未伪报零警告。"
+    ],
+    "deviceRisks": [
+      "用户已确认公开名称，但公司字标最终轮廓的 acceptance 仍保持 pending-user。",
+      "H5 与微信开发者工具已经复核；iOS/Android 真机的 20rpx 抗锯齿、字体基线与不同系统字体栅格器表现仍未验证。"
+    ]
+  },
+  "ai": {
+    "summary": "经用户明确授权的单色公司字标可以作为登记自有轮廓进入 pui-icon，但必须使用唯一公开名称、真实来源和同一字体生成链。",
+    "rules": [
+      "自有 Logo 进入 pui-icon 时必须在 manifest 记录 user-owned 来源，禁止冒充 Lucide 派生。",
+      "Logo 字形使用少量闭合轮廓和稳定内腔，不把位图或自动描摹噪点写入发布资产。",
+      "公开名称变更后删除旧别名、独立字体和第二生成链；页面继续只消费生成 catalog。",
+      "新增 glyph 只从 nextCodepoint 追加，禁止改写既有码点。",
+      "没有用户最终视觉确认前 acceptance 保持 pending-user；未经过真机验证时保留平台字体风险。"
+    ],
+    "tags": ["brand", "logo", "svg", "pui-icon", "icon-font", "woff2", "currentColor", "poemcoder-mark"]
+  }
+}

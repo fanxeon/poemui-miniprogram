@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0080",
+  "title": "Input 官网旧诊断演示、焦点恢复与双层 Surface 偏离真实输入",
+  "scope": "component",
+  "components": ["input", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Input 官网应像 TDesign 一样按真实用法分区，一个个 Prop 能真实作用到输入框；基础 WXML 克制，API 全文完整。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "375px PreviewDevice", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览把方法、状态卡和事件诊断堆在单一演示中，没有基础、状态、图标清空、尺寸类型四个用户分区。",
+    "真实输入后官网为保留焦点会重建节点并再次 focus，恢复性 focus 事件把刚写入的 change 或 enter 反馈覆盖。",
+    "共享样式同时给 .pui-input-preview 根和内层 control 建立背景/边框/焦点 Surface，与原生 WXML 单一 field Surface 不一致。"
+  ],
+  "expected": "四个用法分区真实共享同一 Props/运行态；输入、清空和确认反馈不被内部焦点恢复覆盖；只有内层 field 承担唯一 Surface。",
+  "actual": "旧概览优先工程诊断，浏览器恢复焦点制造了可观察的事件顺序假象，且根/字段双层外观偏离小程序。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求官网预览按 TDesign 用法分区且真实交互，并授权完整 battle 后自主验收连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区调用 inputPreviewMarkup，加权限制、受控回写、Slot 组合和事件文案同源，并使用 inputRestoringFocus 抑制内部恢复事件。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Input 根从通用 Surface 名单删除，内层 control 独立消费边框、阴影、毛玻璃、圆角与 status/focus。"},
+    {"kind": "test", "ref": "scripts/test-input.js", "note": "专项锁定四个标题、零 bind、焦点恢复门禁、唯一 Surface、状态焦点和180/1ms。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/input", "note": "输入 A中😀B 稳定显示 change，Enter 稳定显示 enter，清空按钮移除值并显示 clear→change；不再被 focus 覆盖。"}
+  ],
+  "rootCause": "旧 H5 镜像同时承担诊断工具和组件演示，节点重建后的焦点恢复未区分内部行为与用户 focus，通用表单 CSS 又把外壳与字段都当成视觉容器。",
+  "decision": {
+    "outcome": "概览重建为基础用法/状态与提示/图标与清空/尺寸与类型四区；删除方法和诊断卡，恢复焦点期间不发布用户 focus 反馈，根容器透明、唯一 field Surface。",
+    "rationale": "概览是用户筛选组件的产品页，应展示真实用法和可观察结果；内部 DOM 恢复不属于组件对外事件。",
+    "alternativesRejected": [
+      "仅修改提示文字而不区分恢复焦点，依然会在后续输入重建时覆盖真实事件。",
+      "用 CSS 隐藏诊断卡会保留重复 DOM 与语义噪音。",
+      "保留根外壳 Surface 并只去掉内层边框会破坏小程序 field 的 status/focus/bordered 合同。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-input.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/INPUT.md"],
+    "dependencies": ["PreviewDevice", "inputControlSample", "buttonSample", "iconComponent", "loadingComponent", "API Reference", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-normal-code-card.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node --check preview/app.js", "npm run precheck", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "四个分区同时可见，当前 Props 只驱动第一项，固定比较项仍可真实输入、清空与观察状态。",
+      "error+tips 实际产生 aria-invalid=true，password 产生 type=password，large/right/borderless/Slot 组合同时出现于预览与 WXML。",
+      "375px PreviewDevice 下四分区可滚动使用；dark、border、shadow、frost、large-radius、gradient 全部实点，验收后恢复 light 标准组合。",
+      "API 完整显示29 Props、5 Events、6 Slots、4 Methods，参数、类型、初值、可选值与说明均在可访问树中完整存在。"
+    ],
+    "deviceRisks": [
+      "H5 password、number 与微信 safe-password/nickname/idcard 的系统键盘不等价，后三者需真机确认。",
+      "微信 rpx 字体基线、Slot 动态宽度、原生清空命中区和读屏顺序仍需合法 AppID 复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Input H5 按四个用户用法分区，事件反馈、Props、WXML 和唯一 Surface 必须同源。",
+    "rules": [
+      "Input 概览只保留真实用法和交互结果，禁止恢复方法卡、事件诊断卡和状态元数据卡。",
+      "DOM 重建后的内部焦点恢复必须有独立门禁，禁止覆盖 change/enter/clear 等用户事件。",
+      "Input 只能由 field/control 承担 Surface，根容器必须透明无边框。",
+      "API 文字必须完整换行，不得用 ellipsis/nowrap 隐藏参数或说明。"
+    ],
+    "tags": ["input", "preview", "focus", "events", "surface", "api-reference", "tdesign"]
+  }
+}

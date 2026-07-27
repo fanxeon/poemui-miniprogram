@@ -1,0 +1,135 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}}{{customStyle}}"
+  role="region"
+  aria-roledescription="swiper"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+  aria-busy="{{stateType === 'loading'}}"
+  aria-invalid="{{stateType === 'error'}}"
+>
+  <view class="pui-swiper__viewport" style="{{viewportStyle}}">
+    <view class="pui-swiper__layer {{stateType === 'content' ? 'pui-swiper__layer--active' : ''}}" aria-hidden="{{stateType !== 'content'}}">
+      <swiper
+        class="pui-swiper__swiper"
+        current="{{currentIndex < 0 ? 0 : currentIndex}}"
+        circular="{{circular && normalizedItems.length > 1}}"
+        autoplay="{{resolvedAutoplay}}"
+        interval="{{resolvedInterval}}"
+        duration="{{resolvedDuration}}"
+        easing-function="{{resolvedEasingFunction}}"
+        vertical="{{resolvedVertical}}"
+        previous-margin="{{resolvedPreviousMargin}}"
+        next-margin="{{resolvedNextMargin}}"
+        display-multiple-items="{{resolvedDisplayMultipleItems}}"
+        disable-touch="{{resolvedDisableTouch}}"
+        bindchange="onSwiperChange"
+        bindanimationfinish="onAnimationFinish"
+        bindtouchstart="onTouchStart"
+        bindtouchend="onTouchEnd"
+        bindtouchcancel="onTouchEnd"
+      >
+        <swiper-item wx:for="{{normalizedItems}}" wx:key="id" item-id="{{item.id}}">
+          <view
+            class="pui-swiper__slide pui-swiper__slide--{{item.theme}} {{item.active ? 'pui-swiper__slide--active' : ''}} {{item.disabled ? 'pui-swiper__slide--disabled' : ''}}"
+            role="group"
+            aria-roledescription="slide"
+            aria-label="{{index + 1}} / {{normalizedItems.length}} · {{item.ariaLabel}}"
+            aria-current="{{item.active}}"
+            aria-disabled="{{item.disabled}}"
+            data-index="{{index}}"
+            bindtap="onItemTap"
+          >
+            <swiper-slide
+              wx:if="{{customItem}}"
+              item="{{item.raw}}"
+              index="{{index}}"
+              value="{{item.value}}"
+              active="{{item.active}}"
+              title="{{item.title}}"
+              description="{{item.description}}"
+              show-header="{{true}}"
+              bordered="{{false}}"
+              aria-label="{{item.ariaLabel}}"
+            />
+            <block wx:else>
+              <pui-image
+                wx:if="{{item.image}}"
+                custom-class="pui-swiper__image"
+                src="{{item.image}}"
+                mode="{{resolvedImageMode}}"
+                width="100%"
+                height="100%"
+                shape="rectangle"
+                aria-label="{{item.ariaLabel}}"
+                reduce-motion="{{reduceMotion}}"
+                data-index="{{index}}"
+                bind:load="onImageLoad"
+                bind:error="onImageError"
+              />
+              <view wx:else class="pui-swiper__visual" aria-hidden="true"><pui-icon name="{{item.icon}}" size="72" color-scheme="{{colorScheme}}" /></view>
+              <view class="pui-swiper__scrim"></view>
+              <view class="pui-swiper__copy">
+                <pui-tag wx:if="{{item.tag}}" content="{{item.tag}}" theme="{{item.tagTheme}}" variant="light" size="small" />
+                <view class="pui-swiper__title">{{item.title}}</view>
+                <view wx:if="{{item.description}}" class="pui-swiper__description">{{item.description}}</view>
+              </view>
+            </block>
+          </view>
+        </swiper-item>
+      </swiper>
+
+      <view wx:if="{{navigationVisible && navigationShowControls}}" class="pui-swiper__controls" role="group" aria-label="轮播切换">
+        <pui-button custom-class="pui-swiper__control pui-swiper__control--prev" theme="default" variant="outline" shape="circle" size="small" icon="{{resolvedVertical ? 'chevron-up' : 'chevron-left'}}" disabled="{{disabled || (!circular && currentIndex <= 0)}}" aria-label="上一项" color-scheme="{{colorScheme}}" bind:click="onPrevious" />
+        <pui-button custom-class="pui-swiper__control pui-swiper__control--next" theme="default" variant="outline" shape="circle" size="small" icon="{{resolvedVertical ? 'chevron-down' : 'chevron-right'}}" disabled="{{disabled || (!circular && currentIndex >= normalizedItems.length - 1)}}" aria-label="下一项" color-scheme="{{colorScheme}}" bind:click="onNext" />
+      </view>
+    </view>
+
+    <view class="pui-swiper__layer {{stateType === 'error' ? 'pui-swiper__layer--active' : ''}}" aria-hidden="{{stateType !== 'error'}}">
+      <view class="pui-swiper__state pui-swiper__state--error">
+        <pui-empty description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
+        <pui-button wx:if="{{retryText}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled || loading}}" bind:click="onRetry">{{retryText}}</pui-button>
+      </view>
+    </view>
+    <view class="pui-swiper__layer {{stateType === 'loading' ? 'pui-swiper__layer--active' : ''}}" aria-hidden="{{stateType !== 'loading'}}">
+      <view class="pui-swiper__state"><pui-loading loading="{{stateType === 'loading'}}" text="{{loadingText}}" size="medium" duration="{{reduceMotion ? 1 : 180}}" reduce-motion="{{reduceMotion}}" /></view>
+    </view>
+    <view class="pui-swiper__layer {{stateType === 'empty' ? 'pui-swiper__layer--active' : ''}}" aria-hidden="{{stateType !== 'empty'}}">
+      <view class="pui-swiper__state"><pui-empty description="{{emptyText}}" icon="image" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" /></view>
+    </view>
+
+    <view wx:if="{{navigationVisible && navigationPosition === 'inside'}}" class="pui-swiper__navigation pui-swiper__navigation--inside pui-swiper__navigation--{{navigationType}}" role="{{navigationType === 'fraction' ? 'status' : 'tablist'}}" aria-label="轮播分页">
+      <block wx:if="{{navigationType === 'fraction'}}">{{currentIndex + 1}} / {{normalizedItems.length}}</block>
+      <block wx:if="{{navigationType !== 'fraction'}}">
+        <view
+          wx:for="{{normalizedItems}}"
+          wx:key="id"
+          class="pui-swiper__indicator {{item.active ? 'pui-swiper__indicator--active' : ''}}"
+          role="tab"
+          aria-label="转到第 {{index + 1}} 项"
+          aria-selected="{{item.active}}"
+          aria-disabled="{{disabled}}"
+          data-index="{{index}}"
+          bindtap="onIndicator"
+        ></view>
+      </block>
+    </view>
+  </view>
+
+  <view wx:if="{{navigationVisible && navigationPosition === 'outside'}}" class="pui-swiper__navigation pui-swiper__navigation--outside pui-swiper__navigation--{{navigationType}}" role="{{navigationType === 'fraction' ? 'status' : 'tablist'}}" aria-label="轮播分页">
+    <block wx:if="{{navigationType === 'fraction'}}">{{currentIndex + 1}} / {{normalizedItems.length}}</block>
+    <block wx:if="{{navigationType !== 'fraction'}}">
+      <view
+        wx:for="{{normalizedItems}}"
+        wx:key="id"
+        class="pui-swiper__indicator {{item.active ? 'pui-swiper__indicator--active' : ''}}"
+        role="tab"
+        aria-label="转到第 {{index + 1}} 项"
+        aria-selected="{{item.active}}"
+        aria-disabled="{{disabled}}"
+        data-index="{{index}}"
+        bindtap="onIndicator"
+      ></view>
+    </block>
+  </view>
+</view>

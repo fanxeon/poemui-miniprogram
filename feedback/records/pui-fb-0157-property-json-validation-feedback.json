@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0157",
+  "title": "共享属性工作区的非法 JSON 只有视觉标记而没有可读错误边界",
+  "scope": "global",
+  "components": ["property-panel", "preview-site", "notice-bar", "accessibility"],
+  "type": "accessibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "属性工作区遇到非法 JSON 或数字时，必须保留上次有效 Props、标记 aria-invalid，并给用户可读、可访问的真实错误边界。",
+  "environment": {
+    "surfaces": ["property-panel", "h5-preview", "accessibility"],
+    "platforms": ["browser"],
+    "viewports": ["390px browser", "desktop browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 NoticeBar 属性页 content 输入“不是合法 JSON”。旧逻辑保留上次有效 Props 并给 textarea 加 is-invalid/aria-invalid=true，但不提供可见文案或 role=alert。",
+    "同一处理函数也覆盖 nullable-number，因此其他标准组件的数值和 JSON 属性存在同样的不可读错误风险。"
+  ],
+  "expected": "非法值不写入 Props，同时控件有 aria-invalid=true、aria-describedby 和可见 role=alert 错误；输入恢复有效值后错误边界消失。",
+  "actual": "用户只能看见红色边框，读屏和非颜色用户无法得知为何输入未生效。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续组件在完整证据、构建门禁和 Ledger 收口后由 agent 自主验收；本项是 NoticeBar battle 发现的共享依赖修复。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/notice-bar", "note": "修复前输入非法 JSON 得到 aria-invalid=true 且没有错误文字；修复后得到“请输入合法 JSON”、role=alert 和 aria-describedby=prop-validation-content。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "setPropControlValidity 统一管理 JSON/nullable-number 的 is-invalid、aria-invalid、aria-describedby 与可读错误节点。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "prop-control__validation 使用 danger 语义色、正常字号和自然换行，不以颜色作为唯一错误信息。"},
+    {"kind": "test", "ref": "scripts/test-notice-bar.js", "note": "专项测试锁定共享合法 JSON 错误路径存在，浏览器实际验证非法→有效恢复。"}
+  ],
+  "rootCause": "共享输入处理函数只承担解析与写入阻断，未把解析失败作为面向用户的错误状态渲染。",
+  "decision": {
+    "outcome": "新增共享 setPropControlValidity：解析失败时生成 role=alert 反馈并关联 aria-describedby，成功或 null 恢复时删除反馈；旧 Props 保持不变。",
+    "rationale": "属性工作区是官网公开可操作界面，解析失败必须像真实表单错误一样可被看见和读出，而不是靠颜色暗示。",
+    "alternativesRejected": [
+      "只保留红色边框无法满足可访问性和错误可解释性。",
+      "把错误写到预览组件内部会混淆组件 API 与官网编辑器校验。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-notice-bar.js"],
+    "dependencies": ["shared Input/Textarea property helpers", "all JSON and nullable-number Props", "ARIA alert semantics"]
+  },
+  "verification": {
+    "tests": ["scripts/test-notice-bar.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["2026-07-20 node scripts/test-notice-bar.js：通过", "2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install、npm run feedback:generate/check：通过", "2026-07-20 微信 CLI build-npm：touristappid 不存在，code 10，未生成 miniprogram_npm；源码/dist/示例安装/tarball 的 NoticeBar 四件套 SHA256 一致。"],
+    "browser": ["content 输入非法 JSON 后为 aria-invalid=true、aria-describedby=prop-validation-content、role=alert“请输入合法 JSON”；输入有效 JSON 后 aria-invalid=false 且错误节点移除。"],
+    "deviceRisks": ["该修复是官网 HTML 属性编辑器，不改变小程序端；真机仍需验证组件自身的业务表单错误组合。"]
+  },
+  "ai": {
+    "summary": "属性编辑器的解析失败必须是可读错误边界，不能只加红框或静默保留旧值。",
+    "rules": [
+      "非法 JSON/数值必须同时保留上次有效 Props、设置 aria-invalid，并渲染 role=alert 的简短原因。",
+      "错误信息属于属性编辑器，不应伪造为组件内部业务错误或成功状态。",
+      "输入恢复有效值后清除 aria-describedby 和错误节点，避免陈旧错误。"
+    ],
+    "tags": ["property-panel", "json", "validation", "accessibility", "aria"]
+  }
+}

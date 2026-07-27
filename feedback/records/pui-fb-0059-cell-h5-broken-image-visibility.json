@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0059",
+  "title": "Cell H5 图片 error 的 hidden 被 display block 覆盖",
+  "scope": "component",
+  "components": ["cell", "preview-site"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Cell 图片失败时必须进入真实 error 边界且不显示浏览器破图占位；H5 不能用假成功或静态替身掩盖失败。",
+  "environment": {"surfaces": ["h5-preview"], "platforms": ["browser"], "viewports": ["390x844", "desktop"], "themes": ["light", "dark"]},
+  "reproduction": [
+    "在 Cell 属性页把 image 设置为不存在的本地 URL。",
+    "运行时把 img.hidden 设为 true，但 `.pui-cell-preview__media img { display:block }` 计算样式覆盖浏览器 hidden 规则。",
+    "深色截图仍显示破图/alt 占位和空媒体外壳。"
+  ],
+  "expected": "真实 error 后根节点记录 error，失败 img 与媒体外壳都从布局隐藏，不伪造 load 或替换成静态成功图。",
+  "actual": "旧实现的数据状态为 error，但 computed display 仍为 block，视觉与事件状态矛盾。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/cell", "note": "修复前 img hidden=true 但 computed display=block；修复后 img/media 均 hidden=true、display=none、root data state=error。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "error 回调同时隐藏失败 img 和所属 media 外壳。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Cell media/img 的 hidden 规则以 scoped display:none!important 压过通用图片 display。"},
+    {"kind": "test", "ref": "scripts/test-cell.js", "note": "专项合同锁定 error media 隐藏逻辑和 hidden CSS。"}
+  ],
+  "rootCause": "组件图片规则显式声明 display:block，但错误态只设置 HTML hidden，没有提供同作用域覆盖，同时遗漏了空媒体外壳。",
+  "decision": {"outcome": "error 时隐藏 img 和最近的 Cell media 外壳，并增加 scoped hidden CSS；仍保留真实 error 状态，不伪造资源成功。", "rationale": "失败资源必须视觉、布局和状态一致，且不应由 H5 自行制造业务兜底。", "alternativesRejected": ["用默认图片替换会伪造加载成功并改变真实组件合同。", "只隐藏 img 会留下无意义的媒体占位和 gap。"]},
+  "impact": {"files": ["preview/app.js", "preview/styles.css", "scripts/test-cell.js"], "dependencies": ["Cell image runtime", "PreviewDevice"]},
+  "verification": {"tests": ["scripts/test-cell.js"], "commands": ["node scripts/test-cell.js", "npm run precheck"], "browser": ["data SVG 真实得到 load；不存在 URL 真实得到 error。", "修复后失败 img/media computed display 都为 none，浏览器 warn/error 日志为空。"], "deviceRisks": ["微信端由内部 pui-image 触发 load/error，其图片失败占位和解码表现仍需真机确认。"]},
+  "ai": {"summary": "Cell H5 图片失败必须同时隐藏破图节点和媒体外壳，保留真实 error。", "rules": ["CSS 显式 display 不能覆盖 hidden 错误态。", "图片失败不得替换成假成功资源或只更新提示文字。"], "tags": ["cell", "image", "error", "hidden", "h5"]}
+}

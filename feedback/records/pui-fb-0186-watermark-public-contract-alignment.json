@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0186",
+  "title": "Watermark 历史合同把业务状态、事件和防移除承诺误作组件能力",
+  "scope": "component",
+  "components": ["watermark", "preview-site", "documentation", "example", "miniprogram-dist"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "以联网 TDesign 对照逐组件收敛可真实交付的 Watermark；基础用法保持最小，不把 H5 文案、浏览器图片结果或不可验证的保护承诺伪装成 API。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example", "miniprogram-dist"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "PreviewDevice 393px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Watermark JS/JSON/WXML/WXSS、metadata、H5、API、示例和历史进度记录：公开 26 Props、ready/change/refresh/error/image-load/image-error 与 refresh/getState，混入 disabled/fullscreen/maxMarks、图片成功失败和保护状态。",
+    "联网核对 https://tdesign.tencent.com/miniprogram/components/watermark、https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/watermark，并读取固定 tdesign-miniprogram@1.15.3 的 miniprogram_dist/watermark/{props.js,type.d.ts,watermark.js,watermark.wxml,watermark.wxss}。固定包有内容、重复、布局、尺寸、移动等 Props，default/content Slot，0 Events，0 Methods。",
+    "固定包声明 removable 但实现不提供可独立验证的反移除机制；旧 PoemUI 却用事件和状态文字暗示图片加载、刷新或水印保护成功。"
+  ],
+  "expected": "Watermark 只公开能由 WXML/WXSS/JS 与 H5 实际实现的图文铺排能力；图片平台结果、内容业务状态和防移除承诺不应成为组件事件、状态或成功反馈。",
+  "actual": "旧合同把绘制工具扩展为业务状态机，并把无法证明的保护与图片结果暴露为公开能力，基础示例也被无关事件和方法污染。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户要求联网逐项对照、基础 WXML 不展示 bind，并授权后续组件按完整证据自主连续验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/watermark", "note": "2026-07-20 联网核对 Watermark 官方用法与公开分类；动态官网访问受工具限制时以同日官方仓库和固定包交叉验证。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/watermark", "note": "2026-07-20 在线核对官方组件源码目录。"},
+    {"kind": "browser", "ref": "https://www.npmjs.com/package/tdesign-miniprogram/v/1.15.3", "note": "固定发布版本的包来源；实际读取其 watermark 发布文件验证 Props、两个 Slot、0 Events、0 Methods，并显示 removable 不形成可验证防移除语义。"},
+    {"kind": "file", "ref": "watermark/watermark.js", "note": "修复后仅公开 17 Props；文本/图片图案、真实根测量、矩形/六边形、移动和低动效均在源码实现，无 triggerEvent 或公开 Methods。"},
+    {"kind": "test", "ref": "scripts/test-watermark.js", "note": "覆盖准确 Props、0 Events/Methods、图文/单枚/六边形/移动/低动效、WXML、H5、文档、示例与 dist 一致性。"}
+  ],
+  "rootCause": "历史 done 元数据和演示状态把 Watermark 当作带刷新、图片结果和保护反馈的业务组件；未以官方固定版本和真实源码能力重新划分边界。",
+  "decision": {
+    "outcome": "收敛为 alpha/content/height/isRepeat/layout/lineSpace/movable/moveInterval/offset/rotate/watermarkContent/width/x/y/zIndex/ariaLabel/reduceMotion 共 17 Props，content/default 两个 Slot，0 Events，0 Methods；拒绝 removable、旧业务状态和样式逃逸入口。",
+    "rationale": "保留可测的水印绘制、真实尺寸和 Slot 覆盖语义；ariaLabel/reduceMotion 是 PoemUI 可实际执行的横向补充。内容状态、图片网络结果、业务重试和防截屏/防移除必须由调用方、平台或产品安全策略承担。",
+    "alternativesRejected": [
+      "保留 ready/error/image-load/image-error/refresh，以 H5 或图片回调制造组件成功或失败事件。",
+      "保留 disabled/fullscreen/maxMarks/保护状态和 getState，把内部安全上限或页面行为误作产品 API。",
+      "公开 removable 并声称可防移除，但没有可独立验证的原生实现和安全保障。"
+    ]
+  },
+  "impact": {
+    "files": ["watermark/watermark.js", "watermark/watermark.wxml", "watermark/watermark.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/WATERMARK.md", "scripts/test-watermark.js"],
+    "dependencies": ["PUI Cell", "PUI Button", "buttonSample", "cellSample", "PreviewDevice", "watermark content/default Slots"]
+  },
+  "verification": {
+    "tests": ["scripts/test-watermark.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "PUI_VERIFY_DIST=1 node scripts/test-watermark.js", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project /Users/fanx/Documents/poemUI 小程序组件库/_example（touristappid 权限失败时记录 code 10，绝不手工生成 miniprogram_npm）"],
+    "browser": ["真实属性 JSON 输入后当前 Watermark 重绘出 81 枚文字图案；isRepeat=false 后仅剩 1 枚，当前 Slot Button 再次切回重复后恢复 81 枚。", "真实选择 hexagonal、movable 和 moveInterval 后图案位置变化；reduceMotion 后 460ms 位置不变且 transition 为 1ms。", "390x844 下 document/body 无横向溢出；API 显示 17 Props、2 Slots、0 Events、0 Methods，未检测到 ellipsis、nowrap 或溢出裁切。", "实际切换 light/dark、border、shadow、frost、large-radius 和 gradient；水印层几何保持不变，Slot 内 PUI Cell 读取主题与外观 Token。"],
+    "deviceRisks": ["微信 CLI 若 touristappid 不存在会返回 code 10 且不会生成 miniprogram_npm；H5 或 tarball 一致不替代该产物。", "合法 AppID 真机仍需核验 SelectorQuery/rpx 回流、图片域名与解码、Slot 投影、样式隔离、读屏和系统低动效。", "Watermark 不能保证防截图、防爬取或恶意 DOM/画布移除；安全保护必须由服务端授权、资源策略和平台能力另行设计。"]
+  },
+  "ai": {
+    "summary": "Watermark 是绘制覆盖层，不是图片请求状态机、业务刷新器或可证明的防移除安全能力。",
+    "rules": [
+      "先联网核对 TDesign 官方页、官方仓库和固定 npm 包；当 develop 与动态文档漂移时以固定包作为可复现合同。",
+      "仅公开能由真实 WXML/WXSS/JS 和 H5 共同验证的 Props、Slots、Events 与 Methods；0 Events/Methods 必须明确展示，不能套用通用事件说明。",
+      "不要把图片 load/error、max marks、防截图、防移除、刷新成功或业务内容状态伪装成 Watermark 组件事件。",
+      "基础 WXML 只保留 Watermark 与真实 Slot 内容，不写 bind:*；交互应属于 Slot 内的 PUI 组件或父级业务。"
+    ],
+    "tags": ["watermark", "tdesign", "api-contract", "slot", "no-fake-state", "no-security-claim"]
+  }
+}

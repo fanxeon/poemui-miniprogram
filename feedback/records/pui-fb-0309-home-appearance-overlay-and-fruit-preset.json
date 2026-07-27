@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0309",
+  "title": "首页菜单改用底部 Popup 承载全局外观控制与果味组合",
+  "scope": "global",
+  "components": ["miniprogram-home", "navbar", "overlay", "popup", "switch", "config-provider"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页 Navbar 左侧同时提供搜索和菜单；搜索保留现有浮层，菜单改为从底部弹出的 Card 版受控 Popup，提供 H5 同源的外观控制、一键果味开关和恢复默认图标按钮；外观首次无本地存储时使用默认配置，后续修改与重置必须持久化。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "wechat-component"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页 Navbar，原左侧只有一个 menu 图标且实际触发搜索 Overlay。",
+    "尝试从菜单改变外观时，没有入口、没有 Store 写入，也没有果味组合状态。",
+    "首次实现将外观放入居中 Overlay，用户要求将菜单内容改为从底部弹出的 Popup。",
+    "参照 H5 外观菜单可见边框、阴影、毛玻璃、大圆角、渐变和深色六项，但 ConfigProvider 合同明确渐变不属于 visualConfig Store。"
+  ],
+  "expected": "Navbar 左轨有独立搜索和菜单两个真实图标按钮；搜索 Overlay 与菜单底部 Card Popup 相互排斥。Popup 可由遮罩、默认关闭按钮关闭，Header 左侧重置按钮可恢复默认外观；每项 Switch、重置和渐变真实写入对应存储。组件视觉统一使用 visualConfig；果味由实际组合值推导；渐变仅作用页面画布且不进入 Provider。",
+  "actual": "搜索入口曾占用菜单语义，外观控制只能在 H5 官网操作；首次菜单使用居中 Overlay，不符合底部 Popup 的用户动线。若直接把渐变塞进 visualConfig 会破坏固定公共 Store 合同。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求 Navbar 增加搜索按钮，菜单打开另一 Overlay，并放入 H5 视觉总控与果味总开关。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "左侧有独立 Search/Menu PUI Button；搜索仍由 Overlay 承载，外观使用受控 bottom Card Popup，Popup 自己承载标题、默认关闭按钮、左侧 refresh 重置按钮、模糊遮罩与 CellGroup 内容。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "视觉开关调用 visualConfig，果味由 Store 与页面背景渐变的真实值推导；重置同时调用 visualConfig.reset 与画布偏好 false；搜索 Overlay 与外观 Popup 互斥并各自回写可见状态。"},
+    {"kind": "file", "ref": "miniprogram/common/utils/page-background-preference.js", "note": "渐变仅以首页画布偏好持久化，不增加 visualConfig 字段或 PUI Component Token API。"},
+    {"kind": "file", "ref": "docs/components/POPUP.md", "note": "Popup 的受控 visible-change、bottom placement、closeBtn、blurOverlay、卡片与唯一 Surface 合同。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "锁定双入口、搜索 Overlay、Card Popup、PUI 重置按钮、Store 默认恢复/重置、果味推导和渐变页面画布边界。"},
+    {"kind": "test", "ref": "scripts/test-page-background-preference.js", "note": "锁定首页背景渐变偏好的首次空 storage 默认恢复、持久化与订阅。"},
+    {"kind": "test", "ref": "scripts/test-config-provider.js", "note": "锁定 visualConfig 首次空 storage 使用公开默认配置并继续走恢复路径。"}
+  ],
+  "rootCause": "首页初版为搜索 Overlay 复用了 menu 图标，且没有把 H5 的外观总控按小程序 visualConfig 与页面画布的既有职责边界拆开；首次菜单面板又错误复用了居中 Overlay，而非已具备底部受控、遮罩关闭与唯一 Surface 职责的 Popup。",
+  "decision": {
+    "outcome": "Navbar 左侧组合独立 Search/Menu 图标按钮；搜索保留受控 blur Overlay，外观改为 `placement=bottom + card=true + showHeader + closeBtn + blurOverlay` 的受控 Popup。Card 只由 Popup 自身提供，内部 CellGroup 不重复标题或第二张卡片；Header 左侧通过 `theme=primary` 的真实 PUI Button refresh 图标执行重置，右侧继续由 Popup 提供默认关闭按钮。组件视觉五项写 visualConfig，果味直接写/推导现有字段；渐变保留在首页画布偏好；两份 Store 均在首次无存储时回退公开默认值，修改和重置均持久化。",
+    "rationale": "这复用既有 PUI Popup、Button、Cell 与 Switch 的职责边界和 H5 已确认的组合语义，同时遵守 visualConfig 的固定字段、Provider 单一职责与渐变只属于画布的边界。",
+    "alternativesRejected": [
+      "继续用 menu 图标作为搜索入口会误导用户且无法提供独立外观入口。",
+      "继续使用页面私有居中 Overlay 会重复 Popup 已拥有的遮罩、关闭、滚动防护与 Surface 职责，也不符合底部弹出的用户动线。",
+      "页面复制 shadow/frost/radius/border/theme 全局对象会绕过 visualConfig Store。",
+      "把 gradient 添加到 ConfigProvider 或 visualConfig 会违反已有公共 API 合同并污染组件 Surface。",
+      "用页面私有 Switch、字符图标或 Toast 代替 PUI 组件和真实写入会形成假交互。",
+      "在 Popup 内再嵌套 Card 会制造第二个可见 Surface，且让 Card 版的圆角与内距职责重复。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.json", "miniprogram/pages/index/index.wxml", "miniprogram/pages/index/index.js", "miniprogram/pages/index/index.wxss", "miniprogram/common/utils/page-background-preference.js", "common/utils/visual-config.js", "scripts/test-miniprogram-home.js", "scripts/test-page-background-preference.js", "scripts/test-config-provider.js", "package.json", "docs/MINIPROGRAM_HOME.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["pui-navbar", "pui-button", "pui-icon", "pui-overlay", "pui-popup", "pui-cell-group", "pui-cell", "pui-switch", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js", "scripts/test-page-background-preference.js", "scripts/test-config-provider.js", "scripts/test-switch.js", "scripts/test-overlay.js", "scripts/test-popup.js", "scripts/test-navbar.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "node scripts/test-page-background-preference.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具普通编译"],
+    "browser": ["Card 版 Popup 与重置按钮完成后必须在当前已打开的合法 AppID wx23aa017375535746、微信开发者工具 RC 2.02.2607161、iPhone 12/13 390px 模拟器热重载中复核 Popup Card 圆角、Header 左右图标、遮罩关闭与布局；在此之前不把历史无卡 Popup 截图当作本次完成证据。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认原生胶囊镜像左轨内双按钮触摸区、Card Popup backdrop-filter、遮罩关闭、重置后 storage 写回、深浅色/安全区、果味组合和读屏。"]
+  },
+  "ai": {
+    "summary": "小程序页面复用 H5 外观控制时，组件视觉写 visualConfig，渐变保持页面画布能力；果味必须由真实字段推导，不新增伪状态。外观浮层优先由受控底部 Card Popup 承担，搜索 Overlay 保持独立。",
+    "rules": [
+      "Navbar 的每个图标操作都使用独立 PUI Button + Icon、准确 ariaLabel 和真实事件，不能复用错误语义。",
+      "搜索 Overlay 与外观 Popup 必须分别由父级受控、相互排斥，并让遮罩关闭请求真实回写到对应 visible 状态。",
+      "底部外观面板使用 Popup 的 placement=bottom、card=true、visible-change、closeBtn、blurOverlay 与 preventScrollThrough；Popup 是唯一 Card Surface，内部 CellGroup 不重复 card 或标题。",
+      "边框、阴影、毛玻璃、大圆角和主题只通过 visualConfig 写入；不能复制页面级视觉总控对象。",
+      "果味开启为 shadow/frostedGlass/largeRadius 开、bordered/gradient 关，关闭恢复标准组合且 theme 不变；checked 必须按真实当前值推导。",
+      "渐变只用于页面画布；禁止加入 ConfigProvider、visualConfig 或组件 Surface。",
+      "Header 左侧重置必须使用 theme=primary 的 PUI Button + refresh Icon，并同时调用 visualConfig.reset 与画布偏好 false；首次无本地存储必须恢复公开默认值，不能用页面私有默认对象代替 Store。"
+    ],
+    "tags": ["miniprogram-home", "appearance", "visual-config", "overlay", "popup", "switch", "fruit", "gradient"]
+  }
+}

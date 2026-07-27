@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0137",
+  "title": "BackTop 深色主题被 H5 通用 Button 规则覆盖且源端 Token 未定义",
+  "scope": "component",
+  "components": ["back-top", "button", "preview-site", "theme"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "BackTop 的四种主题必须在真实小程序源码和 H5 中一致呈现，不能让深色选项被通用样式覆盖为浅色。",
+  "environment": {
+    "surfaces": ["miniprogram-source", "h5-preview", "property-panel", "appearance-system"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 H5 属性面板将 theme 选择为 half-round-dark 后，通用 .pui-button-preview 规则在 BackTop 专属规则之后生效，实际按钮仍显示白色背景、深色文字和浅色边界。",
+    "源端 back-top.wxss 使用 --pui-color-primary，但 common/style/theme.wxss 没有声明该 Token；小程序端因此没有可验证的主题颜色真相源。"
+  ],
+  "expected": "round/half-round 使用容器与中性边界，round-dark/half-round-dark 使用明确的逆色 Token；两端主题切换均应立即呈现 #242424 背景、白字和同色边界。",
+  "actual": "H5 深色 theme 被共享 Button 规则覆盖成浅色；源端的颜色变量也不存在，造成跨端主题无法从 Token 合同保证。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求所有后续组件按真实网页和源码逐项 battle，并授权完成全部证据后自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?backtop-theme-fresh=20260720#/components/back-top", "note": "实际在属性面板填入 scrollTop=300、text=返回顶部、fixed=false，并选择 half-round-dark；修复后计算样式为 background/border rgb(36,36,36)、color rgb(255,255,255)、position static。"},
+    {"kind": "file", "ref": "back-top/back-top.wxss", "note": "正常主题使用 --pui-bg-container/--pui-text-primary/--pui-border-color，深色主题使用跨端逆色 Token。"},
+    {"kind": "file", "ref": "common/style/theme.wxss", "note": "light/dark 均声明 --pui-bg-inverse 与 --pui-text-on-inverse，消除未定义 --pui-color-primary。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "BackTop 专属 theme 规则置于共享 Button 规则之后，使用 preview-stage 作用域确保不会被通用预览 Button 覆盖。"},
+    {"kind": "test", "ref": "scripts/test-back-top.js", "note": "锁定源端不再引用 --pui-color-primary、两端 inverse Token 和 H5 专属深色选择器。"}
+  ],
+  "rootCause": "BackTop 旧源端沿用了不存在的主色变量；H5 样式表内 BackTop 的低优先级主题规则先于共享 Button 规则定义，导致 CSS 层叠反转了最终视觉。",
+  "decision": {
+    "outcome": "新增 --pui-bg-inverse/#242424 与 --pui-text-on-inverse/#ffffff 的跨端语义 Token，BackTop 使用它们；H5 在共享 Button 规则之后以明确 preview-stage 作用域重申 normal、dark 与 disabled 三种外观。",
+    "rationale": "深色 BackTop 是组件公开 enum 的真实能力，应从同名 Token 和可测层叠顺序获得确定结果，而非依赖通用 Button 当前的默认 Surface。",
+    "alternativesRejected": [
+      "只在 H5 给 dark class 加更亮的静态色，不能修复小程序端未定义 Token。",
+      "把 BackTop 改为 Button 的 primary variant，会扩展并扭曲既定 Button 合同。",
+      "删除四种主题中的 dark 选项会背离 TDesign 对照和既有公开 API。"
+    ]
+  },
+  "impact": {
+    "files": ["common/style/theme.wxss", "back-top/back-top.wxss", "preview/styles.css", "preview/index.html", "scripts/test-back-top.js", "docs/components/BACKTOP.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "CHANGELOG.md"],
+    "dependencies": ["PUI theme tokens", "PUI Button H5 helper", "PreviewDevice", "BackTop public theme enum"]
+  },
+  "verification": {
+    "tests": ["scripts/test-back-top.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node scripts/test-back-top.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "npm run feedback:generate", "npm run feedback:check"],
+    "browser": [
+      "Props 面板实际切换 half-round-dark 后，H5 当前 BackTop 为 #242424 背景、白字和同色边界；fixed=false 后为 static 文档流。",
+      "Props 填入 scrollTop=300 后入口可见；实际点击使 PreviewDevice 局部滚动从 300 经中间帧回到 0，官网页面滚动位置未被该点击修改。",
+      "内置浏览器不桥接该程序化滚动的原生 scroll 回调，完成态可见性仍保留到外部 scrollTop 回写；没有把这个工具限制写成父级已回写成功。"
+    ],
+    "deviceRisks": ["需用合法 AppID 在微信真机确认 --pui-bg-inverse Token、WXSS 样式隔离、fixed 安全区、Button 触摸和系统低动效。", "内置浏览器的程序化 scroll 回调桥接限制仍需普通浏览器和微信真机复核 onPageScroll 回写。"]
+  },
+  "ai": {
+    "summary": "具有公开 theme enum 的组合组件必须同时核验源端 Token 声明、H5 最终计算样式和共享子组件规则的层叠顺序。",
+    "rules": [
+      "不得在组件 WXSS 引用未在主题文件声明的变量；跨端主题色优先新增同名语义 Token。",
+      "共享 H5 子组件的通用规则可能晚于组件专属规则；必须用最终计算样式而不是 class 名确认 theme 生效。",
+      "theme 选择器需要覆盖 normal、dark 与 disabled 的真实优先级，不能靠切换 data 属性或提示文字声称成功。",
+      "浏览器自动化缺失原生 scroll 回调时，记录事实并保留真机风险，不得假设父级回写已完成。"
+    ],
+    "tags": ["back-top", "theme", "token", "css-cascade", "preview-parity", "browser-limit"]
+  }
+}

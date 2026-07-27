@@ -1,0 +1,115 @@
+.pui-tag {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pui-space-xs);
+  max-width: 100%;
+  color: var(--pui-text-secondary);
+  font-weight: 700;
+  background: var(--pui-glass-surface);
+  border-radius: var(--pui-radius-small);
+  box-shadow: inset 0 0 0 1rpx var(--pui-glass-border), inset 0 1rpx 0 var(--pui-glass-highlight);
+  -webkit-backdrop-filter: var(--pui-frosted-filter-soft);
+  backdrop-filter: var(--pui-frosted-filter-soft);
+}
+
+.pui-tag--small {
+  height: 44rpx;
+  padding: 0 var(--pui-space-sm);
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.pui-tag--medium {
+  height: 48rpx;
+  padding: 0 var(--pui-content-gap);
+  font-size: var(--pui-font-size-small);
+  line-height: var(--pui-line-height-small);
+}
+
+.pui-tag--large {
+  height: 58rpx;
+  padding: 0 var(--pui-space-normal);
+  font-size: var(--pui-font-size-medium);
+  line-height: var(--pui-line-height-medium);
+}
+
+.pui-tag--primary {
+  color: var(--pui-color-brand);
+  background: var(--pui-color-brand-light);
+}
+
+.pui-tag--success {
+  color: var(--pui-color-success);
+  background: var(--pui-color-success-light);
+}
+
+.pui-tag--warning {
+  color: var(--pui-color-warning);
+  background: var(--pui-color-warning-light);
+}
+
+.pui-tag--danger {
+  color: var(--pui-color-danger);
+  background: var(--pui-color-danger-light);
+}
+
+.pui-tag--outline {
+  background: transparent;
+  box-shadow: inset 0 0 0 2rpx currentColor;
+}
+
+.pui-tag--dark {
+  color: var(--pui-text-inverse);
+  background: var(--pui-text-primary);
+}
+
+.pui-tag--primary.pui-tag--dark {
+  background: var(--pui-color-brand);
+}
+
+.pui-tag--success.pui-tag--dark {
+  background: var(--pui-color-success);
+}
+
+.pui-tag--warning.pui-tag--dark {
+  background: var(--pui-color-warning);
+}
+
+.pui-tag--danger.pui-tag--dark {
+  background: var(--pui-color-danger);
+}
+
+.pui-tag--round {
+  border-radius: var(--pui-radius-round);
+}
+
+.pui-tag--mark {
+  border-radius: var(--pui-radius-small) var(--pui-radius-round) var(--pui-radius-round) var(--pui-radius-small);
+}
+
+.pui-tag--disabled {
+  color: var(--pui-text-disabled);
+  opacity: 0.56;
+}
+
+.pui-tag__content {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  align-items: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pui-tag__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28rpx;
+  height: 28rpx;
+  color: currentColor;
+  line-height: 1;
+  opacity: 0.72;
+}

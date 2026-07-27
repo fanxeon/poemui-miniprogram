@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0069",
+  "title": "Grid H5 默认代码、间距、事件和状态动画与原生不一致",
+  "scope": "component",
+  "components": ["grid", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Grid 官网必须按任务分区，所有 Props 真实作用于同一个预览，WXML、API、状态动画、390px 和外观开关与安装端一致。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览只有一块工程诊断演示，没有任务分区；当前可见六项入口时基础 WXML 却是空 <pui-grid></pui-grid>。",
+    "旧 metadata/API 只列 18 Props，未展示 click Event 与 footer Slot；H5 gutter 直接按 px 使用，违反 1px≈2rpx。",
+    "旧 H5 非 content 状态条件替换整个子树，error/empty 手写 Icon 与文字，既不能组合 PUI Empty，也无法观察动画中间帧。",
+    "旧 componentPropDefaults.grid 保存演示六项数据与 showFooter=true，使重置和默认值过滤不代表安装端源码。"
+  ],
+  "expected": "概览按真实用户任务陈列，当前 Props、WXML、API 和重置共享源码默认；状态层保持节点并可观测过渡，390px 只允许 Grid 自身局部横向滚动。",
+  "actual": "旧镜像用演示默认、错误单位、缺失 API 区和条件替换状态，导致看见的效果、复制代码、安装端默认和动效合同彼此漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Grid 现在使用 source defaults、专用 WXML 生成器、四段展示、PUI helper、两事件和 pending status runtime。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "四层共享 grid-area 并使用 opacity/transform/visibility 过渡；gutter 为 rpx 的一半，横向只在局部 viewport overflow。"},
+    {"kind": "test", "ref": "scripts/test-grid.js", "note": "专项覆盖分区、默认过滤、PUI 组合、状态保留、H5 事件、文档和示例。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/grid", "note": "55ms 中间帧 content/error opacity=0.519/0.481，完成态=0/1；reduceMotion 计算为 0.001s。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/grid", "note": "390px document/body=375/375、showcase=282/282、当前 Grid=280/280；横向 Grid=280/424，只局部滚动。"}
+  ],
+  "rootCause": "演示 Props、源码默认、WXML 生成、API metadata 和状态 DOM 曾由多条独立路径维护，且没有用真实浏览器中间帧和局部 overflow 验证跨端单位与动效。",
+  "decision": {
+    "outcome": "H5 分为基础、列数与间距、徽标与禁用、加载/空/错误四区；源码默认与演示初值分离，WXML 专用生成，gutter 除以 2；四层状态常驻并由运行时跨帧切换。",
+    "rationale": "用户必须能从分区快速筛选能力，同时复制代码、重置、Props 和真实组件只认同一个默认源；常驻状态层才能兑现动效和辅助语义。",
+    "alternativesRejected": [
+      "只更新文档而保留旧 H5 会继续产生所见非所得和假状态组合。",
+      "用 CSS 隐藏工程诊断或条件重建状态都无法证明真实动画中间帧。",
+      "把横向内容扩张为页面宽度会破坏 390px，正确边界是 Grid 局部滚动。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/GRID.md", "scripts/test-grid.js"],
+    "dependencies": ["buttonSample", "badgeSample", "loadingComponent", "emptySample", "PreviewDevice", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-grid.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-api-reference-readability.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node --check preview/app.js", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "基础区真实点击 value=0 入口并显示父级 Tag 结果；错误重试保持 error，重置恢复空 items 和 <pui-grid />。",
+      "content 到 error 的 55ms 中间帧为 0.519/0.481，500ms 终态为 0/1；reduceMotion transition-duration 为 0.001s。",
+      "390px 页面无横向溢出，column=0 只让 280px Grid viewport 产生 424px 局部 scrollWidth。",
+      "dark、border-off、shadow、frost、large-radius、gradient 同开时为透明边线、14px 圆角、真实 shadow 与 blur(18px)，结束恢复 light 标准组合。",
+      "API 14 Props/2 Events 共 4 表、20 行、94 字段，无 nowrap、ellipsis 或裁切；浏览器 warning/error 日志为空。"
+    ],
+    "deviceRisks": [
+      "H5 DOM、px、CSS transition 与局部 overflow 只镜像 WXML、rpx、WXSS 和 scroll-view，需在目标微信基础库复核惯性与取整。",
+      "微信开发者工具 Service Port 关闭时无法更新 miniprogram_npm，发布门禁必须保留 pending-cli。"
+    ]
+  },
+  "ai": {
+    "summary": "Grid 的演示、Props、WXML、API 和重置必须共享源码默认；状态用常驻 PUI 组合层，横向只做局部滚动。",
+    "rules": [
+      "Grid componentPropDefaults 必须保持源码 items=[]，演示数据只能放 release definition。",
+      "非空 items 的 WXML 使用 items={{entries}}，默认重置输出 <pui-grid />，基础用法不绑定事件。",
+      "H5 gutter 必须除以 2；column=0 只允许 Grid viewport 横向滚动，禁止页面级 overflow。",
+      "content/loading/error/empty 必须保留节点并跨帧切换，禁止条件重建或 display:none。"
+    ],
+    "tags": ["grid", "preview", "wxml", "motion", "390px", "api-reference"]
+  }
+}

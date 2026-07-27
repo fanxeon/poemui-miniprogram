@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0296",
+  "title": "首页基础组件 Cell 缺少真实独立用法页面",
+  "scope": "component",
+  "components": ["cell", "navbar", "scroll-area", "button", "divider", "icon", "search", "config-provider", "miniprogram"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页 Button、Divider、Icon Cell 应显示右箭头并进入真实独立页面，详情页保持正确 Navbar、全高宽 ScrollArea，并展示 H5 同源用法。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "miniprogram-component-page", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开真实小程序首页并展开基础组件。",
+    "旧 Cell 只显示信息，未提供 arrow、url 或 navigateTo，用户无法进入组件用法。",
+    "工程中也没有 Button、Divider、Icon 对应的真实页面路由与统一详情页高度测量。"
+  ],
+  "expected": "三个 Cell 通过自身箭头与导航合同进入真实页面；详情页搜索位变为返回，Navbar 尊重原生胶囊，唯一 ScrollArea 占满剩余宽高，并按 H5 概览真相源展示真实可操作用法。",
+  "actual": "首页条目没有导航能力，组件用法只能从 H5 站点查看；小程序端不存在对应路由、页面壳、真实交互或独立滚动上下文。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求 Cell 增加 chevron-right、进入对应独立页面，并保持 Navbar 和全高宽 ScrollArea。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "三个 Cell 显式使用 arrow、clickable、url 和 jump-type=navigateTo。"},
+    {"kind": "file", "ref": "miniprogram/utils/component-page.js", "note": "共享详情页壳测量真实 Navbar 与窗口高度，回写 ScrollArea px 高度，并执行 navigateBack/reLaunch 闭环。"},
+    {"kind": "file", "ref": "miniprogram/pages/components", "note": "Button、Divider、Icon 页面按 H5 固定分区组合真实 PUI 组件与事件。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-component-pages.js", "note": "专项合同锁定路由、共享壳、同源分区、真实回写、无原生 Button/第二滚动容器和 ConfigProvider。"},
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161 · wx23aa017375535746", "note": "390×844 模拟器完成首页 Cell→Button→Navbar 返回、Divider 挂载、Icon 搜索/复制及深色全局外观验收。"}
+  ],
+  "rootCause": "首页首版刻意把未接页面的条目保持为信息项；接入详情页时尚缺统一路由、动态剩余高度页面壳和 H5 概览到原生示例的映射。",
+  "decision": {
+    "outcome": "为三个组件增加真实路由；Cell 复用自身 arrow/url/jumpType；详情页共用 Navbar + ScrollArea 两行壳，不放 Tabbar；内容按 H5 概览分区并只使用 PUI 组件，所有可用动作真实回写。",
+    "rationale": "Cell 原生导航合同可避免页面重复处理点击；共用测量壳保证 Navbar 胶囊和剩余高度一致，H5 分区真相源避免两端用法信息架构漂移。",
+    "alternativesRejected": [
+      "首页用 click handler 手写 wx.navigateTo 会复制 Cell 已有导航合同。",
+      "详情页保留 Tabbar 会制造未完成目的地并压缩组件用法空间。",
+      "复制 H5 DOM 或创建 iframe 不符合微信小程序原生组件与 npm 交付边界。",
+      "静态截图或无事件示例不能证明组件真实可运行。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/app.json", "miniprogram/pages/index/index.js", "miniprogram/pages/index/index.wxml", "miniprogram/utils/component-page.js", "miniprogram/styles/component-page.wxss", "miniprogram/pages/components/button", "miniprogram/pages/components/divider", "miniprogram/pages/components/icon", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "docs/MINIPROGRAM_HOME.md", "feedback/records/pui-fb-0296-miniprogram-component-detail-pages.json"],
+    "dependencies": ["pui-config-provider", "pui-navbar", "pui-scroll-area", "pui-cell", "pui-button", "pui-divider", "pui-icon", "pui-search", "pui-tag", "pui-badge"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-cell.js", "scripts/test-navbar.js", "scripts/test-scroll-area.js", "scripts/test-button.js", "scripts/test-divider.js", "scripts/test-icon.js", "scripts/test-search.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "node scripts/test-miniprogram-component-pages.js", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm", "微信 CLI preview"],
+    "browser": [
+      "首页真实 Cell 点击进入 pages/components/button/index，Button 点击更新“最近操作：主要按钮 · 1 次”，Navbar 返回回到 pages/index/index。",
+      "首页 Navbar/ScrollArea/Tabbar 为 390×88、390×663、390×93；详情页 Navbar/ScrollArea 为 390×88、390×756，document width=390。",
+      "Icon 查询 status 得到 check-circle、error-circle、warning-triangle、info-circle；点击后 wx.setClipboardData 成功回写。",
+      "Icon 页 ConfigProvider 接收 dark、shadow、frostedGlass、largeRadius、bordered=false 并在验收后恢复 light 默认配置。"
+    ],
+    "deviceRisks": [
+      "开发者工具 390px 模拟器不等于 iOS/Android 真机；真实触摸滚动、软键盘、系统剪贴板、横竖屏安全区和读屏仍需复核。",
+      "Icon 当前仅展示代表性资源而非 200 个完整图标库，符合本轮页面范围；后续扩展必须继续使用真实搜索与复制。",
+      "Button/Divider 长内容已存在真实 ScrollArea，但不同真机的惯性滚动、渐变遮罩触摸穿透与字体回流仍未确认。"
+    ]
+  },
+  "ai": {
+    "summary": "小程序组件详情页应复用真实 Cell 导航、Navbar 胶囊几何和动态剩余高度 ScrollArea，并按 H5 分区组合原生 PUI 用法。",
+    "rules": [
+      "已有 Cell url/jumpType 能完成导航时不得在页面复制 wx.navigateTo 事件。",
+      "详情页只保留 Navbar 与唯一 ScrollArea，不为未完成目的地复制 Tabbar。",
+      "详情页用法分区以 H5 概览真相源为信息结构，但必须重新组合真实小程序 PUI 组件与平台事件。",
+      "Navbar 返回必须执行 navigateBack，并为直接打开页面提供真实首页恢复路径。"
+    ],
+    "tags": ["miniprogram", "component-pages", "navigation", "navbar", "scroll-area", "h5-parity"]
+  }
+}

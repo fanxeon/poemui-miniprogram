@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0196",
+  "title": "H5 Button 镜像漏入完整变体合同并使组合阴影被后续 Surface 覆盖",
+  "scope": "global",
+  "components": ["preview-site", "preview-device", "button", "direction"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "全部组件的预览必须处于一致的滚动预览区域，真实组件阴影完整可见，不能再因父容器或后续内容覆盖而被截断。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice", "appearance-menu", "native-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 H5 预览进入 `#/components/direction`，打开全局阴影。",
+    "旧 Direction 透明 Provider 以 14px padding、白色 Surface 和 `overflow:hidden` 包住两个 Button 与后续 Cell；主 Button 下沿和 Cell 上沿只相隔 9px。",
+    "旧共享 `buttonSample` 只有调用点传入私有 `previewContract` 时才输出 `pui-button-preview`，大量组合调用只保留 `.pui-button`，使 outline/text 等变体也错误继承通用 Button 阴影。"
+  ],
+  "expected": "H5 Button 必须逐项镜像原生 base/outline/text/ghost 的 Surface 和阴影资格；透明组合 Provider 不建立伪 Surface 或裁切子项。若基础 Button 后接不透明 sibling，后者开始前必须由共享 Shadow-bleed Token 留足视觉空间。所有标准组件预览继续各有一个真实 PreviewDevice 内部滚动 viewport，390px 下无横向溢出。",
+  "actual": "Direction 中基础 Button 的外投影在到达真实 PreviewDevice 安全区前就被后续不透明 Cell 覆盖；同时 H5 helper 的调用点差异让同一 Button variant 在不同组件预览中得到不一致的阴影计算结果。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-20 用户提供的 Direction PreviewDevice 截图", "note": "截图明确显示 Primary action 下侧阴影被 Composed item 的白色 Surface 截断。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/direction", "note": "修复前 390px 审计：Button 下沿 655px、Cell 上沿 664px；Button 计算阴影向下扩展约 25px，Direction 根和 slot 都为 overflow:hidden。"},
+    {"kind": "file", "ref": "button/button.wxss", "note": "原生 Button base 保留 card/brand 外投影，outline/text/ghost 没有外投影；不能把所有 Button 阴影一概移除。"},
+    {"kind": "test", "ref": "scripts/test-preview-shadow-boundaries.js", "note": "专项测试锁定 Button helper 默认完整镜像、Direction 透明可见根和共享 elevation clearance Token。"}
+  ],
+  "rootCause": "H5 `buttonSample` 把完整 Button 镜像误设为可选调用点开关，173 个组合调用没有进入 `pui-button-preview` 变体级联；Direction H5 又偏离原生透明 Provider，设置了伪 Surface、局部 padding 和 hidden overflow，导致后续不透明 Cell 在 Button 实际阴影范围内开始绘制。",
+  "decision": {
+    "outcome": "共享 H5 Button helper 现在默认进入完整 `pui-button-preview` 合同，仅允许已审计组件自有交互根显式退出；Direction 根/slot/方法区恢复透明、无裁切布局，Button 行采用 `pui-preview-elevation-clearance` 预留 `--pui-preview-shadow-bleed`。新增全局专项合同测试，并把规则同步至全局、Button、Direction 与 H5 兼容文档。",
+    "rationale": "完整镜像应该是 PUI Button 的默认路径，不能由每个组合调用者记住私有参数。共享 Token 化安全空间既保留基础 Button 的真实层级，也不把 Cell 等连续条目错误改成有阴影的卡片。",
+    "alternativesRejected": [
+      "删除所有 Button 外阴影：违背原生 base Button 的独立 Surface 语义。",
+      "仅为 Direction 增加固定大 margin：不能修复 173 个 H5 helper 调用点的变体漂移，也会在其他组合中重复产生魔法数。",
+      "扩大 PreviewDevice 外层 padding：问题发生在同一组合内的后续不透明 sibling，外层安全区已经存在且不应替代局部语义间距。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-button.js", "scripts/test-direction.js", "scripts/test-preview-shadow-boundaries.js", "package.json", "AGENTS.md", "docs/UI_DESIGN_CONTRACT.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/BUTTON.md", "docs/components/DIRECTION.md", "CHANGELOG.md", "miniprogram_dist/", "_example/node_modules/poemui-miniprogram", "feedback/records/pui-fb-0196-preview-button-elevation-boundary.json"],
+    "dependencies": ["Button WXSS variant semantics", "PreviewDevice shadow-safe layout", "ConfigProvider shadow preference", "Direction transparent Provider contract", "H5 shared component helper"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-direction.js", "scripts/test-preview-shadow-boundaries.js", "scripts/test-preview-infrastructure-composition.js"],
+    "commands": ["2026-07-20：Button、Direction、Preview shadow boundary 与 PreviewDevice infrastructure 专项合同测试通过。", "2026-07-20：`npm run feedback:generate && npm run feedback:check`、`npm run site:build`、完整 `npm run check`、`npm run example:install` 与 `npm run pack:check` 通过；打包干跑为 554 files、325.4 kB。", "2026-07-20：微信 CLI `build-npm --project _example` 已实际启动 IDE server，但 `touristappid` 被权限查询拒绝为不存在的 AppID（code 10）；未生成且未手工伪造 `miniprogram_npm`。"],
+    "browser": ["真实浏览器 375px 页面宽度逐路由扫描 85 个标准组件：85/85 均仅有一个 data-preview-scroll、一个 PreviewDevice、一个 data-preview-layout；内部 overflow-y=auto，页面和 viewport 的 scrollWidth 均等于 clientWidth（shadow-safe 66 个、edge-to-edge 19 个）。Direction 在浅色和深色+边框+阴影+毛玻璃+大圆角+渐变全开下都保持透明根、visible overflow；Primary action 为 36px 高，计算阴影为 0 8px 22px，Button 下沿 638px、相邻 Cell 上沿 661px，23px 空间完整保留阴影。"],
+    "deviceRisks": ["合法 AppID 真机仍需复核 Button 的 rpx 外投影、样式隔离、方向性字体与系统低动效；H5 浏览器不能替代微信渲染证据。"]
+  },
+  "ai": {
+    "summary": "Button 阴影是否存在取决于原生 variant 的 Surface 资格；完整镜像和局部 shadow-bleed 空间必须由共享合同保证，不能依赖每个预览手工记忆。",
+    "rules": [
+      "任何 `buttonSample` 调用默认进入 `pui-button-preview`；只有已审计的组件自有交互根可显式 `previewContract:false`。",
+      "不要为修复裁切删除原生应有的 base Button 阴影，也不要把 Cell、Field、Empty 等非 elevation 组件加上外阴影。",
+      "透明组合根中基础 Button 后接不透明 sibling 时，保持 overflow visible 并使用 `pui-preview-elevation-clearance` 的共享 shadow-bleed Token。",
+      "每次触及预览基础设施后都要逐路由检查唯一内部 scroll viewport、390px 横向溢出和深浅色/外观开关下的计算样式。"
+    ],
+    "tags": ["global", "h5-preview", "button", "direction", "shadow", "overflow", "preview-device", "parity"]
+  }
+}

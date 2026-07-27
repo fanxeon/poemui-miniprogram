@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0145",
+  "title": "Toast H5 过渡引用未挂载的 easing Token 而退化为瞬移",
+  "scope": "component",
+  "components": ["toast", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须有可观察的真实动画中间帧，不能因为未定义 CSS Token 或重绘退化为瞬移。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-device", "css-tokens"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px browser viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "Toast H5 的 transition 使用 var(--pui-toast-ease)，但 toastMarkup 只写入 --pui-toast-duration。",
+    "浏览器计算样式显示 transition=all、transitionDuration=0s，show/hide 的 opacity/transform 没有真实过渡。"
+  ],
+  "expected": "Toast H5 与 WXML/WXSS 一样在同一节点上完成固定 500ms 的 opacity/transform 进退场；reduceMotion 将其压缩到 1ms。",
+  "actual": "缺失 easing 自定义属性使整条 transition 声明无效，预览虽然改变状态但没有可观察的中间帧。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授权后续组件在完整审计、浏览器、测试、文档与构建门禁后自主验收，并要求动画中间帧真实可观察。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/toast", "note": "2026-07-20 修复前读取 .toast-demo 计算 transitionDuration 为 0s；修复后为 0.18s, 0.18s，reduceMotion 为 0.001s, 0.001s。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "toastMarkup 现在为每个 Toast 节点同源写入 --pui-toast-duration 和 --pui-toast-ease:var(--ease-standard)。"},
+    {"kind": "test", "ref": "scripts/test-toast.js", "note": "专项测试锁定 easing Token 注入；VM 覆盖 hide 期间保留节点、完成后才 close。"}
+  ],
+  "rootCause": "样式使用了组件语义变量，但 H5 生成器遗漏了该变量的实际提供者。",
+  "decision": {
+    "outcome": "在 Toast H5 生成器直接注入 --pui-toast-ease:var(--ease-standard)，保留固定 500ms/1ms 的公共动画合同。",
+    "rationale": "动效速度不是 Toast 的公开 Props；easing 是站点 Token，必须由生成器完整提供，不能依赖未定义变量回退。",
+    "alternativesRejected": [
+      "把 easing 重新公开为 Toast Prop 会恢复已收敛的私有调参 API。",
+      "只用 CSS 默认值掩盖缺失会让生成器与真实依赖关系失去可测试性。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-toast.js"],
+    "dependencies": ["PreviewDevice", "global motion tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-toast.js"],
+    "commands": ["npm run example:install（含 site:build，2026-07-20 通过）", "npm run check", "npm run pack:check"],
+    "browser": ["真实页面计算样式确认标准 transition 为 0.18s，reduceMotion 为 0.001s；API 不再公开 duration 之外的动效参数。"],
+    "deviceRisks": ["微信端 fixed 层的合成节奏、后台节流、rpx 与系统低动效仍需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "出现 transition 为 0s 时，必须核对每个 CSS var 是否由根或运行时 style 实际提供。",
+    "rules": [
+      "组件私有 H5 动效变量必须在生成器或全局根明确提供，并由计算样式验证。",
+      "固定动效合同不得借机暴露为可随意传入的公开 Props。"
+    ],
+    "tags": ["toast", "css-token", "animation", "h5-preview"]
+  }
+}

@@ -1,0 +1,400 @@
+/* Default tokens are intentionally neutral and opaque. Visual effects are opt-in. */
+page,
+.pui-theme--light {
+  --pui-color-brand-1: #fafafa;
+  --pui-color-brand-2: #f4f4f5;
+  --pui-color-brand-3: #e4e4e7;
+  --pui-color-brand-4: #d4d4d8;
+  --pui-color-brand-5: #a1a1aa;
+  --pui-color-brand-6: #71717a;
+  --pui-color-brand-7: #52525b;
+  --pui-color-brand-8: #3f3f46;
+  --pui-color-brand-9: #27272a;
+  --pui-color-brand-10: #18181b;
+  --pui-color-brand: #18181b;
+  --pui-color-brand-hover: #27272a;
+  --pui-color-brand-active: #09090b;
+  --pui-color-brand-light: #f4f4f5;
+  --pui-color-brand-focus: rgba(24, 24, 27, 0.14);
+  --pui-color-brand-disabled: #d4d4d8;
+  --pui-color-brand-gradient-end: #18181b;
+  --pui-color-success: #16a34a;
+  --pui-color-success-light: #f0fdf4;
+  --pui-color-warning: #d97706;
+  --pui-color-warning-light: #fffbeb;
+  --pui-color-danger: #dc2626;
+  --pui-color-danger-light: #fef2f2;
+  --pui-color-info: #2563eb;
+  --pui-color-info-light: #eff6ff;
+  /* Curated accent palette for static utility classes. Each hue exposes a
+     readable foreground/border, a saturated fill and a quiet surface. */
+  --pui-color-red: #dc2626;
+  --pui-color-red-solid: #dc2626;
+  --pui-color-red-soft: #fef2f2;
+  --pui-color-orange: #c2410c;
+  --pui-color-orange-solid: #ea580c;
+  --pui-color-orange-soft: #fff7ed;
+  --pui-color-amber: #b45309;
+  --pui-color-amber-solid: #d97706;
+  --pui-color-amber-soft: #fffbeb;
+  --pui-color-emerald: #047857;
+  --pui-color-emerald-solid: #059669;
+  --pui-color-emerald-soft: #ecfdf5;
+  --pui-color-teal: #0f766e;
+  --pui-color-teal-solid: #0d9488;
+  --pui-color-teal-soft: #f0fdfa;
+  --pui-color-blue: #2563eb;
+  --pui-color-blue-solid: #2563eb;
+  --pui-color-blue-soft: #eff6ff;
+  --pui-color-violet: #7c3aed;
+  --pui-color-violet-solid: #7c3aed;
+  --pui-color-violet-soft: #f5f3ff;
+  --pui-color-pink: #be185d;
+  --pui-color-pink-solid: #db2777;
+  --pui-color-pink-soft: #fdf2f8;
+  --pui-alert-default-tinted-fg: #3f3f46;
+  --pui-alert-default-tinted-secondary: #52525b;
+  --pui-alert-info-tinted-fg: #1d4ed8;
+  --pui-alert-info-tinted-secondary: #1e40af;
+  --pui-alert-success-tinted-fg: #15803d;
+  --pui-alert-success-tinted-secondary: #166534;
+  --pui-alert-warning-tinted-fg: #92400e;
+  --pui-alert-warning-tinted-secondary: #78350f;
+  --pui-alert-danger-tinted-fg: #b91c1c;
+  --pui-alert-danger-tinted-secondary: #991b1b;
+  --pui-text-primary: #18181b;
+  --pui-text-secondary: #52525b;
+  --pui-text-placeholder: #a1a1aa;
+  --pui-text-disabled: #a1a1aa;
+  --pui-text-inverse: #fafafa;
+  --pui-bg-page: #ffffff;
+  --pui-bg-container: #ffffff;
+  --pui-bg-surface: var(--pui-bg-container);
+  --pui-bg-muted: #f4f4f5;
+  --pui-bg-active: #e4e4e7;
+  --pui-bg-inverse: #242424;
+  /* Background-gradient tokens. Consumers explicitly apply the matching
+     utility to a View or layout container; they never become implicit
+     component-surface tokens for Cell, Tag or other PUI components. */
+  --pui-bg-gradient-neutral: radial-gradient(circle at 12% 6%, rgba(24, 24, 27, 0.09) 0, transparent 34%), radial-gradient(circle at 88% 92%, rgba(113, 113, 122, 0.12) 0, transparent 38%), linear-gradient(145deg, #fafafa 0%, #f4f4f5 52%, #fafafa 100%);
+  --pui-bg-gradient-flowing-gold-pink: radial-gradient(circle at 14% 10%, rgba(245, 208, 220, 0.72) 0, transparent 36%), radial-gradient(circle at 88% 88%, rgba(232, 200, 132, 0.58) 0, transparent 42%), linear-gradient(145deg, #fffdfa 0%, #f7ede4 52%, #fff8f2 100%);
+  --pui-bg-gradient-premium-black: radial-gradient(circle at 12% 8%, rgba(39, 39, 42, 0.16) 0, transparent 34%), radial-gradient(circle at 90% 90%, rgba(113, 113, 122, 0.16) 0, transparent 42%), linear-gradient(145deg, #fafafa 0%, #e4e4e7 52%, #f4f4f5 100%);
+  --pui-bg-gradient-cement-white: radial-gradient(circle at 16% 10%, rgba(214, 211, 209, 0.56) 0, transparent 34%), radial-gradient(circle at 88% 88%, rgba(168, 162, 158, 0.24) 0, transparent 42%), linear-gradient(145deg, #fafaf9 0%, #e7e5e4 52%, #f5f5f4 100%);
+  --pui-bg-gradient-black-gold: radial-gradient(circle at 14% 10%, rgba(156, 119, 44, 0.22) 0, transparent 34%), radial-gradient(circle at 90% 90%, rgba(90, 68, 29, 0.16) 0, transparent 42%), linear-gradient(145deg, #fffdf6 0%, #f3e8c9 52%, #fffaf0 100%);
+  --pui-bg-gradient-light-gold: radial-gradient(circle at 12% 8%, rgba(255, 248, 220, 0.9) 0, transparent 36%), radial-gradient(circle at 88% 90%, rgba(225, 190, 112, 0.42) 0, transparent 40%), linear-gradient(145deg, #fffdf8 0%, #f8edcf 52%, #fffdfa 100%);
+  --pui-bg-gradient-ai-mist-blue-violet: radial-gradient(circle at 12% 8%, rgba(174, 206, 255, 0.74) 0, transparent 36%), radial-gradient(circle at 88% 90%, rgba(211, 181, 255, 0.7) 0, transparent 42%), linear-gradient(145deg, #f9fbff 0%, #e8edff 52%, #faf7ff 100%);
+  --pui-bg-gradient-cyber-pink-blue: radial-gradient(circle at 14% 10%, rgba(255, 190, 222, 0.7) 0, transparent 34%), radial-gradient(circle at 88% 88%, rgba(166, 221, 255, 0.76) 0, transparent 40%), linear-gradient(145deg, #fff9fd 0%, #e9f4ff 52%, #fbf8ff 100%);
+  --pui-bg-gradient-aurora-violet: radial-gradient(circle at 10% 12%, rgba(157, 225, 213, 0.62) 0, transparent 34%), radial-gradient(circle at 90% 84%, rgba(198, 165, 255, 0.7) 0, transparent 42%), linear-gradient(145deg, #f6fffd 0%, #edf1ff 52%, #fcf8ff 100%);
+  --pui-text-on-inverse: #ffffff;
+  --pui-border-color: #e4e4e7;
+  --pui-border: var(--pui-border-color);
+  --pui-control-outline-color: #a1a1aa;
+  --pui-divider-color: #a1a1aa;
+  --pui-tabbar-split-color: #d4d4d8;
+  --pui-tabbar-content-height: 112rpx;
+  --pui-glass-surface: #ffffff;
+  --pui-glass-surface-strong: #ffffff;
+  --pui-glass-tint: rgba(255, 255, 255, 0.72);
+  --pui-glass-border: #e4e4e7;
+  --pui-glass-highlight: transparent;
+  --pui-glass-shadow: none;
+  --pui-glass-shadow-soft: none;
+  --pui-shadow-brand: none;
+  --pui-shadow-glow: none;
+  --pui-shadow-card: none;
+  --pui-shadow-popup: var(--pui-glass-shadow);
+  --pui-shadow-floating: none;
+  --pui-shadow-edge-top: none;
+  --pui-shadow-edge-bottom: none;
+  --pui-shadow-edge-left: none;
+  --pui-shadow-edge-right: none;
+  --pui-shadow-none: none;
+  --pui-frosted-filter: none;
+  --pui-frosted-filter-soft: none;
+  --pui-overlay-blur: blur(20rpx);
+  --pui-popup-overlay-blur: blur(20rpx);
+  --pui-radius-small: 12rpx;
+  --pui-radius-medium: 16rpx;
+  --pui-radius-large: 24rpx;
+  --pui-radius-xlarge: 32rpx;
+  --pui-radius-xxlarge: 40rpx;
+  --pui-radius-round: 999rpx;
+  /* Internal layout grid: one step is 2rpx (1px in the H5 mirror).
+     Product layouts should prefer the semantic aliases below; component
+     internals may consume a step when their geometry sits between aliases. */
+  --pui-space-step-1: 2rpx;
+  --pui-space-step-2: 4rpx;
+  --pui-space-step-3: 6rpx;
+  --pui-space-step-4: 8rpx;
+  --pui-space-step-5: 10rpx;
+  --pui-space-step-6: 12rpx;
+  --pui-space-step-7: 14rpx;
+  --pui-space-step-8: 16rpx;
+  --pui-space-step-9: 18rpx;
+  --pui-space-step-10: 20rpx;
+  --pui-space-step-11: 22rpx;
+  --pui-space-step-12: 24rpx;
+  --pui-space-step-13: 26rpx;
+  --pui-space-step-14: 28rpx;
+  --pui-space-step-15: 30rpx;
+  --pui-space-step-16: 32rpx;
+  --pui-space-step-17: 34rpx;
+  --pui-space-step-18: 36rpx;
+  --pui-space-step-19: 38rpx;
+  --pui-space-step-20: 40rpx;
+  --pui-space-step-21: 42rpx;
+  --pui-space-step-22: 44rpx;
+  --pui-space-step-23: 46rpx;
+  --pui-space-step-24: 48rpx;
+  --pui-space-step-25: 50rpx;
+  --pui-space-step-26: 52rpx;
+  --pui-space-step-27: 54rpx;
+  --pui-space-step-28: 56rpx;
+  --pui-space-step-29: 58rpx;
+  --pui-space-step-30: 60rpx;
+  --pui-space-step-31: 62rpx;
+  --pui-space-step-32: 64rpx;
+  --pui-space-step-33: 66rpx;
+  --pui-space-step-34: 68rpx;
+  --pui-space-step-35: 70rpx;
+  --pui-space-step-36: 72rpx;
+  --pui-space-step-44: 88rpx;
+  --pui-space-xxs: var(--pui-space-step-2);
+  --pui-space-xs: var(--pui-space-step-4);
+  --pui-space-sm: var(--pui-space-step-6);
+  --pui-space-normal: var(--pui-space-step-10);
+  --pui-space-lg: var(--pui-space-step-14);
+  --pui-space-xl: var(--pui-space-step-20);
+  --pui-space-xxl: var(--pui-space-step-28);
+  --pui-space-3xl: var(--pui-space-step-36);
+  /* Navbar custom-navigation geometry. Runtime measurement supersedes the
+     fallback whenever wx.getMenuButtonBoundingClientRect is available. */
+  --pui-navbar-capsule-width: 176rpx;
+  --pui-navbar-capsule-height: 64rpx;
+  --pui-navbar-capsule-inset-right: 14rpx;
+  --pui-navbar-capsule-reserve-fallback: 190rpx;
+  --pui-navbar-content-height-fallback: 96rpx;
+  --pui-navbar-action-width: 112rpx;
+  /* Shared readable surface rhythm. Components may choose a density, but
+     panel content must not collapse to edge-to-edge text. */
+  --pui-panel-padding-compact: var(--pui-space-step-10);
+  --pui-panel-padding: var(--pui-space-step-14);
+  --pui-panel-padding-spacious: var(--pui-space-step-18);
+  --pui-section-gap: var(--pui-panel-padding-spacious);
+  --pui-content-gap: var(--pui-space-step-8);
+  /* Surface aliases are the only layout values eligible for equal-spacing. */
+  --pui-surface-inset: var(--pui-panel-padding);
+  --pui-surface-stack-gap: var(--pui-content-gap);
+  --pui-surface-section-gap: var(--pui-section-gap);
+  --pui-scroll-area-gradient-overlay-size-sm: var(--pui-space-step-20);
+  --pui-scroll-area-gradient-overlay-size-md: var(--pui-space-step-32);
+  --pui-scroll-area-gradient-overlay-size-lg: var(--pui-space-step-44);
+  --pui-scroll-area-gradient-overlay-size: var(--pui-scroll-area-gradient-overlay-size-md);
+  --pui-scroll-area-gradient-overlay-color-context: var(--pui-bg-container);
+  /* App shells may reserve a generous first-screen breathing area without
+     bypassing the shared spacing contract. */
+  --pui-page-shell-padding-block: 200rpx;
+  --pui-font-family-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  --pui-font-family-mono: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --pui-font-size-caption: 24rpx;
+  --pui-font-size-mini: var(--pui-font-size-caption);
+  --pui-font-size-label: 26rpx;
+  --pui-font-size-body-small: 26rpx;
+  --pui-font-size-body-medium: 28rpx;
+  --pui-font-size-body-large: 32rpx;
+  --pui-font-size-title-small: 32rpx;
+  --pui-font-size-title-medium: 36rpx;
+  --pui-font-size-title-large: 40rpx;
+  --pui-font-size-headline: 48rpx;
+  --pui-font-size-display: 64rpx;
+  --pui-line-height-caption: 34rpx;
+  --pui-line-height-mini: var(--pui-line-height-caption);
+  --pui-line-height-label: 36rpx;
+  --pui-line-height-body-small: 38rpx;
+  --pui-line-height-body-medium: 40rpx;
+  --pui-line-height-body-large: 46rpx;
+  --pui-line-height-title-small: 46rpx;
+  --pui-line-height-title-medium: 50rpx;
+  --pui-line-height-title-large: 56rpx;
+  --pui-line-height-headline: 64rpx;
+  --pui-line-height-display: 80rpx;
+  --pui-line-height-none: 1;
+  --pui-line-height-tight: 1.25;
+  --pui-line-height-normal: 1.5;
+  --pui-line-height-relaxed: 1.75;
+  --pui-font-weight-regular: 400;
+  --pui-font-weight-medium: 500;
+  --pui-font-weight-semibold: 600;
+  --pui-font-weight-bold: 700;
+  --pui-font-weight-heavy: 800;
+  --pui-letter-spacing-tight: -0.02em;
+  --pui-letter-spacing-normal: 0;
+  --pui-letter-spacing-wide: 0.04em;
+  /* Backward-compatible size aliases. */
+  --pui-font-size-small: var(--pui-font-size-body-small);
+  --pui-font-size-medium: var(--pui-font-size-body-medium);
+  --pui-font-size-large: var(--pui-font-size-body-large);
+  --pui-line-height-small: var(--pui-line-height-body-small);
+  --pui-line-height-medium: var(--pui-line-height-body-medium);
+  --pui-line-height-large: var(--pui-line-height-body-large);
+  --pui-duration-fast: 500ms;
+  --pui-duration-normal: 500ms;
+  --pui-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.pui-theme--dark {
+  --pui-color-brand-1: #18181b;
+  --pui-color-brand-2: #27272a;
+  --pui-color-brand-3: #3f3f46;
+  --pui-color-brand-4: #52525b;
+  --pui-color-brand-5: #71717a;
+  --pui-color-brand-6: #a1a1aa;
+  --pui-color-brand-7: #d4d4d8;
+  --pui-color-brand-8: #e4e4e7;
+  --pui-color-brand-9: #f4f4f5;
+  --pui-color-brand-10: #fafafa;
+  --pui-color-brand: #fafafa;
+  --pui-color-brand-hover: #e4e4e7;
+  --pui-color-brand-active: #d4d4d8;
+  --pui-color-brand-light: #27272a;
+  --pui-color-brand-focus: rgba(250, 250, 250, 0.16);
+  --pui-color-brand-disabled: #52525b;
+  --pui-color-brand-gradient-end: #fafafa;
+  --pui-color-success: #4ade80;
+  --pui-color-success-light: #14301e;
+  --pui-color-warning: #fbbf24;
+  --pui-color-warning-light: #34270d;
+  --pui-color-danger: #f87171;
+  --pui-color-danger-light: #381919;
+  --pui-color-info: #60a5fa;
+  --pui-color-info-light: #172554;
+  --pui-color-red: #f87171;
+  --pui-color-red-solid: #b91c1c;
+  --pui-color-red-soft: #2b1517;
+  --pui-color-orange: #fb923c;
+  --pui-color-orange-solid: #c2410c;
+  --pui-color-orange-soft: #30180c;
+  --pui-color-amber: #fbbf24;
+  --pui-color-amber-solid: #b45309;
+  --pui-color-amber-soft: #2b210c;
+  --pui-color-emerald: #34d399;
+  --pui-color-emerald-solid: #047857;
+  --pui-color-emerald-soft: #102a22;
+  --pui-color-teal: #2dd4bf;
+  --pui-color-teal-solid: #0f766e;
+  --pui-color-teal-soft: #0d2927;
+  --pui-color-blue: #60a5fa;
+  --pui-color-blue-solid: #1d4ed8;
+  --pui-color-blue-soft: #172554;
+  --pui-color-violet: #a78bfa;
+  --pui-color-violet-solid: #6d28d9;
+  --pui-color-violet-soft: #251845;
+  --pui-color-pink: #f472b6;
+  --pui-color-pink-solid: #be185d;
+  --pui-color-pink-soft: #32152a;
+  --pui-alert-default-tinted-fg: #f4f4f5;
+  --pui-alert-default-tinted-secondary: #d4d4d8;
+  --pui-alert-info-tinted-fg: #bfdbfe;
+  --pui-alert-info-tinted-secondary: #93c5fd;
+  --pui-alert-success-tinted-fg: #bbf7d0;
+  --pui-alert-success-tinted-secondary: #86efac;
+  --pui-alert-warning-tinted-fg: #fde68a;
+  --pui-alert-warning-tinted-secondary: #fcd34d;
+  --pui-alert-danger-tinted-fg: #fecaca;
+  --pui-alert-danger-tinted-secondary: #fca5a5;
+  --pui-text-primary: #fafafa;
+  --pui-text-secondary: #d4d4d8;
+  --pui-text-placeholder: #71717a;
+  --pui-text-disabled: #52525b;
+  --pui-text-inverse: #18181b;
+  --pui-bg-page: #09090b;
+  --pui-bg-container: #18181b;
+  --pui-bg-surface: var(--pui-bg-container);
+  --pui-bg-muted: #27272a;
+  --pui-bg-active: #3f3f46;
+  --pui-bg-inverse: #242424;
+  --pui-bg-gradient-neutral: radial-gradient(circle at 12% 6%, rgba(250, 250, 250, 0.08) 0, transparent 32%), radial-gradient(circle at 88% 92%, rgba(113, 113, 122, 0.12) 0, transparent 38%), linear-gradient(145deg, #09090b 0%, #111113 52%, #09090b 100%);
+  --pui-bg-gradient-flowing-gold-pink: radial-gradient(circle at 14% 10%, rgba(246, 185, 204, 0.16) 0, transparent 34%), radial-gradient(circle at 88% 88%, rgba(229, 190, 107, 0.2) 0, transparent 40%), linear-gradient(145deg, #151014 0%, #2a1c1c 52%, #171114 100%);
+  --pui-bg-gradient-premium-black: radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.07) 0, transparent 32%), radial-gradient(circle at 90% 90%, rgba(113, 113, 122, 0.16) 0, transparent 40%), linear-gradient(145deg, #09090b 0%, #18181b 52%, #111113 100%);
+  --pui-bg-gradient-cement-white: radial-gradient(circle at 16% 10%, rgba(214, 211, 209, 0.12) 0, transparent 34%), radial-gradient(circle at 88% 88%, rgba(168, 162, 158, 0.14) 0, transparent 42%), linear-gradient(145deg, #141414 0%, #292524 52%, #18181b 100%);
+  --pui-bg-gradient-black-gold: radial-gradient(circle at 14% 10%, rgba(227, 193, 114, 0.18) 0, transparent 34%), radial-gradient(circle at 90% 90%, rgba(129, 93, 27, 0.18) 0, transparent 42%), linear-gradient(145deg, #09090b 0%, #211808 52%, #0f0c06 100%);
+  --pui-bg-gradient-light-gold: radial-gradient(circle at 12% 8%, rgba(255, 232, 166, 0.13) 0, transparent 34%), radial-gradient(circle at 88% 90%, rgba(216, 169, 69, 0.18) 0, transparent 40%), linear-gradient(145deg, #151108 0%, #2a210f 52%, #131008 100%);
+  --pui-bg-gradient-ai-mist-blue-violet: radial-gradient(circle at 12% 8%, rgba(112, 162, 255, 0.22) 0, transparent 34%), radial-gradient(circle at 88% 90%, rgba(185, 135, 255, 0.22) 0, transparent 42%), linear-gradient(145deg, #0b1020 0%, #171632 52%, #120d26 100%);
+  --pui-bg-gradient-cyber-pink-blue: radial-gradient(circle at 14% 10%, rgba(255, 106, 181, 0.18) 0, transparent 34%), radial-gradient(circle at 88% 88%, rgba(77, 188, 255, 0.22) 0, transparent 40%), linear-gradient(145deg, #160c20 0%, #102440 52%, #140d24 100%);
+  --pui-bg-gradient-aurora-violet: radial-gradient(circle at 10% 12%, rgba(81, 211, 184, 0.15) 0, transparent 34%), radial-gradient(circle at 90% 84%, rgba(167, 106, 255, 0.24) 0, transparent 42%), linear-gradient(145deg, #081615 0%, #171539 52%, #110c23 100%);
+  --pui-text-on-inverse: #ffffff;
+  --pui-border-color: #27272a;
+  --pui-border: var(--pui-border-color);
+  --pui-control-outline-color: #71717a;
+  --pui-divider-color: #a1a1aa;
+  --pui-tabbar-split-color: #3f3f46;
+  --pui-glass-surface: #18181b;
+  --pui-glass-surface-strong: #18181b;
+  --pui-glass-tint: rgba(24, 24, 27, 0.72);
+  --pui-glass-border: #27272a;
+  --pui-glass-highlight: transparent;
+  --pui-glass-shadow: none;
+  --pui-glass-shadow-soft: none;
+  --pui-shadow-brand: none;
+  --pui-shadow-glow: none;
+  --pui-shadow-card: none;
+  --pui-shadow-floating: none;
+  --pui-shadow-edge-top: none;
+  --pui-shadow-edge-bottom: none;
+  --pui-shadow-edge-left: none;
+  --pui-shadow-edge-right: none;
+  --pui-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.pui-frosted-glass--on {
+  --pui-glass-surface: rgba(255, 255, 255, 0.72);
+  --pui-glass-surface-strong: rgba(255, 255, 255, 0.86);
+  --pui-glass-border: rgba(255, 255, 255, 0.7);
+  --pui-frosted-filter: blur(26rpx) saturate(150%);
+  --pui-frosted-filter-soft: blur(18rpx) saturate(140%);
+}
+
+.pui-theme--dark.pui-frosted-glass--on {
+  --pui-glass-surface: rgba(24, 24, 27, 0.72);
+  --pui-glass-surface-strong: rgba(24, 24, 27, 0.88);
+  --pui-glass-border: rgba(255, 255, 255, 0.13);
+}
+
+.pui-shadow--on {
+  --pui-glass-shadow: 0 12rpx 32rpx rgba(24, 24, 27, 0.12);
+  --pui-glass-shadow-soft: 0 6rpx 18rpx rgba(24, 24, 27, 0.08);
+  --pui-shadow-brand: 0 4rpx 12rpx rgba(24, 24, 27, 0.14);
+  --pui-shadow-card: var(--pui-glass-shadow);
+  --pui-shadow-floating: var(--pui-glass-shadow);
+  --pui-shadow-edge-top: 0 10rpx 28rpx rgba(24, 24, 27, 0.12);
+  --pui-shadow-edge-bottom: 0 -10rpx 28rpx rgba(24, 24, 27, 0.12);
+  --pui-shadow-edge-left: 10rpx 0 28rpx rgba(24, 24, 27, 0.12);
+  --pui-shadow-edge-right: -10rpx 0 28rpx rgba(24, 24, 27, 0.12);
+}
+
+.pui-theme--dark.pui-shadow--on {
+  --pui-glass-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.32);
+  --pui-glass-shadow-soft: 0 6rpx 18rpx rgba(0, 0, 0, 0.24);
+  --pui-shadow-floating: var(--pui-glass-shadow);
+  --pui-shadow-edge-top: 0 10rpx 28rpx rgba(0, 0, 0, 0.32);
+  --pui-shadow-edge-bottom: 0 -10rpx 28rpx rgba(0, 0, 0, 0.32);
+  --pui-shadow-edge-left: 10rpx 0 28rpx rgba(0, 0, 0, 0.32);
+  --pui-shadow-edge-right: -10rpx 0 28rpx rgba(0, 0, 0, 0.32);
+}
+
+.pui-radius--large {
+  --pui-radius-small: 18rpx;
+  --pui-radius-medium: 28rpx;
+  --pui-radius-large: 40rpx;
+  --pui-radius-xlarge: 48rpx;
+  --pui-radius-xxlarge: 56rpx;
+}
+
+/* Keep the border box in layout; only neutral component boundary tokens become transparent.
+   Divider is content hierarchy, not a removable surface boundary. */
+.pui-border--off,
+.pui-frosted-glass--on.pui-border--off {
+  --pui-border-color: transparent;
+  --pui-border: transparent;
+  --pui-glass-border: transparent;
+}

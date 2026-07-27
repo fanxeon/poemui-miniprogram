@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0135",
+  "title": "BackTop 公开合同暴露了无真实用户任务的滚动引擎与平台回调",
+  "scope": "component",
+  "components": ["back-top", "button", "documentation", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "BackTop 应按 TDesign 的真实导航任务收敛，而不是把容器滚动、平台回调、加载状态和实例方法堆成难以正确使用的公开 API。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview", "api-reference", "property-panel", "example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 BackTop 公开 target、targetTop、scrollDuration、偏移、尺寸、安全区、层级、loading、disabled、私有 duration/easing、customContent、8 个事件和 2 个方法。",
+    "这些能力把页面滚动容器、业务反馈与微信 API 成功/失败结果错误地归属到回顶入口，H5 无法不伪造地复现。",
+    "TDesign 1.15.3 固定包的 BackTop 真实只有 fixed、icon、scrollTop、text、theme、visibilityHeight、icon/default Slot 与 to-top。"
+  ],
+  "expected": "BackTop 只由外部滚动位置控制显隐，可见点击发布一次回顶请求；平台回顶由微信 API 执行，滚动位置由页面真实回写，H5 仅镜像可验证部分。",
+  "actual": "旧合同把 BackTop 伪装成带目标容器、运行状态、平台回调和命令式写入的滚动引擎，导致 API、示例和 H5 都可能承诺不存在的能力。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求双方共有组件逐项联网参考 TDesign、按真实源码与浏览器 battle 收敛 API，并明确授权后续组件在完整证据后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/back-top", "note": "2026-07-20 访问官方动态组件页，作为 BackTop 产品用法语义来源。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "2026-07-20 核验官方仓库与微信小程序组件库分发来源。"},
+    {"kind": "browser", "ref": "https://registry.npmjs.org/tdesign-miniprogram/-/tdesign-miniprogram-1.15.3.tgz", "note": "2026-07-20 下载固定 npm 包，并核验 miniprogram_dist/back-top 的 props、类型、JS、JSON、WXML、WXSS，确认六个 Props、四个 theme、两个 Slot 与 to-top 后 pageScrollTo 的实现顺序。"},
+    {"kind": "file", "ref": "back-top/back-top.js", "note": "最终仅保留 8 Props；可见点击先 triggerEvent(to-top) 再调用 wx.pageScrollTo。"},
+    {"kind": "test", "ref": "scripts/test-back-top.js", "note": "锁定 Props 顺序、事件顺序、主题规整、低动效、基础 WXML、文档和三层安装产物一致性。"}
+  ],
+  "rootCause": "旧实现以功能数量为目标，把外部页面和容器的职责、业务反馈和微信回调塞进组件，缺少以官方真实源码与消费者所有权为边界的 API 取舍。",
+  "decision": {
+    "outcome": "收敛为 fixed、icon、scrollTop、text、theme、visibilityHeight、ariaLabel、reduceMotion；只保留 to-top、icon/default Slot，删除旧目标、状态、回调和 Methods。",
+    "rationale": "回顶入口的唯一用户意图是依据页面位置提出回顶请求；外部所有权与固定事件顺序使小程序、H5、示例和文档都可真实闭环。",
+    "alternativesRejected": [
+      "保留 page/container 双目标会让 H5 再次模拟平台回调和滚动成功。",
+      "保留 loading 或 retry 会把业务请求成功伪装成回顶能力。",
+      "用实例方法直接写滚动位置会绕开父级 onPageScroll 回写。"
+    ]
+  },
+  "impact": {
+    "files": ["back-top/back-top.js", "back-top/back-top.json", "back-top/back-top.wxml", "back-top/back-top.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/BACKTOP.md", "scripts/test-back-top.js"],
+    "dependencies": ["PUI Button", "page onPageScroll", "wx.pageScrollTo", "TDesign fixed npm source"]
+  },
+  "verification": {
+    "tests": ["scripts/test-back-top.js", "scripts/test-indexes.js", "scripts/test-feedback-ledger.js"],
+    "commands": ["node scripts/test-back-top.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "Props 面板实际设置 scrollTop=300 后，局部容器位置、可见态和 BackTop 禁用状态随之变化。",
+      "实际设置 fixed=false、text=返回顶部、half-round-dark 后，PreviewDevice 中的文档流、文案与主题同步重绘。",
+      "可见 BackTop 的实际点击使 PreviewDevice 内局部滚动容器归零；不会滚动官网文档页面。"
+    ],
+    "deviceRisks": ["需使用合法 AppID 在真实长页确认 to-top 到 wx.pageScrollTo 再到 onPageScroll 的完整顺序。", "fixed 安全区、rpx、Button 点击区域、样式隔离、系统低动效和读屏仍需微信真机确认。"]
+  },
+  "ai": {
+    "summary": "BackTop 是外部 scrollTop 驱动的回顶请求入口，不是容器滚动引擎或业务反馈组件。",
+    "rules": [
+      "BackTop 公开 Props 只能是 fixed、icon、scrollTop、text、theme、visibilityHeight、ariaLabel、reduceMotion。",
+      "可见点击固定先发布 to-top，再调用 wx.pageScrollTo；组件不得自行把外部 scrollTop 写为 0。",
+      "loading、error、retry、容器目标、平台 success/error/complete 和实例方法不得回流 BackTop。",
+      "基础 WXML 零 bind；事件只在 API 或事件专项示例出现。"
+    ],
+    "tags": ["back-top", "api-contract", "tdesign", "scroll-ownership", "wechat"]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0248",
+  "title": "PreviewDevice 共享 ScrollArea 缺少默认阅读渐隐遮罩",
+  "scope": "global",
+  "components": ["preview-site", "preview-device", "scroll-area", "all-components", "documentation"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "所有标准组件预览必须处于唯一 ScrollArea 中，并在内容可继续滚动时默认给出清楚、非阻塞的阅读提示。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice", "ScrollArea contract", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "622px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意内容高于 622px 预览设备可视区的标准组件概览。",
+    "旧 PreviewDevice 的 data-preview-scroll viewport 已有真实 overflow-y:auto，却没有 ScrollArea 默认的顶/底渐隐 sibling；用户无法从视觉上判断顶部或底部仍有内容。"
+  ],
+  "expected": "共享 Preview ScrollArea 在真实溢出时默认有与主题一致的 md/32px 顶底渐隐提示；顶部只显示底部、底部只显示顶部、中段同时显示，且不得增加第二个滚动上下文、遮罩 Surface 或拦截任何操作。",
+  "actual": "PreviewDevice 现在在唯一 viewport 外以两个 aria-hidden、pointer-events:none 的透明 sibling 渲染默认 md/32px 渐隐层，并由真实 scrollTop、scrollHeight、clientHeight 和 ResizeObserver 同步 overflow/边界状态；无溢出时两层都不显示。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户指出预览虽使用 ScrollArea，却没有默认遮罩层。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "共享 PreviewDevice 原有唯一 data-preview-scroll viewport；修复后由同步函数按真实几何更新渐隐层状态。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "两个绝对定位透明 sibling 消费 ScrollArea md 尺寸与 PreviewDevice 主题底色，不改变滚动布局。"},
+    {"kind": "test", "ref": "scripts/test-preview-overview-hierarchy.js", "note": "专项门禁锁定顶/底层、真实滚动同步、非交互语义与共享 overflow 状态。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179 · 2026-07-23 · 390x844", "note": "共享 viewport 为 620px/683px，顶部时仅底层 32px 渐隐 opacity=1；真实滚动到 31px 中段时两层均为 opacity=1；底部 63px 时仅顶层 opacity=1。document scrollWidth=375px。深色实点后设备与渐隐底色均为 rgb(9,9,11)，随后已恢复浅色。"}
+  ],
+  "rootCause": "共享 PreviewDevice 已落实唯一真实滚动 viewport，但此前只复用了 ScrollArea 的滚动职责，没有同时承接其默认的阅读渐隐 affordance；公共 ScrollArea 自身的遮罩不能自动覆盖外层预览基础设施。",
+  "decision": {
+    "outcome": "在 PreviewDevice 内实现共享 ScrollArea 的默认 md/32px 顶/底渐隐层，并仅将其作为唯一 viewport 的透明同级层。",
+    "rationale": "这保留每个组件原有的公开 ScrollArea/scroll-view API 和局部滚动，不会以嵌套公共 ScrollArea 制造双滚动；渐隐状态来自真实浏览器滚动几何而不是静态演示。",
+    "alternativesRejected": [
+      "把公共 pui-scroll-area 再包裹每一个 PreviewDevice：会制造双滚动并改变组件预览语义。",
+      "始终显示两个固定遮罩：顶部、底部和无溢出场景会给出错误提示。",
+      "以页面私有遮罩卡片覆盖 PreviewDevice：会增加无职责 Surface 并可能拦截交互。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-preview-overview-hierarchy.js", "docs/UI_DESIGN_CONTRACT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0248-preview-device-scrollarea-default-gradient.json"],
+    "dependencies": ["PreviewDevice", "shared Preview ScrollArea", "ScrollArea gradientOverlay md token", "PUI theme tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-overview-hierarchy.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-preview-overview-hierarchy.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["390x844 长内容在唯一 Preview ScrollArea 内实滚：顶部 scrollTop=0 时仅底层 32px 渐隐可见；中段 scrollTop=31 时两层可见；底部 scrollTop=63 时仅顶层可见，动画完成态 opacity 分别为 1/0。", "实际打开外观菜单并切换深色模式：PreviewDevice 底色和两个渐隐层均从 rgb(250,250,250) 同步为 rgb(9,9,11)，恢复浅色后无页面横向溢出。"],
+    "deviceRisks": ["本项仅修改官网 PreviewDevice 基础设施，不改变小程序 ScrollArea 源码或 API；合法 AppID 真机仍需验证公共 ScrollArea 在 scroll-view 中的遮罩合成、惯性和样式隔离。"]
+  },
+  "ai": {
+    "summary": "一个真实滚动 viewport 还必须在有溢出时提供与滚动位置一致的阅读 affordance，但不能以嵌套滚动或静态遮罩冒充。",
+    "rules": [
+      "标准组件概览只保留 PreviewDevice 的一个纵向滚动 viewport；公共组件自身的局部滚动不能替代或重复它。",
+      "默认顶底渐隐层必须是 viewport 的 pointer-events:none、aria-hidden sibling，并以 scrollTop/clientHeight/scrollHeight 实时决定显示。",
+      "无溢出不显示；顶部只显示底部、底部只显示顶部、中段同时显示；尺寸、颜色与低动效统一消费 ScrollArea/PUI Token。"
+    ],
+    "tags": ["preview-device", "scroll-area", "gradient-overlay", "overflow", "accessibility", "all-components"]
+  }
+}

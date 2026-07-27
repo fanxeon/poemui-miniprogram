@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0138",
+  "title": "Sticky 将页面滚动、视觉状态和诊断方法错误暴露为公开合同",
+  "scope": "component",
+  "components": ["sticky", "preview-site", "documentation"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "Sticky 要按真实滚动定位任务收敛 API，并让源码、H5、示例与文档只承诺可验证能力。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview", "api-reference", "property-panel", "example"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390px CSS contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Sticky 公开 page/container 目标、scrollTop、标题/说明、自定义内容、占位与视觉开关、安全区、状态和动效等 21 个 Props，另有 ready/change/fixed/unfixed/boundary/error 等 7 个事件及 update/refresh/getState 三个方法。",
+    "这些能力把页面滚动、内容 Surface、反馈状态和测量诊断混入一个定位组件，H5 只能靠独立状态壳模拟而无法作为真实小程序合同复现。",
+    "联网读取 tdesign-miniprogram@1.15.3 的 sticky props、类型、JS、JSON、WXML、WXSS，确认其公开范围只有 container、disabled、offsetTop、zIndex、默认 Slot 与 scroll。"
+  ],
+  "expected": "Sticky 只定位默认 Slot、保留固定占位、按可选 NodesRef 容器收口，并回传真实页面滚动测量；视觉、业务状态、标题和方法留给消费者。",
+  "actual": "旧公开合同把定位组件误做为可配置滚动和状态引擎，API、WXML、示例和 H5 容易承诺不存在或无消费者所有权的能力。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求逐组件联网参考 TDesign、基础用法不展示 bind，并授权在完整证据后连续自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/sticky", "note": "2026-07-20 访问官方组件页，作为 Sticky 产品语义来源。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram", "note": "2026-07-20 核验官方仓库与微信组件库分发来源。"},
+    {"kind": "browser", "ref": "https://registry.npmjs.org/tdesign-miniprogram/-/tdesign-miniprogram-1.15.3.tgz", "note": "2026-07-20 下载固定包，读取 miniprogram_dist/sticky 的 props、type、JS、JSON、WXML、WXSS。"},
+    {"kind": "file", "ref": "sticky/sticky.js", "note": "当前收敛实现以页面滚动分发、selector query、同高占位和容器函数作为唯一定位路径。"}
+  ],
+  "rootCause": "旧实现以能力数量而不是用户任务和官方真实源码为边界，把外部页面与业务组件的职责塞入 Sticky。",
+  "decision": {
+    "outcome": "收敛为四个 Props、唯一 scroll、默认 Slot、零公开方法；删除旧滚动目标、内容/视觉/状态/动效参数、重复事件和命令式测量方法。",
+    "rationale": "组件只保留能够在小程序端与 H5 中真实验证的定位职责，消费者继续拥有页面滚动、内容和业务反馈。",
+    "alternativesRejected": [
+      "保留 page/container 双目标会让 H5 与页面所有权持续混乱。",
+      "保留 loading/error/retry 会把业务反馈伪装成定位状态。",
+      "保留 refresh/getState 会暴露内部 selector query 诊断而非用户任务。"
+    ]
+  },
+  "impact": {
+    "files": ["sticky/sticky.js", "sticky/sticky.json", "sticky/sticky.wxml", "sticky/sticky.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/STICKY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-sticky.js"],
+    "dependencies": ["page-scroll behavior", "SelectorQuery", "PreviewDevice", "PUI Cell H5 helper", "TDesign fixed npm source"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sticky.js"],
+    "commands": ["node scripts/test-sticky.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["2026-07-20 实际滚动 H5 基础/偏移/容器/禁用四个局部区域；Props 面板真实写回 container、disabled、offsetTop 与 zIndex=0，重置恢复默认，API 与复制入口可见。", "iPhone 15 393px PreviewDevice 外层 391/391、viewport 380/380，无横向溢出；390px 响应式由专项合同锁定。", "深色及边框关闭、阴影、毛玻璃、大圆角、渐变同时开启后 Cell 计算为 dark Surface、透明中性边界、14px 圆角、blur(18px) saturate(1.35) 与真实阴影，随后恢复浅色标准组合。"],
+    "deviceRisks": ["微信 page onPageScroll、SelectorQuery、fixed、rpx、样式隔离、触摸和读屏需合法 AppID 真机确认。"]
+  },
+  "ai": {
+    "summary": "Sticky 是默认 Slot 的页面定位组件，不是滚动目标、视觉状态或业务反馈引擎。",
+    "rules": [
+      "Sticky 公开范围只能是 container、disabled、offsetTop、zIndex、scroll 与 default Slot。",
+      "container 只接受返回 NodesRef 的函数；字符串选择器和静态 WXML 字面量不得被宣称为原生能力。",
+      "页面滚动、标题/背景、loading/error/retry、动效和实例方法不得回流 Sticky。",
+      "基础 WXML 只展示最小默认 Slot 调用，完整事件只进入 API 或专项示例。"
+    ],
+    "tags": ["sticky", "api-contract", "tdesign", "scroll-ownership", "selector-query"]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0449",
+  "title": "首页高级分区缺少语义标记且 premium 视觉基线偏低",
+  "scope": "component",
+  "components": ["miniprogram-home", "icon", "collapsible"],
+  "type": "visual-layout",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "在 index 首页“高级”文字右侧添加公开 PUI premium 图标，清楚表达高级组件分区。",
+  "environment": {
+    "surfaces": ["miniprogram home", "pui-icon", "h5 icon catalog"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页目录，“高级”与其他普通分区只有文字，缺少高级组件的可见语义标记。",
+    "现有 PUI Icon Font 仅有 crown，没有用户指定的公开 premium 名称，首页不能以 name=premium 调用。",
+    "新增 premium 后在微信开发者工具 390px 首页滚动到高级分区：标题文字盒为 28×20px，Flex 已几何居中，但皇冠可见轮廓的顶部明显偏低、底部接近文字底边，视觉基线不一致。"
+  ],
+  "expected": "高级目录标题右侧显示同源 PUI premium 图标；该名称在小程序与 H5 的同一 Icon Font 中可解析，皇冠可见轮廓与标题视觉基线一致，其他目录标题、开合和滚动行为不变。",
+  "actual": "高级目录最初沿用 Collapsible 的纯文本默认 Trigger且 Icon Font 不公开 premium；首轮新增后父级 Flex 已正确居中，但 Lucide crown 的可见轮廓在自身 em 方框内偏下。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求在首页高级文字右侧使用 pui-icon premium。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "高级项使用 Collapsible trigger Slot 组合标题与 PUI Icon。"},
+    {"kind": "file", "ref": "scripts/generate-icons.js", "note": "premium 作为公开语义名称映射到锁定 Lucide crown 并由同一生成链发布。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "锁定高级 Trigger Slot、PUI Icon 组合与 Token 化标题排列。"},
+    {"kind": "test", "ref": "scripts/test-icon.js", "note": "锁定 premium 的公开名称、码点、跨端同源字体目录及独立光学校正。"}
+  ],
+  "rootCause": "首页目录只向 Collapsible 传入纯文本 label；图标库虽有 crown 轮廓，却没有能表达高级组件语义的 premium 公共名称。首轮实现还把 Slot 开关写成循环内的比较表达式，微信运行态未稳定投射该自定义 Trigger。Slot 修复后父级 align-items:center 与文字盒几何均正常，剩余偏差来自 crown 描边在 24×24 em 方框内的光学重心偏低。",
+  "decision": {
+    "outcome": "新增稳定 premium Icon Font 名称，映射既有 Lucide crown，并为高级分区提供单一 hasPremiumIcon 数据标记；仅该标记启用 Collapsible trigger Slot，将无障碍隐藏的 30rpx 图标放在标题右侧。premium 在字体生成前独立应用 translate(0 -1.5)，通用 crown 和首页 CSS 不变。",
+    "rationale": "复用同一 Icon Font 和 Collapsible 公开 Slot可保持跨端资源、触发语义与目录结构同源；显式数据标记避免循环内表达式造成的 Slot 投射漂移。把光学校正放入 premium 语义字形可让小程序与 H5 所有调用一致，同时避免页面负 margin、相对定位或 transform 形成第二套不可追溯规则。",
+    "alternativesRejected": [
+      "用 Unicode 皇冠字符或页面私有 SVG，会绕开 PUI Icon 与统一字体链。",
+      "将所有目录标题都改为自定义 Trigger，会扩大无关页面组合并增加漂移风险。",
+      "仅用现有 crown 名称，会违背用户指定的 premium 公共调用语义。",
+      "在首页 .home-components__advanced-icon 上加 margin-top、top 或 transform，只会掩盖字形重心问题并导致 H5 与其他调用继续漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/generate-icons.js", "miniprogram/pages/index/index.js", "miniprogram/pages/index/index.json", "miniprogram/pages/index/index.wxml", "miniprogram/pages/index/index.wxss", "scripts/test-icon.js", "scripts/test-icon-font-outlines.js", "scripts/test-miniprogram-home.js", "docs/components/ICON.md", "docs/MINIPROGRAM_HOME.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0449-home-advanced-premium-icon.json"],
+    "dependencies": ["PUI Icon Font", "PUI Collapsible trigger Slot", "Lucide crown"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-icon-font-outlines.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["npm run icons:generate 通过：生成 220 个图标、17 个分类与 22952B 本地 WOFF2；premium SVG 明确包含 translate(0 -1.5)，crown 保持无偏移。", "npm run site:build 与 npm run example:install 通过，均重新生成 71 个 miniprogram_dist 组件目录与图标产物。", "微信 CLI build-npm 通过：合法 AppID wx23aa017375535746，1036ms，warnings=[]。", "node scripts/test-icon.js、node scripts/test-icon-font-outlines.js、node scripts/test-miniprogram-home.js 均通过，锁定 premium 独立校正、crown 不变和首页禁止页面偏移。", "源码、miniprogram_dist、真实 miniprogram_npm 与 H5 preview 的 icon-font CSS SHA256 均为 5cfde3e0a042094e5aaf2ccef5595c38ba668929ab8c64a957b722eb8e1e84f7。", "npm run feedback:generate 与 npm run feedback:check 通过：完整 check 执行时为 434 条记录。", "npm run check 通过。", "npm run pack:check 通过：545 个文件，包大小 347.7kB；git diff --check 通过。"],
+    "browser": ["H5 真实预览 Icon 资源页：390x844 浅色搜索 premium 后仅有 1 张资源卡，实际字形 font-family=PoemUI Roundline、document 375px/viewport 390px，无横向溢出。", "H5 真实预览深色：premium 字形实际 font-family=PoemUI Roundline、color=rgb(250, 250, 250)，document 375px/viewport 390px；外观已恢复浅色。", "微信开发者工具真实首页：iPhone 12/13 Pro 390px 热重载后滚动到高级分区，30rpx premium 皇冠的可见顶部与标题进入同一视觉带、底部不再下坠；页面无横向溢出，console 对 error/warning/fail/not-found 的过滤为空。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 30rpx premium 字体字形、系统字体缩放和 Collapsible Trigger 触摸命中。"]
+  },
+  "ai": {
+    "summary": "用户指定的公开图标语义必须进入同一 PUI Icon Font，再由页面复用已有 Slot 组合。",
+    "rules": [
+      "页面需要新图标名时先审计现有 catalog；不存在则在生成源建立稳定语义别名，不手写字符或 SVG。",
+      "首页分区局部标题组合优先使用 Collapsible trigger Slot，不复制 Trigger、开合和 ARIA。",
+      "新增公开 Icon 名称必须同步小程序字体、H5 catalog、合同、专项测试和生成物。"
+      ,"语义别名字形需要和特定文本场景对齐时，在唯一生成链中做可测试的独立光学校正；消费页面不得重复偏移。"
+    ],
+    "tags": ["miniprogram-home", "advanced", "premium", "icon", "collapsible"]
+  }
+}

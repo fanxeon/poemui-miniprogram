@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0373",
+  "title": "70 个真实根组件需要共享外观资格矩阵与 effectsEnabled 总开关",
+  "scope": "global",
+  "components": ["config-provider", "input", "search", "combobox", "popup", "sheet", "action-sheet", "tabbar", "navbar", "image", "collapsible", "preview-site"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-26",
+  "userGoal": "深浅色、边框、阴影、毛玻璃、大圆角、等距和渐变在全部小程序组件页与 H5 中应遵守同一组件语义；非 Surface 组件不能因为全局阴影开关获得外投影，关闭总效果也不能破坏布局或已保存偏好。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "逐个检查 miniprogram/**/*.wxml 中真实 pui-* 根节点；完整搬迁后根节点从 31 扩展为 70，并对照 H5 镜像的 Surface、条目、叶子和屏幕附着角色。",
+    "打开外观设置并关闭 effectsEnabled，再观察依赖的 shadow/frost/radius 与独立的 theme/border/equalSpacing 是否发生错误联动。",
+    "检查 Image、Collapsible、Cell、Icon 等非独立 Surface 是否获得外投影，以及 Navbar、Tabbar、Popup、Sheet、ActionSheet 的阴影是否朝向真实附着边。"
+  ],
+  "expected": "由一份可执行的 70 根组件矩阵定义 shadow/frost/radius/border/equalSpacing/gradient 资格；effectsEnabled 只暂停 shadow/frost/radius 的有效值，保留持久化单项和布局；小程序与 H5 同步消费语义 Token。",
+  "actual": "scripts/appearance-contract-matrix.js 与专项测试现覆盖 70 个根组件：完整搬迁新增的布局、表单、数据展示和高级组件按 Surface 角色获得资格；Input 同时保留独立字段 Surface 和 Search/Combobox 嵌入规则。",
+  "evidence": [
+    {"kind": "file", "ref": "scripts/appearance-contract-matrix.js", "note": "从真实 miniprogram WXML 枚举并锁定 70 个根组件及 Search/Combobox 内嵌 Input 规则。"},
+    {"kind": "file", "ref": "docs/APPEARANCE_CONTRACT_MATRIX.md", "note": "记录 Surface 角色、阴影资格、边框、毛玻璃、大圆角、等距和渐变的共享矩阵。"},
+    {"kind": "test", "ref": "scripts/test-appearance-contract-matrix.js", "note": "专项测试通过 70 roots + 1 composed field rule。"},
+    {"kind": "test", "ref": "scripts/test-preview-appearance-menu.js", "note": "真实 H5 外观菜单测试覆盖 effectsEnabled、依赖开关禁用、持久化与 reset。"},
+    {"kind": "browser", "ref": "2026-07-25 H5 390px", "note": "document clientWidth/scrollWidth=375/375；Icon 资源页三列网格为 109px×3，无页面横向溢出；Collapsible 实际预览根 box-shadow=none。"}
+  ],
+  "rootCause": "外观开关曾主要按全局 class 传播，完整小程序迁移后新增根组件没有同步进入按 Surface 角色约束的共享资格矩阵；effectsEnabled 也必须继续只暂停三项效果而不改变主题、边框、等距和几何。",
+  "decision": {
+    "outcome": "以 70 根矩阵作为小程序与 H5 的资格真源；独立 Surface 才能消费外投影、毛玻璃和语义圆角，条目/叶子与布局根保持无外投影；effectsEnabled=false 只暂停 shadow/frost/largeRadius，有效边框、主题、等距、布局和持久化单项保持独立。",
+    "rationale": "把视觉开关的影响范围从“所有节点”收敛到真实组件语义，避免 Cell/Icon/Image/Collapsible 等展示叶子被错误装饰，也避免关闭效果时发生布局漂移。",
+    "alternativesRejected": [
+      "给所有 pui-* 根统一加 shadow/radius/frost，会制造面板套面板和错误层级。",
+      "在每个页面维护一份外观组件名单，会与 H5、发布 WXML 和未来组件持续漂移。",
+      "effectsEnabled=false 时直接重置 shadow/frost/radius，会破坏刷新后恢复用户偏好的持久化合同。"
+    ]
+  },
+  "impact": {
+    "files": ["common/style/theme.wxss", "input/input.wxss", "image/image.wxss", "collapsible/collapsible.wxss", "combobox/combobox.wxss", "tabbar/tabbar.wxss", "popup/popup.wxss", "sheet/sheet.wxss", "action-sheet/action-sheet.wxss", "preview/app.js", "preview/styles.css", "scripts/appearance-contract-matrix.js", "scripts/test-appearance-contract-matrix.js", "docs/APPEARANCE_CONTRACT_MATRIX.md", "docs/UI_DESIGN_CONTRACT.md"],
+    "dependencies": ["visualConfig", "pui-config-provider", "pui-input", "pui-button", "pui-icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-appearance-contract-matrix.js", "scripts/test-preview-appearance-menu.js", "scripts/test-preview-fruit-flavor-preset.js", "scripts/test-non-elevated-shadow-semantics.js", "scripts/test-input.js", "scripts/test-search.js", "scripts/test-combobox.js", "scripts/test-tabbar.js", "scripts/test-popup.js", "scripts/test-sheet.js", "scripts/test-action-sheet.js"],
+    "commands": ["node scripts/test-appearance-contract-matrix.js", "node scripts/test-preview-appearance-menu.js", "node scripts/test-preview-fruit-flavor-preset.js", "node scripts/test-non-elevated-shadow-semantics.js"],
+    "browser": ["H5 外观菜单真实切换 effectsEnabled 后 data-effects=off，依赖开关 disabled，代表 Button 的计算 box-shadow=none/radius=6px；reset 后恢复 effects on、shadow on、frost off、radius large、border off。", "390px 下 Icon 资源页三列、209 个条目、page clientWidth/scrollWidth=375/375。"],
+    "deviceRisks": ["微信开发者工具热重载后的 390px、深浅色和多页面 Store 订阅尚需本轮最终回归。", "iOS/Android 真机的 WXSS 样式隔离、系统字体和合成阴影仍需合法 AppID 实机确认。"]
+  },
+  "ai": {
+    "summary": "外观设置必须按组件 Surface 资格消费，effectsEnabled 只暂停三类效果且不改布局或已保存偏好。",
+    "rules": ["新增真实 pui-* 根组件前先更新外观资格矩阵和对应专项测试。", "非独立 Surface 的 Cell、Icon、Image、Collapsible、Badge、Tag、Progress、Skeleton 不得因全局 shadow 获得外投影。", "effectsEnabled=false 不得清除 shadow/frost/radius 的持久化值，也不得改变 theme/border/equalSpacing。", "Navbar、Tabbar、Popup、Sheet、ActionSheet 的阴影方向必须由真实附着边决定。"],
+    "tags": ["appearance", "visualConfig", "surface-eligibility", "effectsEnabled", "cross-platform"]
+  }
+}

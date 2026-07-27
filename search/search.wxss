@@ -1,0 +1,5 @@
+:host{display:block;width:100%;max-width:100%;min-width:0}
+.pui-search{display:flex;align-items:center;gap:var(--pui-content-gap);width:100%;max-width:100%;transition:opacity var(--pui-search-duration) var(--pui-search-ease)}
+.pui-search--disabled{opacity:.5}.pui-search--readonly{opacity:.7}
+.pui-search__field{min-width:0;flex:1}
+.pui-search__cancel{flex:0 0 auto;min-width:auto!important;padding:0!important;color:var(--pui-text-secondary)!important;background:transparent!important;border:0!important;box-shadow:none!important}

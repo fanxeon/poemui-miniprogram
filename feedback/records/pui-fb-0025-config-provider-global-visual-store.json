@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0025",
+  "title": "安装端缺少跨页面统一组件主视觉的公共配置入口",
+  "scope": "component",
+  "components": ["config-provider", "design-tokens"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-19",
+  "userGoal": "让安装 PoemUI 的消费者以一份配置统一控制所有页面组件的主题、阴影、毛玻璃、大圆角和边框，并获得明确、可复制的 ConfigProvider 使用说明。",
+  "environment": {
+    "surfaces": ["miniprogram-component-tree", "h5-config-provider-doc", "npm-package", "example-miniprogram"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark", "auto"]
+  },
+  "reproduction": [
+    "安装 poemui-miniprogram 后查看 ConfigProvider，旧 API 只能由每个页面分别传 theme、shadow、frostedGlass、largeRadius，且没有 bordered。",
+    "业务在设置页修改视觉效果时，需要自行复制状态、存储和跨页面同步逻辑，无法维护唯一配置源。",
+    "官网 ConfigProvider 页面没有解释小程序 App 不存在全局 WXML 根，也没有提供恢复、预设、总效果开关和存储失败处理的完整用法。"
+  ],
+  "expected": "包入口提供经过白名单规整、可持久化和可订阅的全局视觉 Store；每个页面根 ConfigProvider 可以选择订阅同一 Store。主题和边框独立，效果总开关只暂停阴影、毛玻璃和大圆角；渐变明确留在消费者页面画布。官网概览、API、PROP、WXML、README 和示例展示同一真实接入路径。",
+  "actual": "旧 ConfigProvider 没有边框 Prop、全局 Store、预设、总效果开关或跨页面同步能力，消费者只能在业务侧重复实现；官网也只展示局部 Props，无法指导真实安装使用。",
+  "evidence": [
+    { "kind": "user-report", "ref": "当前任务对话", "note": "用户明确授权当前 Goal 后续组件由 agent 在完整门禁后自主验收；本记录依据该授权完成 ConfigProvider 验收。" },
+    { "kind": "user-report", "ref": "当前任务对话", "note": "用户要求已安装 PoemUI 的其他项目也能一键把控所有组件主视觉，并要求同步更新 ConfigProvider 页面说明和使用方法。" },
+    { "kind": "file", "ref": "common/utils/visual-config.js", "note": "公开 Store 实现版本化本地存储、字段白名单、预设、总效果开关、订阅和真实错误返回。" },
+    { "kind": "file", "ref": "config-provider/config-provider.js", "note": "Provider 新增 bordered/useGlobalConfig，订阅 Store 并将有效配置映射为主题与视觉 Token class。" },
+    { "kind": "test", "ref": "scripts/test-config-provider.js", "note": "专项合同覆盖默认值、持久化、白名单、总开关语义、预设、失败后重试恢复、取消订阅、公开入口、官网和文档。" },
+    { "kind": "browser", "ref": "http://192.168.31.117:4179/#/foundation/config-provider", "note": "真实页面验证概览/API/PROP、六个 Props、安装代码和组合计算样式；同时发现并修复站点 shadow=off 覆盖局部 Provider 与 dark+frost 重新写回边框的 CSS 作用域问题。" },
+    { "kind": "build", "ref": "npm run example:install && 微信 CLI build-npm && npm run pack:check", "note": "示例安装成功、微信 npm 构建 1310ms 且 0 warnings，npm 包 324.6kB/549 files；ConfigProvider、Store 与 theme 在源码、dist、安装包和微信 npm 逐字节一致。" }
+  ],
+  "rootCause": "早期 ConfigProvider 只承担单页主题 Token 容器，官网视觉偏好又被实现为站点私有状态；两者没有抽象出消费者可安装的共享配置源，也没有区分组件视觉与页面画布能力。首轮 H5 镜像还被官网 shadow=off 的全后代规则覆盖，dark+frost 的高优先级 Token 也会压过 border-off，说明仅检查根 class 无法保证真实组件计算样式生效。",
+  "decision": {
+    "outcome": "在 npm 入口公开 visualConfig 单例 Store，固定支持 theme/effectsEnabled/shadow/frostedGlass/largeRadius/bordered、standard/soft/glass 预设和 restore/set/applyPreset/setEffectsEnabled/reset/subscribe。ConfigProvider 新增 bordered/useGlobalConfig；每个页面根选择 use-global-config 后订阅同一 Store。App.onLaunch 只恢复存储，页面根 Provider 才承载组件树。渐变不进入 Store 或 Provider。",
+    "rationale": "小程序没有可覆盖全部页面的 App 级 WXML 根，Store + 每页根 Provider 能在遵守平台结构的同时维护唯一配置源。语义 Token 继承避免逐组件写 class，返回持久化结果使失败路径真实可处理。",
+    "alternativesRejected": [
+      "只在 app.globalData 写对象不会自动触发已挂载组件树更新，也会让消费者重复写订阅和存储。",
+      "要求每个页面分别传六个 Props 会产生视觉漂移和重复维护。",
+      "把 Provider 放进 app.js 或 app.json 不能创建覆盖所有页面的 WXML 父节点。",
+      "把渐变作为 Provider Prop 会把页面画布职责错误扩散到 Button、Tag、Dialog 等组件 Surface。",
+      "用 effectsEnabled 一并关闭主题或边框会破坏用户独立选择，重新开启也无法恢复此前单项状态。"
+    ]
+  },
+  "impact": {
+    "files": ["common/utils/visual-config.js", "config-provider/config-provider.js", "common/style/theme.wxss", "index.js", "metadata/components.js", "preview/app.js", "preview/styles.css", "README.md", "docs/COMPONENT_API.md", "_example/miniprogram/pages/index/index.js", "_example/miniprogram/pages/index/index.wxml", "scripts/test-config-provider.js"],
+    "dependencies": ["config-provider", "design-tokens", "wx-storage", "npm-entry"]
+  },
+  "verification": {
+    "tests": ["scripts/test-config-provider.js", "scripts/check-package.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "微信 CLI build-npm", "npm run pack:check"],
+    "browser": [
+      "ConfigProvider 已退出基础文档例外并复用固定概览/API/属性 Tabs；API 完整显示 8 Props、1 Event 与 1 Slot，属性页展示 visualConfig、每页根 Provider、存储失败、预设、总效果开关和渐变边界，基础 WXML 不输出默认 Props 或 bind。",
+      "桌面组合实测 useGlobalConfig=true、dark、shadow/frost/largeRadius=on、bordered=false：卡片背景 rgba(24,24,27,.72)、阴影 0 3px 9px rgba(0,0,0,.24)、blur(13px)、14px 圆角、边框 transparent，Provider 文字 rgb(250,250,250)，PreviewDevice 393×622，页面 1265/1265 无横向溢出。",
+      "390×844 覆盖下页面 client/scroll width 375/375，Tabs 351×40、工具栏 375×88、PreviewDevice 351×622、ConfigProvider Card 310px 且内部 310/310 无横向溢出；重置恢复 light/shadow-off/frost-off/normal-radius/border-on/useGlobalConfig=false，浏览器 0 warning/error。"
+    ],
+    "deviceRisks": ["Store、Provider 源码与微信 npm 产物可由静态和 VM 合同验证，但多个真实 Page 并行挂载、wx storage 异常、系统 auto 主题回调及样式隔离继承仍需消费者使用合法 AppID 做最终真机复核。"]
+  },
+  "ai": {
+    "summary": "消费者全局组件视觉使用 visualConfig + 每页根 use-global-config Provider；渐变继续属于页面画布。",
+    "rules": [
+      "跨页面视觉设置只写 visualConfig，不复制业务侧全局对象或直接修改 Provider 内部 class。",
+      "App.onLaunch 调用 restore；每个页面根挂载 use-global-config Provider，小程序不存在一个可替代所有页面 Provider 的 App WXML 根。",
+      "effectsEnabled 只总控 shadow/frostedGlass/largeRadius，theme 与 bordered 保持独立并保留原值。",
+      "bordered=false 必须保留盒模型以及焦点、错误、选中和危险状态边界。",
+      "渐变是消费者页面画布能力，禁止加入 ConfigProvider Prop、visualConfig 预设或组件 Surface。",
+      "set/applyPreset/setEffectsEnabled/reset 的 error 必须进入真实失败处理，不能宣称持久化必然成功。"
+    ],
+    "tags": ["config-provider", "visual-config", "global-store", "persistence", "border", "theme", "consumer-api", "miniprogram"]
+  }
+}

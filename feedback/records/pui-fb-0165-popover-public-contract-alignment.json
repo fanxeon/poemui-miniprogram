@@ -1,0 +1,153 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0165",
+  "title": "Popover 公开合同曾混入业务状态、触发策略与实例方法",
+  "scope": "component",
+  "components": [
+    "popover",
+    "metadata",
+    "usage-code",
+    "example",
+    "preview-site"
+  ],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "以联网 TDesign Popover 对照和真实 WXML 为依据收敛 Popover，只公开锚点气泡实际能闭环的能力，基础 WXML 保持最小化。",
+  "environment": {
+    "surfaces": [
+      "source",
+      "h5-preview",
+      "property-panel",
+      "api-reference",
+      "usage-code",
+      "example",
+      "miniprogram-dist"
+    ],
+    "platforms": [
+      "browser",
+      "wechat-miniprogram"
+    ],
+    "viewports": [
+      "PreviewDevice 393px",
+      "PreviewDevice 375px",
+      "390px contract"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "旧 Popover 公开 28 项 Props，包含 tap/longpress/manual、title/footer、disabled、loading/error/empty/retry、尺寸/offset/zIndex、可调 duration/easing、11 个事件和 4 个实例方法。",
+    "2026-07-20 已联网访问 TDesign Popover 页面、官方仓库，并读取固定 tdesign-miniprogram@1.15.3 包内 miniprogram_dist/popover 的 props.js、type.d.ts、popover.js、popover.wxml 与 popover.wxss。"
+  ],
+  "expected": "Popover 只承担 default 触发 Slot、content 气泡内容、可控显隐、12 个位置、主题、箭头、外部点击关闭、fixed 测量和固定 500ms/1ms 动效；基础 WXML 无 bind，公开唯一 visible-change、两个 Slot、零 Methods。",
+  "actual": "历史公开面把 Tooltip 的触发方式、Popup/Sheet 的业务区域和预览诊断状态混入锚点气泡，调用者会误以为 Popover 能处理加载、重试、提交或命令式开关。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户已明确授权后续组件范围化自主验收，仍要求逐项真实浏览器、Ledger 与构建证据。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://tdesign.tencent.com/miniprogram/components/popover",
+      "note": "2026-07-20 在线核验 Popover 的产品用法、Props、Slot 与 visible-change 语义。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/popover",
+      "note": "2026-07-20 在线核验 TDesign Popover 源码位置；固定 npm 包用于可复现 API 判断。"
+    },
+    {
+      "kind": "file",
+      "ref": "popover/popover.js",
+      "note": "当前源码精确声明 10 Props，内部测量和过渡方法不作为实例 API，只通过 visible-change 请求关闭。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/popover",
+      "note": "实际点击触发器和外部区域；实点 controlled true/false、defaultVisible、空 content、bottom-left→bottom-start、theme=error、fixed、arrow、外部关闭门禁与 180ms/1ms。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-popover.js",
+      "note": "专项合同锁定 Props、受控/非受控、外部关闭、同轴翻转、fixed 坐标、动效、H5、API、示例和 dist 同源。"
+    }
+  ],
+  "rootCause": "历史实现未从真实锚点气泡职责分离 Tooltip 触发、上层业务内容和 H5 诊断状态，导致 API、文档、示例和预览一起扩张。",
+  "decision": {
+    "outcome": "公开 10 Props：TDesign 的 visible/defaultVisible/content/placement/showArrow/theme/closeOnClickOutside/fixed 加 PoemUI ariaLabel/reduceMotion；仅 visible-change，default/content 两个 Slot，零 Methods。",
+    "rationale": "标题、表单、Loading、Empty、Result、业务关闭策略和网络回写属于调用方；Popover 只应可靠地请求显隐并完成锚点测量。",
+    "alternativesRejected": [
+      "保留 retry、loading/error/empty 或 footer 会伪造 Popover 的业务闭环能力。",
+      "保留 tap/longpress/manual 会与 Tooltip 的触摸提示职责重叠。",
+      "在基础 WXML 展示 bind:visible-change 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "popover/popover.js",
+      "popover/popover.json",
+      "popover/popover.wxml",
+      "popover/popover.wxss",
+      "metadata/components.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/components/POPOVER.md",
+      "_example/miniprogram/pages/components/index.js",
+      "_example/miniprogram/pages/components/index.wxml",
+      "scripts/test-popover.js"
+    ],
+    "dependencies": [
+      "TDesign Popover reference",
+      "PUI Button H5 mirror",
+      "shared usage-code generator",
+      "PreviewDevice edge-to-edge layout"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-popover.js",
+      "scripts/test-preview-native-control-boundaries.js",
+      "scripts/test-preview-theme-coverage.js",
+      "scripts/test-overlay-state-composition.js",
+      "scripts/test-core-state-composition.js"
+    ],
+    "commands": [
+      "2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：最终结果记录在本组件进度项。",
+      "2026-07-20 微信 CLI build-npm：实际结果记录在本组件进度项，绝不手工伪造 miniprogram_npm。"
+    ],
+    "browser": [
+      "默认非受控点击显示后，透明外部层点击实际卸载气泡；closeOnClickOutside=false 时不存在外部层。",
+      "visible=true 受控模式通过触发器使站点父级真实回写为 false；defaultVisible=true 在退控后真实打开。",
+      "right-bottom 和 bottom-left 分别映射为 right-end 与 bottom-start；fixed 的计算样式为 fixed，reduceMotion 的四条 transition 都为 0.001s。",
+      "theme=error 的计算背景为 rgb(254,242,242)；content 为空保持空气泡而不伪造 Empty。"
+    ],
+    "deviceRisks": [
+      "微信真机仍需以合法 AppID 验证 SelectorQuery 碰撞翻转、fixed 外部点击层、rpx 位移、Slot 投影、样式隔离、触摸穿透、读屏与系统低动效。"
+    ]
+  },
+  "ai": {
+    "summary": "Popover 是锚点显隐基础设施，不是触摸提示、业务状态或工作流容器。",
+    "rules": [
+      "先用在线 TDesign 页面、固定 npm 包和真实 WXML 三者交叉确定基础浮层公开面。",
+      "基础 WXML 只保留最小调用；完整 visible-change 只进入 Events 或事件专项示例。",
+      "任何 loading/error/empty/retry、标题、Footer、触发策略和业务成功都必须留给消费者或 Tooltip，不能回填 Popover 根 API。"
+    ],
+    "tags": [
+      "popover",
+      "tdesign",
+      "api-contract",
+      "visible-change",
+      "no-fake-success"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="group"
+  aria-label="{{badgeLabel}}"
+>
+  <view class="pui-badge__content">
+    <text wx:if="{{content}}" class="pui-badge__content-text">{{content}}</text>
+    <slot wx:else></slot>
+  </view>
+  <view
+    wx:if="{{rendered}}"
+    class="pui-badge"
+    role="status"
+    aria-live="polite"
+    aria-label="{{badgeLabel}}"
+  >
+    <slot wx:if="{{useCountSlot && !dot}}" name="count"></slot>
+    <text wx:elif="{{!dot}}" class="pui-badge__text">{{badgeText}}</text>
+  </view>
+</view>

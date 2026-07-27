@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0244",
+  "title": "component-only 归一化遗漏展示根与新诊断类，概览泄露工程状态",
+  "scope": "global",
+  "components": ["preview-site", "navbar", "tabbar", "calendar", "loading", "radio", "tabs", "checkbox", "form", "count-down", "table", "progress", "upload", "pull-refresh", "sidebar", "cell", "list"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "基于 Popup battle 的状态预览、空间语义与真实交互规则，自主修复全库官网组件预览。",
+  "environment": {"surfaces": ["h5-preview", "component-only renderer", "props-panel"], "platforms": ["browser", "node"], "viewports": ["390x844 browser"], "themes": ["light", "dark"]},
+  "reproduction": ["在 390x844 逐路由访问标准组件概览。Navbar、Calendar、Loading、Radio 的展示根缺少 demo-section，未写入 data-preview-contract；Tabs、Tabbar、Checkbox、Form、CountDown、Table、Progress、Upload 等展示 feedback/status/actions/事件文字；部分可见文案继续显示受控、原始值、value、change、父级回写等实现术语。"],
+  "expected": "每个设备预览路由都在离线模板阶段形成 component-only 根；工程诊断节点从 DOM 删除，剩余文字用用户可理解的状态和操作语言表达，同时真实组件交互继续运行。",
+  "actual": "共享归一化现覆盖遗漏的展示根、feedback/status/actions 诊断类和任意嵌套的直接诊断类，并统一转换可见工程术语。Progress 等纯诊断状态已删除；Tabbar 选择、Calendar 日期选择和 CountDown 实时计时仍真实运行。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 范围化授权", "note": "用户明确授权后续组件无需逐项确认，可自主完成全库修复与验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/*", "note": "390x844 全量扫描 72 个设备预览路由：component-only 合同缺失 0、工程术语命中 0、document/body 横向溢出 0；Icon 为明确的非设备资源库例外。"},
+    {"kind": "browser", "ref": "#/components/tabbar, #/components/calendar, #/components/count-down", "note": "Tabbar 实点首页到组件后活动项变化且 pui-nav-event=0；Calendar 选中日期 6 到 7 且 feedback=0；CountDown 00:02:30 到 00:02:29、actions/status 均为0。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "renderOverviewComponentPreview 继续在离线 template 删除节点；缺失根已加入 demo-section，新增诊断清单与用户文案归一化。"},
+    {"kind": "test", "ref": "scripts/test-preview-overview-hierarchy.js", "note": "专项合同锁定遗漏根、任意深度诊断类、Progress 状态和用户文案归一化。"}
+  ],
+  "rootCause": "component-only 最初只依赖旧的命名模式与根级诊断判断；后续新增展示函数没有统一 demo-section 根，新的 feedback/status/actions 类又在嵌套层，使静态门禁通过但真实预览仍泄露工程信息。",
+  "decision": {"outcome": "修复共享归一化边界与展示根，不以 CSS 隐藏；将可读说明转换为用户语言，删除纯工程诊断。", "rationale": "共享入口可以一次覆盖已发布路由，保留真实组件节点和运行时绑定，避免为每页重写一套遮蔽规则。", "alternativesRejected": ["逐组件用 CSS display:none 隐藏诊断。", "保留受控、原始值和事件文本作为概览说明。", "删除整个展示分区以规避文案。"]},
+  "impact": {"files": ["preview/app.js", "scripts/test-preview-overview-hierarchy.js", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0244-component-only-normalizer-coverage-and-user-copy.json"], "dependencies": ["renderOverviewComponentPreview", "PreviewDevice", "PUI Button", "PUI Loading"]},
+  "verification": {"tests": ["scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-runtime-dispatch.js", "scripts/test-navbar.js", "scripts/test-radio.js", "scripts/test-calendar.js", "scripts/test-loading.js", "scripts/test-progress.js", "scripts/test-tabs.js", "scripts/test-tabbar.js", "scripts/test-checkbox.js", "scripts/test-pull-refresh.js"], "commands": ["node scripts/test-preview-overview-hierarchy.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "wechat cli build-npm"], "browser": ["390x844 全量标准 PreviewDevice 路由扫描，合同、工程术语与页面级横向溢出均为0。", "Tabbar、Calendar、CountDown 实点验证状态仍真实变化。", "暗色、阴影、毛玻璃、大圆角、渐变、边框关闭的完整组合遍历72个标准设备预览路由，横向溢出为0；刷新后六项偏好完整恢复，随后还原进入本轮前的浅色组合。"], "deviceRisks": ["2026-07-22 微信 CLI 已启动 IDE server，但 touristappid 权限查询返回 code 10（不存在此 AppID）；未生成也未伪造 _example/miniprogram_npm。", "本项只修改官网离线模板归一化和 H5 文案；合法 AppID 真机仍需验证各组件原生事件、rpx、读屏与低动效。"]},
+  "ai": {"summary": "component-only 必须由真实运行态全路由验证，不能只依赖共享函数存在或静态 class 模式。", "rules": ["每个标准 Showcase 根都必须带 demo-section，确保进入 renderOverviewComponentPreview。", "新增 feedback/status/actions/event 类时，先判断其是否工程诊断；概览中的纯诊断必须在离线模板删除。", "直接诊断类不能只按根子元素删除，嵌套分区同样必须覆盖。", "删除诊断后要实点至少一个相关组件，确认运行时没有依赖被删节点。", "组件概览中的受控、原始值、value、事件与平台术语必须转换为用户语言或迁入 API。"], "tags": ["preview-site", "component-only", "overview", "h5", "regression"]}
+}

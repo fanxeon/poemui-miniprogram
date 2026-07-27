@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0286",
+  "title": "Tabs 默认视觉被悬浮卡片与短导航高度削弱",
+  "scope": "component",
+  "components": ["tabs", "button", "badge", "icon", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "24 Tabs 要具有清晰的组件特征，参考 TDesign 的真实视觉结构重新设计，而不是保留黑白小卡片式导航。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "props-panel", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["iPhone 15 393px PreviewDevice", "390px browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 #/components/tabs，默认 line Header 只有 40px，使用阴影与毛玻璃，活动态是中性短线，split 默认关闭。",
+    "基础示例把图标、徽标和文字混进同一行，分类导航被挤压成卡片式工具条，无法读出 TDesign 的平面内容导航层级。",
+    "现有第二种样式名为 pills，与 TDesign Tabs 的 tag 视觉与术语不一致。"
+  ],
+  "expected": "默认 Tabs 是 48px 平面内容导航，等分与分隔默认开启，活动项使用 PUI brand 色与 16px×3px 短指示器；tag 独立呈现浅色标签，不出现额外卡片、阴影或毛玻璃；图标与徽标在专属示例中展示。",
+  "actual": "原生与 H5 都把默认 Header 做成 40px 的悬浮 Surface，基础分类信息拥挤，视觉结构与 TDesign 文档中的基础/等距/图标/徽标/tag 分区不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确判定 24 Tabs 设计不合格，并要求学习 TDesign 后重新设计；此前已授权后续组件由 Agent 按完整证据自主验收，无需逐项确认。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/tabs", "note": "2026-07-23 尝试读取官方 Tabs 页面；页面抓取超时，固定官方仓库 README 与源码作为可复现补充。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/tabs", "note": "2026-07-23 读取官方 Tabs README：基础、等距、图标、徽标、内容、状态、尺寸、line/tag/card 与受控用法；Props 显示 showBottomLine=true、spaceEvenly=true、split=true、item height 96rpx、track 32rpx×6rpx。"},
+    {"kind": "file", "ref": "tabs/tabs.js", "note": "默认 split=true，line/tag 归一化，TDesign 尺寸的指示器测量。"},
+    {"kind": "file", "ref": "tabs/tabs.wxss", "note": "原生 96rpx 平面 Header、brand 指示器与 tag Surface，无默认外阴影或毛玻璃。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 基础、标签、徽标禁用、横向浏览四区使用同一 Tabs 行为，移除工程事件提示。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 镜像与原生共享 48px/3px/平面 Header 和 tag 样式语义。"},
+    {"kind": "test", "ref": "scripts/test-tabs.js", "note": "锁定 split 默认、line/tag、视觉结构、PUI 组合与源码/产物一致性。"}
+  ],
+  "rootCause": "此前为了让视觉开关显著，将 Tabs Header 误视为独立 Surface，叠加了共享阴影和毛玻璃；基础示例也没有把 TDesign 的文字、图标和徽标用法分开，导致导航层级被卡片外观吞没。",
+  "decision": {
+    "outcome": "默认 line 改为 96rpx / 48px 平面 Header，默认 split=true、spaceEvenly=true，活动项使用 PUI brand 色 32rpx / 16px 宽、6rpx / 3px 高指示器；公开 visual enum 为 line/tag，历史 pills 输入只映射为 tag；默认示例只放文字分类，图标/徽标迁入专属分区。",
+    "rationale": "这复用 TDesign 清楚的分类阅读结构，同时仍消费 PoemUI 的品牌、主题、PUI Button/Badge/Icon、严格值和受控合同。",
+    "alternativesRejected": [
+      "仅给原有 40px Header 换色，无法解决阴影、信息拥挤和导航层级错误。",
+      "新增 card 变体会扩大已收敛的 API 和视觉层级，当前不采纳。",
+      "继续公开 pills 会保留与 TDesign tag 不一致的用户术语。"
+    ]
+  },
+  "impact": {
+    "files": ["tabs/tabs.js", "tabs/tabs.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/TABS.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "scripts/test-tabs.js", "feedback/records/pui-fb-0286-tabs-tdesign-visual-structure.json"],
+    "dependencies": ["pui-button", "pui-badge", "pui-icon", "TDesign MiniProgram 1.15.3 Tabs"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabs.js", "scripts/test-design-contracts.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["node scripts/test-tabs.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "npm run feedback:check"],
+    "browser": [
+      "H5 在 #/components/tabs 中实际点击基础“表单”、tag“规范”，并通过 Enter 切换“反馈”；对应 tabpanel 与 aria-selected 同步更新。",
+      "CUA 从横向样例面板右向左拖动，真实切换“数字零”到“布尔值”；390px document 为 375/375px，Header 为 48px，split 为 1px，完成态指示器为 16px×3px、opacity=1。"
+    ],
+    "deviceRisks": [
+      "2026-07-23 实跑微信 CLI build-npm：IDE server 已启动，但 touristappid 查询返回 code 10（不存在此 AppID）；未生成 miniprogram_npm，也未手工伪造安装产物。",
+      "微信 ScrollView 横向惯性、sticky、SelectorQuery 测量、rpx 指示器、触摸取消、样式隔离和系统低动效仍需真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Tabs 默认是平面内容导航，不是带阴影和毛玻璃的卡片；基础、图标、徽标与标签样式必须按真实用户用法分区。",
+    "rules": [
+      "Tabs line Header 默认使用 96rpx / 48px 平面结构、split=true 与 PUI brand 短指示器；不得恢复默认外阴影或毛玻璃。",
+      "Tabs 的图标和徽标不能挤进基础文字分类示例；分别在专属分区调用 PUI Icon 和 Badge。",
+      "公开 visual enum 仅使用 line/tag；不要重新公开 pills 或新增 card，除非有独立用户任务和全链路验收。",
+      "学习 TDesign 时先读官方页面和固定源码；官网页面无法抓取时要记录差异，不得用模型记忆补齐。"
+    ],
+    "tags": ["tabs", "tdesign", "visual-layout", "line", "tag", "preview"]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0238",
+  "title": "ScrollArea 固定渐变遮罩缺少语义高度档位",
+  "scope": "component",
+  "components": ["scroll-area", "preview-site", "documentation", "example", "miniprogram-dist"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "为 ScrollArea 顶底渐变遮罩提供 sm、md、lg 三个可验证的高度档位，并保持既有默认视觉、真实滚动和跨端一致性。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example", "miniprogram-dist"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 393px", "390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "ScrollArea 已有默认开启的固定顶底渐变与可选颜色，但遮罩高度固定为 64rpx / 32px，调用方不能在不重写样式的情况下为不同内容密度调整阅读过渡。",
+    "若公开任意数值或把尺寸写入页面私有 CSS，会绕开 Token、产生跨端换算漂移，并可能把视觉调整误扩张为新的滚动布局 API。"
+  ],
+  "expected": "公开 gradientOverlaySize，且只允许 sm、md、lg 三档；默认 md 必须精确保持既有 64rpx / 32px，尺寸只改变两个无交互 sibling overlay 的高度，不改变真实 viewport、Slot、滚动、定位、事件或方法。",
+  "actual": "已公开 gradientOverlaySize，并在小程序与 H5 共同限制为 sm、md、lg。默认 md 实测保留既有 64rpx / 32px；sm 与 lg 分别映射 40rpx / 20px、88rpx / 44px，非法值回退 md。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户明确要求给遮罩高度提供 sm、当前档与 lg 三档，并要求说明当前尺寸的命名。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.js", "note": "实现已把既有 64rpx 映射为 md，并只接受 sm、md、lg 后写入已定义的主题 Token。"},
+    {"kind": "test", "ref": "scripts/test-scroll-area.js", "note": "专项合同覆盖六个 Props、三档 Token、非法值回退和 H5 选择字段。"},
+    {"kind": "browser", "ref": "H5 /#/components/scroll-area", "note": "真实 Props 面板分别实测 sm=20px、md=32px、lg=44px；三档均保持 564px viewport 与 1116px 可滚内容，手动滚动到 360，scrollIntoView 定位到 248；390x844、深浅色均无横向溢出。2026-07-22 复验：DOM CUA 滚动 420px 后 scrollTop=420；关闭 gradientOverlay 后两个遮罩层从 DOM 中移除，window.innerWidth=390、document/body scrollWidth=375，控制台 error 为空。"},
+    {"kind": "user-report", "ref": "当前 Goal 对话", "note": "用户明确授权：后面的组件你都不需要我确认你直接跑完把能做的都做了, 决定你自己做。"}
+  ],
+  "rootCause": "初版渐变合同只解决开关和颜色，未将阅读过渡密度建模为受限的跨端 Token 枚举。",
+  "decision": {
+    "outcome": "新增 gradientOverlaySize:String='md'（WXML gradient-overlay-size），规定 sm=40rpx/20px、md=64rpx/32px、lg=88rpx/44px；原生与 H5 共同校验枚举，非法值回退 md。",
+    "rationale": "离散语义档位让调用方可表达阅读过渡强度，又不会引入任意数值、第二套间距体系或滚动 API 扩张；默认 md 保持既有视觉，降低升级风险。",
+    "alternativesRejected": [
+      "继续只提供固定 64rpx，迫使调用方通过私有 CSS 覆盖组件内部变量。",
+      "允许任意 rpx 或 px 字符串，导致 Token、跨端换算和布局边界失控。",
+      "把尺寸写成 PreviewDevice 专用样式，无法进入小程序真实组件或 npm 产物。"
+    ]
+  },
+  "impact": {
+    "files": ["scroll-area/scroll-area.js", "common/style/theme.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "metadata/shadcn.js", "_example/miniprogram/pages/components/index.wxml", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/UI_DESIGN_CONTRACT.md", "docs/components/SCROLL-AREA.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "CHANGELOG.md", "scripts/test-scroll-area.js", "feedback/records/pui-fb-0238-scroll-area-gradient-overlay-size.json"],
+    "dependencies": ["原生 scroll-view", "PUI theme tokens", "PreviewDevice", "PUI Cell Slot 组合"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-scroll-area.js", "PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["H5 Props 面板显示 gradientOverlaySize。sm/md/lg 分别实测为 20px/32px/44px，且均为两个无交互遮罩层；clientHeight/scrollHeight 固定为 564px/1116px。真实手动滚动到 360（最大 552），scrollIntoView=scroll-area-build 定位至 248；390x844 documentWidth=375px、无横向溢出；外观菜单实切深色 #18181b 与浅色 #ffffff。"],
+    "deviceRisks": ["已实际调用微信 CLI build-npm，但 _example 使用 touristappid，开发者工具在读取 AppID 权限时返回 code 10；因此未生成、也未伪造 _example/miniprogram_npm。提供合法 AppID 后，仍需确认 enhanced scroll-view 中三档 rpx 渐变的合成、触摸透传、样式隔离、Slot 读屏与滚动惯性；H5 不能替代该结论。"]
+  },
+  "ai": {
+    "summary": "固定滚动渐变的高度只能是合同定义的离散 Token 档位；默认档必须保持既有视觉，并且不能触及滚动结构。",
+    "rules": [
+      "gradientOverlaySize 只允许 sm、md、lg；不得扩张为任意数值、方向、动画或滚动阈值 API。",
+      "md 必须继续映射既有 64rpx / 32px，sm 与 lg 必须通过小程序 Token 与 H5 映射共同定义。",
+      "尺寸变化只作用于 pointer-events:none、aria-hidden 的顶底 sibling layer，不能改变 viewport、Slot、定位或父布局。",
+      "新增视觉枚举后必须同步源码、H5、元数据、示例、API、组件合同、全局合同、专项测试、Ledger、dist 与已安装示例。"
+    ],
+    "tags": ["scroll-area", "gradient-overlay", "token", "api-contract", "h5-parity", "accessibility"]
+  }
+}

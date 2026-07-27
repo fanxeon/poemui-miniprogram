@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0209",
+  "title": "表单选择与数值统一任务分区并重排目录序号",
+  "scope": "global",
+  "components": ["preview-site", "metadata", "form", "calendar", "date-time-picker", "upload"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "选择、数值、日期时间和附件入口都应在表单组件的同一任务分区内，并按用户完成表单的自然顺序重新编号，避免旧编号和源码排序继续误导筛选。",
+  "environment": {"surfaces": ["h5-preview", "site-shell", "component-catalog", "global-search"], "platforms": ["browser", "node"], "viewports": ["390x844", "desktop"], "themes": ["light", "dark"]},
+  "reproduction": [
+    "表单组件此前拆成结构与校验、文本与搜索、选择与数值、日期与时间、文件上传五个子分区。",
+    "Calendar、Date Picker、Attachment 与 Checkbox、Select、Slider 等同属用户选择或数值填写路径，却被拆到不同分区。",
+    "目录序号按旧的英文排序产生，用户指出的 28、27、31 无法表达新的表单任务顺序。"
+  ],
+  "expected": "表单组件只保留结构与校验、文本与搜索、选择与数值三类子分区；Checkbox、Radio、Switch、Select、Picker、Combobox、Slider、Stepper、Rate、Calendar、Date Picker、Attachment 全部进入选择与数值。完整目录按任务顺序生成稳定反馈序号，表单条目连续为 #27–#45。",
+  "actual": "日期时间和附件仍有独立子分区，选择类能力在视觉和搜索上被人为拆散；旧目录序号随来源或英文排序变化，无法按表单自然路径阅读。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-22 当前任务对话", "note": "用户要求选择与数值全部进入表单组件，并明确 28、27、31 也要一起重排。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "表单 sections 与 navigationOrderByGroupKey 已将日期、时间、附件并入选择与数值并按任务顺序排序。"},
+    {"kind": "test", "ref": "scripts/test-preview-navigation-search.js", "note": "专项合同锁定三类表单子分区、所有路由唯一归属以及 form 19 项的精确顺序。"}
+  ],
+  "rootCause": "表单目录先按组件来源拆分，再叠加英文稳定排序，没有以用户填写任务建立唯一的分区与序号真相源。",
+  "decision": {"outcome": "由 metadata 的表单 sections 和 navigationOrderByGroupKey 共同生成三类子分区及任务序号；日期、时间和附件作为选择与数值的后续步骤排列，不复制任何路由。", "rationale": "用户先构造字段，再输入文本，随后选择或填写数值，日期、时间和附件是同一填写流程的变体；连续序号能让官网目录和反馈记录保持可追踪。", "alternativesRejected": ["继续保留日期与时间、文件上传独立分区：会把同一表单路径拆散。", "只改分区标题而不重排 items：旧编号仍会误导用户。", "为同一组件增加第二个入口：会造成重复路由和 API 口径污染。"]},
+  "impact": {"files": ["metadata/components.js", "preview/components-data.js", "preview/app.js", "scripts/test-preview-navigation-search.js", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "docs/UI_DESIGN_CONTRACT.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"], "dependencies": ["sidebar", "global search", "feedback ordinal", "catalog generation"]},
+  "verification": {"tests": ["scripts/test-preview-navigation-search.js", "scripts/test-component-catalog-pruning.js", "scripts/test-design-contracts.js"], "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"], "browser": ["2026-07-22 桌面 `#/components/form` 实际侧栏展示三分区，表单条目连续为 #27–#45，选择与数值包含 12 项并包含 Calendar、Date Picker、Attachment。", "2026-07-22 实际输入“选择与数值”筛选，页面只显示该分区的 Checkbox、Radio、Switch、Select、Picker、Combobox、Slider、Stepper、Rate、Calendar、Date Picker、Attachment。", "2026-07-22 390×844：window.innerWidth=390，document 与 main 均为 375/375，无页面级横向溢出；三分区条目数为 3/4/12。"], "deviceRisks": ["微信 CLI build-npm 仍需合法 AppID；官网目录验证不能替代微信真机目录展示与示例解析。"]},
+  "ai": {"summary": "表单目录按用户任务而不是组件来源分区；日期、时间和附件选择必须留在选择与数值，序号从完整任务排序重新生成。", "rules": ["新增表单组件先决定其唯一用户任务分区，再写入 navigationSectionsByGroupKey。", "调整任务顺序必须同时更新 navigationOrderByGroupKey、专项合同测试和进度文档。", "反馈序号只能由完整 metadata 顺序派生，禁止手写或沿用旧编号。", "同一组件只保留一条目录路由，不用别名制造第二个分区入口。"], "tags": ["preview-site", "catalog", "form", "taxonomy", "numbering"]}
+}

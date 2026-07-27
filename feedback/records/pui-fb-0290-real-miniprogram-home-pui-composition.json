@@ -1,0 +1,83 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0290",
+  "title": "真实小程序首页未接入 PUI 组件链",
+  "scope": "component",
+  "components": ["miniprogram-home", "config-provider", "navbar", "scroll-area", "collapsible", "cell", "search", "tabbar", "image"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "真实微信小程序首页必须由既有 PUI 组件完成可用的导航、滚动、搜索、列表和底部导航闭环。",
+  "environment": {
+    "surfaces": ["miniprogram/真实首页", "微信开发者工具"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390px", "微信窗口动态高度"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 miniprogram/pages/index/index.wxml，旧首页使用本地 navigation-bar 和原生 scroll-view，仅显示 Weixin 占位内容。",
+    "尝试从真实工程进入组件目录时，没有 PUI Navbar、ScrollArea、Collapsible、Search 和 Tabbar 的运行态组合。"
+  ],
+  "expected": "首页使用 ConfigProvider、Navbar、ScrollArea、Collapsible、Cell、Search、Image 和 Tabbar；动态测量中间滚动高度，搜索真实过滤已实装基础组件，收起与底部禁用项均不伪造动作。",
+  "actual": "旧首页没有真实 PUI 组件组合、没有搜索与目录状态，也没有标准 npm 依赖声明和首页专项门禁。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务要求", "note": "用户明确指定真实 miniprogram 工程、PUI 组件结构和可验证交互边界。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.wxml", "note": "首页现在只引用 npm 路径的 PUI 组件，移除旧 navigation-bar 与原生 scroll-view，并保留三行布局。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "页面实现窗口/节点测量、搜索过滤、清空关闭恢复、受控 Collapsible 和 Tabbar 状态。"},
+    {"kind": "file", "ref": "miniprogram/package.json", "note": "真实工程通过 file:.. 标准 npm 依赖消费 poemui-miniprogram，不复制 PUI 源码。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项测试锁定组件链、无旧滚动实现、动态高度、三项基础组件和页面状态行为。"},
+    {"kind": "build", "ref": "微信开发者工具 RC 2.02.2607161，项目 miniprogram/ 的工具菜单“构建 npm”", "note": "构建完成耗时 438 毫秒，并生成 miniprogram/miniprogram_npm；修复包根入口后模拟器注册 pages/index/index。"},
+    {"kind": "browser", "ref": "微信开发者工具模拟器 pages/index/index", "note": "搜索 Divider 仅保留 Divider，清空与关闭恢复三项；Collapsible 收起/展开成功；点击 disabled 任务后首页仍为已选中。该证据不是微信真机验收。"},
+    {"kind": "file", "ref": "miniprogram/project.config.json", "note": "源码 AppID 为 wx23aa017375535746；开发者工具模拟器 URL 当前仍显示 wx43ddf4043949a652，运行时 AppID 尚未闭环确认。"}
+  ],
+  "rootCause": "真实小程序工程仍是脚手架占位页，未完成从本地旧组件到 PUI npm 组件的运行态迁移。",
+  "decision": {
+    "outcome": "仅在 miniprogram/ 实施真实首页组合；共享组件行为不变，因此不虚构 H5 首页镜像；标准 npm 构建交给微信开发者工具。",
+    "rationale": "用户目标是验证既有 PUI 组件在真实小程序页面中的组合与交互，不需要扩张共享组件 API，也不能以静态页面或手工 miniprogram_npm 替代实际 npm 流程。",
+    "alternativesRejected": [
+      "继续保留本地 navigation-bar 和原生 scroll-view：无法满足统一 PUI 组件合同。",
+      "在 miniprogram/ 复制 PUI 源码：破坏唯一源码真源和标准 npm 接入边界。",
+      "为搜索、Tabbar 未完成页面创建假路由或 Toast：会制造 fake success 和断点流程。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/project.config.json",
+      "miniprogram/package.json",
+      "miniprogram/app.js",
+      "miniprogram/app.wxss",
+      "miniprogram/assets/poemui-moon-lines-black.png",
+      "miniprogram/pages/index/index.json",
+      "miniprogram/pages/index/index.js",
+      "miniprogram/pages/index/index.wxml",
+      "miniprogram/pages/index/index.wxss",
+      "scripts/test-miniprogram-home.js",
+      "docs/MINIPROGRAM_HOME.md",
+      "scripts/test-spacing-token-contract.js",
+      "feedback/records/pui-fb-0290-real-miniprogram-home-pui-composition.json"
+    ],
+    "dependencies": ["PoemUI npm package", "微信原生胶囊几何", "微信安全区", "PUI visualConfig Store"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["npm install --ignore-scripts --no-audit --no-fund (miniprogram/)", "npm run site:build", "微信开发者工具：工具 → 构建 npm", "微信开发者工具：普通编译/模拟器 pages/index/index"],
+    "browser": ["微信开发者工具模拟器：页面可见品牌图、Poem UI、基础组件三项和底部纯图标 Tabbar；搜索、清空、关闭、Collapsible 与 disabled Tabbar 已按真实控件操作复核。"],
+    "deviceRisks": [
+      "微信开发者工具模拟器 URL 的运行时 AppID 与 miniprogram/project.config.json 不一致，需确认开发者工具项目缓存是否已切换到 wx23aa017375535746。",
+      "原生胶囊不重叠、selector query 高度、安全区、390px 深浅色和真实触摸交互仍需微信真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "真实小程序首页只能组合 npm 入口的 PUI 组件；页面状态必须连接到实际事件和布局测量，不用静态占位或假导航。",
+    "rules": [
+      "miniprogram/ 是当前唯一真实工程，禁止用 _example/ 代替页面开发或复制 PUI 源码。",
+      "ScrollArea 高度必须来自窗口与真实 Navbar/Tabbar 节点测量，不能写死默认 320rpx、底部安全区或机型尺寸。",
+      "未完成页面只能用 disabled Tabbar 项保留信息架构，禁止假 change、假路由和 Toast 冒充完成。"
+    ],
+    "tags": ["miniprogram", "npm", "home", "scroll-area", "search", "tabbar", "real-interaction"]
+  }
+}

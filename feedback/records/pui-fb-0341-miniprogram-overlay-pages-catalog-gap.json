@@ -1,0 +1,177 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0341",
+  "title": "小程序浮层分区缺少完整独立详情页",
+  "scope": "component",
+  "components": [
+    "miniprogram-home",
+    "popup",
+    "popover",
+    "sheet",
+    "action-sheet",
+    "dropdown-menu",
+    "overlay",
+    "collapsible"
+  ],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "首页浮层分区应完整展示当前已实装浮层组件，并且每个入口都进入复用统一 Navbar、全高 ScrollArea 和分区标题体系的独立详情页。",
+  "environment": {
+    "surfaces": [
+      "miniprogram-home",
+      "miniprogram-component-pages"
+    ],
+    "platforms": [
+      "wechat-devtools",
+      "wechat-miniprogram",
+      "node"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开 miniprogram/pages/index/index，查看首页目录。",
+    "原首页只有基础组件分区，浮层组件没有完整目录与独立小程序页面。",
+    "尝试从浮层目录进入组件详情时，缺少真实路由、统一页面壳或可运行示例。"
+  ],
+  "expected": "首页默认展开浮层分区；分区包含 Popup、Popover、Sheet、ActionSheet、已退役组件、DropdownMenu、Overlay。每个 Cell 使用真实 PUI Icon、chevron-right 与 navigateTo，详情页使用统一组件页 Navbar、动态全高 ScrollArea、ConfigProvider、ComponentPageSection，并展示真实交互。",
+  "actual": "修复前首页只维护基础组件列表，且没有浮层独立详情页。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.js",
+      "note": "首页目录此前只有 BASE_COMPONENTS 与单一 componentsOpen 状态。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/utils/component-page.js",
+      "note": "现有详情页统一提供 Navbar、动态 ScrollArea 高度和返回路由壳。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-home.js",
+      "note": "专项测试锁定浮层分区、八个真实路由、单一互斥活动状态和 Cell 导航。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-component-pages.js",
+      "note": "专项测试覆盖八个浮层详情页的统一页面壳、分区标题和 Token 样式。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-overlay-pages.js",
+      "note": "专项测试通过 VM 驱动八个详情页的真实打开、关闭、选择、筛选和遮罩状态回写。"
+    }
+  ],
+  "rootCause": "首页目录与小程序详情页建设此前按基础组件逐步接入，浮层组件虽然已经存在共享实现、合同和 H5 预览，却没有对应的小程序信息架构与可运行页面入口。",
+  "decision": {
+    "outcome": "在首页新增默认展开的受控浮层分区，一次纳入当前真实浮层清单的八个组件；使用 activeCatalogSection 单一状态保证基础与浮层最多同时展开一个；为八个组件分别创建独立详情页并全部复用 component-page 页面骨架。",
+    "rationale": "浮层是用户任务中的独立分区，完整入口比只展示 Popup 更符合现有目录合同；父级协调 Collapsible 的互斥状态可以保持 Collapsible 单区域 API 不变，同时让每个详情页拥有真实组件交互和统一视觉入口。",
+    "alternativesRejected": [
+      "只加入 Popup：会让浮层目录继续缺少已有真实组件，用户无法从首页发现完整能力。",
+      "把多个浮层组件合并到一个详情页：会破坏一组件一页面的导航语义，也无法复用每个组件自己的预览内容。",
+      "把互斥逻辑下沉为 Collapsible Accordion API：会扩大共享组件公共 API，违背现有单 Trigger/单 Content 合同。",
+      "为没有真实小程序组件实现的入口创建静态占位页：会形成无事件假入口。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/index/index.js",
+      "miniprogram/pages/index/index.wxml",
+      "miniprogram/app.json",
+      "miniprogram/pages/components/popup/index.js",
+      "miniprogram/pages/components/popup/index.wxml",
+      "miniprogram/pages/components/popup/index.json",
+      "miniprogram/pages/components/popup/index.wxss",
+      "miniprogram/pages/components/popover/index.js",
+      "miniprogram/pages/components/popover/index.wxml",
+      "miniprogram/pages/components/popover/index.json",
+      "miniprogram/pages/components/popover/index.wxss",
+      "miniprogram/pages/components/sheet/index.js",
+      "miniprogram/pages/components/sheet/index.wxml",
+      "miniprogram/pages/components/sheet/index.json",
+      "miniprogram/pages/components/sheet/index.wxss",
+      "miniprogram/pages/components/action-sheet/index.js",
+      "miniprogram/pages/components/action-sheet/index.wxml",
+      "miniprogram/pages/components/action-sheet/index.json",
+      "miniprogram/pages/components/action-sheet/index.wxss",
+      "miniprogram/pages/components/dropdown-menu/index.js",
+      "miniprogram/pages/components/dropdown-menu/index.wxml",
+      "miniprogram/pages/components/dropdown-menu/index.json",
+      "miniprogram/pages/components/dropdown-menu/index.wxss",
+      "miniprogram/pages/components/overlay/index.js",
+      "miniprogram/pages/components/overlay/index.wxml",
+      "miniprogram/pages/components/overlay/index.json",
+      "miniprogram/pages/components/overlay/index.wxss",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-overlay-pages.js",
+      "package.json"
+    ],
+    "dependencies": [
+      "pui-collapsible",
+      "pui-cell",
+      "pui-navbar",
+      "pui-scroll-area",
+      "pui-config-provider"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-overlay-pages.js",
+      "scripts/test-popup.js",
+      "scripts/test-popover.js",
+      "scripts/test-sheet.js",
+      "scripts/test-action-sheet.js",
+      "scripts/test-dropdown-menu.js",
+      "scripts/test-overlay.js"
+    ],
+    "commands": [
+      "npm run test:miniprogram-overlay-pages",
+      "npm run miniprogram:build",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "微信开发者工具：构建 npm、热重载编译"
+    ],
+    "browser": [
+      "微信开发者工具 RC 2.02.2607161、基础库 3.17.0、iPhone 12/13 模拟器：普通编译后问题面板显示总计 0 个问题，当前控制台未发现 Error、Exception、编译失败或上传失败。",
+      "实际进入 Popup 页面，确认五向入口、外观配置、三段结构可见；点击顶部入口打开 Popup，再点击 Footer 关闭示例。"
+    ],
+    "deviceRisks": [
+      "微信开发者工具与 iOS/Android 真机仍需确认八个浮层页面的触摸命中、fixed 遮罩、安全区、Slot 样式隔离、系统低动效和真机滚动行为。"
+    ]
+  },
+  "ai": {
+    "summary": "首页浮层分区必须覆盖当前真实浮层组件，每个组件独立页面复用统一页面壳；分区互斥由页面父级状态管理。",
+    "rules": [
+      "先从 metadata 的浮层分区和真实小程序组件目录确认清单，再创建页面入口。",
+      "多个 Collapsible 的互斥展开在消费者页面协调，不给单区域 Collapsible 添加 Accordion 公共 API。",
+      "组件独立页必须使用 ConfigProvider、共享 Navbar、动态 ScrollArea 和 ComponentPageSection，并保留真实组件事件回写。",
+      "没有真实小程序实现或事件闭环的浮层不得创建可点击假入口。"
+    ],
+    "tags": [
+      "miniprogram-home",
+      "overlay-catalog",
+      "component-pages",
+      "collapsible",
+      "popup",
+      "wechat"
+    ]
+  }
+}

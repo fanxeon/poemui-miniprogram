@@ -1,0 +1,17 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "pui-badge": "../badge/badge",
+    "pui-button": "../button/button",
+    "pui-cell": "../cell/cell",
+    "pui-empty": "../empty/empty",
+    "pui-icon": "../icon/icon",
+    "pui-loading": "../loading/loading"
+  },
+  "componentGenerics": {
+    "virtual-item": {
+      "default": "../cell/cell"
+    }
+  }
+}

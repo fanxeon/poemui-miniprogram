@@ -1,0 +1,416 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0015",
+  "title": "H5 组合层绕过 PUI 子组件镜像",
+  "scope": "global",
+  "components": [
+    "preview-site",
+    "button",
+    "input",
+    "select",
+    "switch",
+    "slider",
+    "textarea",
+    "cell",
+    "icon",
+    "badge",
+    "tag",
+    "bubble",
+    "grid",
+    "list",
+    "scroll-area",
+    "navigation-menu",
+    "virtual-list",
+    "indexes",
+    "sidebar",
+    "collapse",
+    "collapsible",
+    "swipe-cell",
+    "tabs",
+    "tabbar",
+    "steps",
+    "action-sheet",
+    "dropdown-menu",
+    "popup",
+    "sheet",
+    "popover",
+    "breadcrumb",
+    "radio",
+    "table",
+    "swiper",
+    "empty",
+    "alert",
+    "combobox",
+    "calendar",
+    "旧输入组合层",
+    "form",
+    "field",
+    "upload",
+    "search",
+    "stepper"
+  ],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-20",
+  "userGoal": "所有组件演示和组合操作尽可能调用 PoemUI 自己的组件；关闭、清空、翻页、步进、重试等纯图标动作必须统一使用 PUI Button + PUI Icon，尺寸、圆角和双轴居中不能因页面不同而漂移。",
+  "environment": {
+    "surfaces": [
+      "h5-preview",
+      "documentation"
+    ],
+    "platforms": [
+      "browser"
+    ],
+    "viewports": [
+      "390x844",
+      "desktop"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "审计原生 WXML，Alert、Calendar、Search、Stepper、Switch 等已组合 pui-button。",
+    "检查对应 preview/app.js，部分 H5 镜像仍各自输出原生 button，并由组件私有 CSS 决定尺寸和对齐。",
+    "继续检查官网基础设施：标准页的概览/API/PROP 虽借用 pui-button 类名，仍在 renderComponentPageTabs 中手写原生 button；刷新/重置也由 index.html 静态手写，syncShell 还会以 innerHTML 重建内部 Icon，未真正调用共享 PUI Button/Icon helper。",
+    "检查 buttonSample 的空 content 输出，图标按钮仍保留空文字 span；如果容器保留 gap，图标可能偏离按钮中心。",
+    "继续对照 Grid 原生 WXML：条目组合 pui-button 与 pui-badge；旧 H5 却为 Grid 入口手写原生 button 与私有徽标。",
+    "继续对照 List 与 ScrollArea：List 原生条目/Footer 已分别组合 pui-cell/pui-button，旧 H5 仍以私有 button 重写整行与 Footer；ScrollArea 的顶部/底部是演示层操作，却各自手写按钮。",
+    "检查 Tag 与 Bubble：Tag 关闭属于组件自身交互根，但旧 H5 用原生 button 包住整个 Tag；Bubble 的展开与 Reaction 属于组合操作，却没有调用共享 PUI Button。",
+    "继续对照 NavigationMenu 与 VirtualList：原生 NavigationMenu 根入口/菜单项分别组合 Button/Cell/Badge，VirtualList 条目内部组合 Cell/Badge；旧 H5 仍为这些结构手写私有 button、徽标或整行。",
+    "继续对照 Combobox、Indexes 与 Search：Combobox 组件自有 Trigger/Option 被 H5 额外嵌套 raw button，多选 Tag 又被按钮包裹并重复 Close；Indexes 原生 Cell/Badge/Icon 被 H5 重写成 raw button、私有徽标和 › 字符；Search 官网还虚构了原生 WXML 不存在的四条组件目录结果。",
+    "继续对照 Sidebar、Collapse 与 SwipeCell：Sidebar 原生条目组合 PUI Button/Badge/Icon/Loading，旧 H5 却只给 raw button 添加 PUI class 并手写 Badge；Collapse 原生 Trigger 是组件自有 view[role=button]，旧 H5 错换为 HTML button；SwipeCell 组合已正确，但组件正文 role=button 没有键盘事件来源闭环。",
+    "继续对照 Tabs、Tabbar 与 Steps：三者原生 WXML 的入口均组合 pui-button，Tabs/Tabbar 还组合 pui-badge，旧 H5 却继续手写 raw button 与私有 em Badge，只借用了 pui-button 类名。",
+    "继续对照 Item/Cell 与 Radio：Cell 原生组合 Badge/Loading，Radio 原生组合 Badge，H5 却手写私有 Badge 与 Cell spinner，Radio 键盘选择还丢失 source=keyboard。",
+    "继续对照 Table 与 Swiper：Table 原生选择列组合 pui-checkbox，H5 却手写私有 label/input/mark；Swiper 原生加载态组合 pui-loading，H5 却手写 i.spinner 和专用 keyframes。",
+    "继续对照 Collapsible、Table 与 Swiper 的默认状态：原生 WXML 已组合 pui-empty/pui-loading/pui-button，旧 H5 error/empty 仍各自拼 Icon、标题和操作；Table Loading 又把文字留在共享 Loading 外部，形成两套状态结构。",
+    "继续反查列表与菜单类状态：Combobox、NavigationMenu、List、VirtualList 原生均直接或经 ActionSheet 组合 PUI Empty/Loading，但 H5 默认 error/empty 仍私有拼 Icon/标题；三类 Retry 分别属于 Empty 内部 Action、独立兄弟 Button 和 List Footer，不能机械统一。",
+    "完成全仓原生 pui-empty 反查后，最后发现 Calendar、Collapse、Dialog、Radio、Upload 的 H5 默认状态仍私有拼 Icon/标题；Calendar/Dialog 的 Retry 属于 Empty 外兄弟 Button，Collapse/Radio/Upload 属于 Empty 内置 Action，Radio/Upload 还必须保留消费者 Slot。",
+    "继续检查官网外壳发现左侧搜索仍由 index.html 静态原生 input 与伪元素 Icon 组成，机型选择仍是独立原生 select；搜索语料和可访问名称还暴露 item.status/done/成熟度。标准页虽然固定了两行高度，但显隐作用于不稳定的控件节点，并依赖 getBoundingClientRect + window.scrollBy 事后补偿 Tabs。",
+    "完成外壳迁移后继续反查 PROP：renderPropsPanel 为 select、boolean、nullable boolean/number、range、JSON 和 text 六类字段直接拼原生 input/select/textarea，并由 .prop-control 维护私有表单皮肤；所有标准组件 PROP 页因此仍绕过 PUI Input/Select/Switch/Slider/Textarea helper。",
+    "继续检查非标准页发现 renderIconLibrary 仍以 .icon-search + raw input + 独立 CSS 实现资源搜索，尽管左侧目录搜索已经具备共享 inputControlSample；两处相同用户任务仍维护不同组件树、Icon 和外观状态。",
+    "继续对照 Form、Field 原生 WXML：Form 字段已直接组合 pui-input，Field 通过 Slot 承载消费者 Input，但 H5 两页仍各自手写 input 和私有几何；Form 还被旧全局 Surface 名单强制套成 Input 外第二层面板，shadcn-field 别名路由的输入事件因直接比较 state.current 而未真实回写。",
+    "继续对照 旧输入组合层、Search、Stepper、Combobox 原生 WXML：输入主体都已组合 pui-input，但 H5 仍分别手写 input、搜索前缀和清空按钮；旧输入组合层 的 shadcn 适配路由又直接比较 state.current，造成可见输入变化但计数、事件和 confirm 不回写。",
+    "完成页面层反查后，preview/index.html 仍静态复制四份 Switch track/thumb/button DOM；虽然类名与 Switch 相似，但没有调用共享 switchPreviewMarkup，也缺少全局门禁证明其余 raw button/input/select/textarea 只存在于合法平台边界。"
+  ],
+  "expected": "H5 纯图标动作统一经过可复用 iconButtonSample，内部由 PUI Button 镜像组合 PUI Icon；空文字节点不参与布局。带文字和默认 Slot 的复合操作统一经过 buttonSample，站点搜索/机型和 PROP 字段经过 Input/Select/Switch/Slider/Textarea helper，Badge/Checkbox/Loading/Empty 经过共享镜像；复合组件与原生 WXML 保持相同组合，并在 390px 与主题模式下稳定。原生表单节点只作为 helper 内的平台控件，真实回写、焦点和错误反馈必须闭环。",
+  "actual": "旧 H5 为多个组件重复手写原生 button/input；同类操作出现私有尺寸、状态和 Surface。官网标准页、顶部四项外观开关与 Form/Field、旧输入组合层/Search/Stepper/Combobox 等演示曾只借用 class、静态原生控件或私有几何，没有通过 helper 建立真实组合树；Field 与 旧输入组合层 别名路由还会让输入 DOM 改变但运行态不回写。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "新增 iconButtonSample/emptySample，并扩展 buttonSample.defaultSlot、ARIA、badgeSample/cellSample；已识别的 Button/Cell/Badge/Icon/Tag/Empty 组合迁入共享助手，组件自有交互根保留平台节点。Cell/Radio 子组件使用共享助手；Table 选择列新增 checkboxSample，Swiper/Table 加载态调用 loadingComponent；全仓 20 个原生使用 pui-empty 的组件默认 error/empty 均调用 emptySample，并严格保留各自 Action/Slot 结构。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "PUI 图标按钮空 content 节点 display:none；删除 Table 私有 Checkbox CSS、Swiper 私有加载指示器/keyframes，以及 Calendar Footer/状态区、Upload 状态/方法区对 PUI Button 几何的父级覆盖。嵌入式 Empty 使用原生 small 内距镜像并强制透明、无边框/阴影/毛玻璃/圆角，父状态容器负责唯一 Surface。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "全局合同禁止组合退回私有原生 button/徽标/Checkbox/加载指示器/Empty 状态块，并锁定 Cell/Radio 子组件、Table checkboxSample、Swiper/Table loadingComponent、Collapsible/Table/Swiper emptySample、键盘来源、组件自有交互根、ARIA 与嵌入 Surface 边界。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-collection-state-composition.js",
+      "note": "逐一锁定 Combobox、NavigationMenu、List、VirtualList 的原生 Empty/Loading 委托、H5 emptySample、三类 Retry 位置、默认文案、消费者 custom empty Slot 与唯一 Surface。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-core-state-composition.js",
+      "note": "逐一锁定 Calendar、Collapse、Dialog、Radio、Upload 的原生 Empty/Loading 委托、H5 emptySample、兄弟/内置 Retry、Upload 文案、消费者 Slot 与 Button 几何边界；同时扫描全仓原生 pui-empty 组件并要求 20 个组件全部进入状态组合合同。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-infrastructure-composition.js",
+      "note": "锁定左侧组件目录/搜索、Icon 资源搜索、机型选择、标准页概览/API/PROP、PROP 全字段、刷新/重置、复制、Icon 分类和资源卡必须调用共享 Button/Input/Select/Switch/Slider/Textarea/Icon/Badge helper；禁止 index.html、renderPropsPanel 或 renderIconLibrary 静态 raw input/select/textarea/button、伪元素 Icon、item.status 搜索语料和直接注入 icon.svg。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-form-field-composition.js",
+      "note": "对照 Form 的 pui-input/pui-button 与 Field Slot WXML，锁定两页 H5 必须调用 inputControlSample、不得手写 input 或嵌套 label；同时禁止父级覆盖 Input 几何、禁止 Form 根进入全局 Surface 名单，并要求别名路由通过 previewIdFor 回写。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-input-composition-coverage.js",
+      "note": "对照 旧输入组合层、Search、Stepper、Combobox 的原生 pui-input，锁定 H5 输入必须调用 inputControlSample，覆盖 prefix/clear/maxlength/min/max/step/align/bordered/autofocus 与真实事件；禁止组件函数和私有 CSS 退回手写 input，并要求 旧输入组合层 适配路由通过 previewIdFor。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-native-control-boundaries.js",
+      "note": "要求 preview/index.html 只保留 Mount，并精确锁定 44 个共享 helper、组件自身交互根和浏览器能力桥接；页面、演示或复合 owner 新增 raw control 会直接失败。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/alert",
+      "note": "390px 深色、大圆角、阴影、毛玻璃同时开启时，多组件 PUI 按钮尺寸、中心和页面宽度通过真实浏览器验证。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-swiper",
+      "note": "390x844 下 Collapsible/Table/Swiper 的默认 error/empty 各只有一个共享 Empty；嵌入层为 14px 10px 内距、透明且无 border/radius/shadow/backdrop-filter。retry 保持错误态并回传等待消费者；四项外观刷新后恢复，宿主 Surface 获得真实 blur/shadow 而 Empty 不受污染。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-navigation-menu",
+      "note": "390x844 下 Combobox、NavigationMenu、List、VirtualList 激活错误态各只有一个共享 Empty、私有直系 Icon=0、document=375/375；三类 Retry 位置与 WXML 一致，NavigationMenu retry 后保持 error。Combobox 默认 empty 使用 helper，customEmpty 使用消费者 Cell 且 helper=0。四项外观开启并刷新后保持，NavigationMenu 宿主获得真实 blur/shadow 而 Empty 保持透明无 Surface；Tabs 四态固定并恢复浅色全关。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-attachment",
+      "note": "390x844 下 Calendar、Collapse、Dialog、Radio、Upload 激活错误态都只有一个共享 Empty、私有直系 Icon=0、document=375/375；兄弟/内置 Retry 位置与 WXML 一致。Upload 默认空态与 customEmpty 互斥，内置 Retry 点击后仍保持 error；概览/API/PROP/概览的 Tabs 与操作行坐标完全一致。四项外观刷新后保持，Dialog Surface 获得 24px 大圆角、真实双层阴影与 blur(18px) saturate(1.35)，嵌入 Empty 仍透明无 Surface；验收后恢复浅色全关。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/dialog",
+      "note": "390x844 下概览/API/PROP/概览四次切换 Tabs 始终为 12/402/351×40px，操作行始终为 12/450/351×36px；API 中机型/动作 Mount visibility:hidden 但仍保持 307×36px 与 36×36px。搜索和机型分别由 PUI Input/Select helper 输出并各组合一个 PUI Icon；搜索 Dialog 只显示相关组件且焦点不丢失，机型切换真实回写 shell，document 为 375/375px。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-button",
+      "note": "390x844 PROP 下 34 个字段全部进入共享 PUI 组合：11 Input、9 Select、10 Switch、3 Slider、1 Textarea，字段卡直接 raw control=0，最小标签字号 12px。文字/选择/布尔/范围/JSON 均真实回写 WXML并保持焦点；非法 JSON 保留有效值、aria-invalid=true、危险色边界。dark+shadow+frost+large 刷新后保持，Input/Select/Textarea 为 9px、真实 blur/shadow，document 为 375/375px；验收后恢复 light/off/off/normal。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/icons",
+      "note": "390x844 下 Icon 搜索根为共享 PUI Input、内部 PUI Search Icon=1、私有 .icon-search=0，控件 317×40px且字号 12px；输入 action 后资源 200→16，重绘后焦点保持，清空恢复 200。dark+shadow+frost+large 刷新后保持，Input 为 9px、真实 blur/shadow，document 为 375/375px；验收后恢复 light/off/off/normal。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/form",
+      "note": "390x844 下 Form 两个字段、Field 一个 Slot 输入均为共享 PUI Input，直接 raw input=0、嵌套 label=0；两类布局根计算为 transparent/0/none/none/0px。Form 输入保持焦点，提交后空必填项 aria-invalid=true、PUI error class 与危险色边界生效；Field 别名路由真实同步 Cell。dark+shadow+frost+large 刷新后 Input 为 9px 且有真实 blur/shadow，document 为 375/375px；验收后恢复 light/off/off/normal。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-旧输入组合层",
+      "note": "390x844 下 旧输入组合层、Search、Stepper、Combobox 各只有一个共享 PUI Input，组件函数直接 raw input=0、页面横向溢出=0；旧输入组合层 输入/Enter/清空真实回写计数与事件，Search 确认/清空、Stepper number 与加减、Combobox 查询过滤与清空均闭环。dark+shadow+frost+large 刷新后保持，Search field 获得 14px、真实 blur/shadow，旧输入组合层/Stepper 外壳承担唯一 Surface，内部 Input 为 transparent/0/0/none/none；验收后恢复 light/off/off/normal。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/shadcn-button",
+      "note": "390x844 下四项外观均由共享 Switch 镜像挂载，track 与 label 均可切换；dark/on/on/large 刷新后完整恢复。概览/API/PROP/概览 Tabs 固定为 12/402/351×40px、操作行固定为 12/450/351×36px，页面无横向溢出；验收后恢复 light/off/off/normal，日志为空。"
+    }
+  ],
+  "rootCause": "H5 预览按组件逐步补齐交互，但共享 helper 最初未覆盖纯图标、默认 Slot、复杂状态、clear/maxlength/range/align/bordered 与带事件字段等完整组合入口，也缺少自动合同阻止组件及官网基础设施继续手写控件和状态块。旧全局外观选择器又按类名批量施加 Surface，导致透明布局根或嵌入式 Input 被重新面板化；别名路由事件还直接比较 state.current。",
+  "decision": {
+    "outcome": "新增并扩展 Button/Icon/Input/Select/Switch/Slider/Textarea 等共享 helper，已识别的组件、官网基础设施、PROP 全字段与 Form/Field、旧输入组合层/Search/Stepper/Combobox 演示均迁入真实组合树；顶部四项外观也从静态复制迁入 switchPreviewMarkup。inputControlSample 现在承载 invalid/required/name/inputmode、clear、maxlength、range、align、bordered、autofocus 与演示事件标识；透明布局根退出全局 Surface 名单，嵌入 Input 与复合外壳只保留一个可见 Surface；别名路由统一经 previewIdFor 判定。标准页固定操作槽并删除滚动补偿，并以精确 raw-control boundary 合同证明其余原生节点只属于 helper、组件自身交互根或浏览器能力桥接。",
+    "rationale": "单一入口能同时继承尺寸、形状、禁用态、主题、动效和可访问名称；defaultSlot 让 Grid 等复合内容不必绕开 Button，同时保留父组件自己的排列职责和 option 语义。",
+    "alternativesRejected": [
+      "只给每个原生 button 补相似 CSS，仍会留下多套状态和尺寸实现。",
+      "仅增加 pui-button 类名但继续输出空文字 gap，无法证明图标双轴居中。",
+      "逐组件写专用 IconButton helper，会把同一合同再次分散。",
+      "只给 Grid 原生 button 增加 pui-button class，没有调用共享状态与 Slot 逻辑，仍不是可维护的组件复用。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/index.html",
+      "package.json",
+      "scripts/test-design-contracts.js",
+      "scripts/test-style-utilities.js",
+      "scripts/test-overlay-state-composition.js",
+      "scripts/test-collection-state-composition.js",
+      "scripts/test-core-state-composition.js",
+      "scripts/test-shared-subcomponent-geometry.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-preview-native-control-boundaries.js",
+      "scripts/test-form-field-composition.js",
+      "scripts/test-input-composition-coverage.js",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0015-h5-pui-icon-button-composition.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": [
+      "button",
+      "input",
+      "select",
+      "switch",
+      "slider",
+      "textarea",
+      "cell",
+      "badge",
+      "checkbox",
+      "loading",
+      "empty",
+      "icon",
+      "tag",
+      "bubble",
+      "form",
+      "field",
+      "旧输入组合层",
+      "search",
+      "stepper",
+      "combobox"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-design-contracts.js",
+      "scripts/test-layout-contracts.js",
+      "scripts/test-style-utilities.js",
+      "scripts/test-overlay-state-composition.js",
+      "scripts/test-collection-state-composition.js",
+      "scripts/test-core-state-composition.js",
+      "scripts/test-shared-subcomponent-geometry.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-preview-native-control-boundaries.js",
+      "scripts/test-form-field-composition.js",
+      "scripts/test-input-composition-coverage.js",
+      "scripts/test-empty.js",
+      "scripts/test-collapsible.js",
+      "scripts/test-table.js",
+      "scripts/test-swiper.js",
+      "scripts/test-dropdown-menu.js",
+      "scripts/test-combobox.js",
+      "scripts/test-navigation-menu.js",
+      "scripts/test-dialog.js",
+      "scripts/test-radio.js",
+      "scripts/test-upload.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check"
+    ],
+    "browser": [
+      "390x844、dark + shadow + frost + large-radius 下 Alert Close 为 32x32px、Icon 与 Button 中心偏差 0/0、空 content 计算样式为 display:none；document client/scroll 均为 375px。",
+      "Calendar、Stepper 的图标按钮为 36x36px且中心偏差 0/0；旧输入组合层、Search 图标按钮为 32x32px且中心偏差 0/0。",
+      "Calendar Retry/Cancel/Confirm、Search Cancel、Upload 方法按钮均复用 pui-button-preview 并为 36px 高。",
+      "逐页检查 Alert、Calendar、旧输入组合层、Upload、Search、Stepper，document client/scroll 始终为 375/375px；验收后恢复浅色和全部外观开关关闭。",
+      "390x844 下 Grid 六个入口全部同时具有 pui-button 与 pui-button-preview，单项为 72px 高、无 raw button，内部 6 个 Icon 与 1 个 Badge 真实渲染；点击首项后事件更新为“组件 / components”，document 为 375/375px。",
+      "390x844 下 List 四个默认条目全部为 DIV.pui-cell，Footer 为 36px PUI Button，raw demo button=0；点击首项真实回写 value=31 Props/index=0/source=tap。ScrollArea 顶部/底部为 36px PUI Button，点击底部后内部 scrollTop 0→366px 并触发 scrolltolower；两页 document 375/375、设备 341/341。",
+      "List 在 dark + shadow + frost + large-radius 下 Surface 为 24px 圆角、blur(14px) saturate(1.2)、0 8px 22px 阴影，Cell 为 14px、Footer 为 20px；document/device 仍无溢出，验收后恢复 light/off/off/normal。",
+      "390px 下 Tag Close 为 SPAN[role=button] 组件根，容器 14x14px、Icon 12x12px、中心偏差 0/0，Enter 可关闭并出现 PUI Button 恢复操作，设备内 raw button=0；Bubble 展开与两个 Reaction 均为 36px PUI Button，唯一 raw button 是与原生 WXML 对应的 Bubble 可点击 Surface，展开与 reaction 事件真实回写。",
+      "390x844 下 NavigationMenu 四个根入口均为 44px PUI Button、Badge 调用 badgeSample；展开后七个菜单项均为 DIV.pui-cell[role=menuitem]，raw item button=0，Enter 回传 source=keyboard。VirtualList 可视条目为 DIV[role=listitem]，内部 Cell/Badge 复用且 raw item button/private badge=0，Space 真实选择并回传 source=keyboard；两页 document 375/375。",
+      "NavigationMenu 在 dark + shadow + frost + large-radius 下 Trigger 保持 round，菜单 Cell 为 14px 圆角，Panel 为 14px 且使用真实 blur 与 popup shadow；document 仍为 375/375，验收后经 Switch 恢复 light/off/off/normal。",
+      "390x844 下 Combobox Trigger/Option 均为 DIV 组件根，禁用的 raw action button 为 0，Enter 触发回传 source=keyboard；Indexes 九个条目均为 DIV.pui-cell，Badge 调用共享助手、无 › glyph，Enter 选择回传 source=keyboard；Search 输入 Button 后虚构结果块仍为 0。四项外观同时开启时 document 与 PreviewDevice 横向溢出均为 0，验收后恢复 light/off/off/normal。",
+      "390x844 下 Sidebar 六个条目全部为共享 PUI Button，首项 100x44px，三个 Badge 均调用 badgeSample、private badge=0，Enter 切换后唯一 aria-pressed=true 且 source=keyboard；Collapse 四个 Trigger 均为 DIV[role=button]、raw trigger button=0，Enter 真实关闭；SwipeCell Content 为 DIV[role=button] 并组合 Cell，三条 Action 与三个方法调用 Button 助手，Enter 回传 keyboard。dark + shadow + frost + large-radius 下 SwipeCell 为 20px、真实 blur/shadow，document/device 横向溢出均为 0，验收后恢复 light/off/off/normal。",
+      "390x844 下 Tabs/Tabbar/Steps 的四个入口全部为共享 PUI Button default Slot，Tabs/Tabbar 分别渲染 2/3 个共享 Badge，private Badge=0；Enter/Space 均回传 source=keyboard。三页 document 为 375/375px、设备为 341/341px，四项外观同时开启仍无溢出并已恢复。Steps 概览/API/PROP/概览四次切换的 Tabs top 均为 401.93px、操作行 top 均为 449.93px、导航父区均高 84px、scrollY 均为 106px，API 仅 visibility:hidden。",
+      "390x844 下 Cell 根保持 option 语义，Badge=0 与 Loading 分别调用 badgeSample/loadingComponent，private Badge=0；Radio 两个 Badge 为共享 success/primary 样式，Enter 选择候选版后 aria-checked 切换并回传 source=keyboard。document 始终 375/375px；四项外观刷新后保持，Badge 大圆角仍为 999px，验收后恢复浅色全关。",
+      "390x844 下 Table 五个选择框全部为 pui-checkbox-sample，点击区 28x28px、Mark 15x15px、中心偏差 0/0，private Checkbox=0；点击第二行真实回写 key=false/source=checkbox，Enter 排序回传 source=keyboard。Swiper 加载态由共享 loadingComponent 输出，私有加载动画/keyframes=0。两页 document 375/375、设备 343/341；四项外观刷新后保持，Table/Swiper Surface 为 14px 并获得真实 blur/shadow，验收后恢复浅色全关。",
+      "390x844 下 Collapsible/Table/Swiper 默认错误与空态均调用 emptySample，激活状态各只有一个嵌入 Empty，small 内距为 14px 10px，background/border/radius/shadow/backdrop-filter 分别为 transparent/0/0/none/none，私有直系 Icon=0；Table Loading 与文字同由 loadingComponent 输出。Collapsible/Table/Swiper document 均为 375/375px；Table/Swiper retry 后仍为 error 并明确等待消费者。dark + shadow + frost + large-radius 下 Swiper 宿主为 14px 且有真实 blur/shadow，Empty 仍无 Surface；刷新后四项开关保持并在验收结束恢复 light/off/off/normal。Swiper 概览/API/PROP/概览四次切换 Tabs 与操作行坐标完全一致。",
+      "390x844 下 Combobox/NavigationMenu/List/VirtualList 的激活错误态各只有一个 emptySample、私有直系 Icon=0、document=375/375px，Empty small 内距与 Surface 边界仍为 14px 10px、transparent/0/0/none/none。Combobox/VirtualList 的 Action 在 Empty 内，NavigationMenu Retry 为兄弟 Button，List Retry 只在 Footer。NavigationMenu retry 后保持 error 并明确等待消费者；Combobox 默认 empty helper=1，customEmpty Cell helper=0。dark + shadow + frost + large-radius 下 NavigationMenu 面板获得真实 blur/shadow，Empty 保持透明；刷新持久化，统一 scrollY=106 后概览/API/PROP/概览的 tablist 均为 13/402.93/349×38px、操作行均为 12/449.93/351×36px，验收后恢复 light/off/off/normal。",
+      "390x844 下 Calendar/Collapse/Dialog/Radio/Upload 的激活错误态各只有一个 emptySample、私有直系 Icon=0、document=375/375px；Calendar/Dialog Action 在 Empty 外，Collapse/Radio/Upload Action 在 Empty 内。Upload 默认空态 helper=1，customEmpty 后消费者内容=1/helper=0；Retry 点击后仍保持 error。dark + shadow + frost + large-radius 刷新后四开关保持，Dialog Surface 为 24px、真实双层阴影与 blur(18px) saturate(1.35)，Empty 仍 transparent/0/0/none/none；Upload 概览/API/PROP/概览的 tablist 均为 13/402.93/349×38px、操作行均为 12/449.93/351×36px，验收后恢复 light/off/off/normal。",
+      "共享子组件几何收口后，390x844 下 Button 概览/API/PROP 的导航父区均为 351×84px，Tabs 均为 351×40px，操作行均为 351×36px；API 操作内容 visibility:hidden 但占位不折叠。真实坐标切换 API→PROP→概览时 Tabs 与操作行坐标完全一致；Button、Checkbox、Switch、Tabbar、Steps 等 Icon/Loading 尺寸由 helper 参数继承原生 rpx，不再依赖父级宽高覆盖。",
+      "390x844 下左侧目录为 99 个共享 PUI Button + 99 个 Badge，raw status=0；点击 Checkbox 后仅当前项 aria-current=page 且路由/标题同步。Icon 页为 17 个分类 Button、200 个资源 Button 与 200 个 iconComponent 节点，直接原始 SVG 注入=0；点击 action 后筛为 16 项，点击 copy 资源真实更新选中态。PROP 复制在 HTTP 局域网走 execCommand 回退，成功反馈仍保留 Copy Icon 与内容 Slot。dark + shadow + frost + large-radius 刷新后保持，Icon 卡固定高 136px、24px 圆角、surface/border 常驻底色、blur(18px) saturate(1.35) 与 preview-shadow-card，document=375/375；验收后恢复 light/off/off/normal 并刷新确认持久化。"
+    ],
+    "deviceRisks": [
+      "本次修复 H5 镜像与官网组合；原生端已使用 PUI Button/Icon，微信真机的样式隔离、触摸反馈和系统字体基线仍需合法 AppID 复核。",
+      "HTTP 局域网使用 execCommand 复制回退；Codex 浏览器控制面不能读取该旧式剪贴板内容，因此本轮只确认真实返回值、反馈和 PUI Button/Icon DOM 未被破坏，最终粘贴内容仍需人工浏览器复核。HTTPS 安全上下文使用异步 Clipboard API。"
+    ]
+  },
+  "ai": {
+    "summary": "H5 图标、操作、表单、默认 Slot 与状态统一使用共享 PUI 镜像助手；子组件按真实 WXML 组合，透明布局根不重复创建 Surface。",
+    "rules": [
+      "关闭、清空、翻页、步进、重试、播放/暂停等纯图标操作必须调用 iconButtonSample，不得手写原生 button。",
+      "纯图标按钮必须有可访问名称，空 content 节点必须 display:none，Icon 与 Button 中心偏差必须为 0。",
+      "迁移 PUI 子组件时保留父容器的排列职责，但尺寸、圆角、禁用态和主题由 PUI Button 合同负责。",
+      "复合 Button 内容必须通过 buttonSample.defaultSlot 组合，按需传入 role、ariaSelected 或 ariaExpanded；不得只给原生 button 添加相似类名。",
+      "Grid 等默认 Slot 内的 Badge 必须调用 badgeSample，不得手写私有徽标节点。",
+      "原生复合组件使用 Cell/Badge/Button 时，H5 必须调用对应共享镜像助手；List 条目不得用私有 button 重写 Cell，演示操作不得绕过 Button。",
+      "Tag Close 等组件自有交互根保留平台节点与 Icon 组合，不得为了扫描结果再包一层 Button；H5 尺寸必须镜像 28rpx 容器与 24rpx Icon，并提供键盘操作。",
+      "Bubble 的展开和 Reaction 属于可组合操作，必须调用 buttonSample；Bubble Surface 才属于组件自有交互根。",
+      "NavigationMenu 根入口必须调用 buttonSample 并组合 badgeSample，默认菜单项必须调用 cellSample。",
+      "VirtualList 外层保留 listitem 根，内部 Badge/Cell 调用共享助手。",
+      "Combobox Trigger/Option 保留组件自有交互根，多选值直接调用 closable tagSample；禁止再包 raw button 或重复 Close Icon。",
+      "Indexes 默认条目必须调用 cellSample，徽标调用 badgeSample，箭头调用 iconComponent；禁止手写 raw button、badge span 或字符箭头。",
+      "Search 镜像不得渲染原生 WXML 不存在的组件目录结果或四条数据块。",
+      "Sidebar 默认条目必须调用 buttonSample.defaultSlot，并组合 badgeSample/Icon/Loading；禁止只给 raw button 添加 PUI class。",
+      "Collapse Trigger 与 SwipeCell Content 属于组件自有交互根，不得机械套普通 Button；H5 必须补 Enter/Space 与 source=keyboard。",
+      "Tabs、Tabbar、Steps 的原生入口已经组合 PUI Button，H5 必须调用 buttonSample.defaultSlot；Tabs/Tabbar 徽标必须调用 badgeSample，并保留选择语义与 source=keyboard。",
+      "Cell/Radio 保留组件根，但内部 Badge/Loading 必须调用共享助手，Radio Enter/Space 必须回传 source=keyboard。",
+      "Table 选择列必须调用 checkboxSample，Swiper 加载态必须调用 loadingComponent；禁止私有 Checkbox Mark、加载指示器或重复 keyframes。",
+      "Collapsible、Table、Swiper 等复合组件的默认 error/empty 必须调用 emptySample；默认 loading 的文字也必须进入 loadingComponent，不得在父状态层重拼 Icon、标题、加载指示器或 Action。",
+      "嵌入式 Empty 只移除重复 Surface，必须保留 PUI Empty 的内容、字号、small 内距、语义和 Button/Icon 组合；自身透明且无边框、阴影、毛玻璃和圆角，外观模式只作用于宿主状态 Surface。消费者 custom empty Slot 保持原合同。",
+      "Combobox、VirtualList 的 Error 使用 Empty 内置 Action；NavigationMenu 使用兄弟 Retry Button；List 正文 Error 不含 Action且 Retry 只在 Footer。消费者 custom empty Slot 不得替换为默认 Empty。",
+      "Calendar、Dialog 的 Error 使用 Empty + 兄弟 Retry Button；Collapse、Radio、Upload 使用 Empty 内置 Action。Radio/Upload 的 custom Slot 保持消费者组合，父状态区不得覆盖 PUI Button 几何。",
+      "新增或移除原生 pui-empty 组件时必须同步状态组合合同覆盖清单，不能只让 WXML 复用而让 H5 回退私有状态树。",
+      "H5 为组件根补充 Enter/Space 时，事件来源必须标记 keyboard；longpress 组件的 role=button 不能成为键盘无效入口，manual 模式除外。",
+      "组件自身的交互根可以使用平台原生节点；不要为了静态消除原生 button 而给 Collapse Trigger、Calendar 日期格或 Rate 命中区再套 PUI Button。",
+      "共享 PUI Icon/Loading 的几何必须通过 helper 参数按原生 rpx 精确传递；父组件只管理排列、颜色和位置，禁止覆盖子组件 width/height/padding/border-radius 或使用 !important。",
+      "Button 内 Icon/Loading 必须镜像 22/26/32/38rpx 四档；Checkbox、Switch、Tabbar、Steps 等使用各自原生尺寸，禁止统一回退为 generic small。",
+      "新增或移除原生 pui-loading 组合时必须同步 H5 Loading 覆盖清单；不存在原生公开合同且不可达的 Choice 等私有镜像必须删除。",
+      "官网组件目录、复制、分类和资源选择必须调用共享 Button/Icon/Badge helper；只添加 pui class 或复制组件 CSS 不算复用。",
+      "官网标准页概览/API/PROP 必须调用 buttonSample，刷新/重置必须调用 iconButtonSample；节点首次挂载后只更新状态，禁止用 innerHTML 清空 Button + Icon Slot 树。",
+      "官网搜索和机型选择必须调用 inputControlSample/selectControlSample；原生 input/select 只能位于 helper 平台层，搜索不得索引或朗读 done、成熟度等开发状态。",
+      "左侧目录搜索与 Icon 资源搜索必须共用 inputControlSample(prefixIcon='search')；筛选重建列表后恢复焦点和光标，不得维护 .search/.icon-search 私有表单皮肤。",
+      "站点控件存在标准尺寸需求时新增明确的站点语义 Token，并通过未定义变量扫描；禁止借用无关间距 Token 或引用不存在的 step。",
+      "PROP 文本/数值、枚举/nullable boolean、boolean、range、JSON 必须分别调用 Input、Select、Switch、Slider、Textarea helper；renderPropsPanel 不得直接拼平台控件或覆盖子组件几何。",
+      "PROP 回写后必须恢复当前字段焦点；JSON/nullable number 解析失败时保留上次有效 Props，设置 aria-invalid 和真实错误边界，禁止静默吞错或伪造成功。",
+      "Form 字段及 Field 的 Input Slot 示例必须调用 inputControlSample；父级只管理标签、反馈、方向和 gap，不得手写 input、嵌套 label、覆盖 Input 几何或把透明布局根加入全局 Surface 名单。",
+      "旧输入组合层、Search、Stepper、Combobox 的 H5 必须调用 inputControlSample，由 helper 传递 prefix/clear/maxlength/range/align/bordered 与事件；Showcase/Panel 不得手写 input。",
+      "复合输入只允许一个可见 Surface：Search/Combobox 可由 Input field 承担外观，旧输入组合层/Stepper 由外壳承担；嵌入 Input 不得再获得 border/radius/shadow/blur。",
+      "preview/index.html 只能保留 PUI 控件 Mount；顶部外观设置必须调用 switchPreviewMarkup，禁止静态复制 Switch 的 track/thumb/button DOM。",
+      "H5 raw button/input/select/textarea 只允许存在于共享 helper、组件自身交互根或浏览器能力桥接，并由精确 owner/数量合同锁定；页面和复合层不得通过扩大 allowlist 绕过 PUI 复用。",
+      "组件存在 shadcn 等别名路由时，H5 事件分支必须通过 previewIdFor(state.current) 判断组件身份，禁止直接比较 state.current 导致可见控件变化但运行态不回写。",
+      "Tabs 必须由固定两行和固定机型/动作槽保证位置；无操作视图只用 visibility/disabled/aria-hidden，禁止 hidden/display:none 折叠，也禁止 getBoundingClientRect + window.scrollBy 事后补偿。",
+      "Icon 资源卡必须调用 iconComponent，不得直接注入 icon.svg；站点事件标识只能通过 buttonSample 的安全 dataAttributes 传递，禁止覆盖平台或演示保留字段。",
+      "Button 被组合为资源卡等常驻 Surface 时，必须显式使用 surface、border 与 data-shadow 语义 Token；不能让 outline/text 变体的透明底和无阴影规则覆盖宿主外观。",
+      "新增 H5 组合操作后必须在 390px 和四项外观模式同时开启时验证无页面横向溢出。"
+    ],
+    "tags": [
+      "preview-site",
+      "button",
+      "input",
+      "select",
+      "switch",
+      "slider",
+      "textarea",
+      "form",
+      "field",
+      "cell",
+      "radio",
+      "table",
+      "swiper",
+      "collapsible",
+      "empty",
+      "checkbox",
+      "loading",
+      "badge",
+      "icon",
+      "tag",
+      "bubble",
+      "grid",
+      "list",
+      "scroll-area",
+      "navigation-menu",
+      "virtual-list",
+      "indexes",
+      "sidebar",
+      "collapse",
+      "swipe-cell",
+      "tabs",
+      "tabbar",
+      "steps",
+      "action-sheet",
+      "dropdown-menu",
+      "popup",
+      "sheet",
+      "popover",
+      "breadcrumb",
+      "combobox",
+      "search",
+      "composition",
+      "icon-button",
+      "default-slot",
+      "preview-parity",
+      "accessibility",
+      "390px"
+    ]
+  }
+}

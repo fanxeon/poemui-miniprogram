@@ -1,0 +1,85 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0042",
+  "title": "Button 公开 API 暴露重复与组件私有配置",
+  "scope": "component",
+  "components": ["button", "loading", "icon"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-19",
+  "userGoal": "让 Button 的公开合同像成熟小程序组件一样克制，优先暴露日常按钮任务，避免形状、变体、动效和子组件能力重复表达。",
+  "environment": {
+    "surfaces": ["component-source", "props-panel", "api-documentation", "h5-preview"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["375x667", "393x852", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查旧 button/button.js 与 metadata，Button 同时暴露 round 与 shape、ghost Boolean 与 variant、iconPosition、success/warning 主题、dashed 变体及组件私有 duration/easing。",
+    "检查旧 loadingProps，调用者可以把 Loading 的大部分内部能力继续透传，Button 无法保证加载内容和几何合同。",
+    "打开属性页时所有常用和微信平台 Props 平铺在一个列表，日常使用者必须跨过大量低频能力。"
+  ],
+  "expected": "Button 只保留一套主题、变体、形状和动效入口；Loading 透传有明确白名单；核心能力与微信平台能力分组展示。",
+  "actual": "同一意图存在多个公开入口，子组件内部 API 被无边界透传，且低频平台能力与核心按钮属性处于同一信息层级。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户在 Button battle 报告后明确确认验收。"
+    },
+    {
+      "kind": "file",
+      "ref": "button/button.js",
+      "note": "公开 Props 已收敛为 29 项，主题、变体、形状与动效均只有一个真相源。"
+    },
+    {
+      "kind": "file",
+      "ref": "metadata/components.js",
+      "note": "Button API 分为 12 项核心属性和 17 项表单与微信能力，Events 与 Slots 独立定义。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-button.js",
+      "note": "专项测试锁定删除项、29 项 Props、受限 loadingProps 和 API 分组。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://tdesign.tencent.com/miniprogram/components/button",
+      "note": "以官方页面和 tdesign-miniprogram@1.15.3 安装包复核真实 props.js/type.d.ts/WXML：TDesign 为 30 项、PoemUI 为 29 项，双方共有 26 项，差异均已作有意取舍。"
+    }
+  ],
+  "rootCause": "过去用新增别名和透传快速覆盖用例，却没有以独立用户意图、Slot 组合边界和全局 Token 为公开 API 的准入条件。",
+  "decision": {
+    "outcome": "删除 round、ghost Boolean、iconPosition、dashed、success/warning 与私有 duration/easing；loadingProps 只允许 size/theme/text/ariaLabel，并把 29 项 Props 分为核心与平台两组。",
+    "rationale": "单一表达能降低 AI 和人工选型歧义；全局动效与子组件白名单能保持跨组件一致，平台能力仍完整保留但不打扰基础使用。",
+    "alternativesRejected": [
+      "保留旧别名并标记 deprecated 仍会继续出现在 Props、文档和 AI 生成结果中。",
+      "完全移除微信原生 Button 属性会破坏客服、授权、表单等真实平台任务。",
+      "原样透传整个 Loading API 会让 Button 无法稳定保证布局和可访问名称。"
+    ]
+  },
+  "impact": {
+    "files": ["button/button.js", "button/button.wxml", "button/button.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/BUTTON.md", "scripts/test-button.js"],
+    "dependencies": ["loading", "icon", "navigation-menu", "dialog", "navbar", "sidebar", "list", "upload"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node scripts/test-button.js", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["API 页显示 29 项 Props、12 项核心属性、17 项平台属性、12 个 Events 和 3 个 Slots；属性页默认只展开核心组。"],
+    "deviceRisks": ["微信 open-type、form-type 与十一类平台事件仍需使用合法 AppID 在真机验证，H5 只验证属性门控和原样回写，不伪造平台结果。"]
+  },
+  "ai": {
+    "summary": "Button 使用单一主题、变体、形状与动效合同，平台能力保留但不进入基础使用层。",
+    "rules": [
+      "生成 Button 时优先使用 theme/variant/shape，不得恢复 round、ghost Boolean、iconPosition 或 dashed。",
+      "success/warning 属于反馈结果，不生成 Button 主题；危险操作使用 danger。",
+      "Button loadingProps 只生成 size/theme/text/ariaLabel，不透传 Loading 的其他能力。",
+      "日常文档先展示核心 Props，微信表单与开放能力放入独立高级分组。"
+    ],
+    "tags": ["button", "api-contract", "props", "loading", "tdesign"]
+  }
+}

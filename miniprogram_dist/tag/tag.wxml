@@ -1,0 +1,10 @@
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{maxWidthStyle}}">
+  <pui-icon wx:if="{{resolvedIcon}}" name="{{resolvedIcon}}" size="24" color-scheme="{{colorScheme}}" />
+  <view class="pui-tag__content">
+    <text wx:if="{{content !== ''}}">{{content}}</text>
+    <slot></slot>
+  </view>
+  <view wx:if="{{closable}}" class="pui-tag__close" role="button" aria-label="关闭标签" aria-disabled="{{disabled}}" catchtap="onClose">
+    <pui-icon name="close" size="24" color-scheme="{{colorScheme}}" />
+  </view>
+</view>

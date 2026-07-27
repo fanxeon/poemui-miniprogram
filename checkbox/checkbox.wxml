@@ -1,0 +1,31 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}"
+  role="checkbox"
+  aria-label="{{semanticLabel}}"
+  aria-checked="{{innerIndeterminate ? 'mixed' : innerChecked}}"
+  aria-disabled="{{effectiveDisabled}}"
+  aria-readonly="{{effectiveReadonly}}"
+>
+  <view
+    wx:if="{{markVisible}}"
+    class="pui-checkbox__target"
+    hover-class="{{!effectiveDisabled && !effectiveReadonly ? 'pui-checkbox__target--hover' : 'none'}}"
+    catchtap="onMarkTap"
+  >
+    <view class="pui-checkbox__mark" aria-hidden="true">
+      <view class="pui-checkbox__indicator pui-checkbox__indicator--unchecked"><pui-icon wx:if="{{uncheckedIcon}}" custom-class="pui-checkbox__icon" name="{{uncheckedIcon}}" size="28" color-scheme="{{colorScheme}}" /></view>
+      <view class="pui-checkbox__indicator pui-checkbox__indicator--checked"><pui-icon wx:if="{{checkedIcon}}" custom-class="pui-checkbox__icon" name="{{checkedIcon}}" size="28" color-scheme="{{colorScheme}}" /></view>
+      <view class="pui-checkbox__indicator pui-checkbox__indicator--mixed"><pui-icon wx:if="{{indeterminateIcon}}" custom-class="pui-checkbox__icon" name="{{indeterminateIcon}}" size="28" color-scheme="{{colorScheme}}" /></view>
+    </view>
+  </view>
+  <view
+    class="pui-checkbox__body"
+    hover-class="{{!effectiveDisabled && !effectiveReadonly && !contentDisabled ? 'pui-checkbox__body--hover' : 'none'}}"
+    catchtap="onContentTap"
+  >
+    <view class="pui-checkbox__label" style="{{labelStyle}}"><text wx:if="{{label}}">{{label}}</text><slot name="label"></slot></view>
+    <view class="pui-checkbox__content" style="{{contentStyle}}"><text wx:if="{{content}}">{{content}}</text><slot name="content"></slot></view>
+    <view class="pui-checkbox__slot"><slot></slot></view>
+  </view>
+</view>

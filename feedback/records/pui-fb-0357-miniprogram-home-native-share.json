@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0357",
+  "title": "首页缺少微信原生分享与朋友圈页面合同",
+  "scope": "component",
+  "components": ["miniprogram-home"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "首页可以通过微信系统菜单稳定分享给好友，并在条件允许时分享到朋友圈。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "miniprogram-home"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开首页右上角微信系统菜单。",
+    "此前首页 Page 没有 onShareAppMessage 或 onShareTimeline，index.json 也没有 enableShareTimeline。"
+  ],
+  "expected": "好友分享返回首页的稳定路径和品牌卡片；朋友圈能力在微信允许的类目、客户端与基础库中可用。",
+  "actual": "首页没有声明任何原生分享返回载荷或朋友圈页面开关。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求首页能够分享。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "新增好友和朋友圈生命周期，分享载荷只包含稳定首页路径与包内品牌图。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.json", "note": "首页显式开启 enableShareTimeline。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "锁定页面开关以及两种原生分享返回载荷。"}
+  ],
+  "rootCause": "首页只实现了应用内导航、搜索与外观交互，没有接入微信 Page 分享生命周期。",
+  "decision": {
+    "outcome": "首页通过 onShareAppMessage 返回标题、/pages/index/index 与包内品牌图；通过 onShareTimeline 返回同源标题和品牌图，并在页面 JSON 开启 enableShareTimeline。",
+    "rationale": "使用微信原生系统菜单可保证接收者进入可恢复首页，不增加重复分享按钮、前端成功提示或无法验证的统计。",
+    "alternativesRejected": [
+      "在首页新增页面私有分享按钮，会和微信系统胶囊菜单重复且需要额外命中区治理。",
+      "把搜索词、外观、浮层或 Tab 状态编码进分享路径，会制造不可恢复或无产品价值的深链状态。",
+      "在 H5 镜像伪造微信分享成功，不能证明微信客户端的真实发送结果。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.js", "miniprogram/pages/index/index.json", "scripts/test-miniprogram-home.js", "docs/MINIPROGRAM_HOME.md"],
+    "dependencies": ["微信 Page.onShareAppMessage", "微信 Page.onShareTimeline"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run site:build", "npm run example:install", "npm run pack:check"],
+    "browser": [],
+    "deviceRisks": ["需以合法 AppID 在真实微信客户端确认系统菜单中的好友分享、朋友圈入口、卡片图、标题和回流路径；朋友圈入口受微信类目、基础库和客户端条件限制。"]
+  },
+  "ai": {
+    "summary": "页面分享是微信 Page 生命周期能力，必须返回稳定路由，不得以页面私有 UI 或 H5 假成功替代。",
+    "rules": [
+      "需要分享的页面必须实现 onShareAppMessage，并只返回可恢复的公开路径和包内或合规网络图片。",
+      "需要朋友圈能力时，在页面 JSON 设置 enableShareTimeline=true，并实现 onShareTimeline。",
+      "分享路径不得携带临时 UI 状态、用户偏好或未经同意的用户数据。",
+      "分享发送结果与朋友圈可用性只能由合法 AppID 和真机确认，不能由 H5 或静态测试冒充。"
+    ],
+    "tags": ["miniprogram-home", "share", "share-timeline", "native-page-lifecycle"]
+  }
+}

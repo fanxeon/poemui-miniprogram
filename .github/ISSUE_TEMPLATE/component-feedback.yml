@@ -1,0 +1,93 @@
+name: PoemUI 组件问题与设计反馈
+description: 提交可复现问题、能力缺口、H5/WXML 差异、真机兼容或 AI 易误用点
+title: "[Feedback] "
+labels:
+  - feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请描述真实用户目标和可复现证据，不要只填写“效果不对”。维护者验证后会为有长期价值的问题建立 Component Feedback Ledger 记录。
+  - type: input
+    id: component
+    attributes:
+      label: 组件或全局范围
+      description: 例如 upload、style-utilities、preview-site。
+      placeholder: style-utilities
+    validations:
+      required: true
+  - type: dropdown
+    id: feedback_type
+    attributes:
+      label: 问题类型
+      options:
+        - 实现 Bug
+        - 能力缺口
+        - API / 事件 / 受控边界
+        - H5 / WXML / 文档差异
+        - 390px / 主题 / 动效 / 布局
+        - 无障碍
+        - 微信真机 / 基础库 / 样式隔离
+        - AI 容易误用或生成错误
+        - 设计决策建议
+    validations:
+      required: true
+  - type: textarea
+    id: user_goal
+    attributes:
+      label: 真实用户目标
+      description: 用户要完成什么任务，为什么现有路径无法完成？
+      placeholder: 我希望在 ConfigProvider dark 范围内为同一节点组合默认背景和深色覆盖。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 最小复现步骤
+      description: 写出路由、Props、输入、点击/拖动顺序和必要数据。
+      placeholder: |
+        1. 打开 #/foundation/style-utilities
+        2. 将 themeView 切为 dark
+        3. 检查实时 canvas
+    validations:
+      required: true
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: 期望与实际结果
+      placeholder: |
+        期望：……
+        实际：……
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息
+      description: PoemUI 版本、微信/基础库、设备或浏览器、视口、light/dark、视觉开关。
+      placeholder: poemui-miniprogram 0.1.0；微信基础库 x.x；iPhone；390px；dark；阴影 On。
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Props、事件与代码片段
+      description: 请保留 0、false、空字符串等原始值；不要粘贴密钥或隐私数据。
+      render: text
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 证据
+      description: 截图、录屏、控制台日志、真机日志或最小仓库链接。
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交确认
+      options:
+        - label: 我确认这不是静态演示期望，问题来自真实操作或真实实现。
+          required: true
+        - label: 我已移除密钥、用户数据和其他敏感信息。
+          required: true
+

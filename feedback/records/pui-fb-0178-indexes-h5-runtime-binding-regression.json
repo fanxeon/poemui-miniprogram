@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0178",
+  "title": "Indexes H5 预览缺失真实滚动与侧栏拖动监听器",
+  "scope": "component",
+  "components": ["indexes", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "regression",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "全库验证不能以静态渲染替代真实 H5 交互；Indexes 的滚动和侧栏定位必须回写当前值。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice"],
+    "platforms": ["Chrome"],
+    "viewports": ["390×844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "打开 `#/components/indexes`，点击侧栏或滚动内容区域。",
+    "旧 `indexesShowcase` 虽输出真实内容和侧栏标记，但 route dispatcher 未调用监听器绑定；侧栏拖动及内容滚动无法形成浏览器事件到 current 父级回写的完整链路。"
+  ],
+  "expected": "每次 Indexes H5 预览重绘后都绑定可取消的 Pointer Events、滚动监听与真实 group marker 测量；受控值变化通过既有 Props 回写路径驱动渲染。",
+  "actual": "运行时绑定函数缺失于 `bindPreviewRuntime` 分发，预览外观存在但真实交互链路不完整。",
+  "evidence": [
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "全库门禁定位到 H5 运行时绑定缺失，而不是单纯文案断言。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/indexes", "note": "2026-07-20 Chrome 390×844 修复后实测点击“定位到C”：current 从 ★ 更新为 C，事件为 select → change：\"★\" → \"C\" · source=pointer · 父级已回写，内容 scrollTop=429。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "route dispatcher 调用 `bindIndexesPreviewRuntime(props)`；监听器使用 AbortController，读取真实 `[data-indexes-group-index]` marker，并只在已卸载时停止动画。"}
+  ],
+  "rootCause": "预览路由重构后保留了 Indexes 展示模板，却遗漏了其交互绑定函数的 dispatcher 注册。",
+  "decision": {
+    "outcome": "恢复 Indexes 专属、可中止的 H5 绑定；只选取真实 `.pui-indexes-preview[data-indexes-sample]` 根，避免 retry Button 的同名 data 属性被误当作示例根。",
+    "rationale": "保留既有 source-of-truth、受控回写和 PreviewDevice 边界，不用 document 级代理或提示文字伪造滚动。",
+    "alternativesRejected": [
+      "仅放宽专项测试，不修复运行时。",
+      "由点击 handler 伪造 scroll 事件或直接改状态提示。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-indexes.js"],
+    "dependencies": ["Indexes current/defaultCurrent 合同", "PreviewDevice H5 runtime lifecycle"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["node --check preview/app.js", "node scripts/test-indexes.js", "npm run check"],
+    "browser": ["Chrome 390×844 已实测侧栏 Pointer Events 定位到 C：current 从 ★ 更新为 C，事件为 select → change：\"★\" → \"C\" · source=pointer · 父级已回写，内容 scrollTop=429。", "同一内容区真实物理滚动后 current 从 C 更新为 B，事件为 change：\"C\" → \"B\" · source=scroll · 父级已回写，scrollTop=320。"],
+    "deviceRisks": ["微信真机的 scroll-view 物理惯性、catchtouchmove 与安全区仍需合法 AppID 复核；本记录不是 Indexes 完整 battle 验收。"]
+  },
+  "ai": {
+    "summary": "含滚动和拖动的 H5 镜像必须验证 listener 已被路由实际注册，并用浏览器物理输入确认事件、滚动位置和父级回写。",
+    "rules": [
+      "不能以 Showcase 静态 markup 存在推断交互已实现。",
+      "同名 data attribute 可能出现在嵌套 Button；监听器根选择器必须限定到组件根 class。"
+    ],
+    "tags": ["indexes", "h5-runtime", "pointer-events", "scroll", "browser-battle"]
+  }
+}

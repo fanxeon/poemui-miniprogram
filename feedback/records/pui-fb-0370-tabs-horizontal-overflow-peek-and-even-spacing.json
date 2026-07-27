@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0370",
+  "title": "Tabs 未按数量自动切换等分与半露阅读轨道",
+  "scope": "component",
+  "components": ["tabs", "style-utilities", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Tabs 数量大于四时固定露出四个完整项和第五项的一半，让用户知道右侧还有可横滚内容；四项及以下按等分展示。",
+  "environment": {
+    "surfaces": ["pui-tabs horizontal header", "miniprogram styles page", "h5 preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在快速样式页打开五个分类的 Tabs。",
+    "旧实现必须由页面传入 space-evenly=false 才进入横向阅读，默认 true 会把任意数量都等分；五项没有稳定的四个完整项加半个下一项几何。"
+  ],
+  "expected": "items≤4 默认等分；items>4 无论 spaceEvenly 值为何都维持内部横向滚动，固定显示四个完整项和第五项的一半作为继续浏览提示。",
+  "actual": "布局判定只读取调用方的 spaceEvenly，五项快速样式页需要页面私有 false；既有横向最小宽度也不能保证精确的 4.5 项可见几何。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务对话", "note": "用户要求保留横向 Tabs、支持等分并显露右侧下一项。"},
+    {"kind": "file", "ref": "tabs/tabs.js", "note": "以 items.length 自动判定四项等分或超过四项半露轨道。"},
+    {"kind": "file", "ref": "tabs/tabs.wxss", "note": "22.222222% 固定为四个完整项加第五项一半，tag 轨道同时移除 gap。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 以 tabsPreviewLayout 镜像原生数量判定。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/tabs", "note": "2026-07-25 联网读取官方 Tabs 源码目录；PoemUI 的 4.5 轨道是基于本项目可发现性的明确取舍。"},
+    {"kind": "test", "ref": "scripts/test-tabs.js", "note": "专项锁定小程序和 H5 的四项等分、超过四项自动半露轨道。"}
+  ],
+  "rootCause": "Tabs 只把 spaceEvenly 当成调用方布局开关，不根据实际 item 数量决定阅读轨道；页面因此需要私有 false，并且横向最小宽度无法承诺 4.5 项可见几何。",
+  "decision": {
+    "outcome": "Tabs 内部以数量自动布局：items≤4 且 spaceEvenly!==false 时使用 flex:1 1 0 + min-width:0 等分；items>4 固定在小程序/H5 使用 22.222222% 项宽，形成四个完整项加第五项一半。H5 仅在等分轨道向 Button 传 block；快速样式页删除页面私有 space-evenly=false。",
+    "rationale": "数量是用户能否一屏理解分类的真实边界；用真实下一项局部可见传达可滚动性，不增加页面私有箭头、遮罩或第二套导航。",
+    "alternativesRejected": [
+      "把五个分类强行缩成固定一行会隐藏长文案或造成不可读触摸目标。",
+      "添加页面私有箭头不能表达真实滚动位置，也无法复用于其他 Tabs。",
+      "为半露出效果新增公开 prop 会把应由组件默认几何承担的细节暴露给调用方。"
+    ]
+  },
+  "impact": {
+    "files": ["tabs/tabs.js", "tabs/tabs.wxss", "preview/app.js", "preview/styles.css", "miniprogram/pages/styles/index.wxml", "scripts/test-tabs.js", "scripts/test-miniprogram-style-utilities-page.js", "docs/components/TABS.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md"],
+    "dependencies": ["pui-tabs", "pui-button", "pui-scroll-area"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabs.js", "scripts/test-miniprogram-style-utilities-page.js"],
+    "commands": ["node scripts/test-tabs.js", "node scripts/test-miniprogram-style-utilities-page.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 CLI build-npm"],
+    "browser": ["2026-07-25，H5 在 390x844 浏览器视口实测：boundary 六项 scroller clientWidth=271px、每项=60.219px、第五项可见=30.125px、scrollWidth=361px，比例约 0.5 且 document 无横向溢出；pills 三项各 77px，scrollWidth=clientWidth=251px。半露第五项点击后 activeIndex=4。"],
+    "deviceRisks": ["尚需在微信 390px 模拟器和 iOS/Android 真机确认第五项半露宽度、惯性横滚、选中项自动滚入、指示器测量、触摸取消及深浅色外观组合。"]
+  },
+  "ai": {
+    "summary": "Tabs 必须按数量自动布局：四项及以下等分，超过四项用真实 4.5 轨道提示可继续横滚。",
+    "rules": [
+      "不要以页面私有箭头或遮罩提示 Tabs 横滚。",
+      "横向 Tabs 的半露出几何必须由 Tabs 内部 22.222222% 轨道管理，并同步 H5。",
+      "超过四项时不得由页面传 spaceEvenly=false 或其他私有宽度补丁触发半露；仅标签文字允许裁切。",
+      "390px 下不允许 Tabs 造成页面级横向溢出。"
+    ],
+    "tags": ["tabs", "horizontal-scroll", "discoverability", "space-evenly", "h5-parity"]
+  }
+}

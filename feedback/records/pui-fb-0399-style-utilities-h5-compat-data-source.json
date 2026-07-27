@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0399",
+  "title": "Style Utilities H5 兼容说明不得引用已删除目录常量",
+  "scope": "component",
+  "components": ["style-utilities", "preview-site"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "快速样式 H5 必须在真实交互和重绘时保持可用，兼容说明也应读取与预览相同的生成数据。",
+  "environment": {
+    "surfaces": ["h5 style utilities browser", "h5 prop workspace"],
+    "platforms": ["browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 #/foundation/style-utilities。",
+    "首次渲染、点击示例、恢复或切换外观导致 renderStage/renderInspector 重绘。",
+    "读取浏览器 error 日志，出现 ReferenceError: STYLE_UTILITY_ITEMS is not defined。"
+  ],
+  "expected": "H5 兼容说明使用已加载且已校验的 styleUtilitiesData.items 读取 530 个选择器，任何重绘都不产生 ReferenceError。",
+  "actual": "makeCompatNotes 仍读取已删除的 STYLE_UTILITY_ITEMS，全页虽然能继续显示，但每次重绘都会产生未捕获错误。",
+  "evidence": [
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/foundation/style-utilities", "note": "390x844 真实渲染及多次点击均记录 STYLE_UTILITY_ITEMS ReferenceError，调用栈进入 makeCompatNotes。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "模块入口已把 window.POEMUI_STYLE_UTILITIES 绑定为 styleUtilitiesData，兼容说明改为读取 styleUtilitiesData.items.length。"},
+    {"kind": "test", "ref": "scripts/test-style-utilities.js", "note": "锁定新数据源，并禁止旧 STYLE_UTILITY_ITEMS 标识重新出现。"},
+    {"kind": "browser", "ref": "2026-07-26 H5 reload after fix", "note": "修复后重新加载，5 个单一预览正常，reload marker 之后新增 error 日志为 0。"}
+  ],
+  "rootCause": "Style Utilities 数据生成链迁移到 window.POEMUI_STYLE_UTILITIES 后，兼容说明遗漏了一处旧常量引用；静态预览测试没有覆盖 makeCompatNotes 的运行路径。",
+  "decision": {
+    "outcome": "兼容说明统一读取 styleUtilitiesData.items.length，并在 Style Utilities 专项中禁止 STYLE_UTILITY_ITEMS 标识。",
+    "rationale": "入口已经对生成数据做 530 项完整性校验，复用同一对象可避免第二份目录常量和运行时漂移。",
+    "alternativesRejected": [
+      "重新声明 STYLE_UTILITY_ITEMS 别名：会延续双真相源并掩盖迁移遗漏。",
+      "捕获并忽略 ReferenceError：仍会让属性说明缺失并污染错误日志。",
+      "只清空浏览器日志：不解决真实重绘错误。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-style-utilities.js"],
+    "dependencies": ["preview/style-utilities-data.js"]
+  },
+  "verification": {
+    "tests": ["scripts/test-style-utilities.js"],
+    "commands": ["node scripts/test-style-utilities.js"],
+    "browser": ["390x844 修复后重载，Style Utilities 页面渲染 5 个单一当前效果，reload marker 后 error 日志为 0。"],
+    "deviceRisks": []
+  },
+  "ai": {
+    "summary": "H5 Style Utilities 的目录数量和兼容说明必须读取生成数据对象，不得恢复旧全局常量。",
+    "rules": [
+      "Style Utilities H5 数据唯一入口是 styleUtilitiesData，也就是 window.POEMUI_STYLE_UTILITIES 的已校验绑定。",
+      "兼容说明、分类预览、选择验证和数量展示必须读取同一生成对象。",
+      "运行验收必须检查重绘后的新增 error 日志，不能只看页面仍可显示。"
+    ],
+    "tags": ["style-utilities", "h5", "generated-data", "runtime-error"]
+  }
+}

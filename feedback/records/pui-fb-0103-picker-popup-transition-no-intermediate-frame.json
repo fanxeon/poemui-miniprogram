@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0103",
+  "title": "Picker Popup 声明 transition 但插入时已是完成态",
+  "scope": "component",
+  "components": ["picker", "preview-site"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Picker 打开和关闭必须有不超过 500ms 的真实中间帧，reduceMotion 时压缩为 1ms。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "重置 Picker 后点击打开并立即读取 panel opacity/transform。",
+    "旧实现整段重绘时直接插入 is-open 节点，首帧已为 opacity=1、transform=matrix(...0,0)，500ms transition 没有可见起始态。",
+    "关闭同样重建为隐藏完成态，不能保证 leaving 中间帧。"
+  ],
+  "expected": "运行态明确经历 entering → entered 和 leaving → hidden，进入与离开均有真实首尾关键帧，低动效为 1ms。",
+  "actual": "CSS 虽写 transition-duration=500ms，但 DOM 首次出现时已处于目标样式，用户看不到动画。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件由 agent 完成证据闭环后自主连续验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/picker", "note": "修复前打开后首个可读计算样式已是完成态，暴露 transition 无起始帧。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增 pickerTargetVisible、pickerPhase、pickerMounted 与 180ms/1ms 生命周期定时器。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "entering/leaving 使用明确 mask/panel keyframes，hidden 后才卸载。"},
+    {"kind": "test", "ref": "scripts/test-picker.js", "note": "锁定 entering/leaving、timer 和双向关键帧合同。"}
+  ],
+  "rootCause": "依赖 transition 的节点由 renderStage 整段重建，并在首次插入时直接携带 is-open，浏览器没有从关闭样式过渡到打开样式的机会。",
+  "decision": {
+    "outcome": "加入四阶段挂载生命周期并使用插入即执行的 enter/leave keyframes，完成后再切换 entered 或卸载。",
+    "rationale": "关键帧不依赖旧 DOM 延续，能在当前重绘架构下可靠产生真实中间帧且不触碰 height:auto/display:none。",
+    "alternativesRejected": [
+      "继续只声明 transition 无法保证新节点入场。",
+      "用 display:none 切换会造成瞬移并无法播放离场。",
+      "延长到 400ms 以上只是掩盖生命周期错误。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-picker.js"],
+    "dependencies": []
+  },
+  "verification": {
+    "tests": ["scripts/test-picker.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": ["node --check preview/app.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "标准模式 --pui-picker-duration 为 500ms，进入完成后 phase=entered。",
+      "reduceMotion=true 时 duration var 和 panel transitionDuration 均为 1ms。"
+    ],
+    "deviceRisks": [
+      "微信原生 Popup 与 H5 keyframes 的合成层时序仍需低端真机录屏抽样。"
+    ]
+  },
+  "ai": {
+    "summary": "新插入节点不能仅靠目标态 transition；Picker 用四阶段和双向 keyframes 保证中间帧。",
+    "rules": [
+      "浮层整段重建时必须证明 entering/leaving 中间帧，不能只检查 transition 声明。",
+      "Picker 动效固定 500ms，reduceMotion 固定 1ms。",
+      "离场完成前保持 mounted，禁止 display:none 或立即移除。"
+    ],
+    "tags": ["picker", "animation", "intermediate-frame", "reduce-motion", "popup"]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0095",
+  "title": "Radio 缺少可安装的真实 RadioGroup 关系组件",
+  "scope": "component",
+  "components": ["radio", "radio-group", "example", "npm-dist"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "RadioGroup 应能独立安装和组合手动 Radio 或 options，真实管理标量值、父级状态和唯一 change，而不是由单项组件兼任。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计 radio 目录发现只有 radio 四件套，组选值由 Radio 的 options 分支内部维护，没有 radio-group 发布路径。",
+    "手动组合多个 Radio 时没有 relation 来保证互斥、原始值、allowUncheck 或 disabled/readonly/borderless/icon/placement 继承。",
+    "TDesign Miniprogram 1.15.3 把 Radio 与 RadioGroup 分开发布，Group 维护 value/defaultValue/options/keys 和 change。"
+  ],
+  "expected": "radio/radio-group 四件套可独立安装，options 与默认 Slot 子项共享严格标量状态机和真实 relation。",
+  "actual": "旧实现只能把 options 塞给 Radio，本体身份随 Prop 改变，手动子项无法共享父级状态或值。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授权 agent 对后续共有组件自主连续验收，不再逐组件等待确认。"},
+    {"kind": "file", "ref": "radio/radio-group.js", "note": "新增13 Props、唯一 change、严格原始标量、controlled/uncontrolled 连续性和 descendant relation。"},
+    {"kind": "file", "ref": "radio/radio-group.wxml", "note": "options 渲染真实 pui-radio，默认 Slot 支持手动关系子项。"},
+    {"kind": "test", "ref": "scripts/test-radio.js", "note": "专项覆盖 options/keys、0/false/空字符串、重复值、allowUncheck、父级继承、受控写回与两套 dist 四件套。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/radio", "note": "真实点击数值0、布尔false与空字符串后，Group 始终只有对应 input 选中，未发生字符串化碰撞。"}
+  ],
+  "rootCause": "旧设计把组视为 Radio 的数据展示模式，没有把互斥集合建模为独立可组合组件。",
+  "decision": {
+    "outcome": "新增 radio/radio-group.js/json/wxml/wxss，以 relation 管理 options 和手动子项，固定13 Props、1 Event、1 Slot、0 Methods。",
+    "rationale": "Group 是标量选择所有者，独立组件才能统一数据驱动与 Slot 组合，并让父级状态继承可测试、可安装。",
+    "alternativesRejected": [
+      "继续用 options 双模式会让 Radio 的 API、语义和 WXML 随 Prop 改变。",
+      "让页面自行同步 checked 会复制类型比较和受控逻辑。",
+      "仅在 H5 拼 radiogroup 不会给微信安装端提供真实能力。"
+    ]
+  },
+  "impact": {
+    "files": ["radio/radio-group.js", "radio/radio-group.json", "radio/radio-group.wxml", "radio/radio-group.wxss", "preview/app.js", "docs/COMPONENT_API.md", "_example/miniprogram/pages/components/index.json", "scripts/test-radio.js"],
+    "dependencies": ["radio relation", "pui-radio", "wx://form-field", "npm directory packaging"]
+  },
+  "verification": {
+    "tests": ["scripts/test-radio.js", "scripts/check-package.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "release Group 从稳定版切到候选版，disabled 实验版不可操作。",
+      "原始值 Group 依次选择0、false、空字符串，checked 状态严格互斥。",
+      "RadioGroup API 单独展示13 Props、change 和 default Slot。"
+    ],
+    "deviceRisks": [
+      "微信 relation 的 linked/unlinked 顺序、options 与 Slot 混合子项及 form submit 值需合法 AppID 真机复核。",
+      "动态增删 Radio 后的 relation 重排需目标基础库确认。"
+    ]
+  },
+  "ai": {
+    "summary": "RadioGroup 是独立13/1/1/0组件，通过 relation 管理严格标量值和子项继承。",
+    "rules": [
+      "组选值必须由 pui-radio-group 所有，禁止把 options 恢复到 pui-radio。",
+      "Group 必须严格比较0、false、空字符串和字符串值。",
+      "options 与 default Slot 子项必须共享同一 relation 状态机。"
+    ],
+    "tags": ["radio-group", "relation", "composition", "raw-value", "npm"]
+  }
+}

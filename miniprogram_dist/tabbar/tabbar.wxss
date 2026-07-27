@@ -1,0 +1,125 @@
+.pui-tabbar {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  color: var(--pui-text-secondary);
+  /* normal 是屏幕附着的透明导航布局，不应伪装成独立 Surface。 */
+  background: transparent;
+  border-top: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transition: color var(--pui-tabbar-duration) var(--pui-ease-standard), background-color var(--pui-tabbar-duration) var(--pui-ease-standard), border-color var(--pui-tabbar-duration) var(--pui-ease-standard), border-radius var(--pui-tabbar-duration) var(--pui-ease-standard), box-shadow var(--pui-tabbar-duration) var(--pui-ease-standard), opacity var(--pui-tabbar-duration) var(--pui-ease-standard), transform var(--pui-tabbar-duration) var(--pui-ease-standard);
+}
+
+.pui-tabbar--fixed { position: fixed; right: 0; bottom: 0; left: 0; }
+
+.pui-tabbar--shape-round {
+  overflow: hidden;
+  background: var(--pui-glass-surface-strong);
+  border: 1rpx solid var(--pui-glass-border);
+  border-radius: var(--pui-radius-xxlarge);
+  box-shadow: var(--pui-shadow-card);
+  -webkit-backdrop-filter: var(--pui-frosted-filter);
+  backdrop-filter: var(--pui-frosted-filter);
+}
+
+.pui-tabbar--fixed.pui-tabbar--shape-round { right: var(--pui-space-normal); bottom: var(--pui-space-sm); left: var(--pui-space-normal); width: auto; }
+.pui-tabbar--bordered { border-top: 1rpx solid var(--pui-glass-border); }
+.pui-tabbar--borderless { border-top: 0; }
+
+.pui-tabbar__items {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 112rpx;
+}
+
+.pui-tabbar__item-wrap {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  width: 0;
+  min-width: 0;
+}
+
+.pui-tabbar__button-host {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  height: 112rpx;
+}
+
+.pui-tabbar__item {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--pui-space-xxs);
+  width: 100%;
+  min-width: 0;
+  height: 112rpx;
+  min-height: 112rpx;
+  padding: var(--pui-space-xs);
+  overflow: visible;
+  color: var(--pui-text-secondary);
+  font-size: var(--pui-font-size-caption);
+  line-height: var(--pui-line-height-caption);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transition: color var(--pui-tabbar-duration) var(--pui-ease-standard), background-color var(--pui-tabbar-duration) var(--pui-ease-standard), opacity var(--pui-tabbar-duration) var(--pui-ease-standard), transform var(--pui-tabbar-duration) var(--pui-ease-standard);
+}
+
+.pui-tabbar__item-wrap--active .pui-tabbar__item { color: var(--pui-color-brand); font-weight: 700; }
+
+.pui-tabbar__item-wrap::after {
+  position: absolute;
+  right: 50%;
+  bottom: var(--pui-space-step-2);
+  width: 28rpx;
+  height: 4rpx;
+  background: var(--pui-color-brand);
+  border-radius: var(--pui-radius-round);
+  opacity: 0;
+  pointer-events: none;
+  content: '';
+  transform: translateX(50%) scaleX(0.4);
+  transition: opacity var(--pui-tabbar-duration) var(--pui-ease-standard), transform var(--pui-tabbar-duration) var(--pui-ease-standard);
+}
+
+.pui-tabbar__item-wrap--active::after { opacity: 1; transform: translateX(50%) scaleX(1); }
+
+/* 纯图标导航把图标和短横收成同一视觉组：图标微下移，短横上收。 */
+.pui-tabbar__item-wrap--icon-only::after { bottom: var(--pui-space-step-20); }
+.pui-tabbar__item-wrap--icon-only .pui-tabbar__icon { transform: translateY(var(--pui-space-step-4)); }
+
+.pui-tabbar--split .pui-tabbar__item-wrap + .pui-tabbar__item-wrap::before {
+  position: absolute;
+  top: var(--pui-space-step-28);
+  bottom: var(--pui-space-step-28);
+  left: 0;
+  width: 1rpx;
+  background: var(--pui-tabbar-split-color);
+  pointer-events: none;
+  content: '';
+}
+.pui-tabbar__icon { display: flex; align-items: center; justify-content: center; height: 40rpx; }
+.pui-tabbar__item .pui-button__content { overflow: visible; }
+.pui-tabbar__badge-anchor { width: 28rpx; height: 28rpx; }
+.pui-tabbar__label { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pui-tabbar__safe { height: env(safe-area-inset-bottom); }
+.pui-tabbar__placeholder { box-sizing: content-box; width: 100%; height: 112rpx; }
+.pui-tabbar__placeholder--round { height: 128rpx; }
+.pui-tabbar__placeholder--safe { padding-bottom: env(safe-area-inset-bottom); }
+.pui-tabbar--disabled { opacity: 0.56; }
+
+.pui-tabbar--reduced-motion,
+.pui-tabbar--reduced-motion .pui-tabbar__item,
+.pui-tabbar--reduced-motion .pui-tabbar__item-wrap::after { transition-duration: 1ms; }

@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0280",
+  "title": "Tabbar 概览纵向堆叠且纯图标条目被错误回退为序号标签",
+  "scope": "component",
+  "components": ["tabbar", "button", "badge", "icon", "preview-site", "preview-device"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "参照 TDesign 的清晰用法组织重做 Tabbar：不要把 Sidebar 或场景筛选器强塞进组件预览；纯图标、徽标、禁用与浮动状态都要完整可读。",
+  "environment": {
+    "surfaces": ["mini-program-source", "h5-preview", "component-contract", "feedback-ledger"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390x844 browser", "393px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 #/components/tabbar 的概览。",
+    "旧页面把多个完整 Tabbar 示例纵向堆在固定 PreviewDevice 内；随后错误加入 Sidebar 式场景选择器，挤压可读宽度并造成错位。纯图标 items 因 label 空字符串走了序号回退而显示非预期标签。",
+    "切换 tag 场景后，通用 text Button 的后置透明背景规则会覆盖 active tag 的品牌背景。"
+  ],
+  "expected": "采用 TDesign 式连续用法分区：基础、纯文字、纯图标、徽标与禁用、弱选中与悬浮，保持标题、示例与相邻分区的规范间距；不得引入 Sidebar。显式 label: '' 必须是无标签的纯图标；tag active 必须始终可见。",
+  "actual": "旧概览存在多实例挤压；错误的 Sidebar 场景导航又造成宽度压缩与错位；纯图标可见标签不符合 WXML 意图；tag 选中项虽有状态类，但最终计算背景被后置共享样式清空。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确纠正：Tabbar 不应强制使用 Sidebar，应参照 TDesign 的分区布局并注意边距。"},
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已明确授权后续组件无需逐项确认，Agent 可在完整审计、真实浏览器和构建证据后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/tab-bar", "note": "2026-07-23 读取 TDesign TabBar 官方用法与 API。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/tab-bar", "note": "2026-07-23 对照官方源码目录及固定 tdesign-miniprogram@1.15.3 包内 TabBar Props。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabbar", "note": "纯图标场景 label 节点为 0；徽标真实显示 0、dot、99+；点击任务后 active 与 click/change 结果均更新；tag active 修复后为 rgb(39,39,42)。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "场景状态和 H5 镜像共用显式空 label 合同。"},
+    {"kind": "file", "ref": "tabbar/tabbar.js", "note": "原生条目标准化同样以显式空 label 判断纯图标。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "专项测试锁定连续用法分区、无 Sidebar、纯图标、品牌 active 和 source/dist/example 一致性。"}
+  ],
+  "rootCause": "H5 概览先把“按用法分区”误实现为并列堆叠，继而误把筛选需求泛化为 Sidebar，破坏 Tabbar 横向可读空间；条目标准化用 truthy 判断丢失了显式空字符串的语义；共享 PUI text Button 规则排序在 tag active 规则之后，发生 CSS 级联覆盖。",
+  "decision": {
+    "outcome": "概览改为五个 TDesign 式连续用法分区，不使用 Sidebar；每段维持可交互的真实 Tabbar，标题到示例 8px、段间 18px。label 是否存在以属性是否显式声明判断；tag active 用更具体且位于共享 Button 基线之后的选择器锁定品牌背景。",
+    "rationale": "文档型组件预览应由用法分区解释，而不是引入与组件无关的导航；每段都保持完整横向空间，H5/WXML 都准确表达条目语义。",
+    "alternativesRejected": [
+      "继续使用 Sidebar 或仅以 CSS 隐藏其它实例，都会保留错位、宽度压缩或重复运行态。",
+      "将纯图标的空 label 替换为不可见文本，会让可访问名称和视觉语义混淆。",
+      "仅提高 tag 规则优先级而不调整样式顺序，会使共享样式后续改动继续带来隐性覆盖。"
+    ]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.js", "tabbar/tabbar.wxml", "tabbar/tabbar.wxss", "preview/app.js", "preview/styles.css", "scripts/test-tabbar.js", "docs/components/TABBAR.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0280-tabbar-scenario-icon-only-preview.json"],
+    "dependencies": ["PUI Button helper", "PUI Icon helper", "PUI Badge helper", "PreviewDevice", "Tabbar H5 runtime"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js"],
+    "commands": ["node scripts/test-tabbar.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "微信 DevTools CLI build-npm"],
+    "browser": ["2026-07-23 实页复核连续分区：五段依次为基础用法、纯文字导航、纯图标导航、徽标与禁用、弱选中与悬浮；无 Sidebar。计算几何为标题到示例 8px、相邻分区 18px，document 无横向溢出。纯图标无 label DOM；徽标段可读 0、通知红点、99+任务，停用项为 aria-disabled/native disabled。徽标任务经真实按钮点击后活动态回写为 true。既有 390×844、light/dark、果味、受控 click→change 和 fixed 验证仍适用；本轮仅重排文档分区，不改变 Tabbar 运行合同。"],
+    "deviceRisks": ["需要合法 AppID 真机复核 fixed/placeholder、env(safe-area-inset-bottom)、rpx 分隔、触摸选择、backdrop-filter、样式隔离、系统低动效和读屏。"]
+  },
+  "ai": {
+    "summary": "文档型 Tabbar 用法应由连续分区呈现，不能把筛选需求泛化为 Sidebar；显式空字符串是数据语义，不能被 truthy 回退吞掉；共享组件样式修改后必须检查后置规则是否覆盖活动态。",
+    "rules": [
+      "Tabbar 示例可以按 TDesign 式文档流连续分区；不要为筛选或切换目的强行加入 Sidebar。",
+      "H5 与 WXML 都要用属性是否显式声明判断 label: ''，并为纯图标提供可访问名称。",
+      "徽标 0、dot、99+、disabled 与受控回写必须在真实浏览器场景中单独实点，不得只依赖静态 DOM。",
+      "活动态颜色或背景修复后必须读取最终计算样式，排查共享 Button/Switch 等后置规则的级联覆盖。"
+    ],
+    "tags": ["tabbar", "scenario-selector", "icon-only", "badge", "css-cascade", "preview-layout"]
+  }
+}

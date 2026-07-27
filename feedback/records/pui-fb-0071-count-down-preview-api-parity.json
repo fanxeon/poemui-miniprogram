@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0071",
+  "title": "CountDown 官网默认代码、重置、Methods 与真实运行态不一致",
+  "scope": "component",
+  "components": ["count-down", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "CountDown 官网应按常见用法分区，所有 Props 与控制方法真实作用于同一计时器，WXML、API、重置、390px 和外观开关与安装端一致。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览把控制、事件和格式混在单一工程演示中，API 只展示 Props，无法查看 Events、Slot 和实例 Methods。",
+    "演示实际以 time=150000 运行，但基础 WXML 省略 time；重置又读取演示默认而非源码 time=0，使看见、复制与安装默认三者不一致。",
+    "旧 H5 内容、主题、单位、毫秒和受控暂停缺乏可筛选分区，无法逐项验证 default/round/square 与 format 的真实组合。"
+  ],
+  "expected": "概览按真实任务陈列，源码默认、演示初值、WXML 生成、API 和重置边界明确；Events、Slot、Methods 完整展示且所有文字自然换行。",
+  "actual": "旧镜像用一份演示默认同时充当源码默认，导致 WXML 和 reset 漂移，并遗漏 Methods API 分类。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "CountDown 现在分离 source defaults 与 release demo，使用专用 WXML 生成器、四段展示、真实 PUI 方法按钮和 API Methods 表。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 镜像同步三主题、三尺寸、单位/毫秒、默认 Slot、160ms/1ms及深浅色外观 Token。"},
+    {"kind": "test", "ref": "scripts/test-count-down.js", "note": "专项覆盖分区、源码默认过滤、PUI 组合、WXML、API Methods、文档和示例。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/count-down", "note": "实际调整 time/autoStart/paused/content/format/millisecond/size/theme/splitWithUnit/reduceMotion 并点击四个方法按钮。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/count-down", "note": "390px document/body=375/375，PreviewDevice=349/349，代码区340/340，六个API表均349/349且无页面横向溢出。"}
+  ],
+  "rootCause": "演示 Props、源码默认、WXML 生成、API 分类和 reset 曾由不完整的共享路径维护，且没有用真实控制方法与窄屏 API 验证彼此一致性。",
+  "decision": {
+    "outcome": "H5 分为基础、主题与尺寸、单位与毫秒、控制与自定义内容四区；源码默认与150秒演示初值分离，WXML专用生成，API增加共享Methods分类。",
+    "rationale": "用户需要快速筛选常用能力，同时复制代码、重置、Props、API 和安装端必须认同一个源码默认；Methods 是正式公开合同而非概览诊断信息。",
+    "alternativesRejected": [
+      "只在文案中说明控制方法仍无法验证真实计时回写和事件顺序。",
+      "把 Methods 堆在概览会破坏组件预览纯度，正式 API 表才是稳定位置。",
+      "继续共用演示默认与源码默认会让 WXML默认过滤和 reset 永久漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "scripts/catalog-utils.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/COUNTDOWN.md", "scripts/test-count-down.js"],
+    "dependencies": ["buttonSample", "iconButtonSample", "PreviewDevice", "visualConfig", "API Reference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-count-down.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-infrastructure-composition.js"],
+    "commands": ["node --check preview/app.js", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "150秒演示 WXML 显式输出 time={{150000}}；重置后精确恢复 <pui-count-down /> 与00:00:00。",
+      "slot、HH:mm:ss.SSS、millisecond、large、round、splitWithUnit 同时真实作用并进入同源 WXML。",
+      "reduceMotion=true 时 --pui-count-down-duration 为1ms；深色与全部视觉开关均真实作用，结束恢复标准浅色组合。",
+      "API 完整展示11 Props、2 Events、1 Slot、4 Methods，所有表格自然换行；390px 页面无横向溢出。",
+      "浏览器 warning/error 日志为空。"
+    ],
+    "deviceRisks": [
+      "H5 DOM、px、CSS transition 与浏览器 timer 只镜像 WXML、rpx、WXSS 和微信计时器，需在目标基础库复核后台节流与取整。",
+      "微信开发者工具 Service Port 关闭时无法更新 miniprogram_npm，发布门禁必须保留 pending-cli。"
+    ]
+  },
+  "ai": {
+    "summary": "CountDown 的演示、Props、WXML、API、Methods 和重置必须共享源码默认与同一真实计时状态机。",
+    "rules": [
+      "componentPropDefaults.count-down 必须保持源码 time=0，150000 只能作为 release demo 初值。",
+      "非默认 time 的 WXML 必须显式输出，源码重置必须恢复自闭合 <pui-count-down />。",
+      "概览控制必须调用真实 start/pause/reset/getTime，禁止只更新提示文字。",
+      "公开 Methods 必须进入 API 独立表并完整换行，不能塞进概览工程诊断区。"
+    ],
+    "tags": ["count-down", "preview", "wxml", "methods", "390px", "api-reference"]
+  }
+}

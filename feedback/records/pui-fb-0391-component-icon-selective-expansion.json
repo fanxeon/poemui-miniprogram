@@ -1,0 +1,141 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0391",
+  "title": "新组件目录需要区分通用复用、Lucide 直引与 PoemUI 专属几何",
+  "scope": "component",
+  "components": ["icon", "miniprogram-home", "badge", "cell", "swipe-cell", "scroll-area", "dialog", "tag", "swiper", "direction"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "为新增组件目录选择清楚、克制且可复现的图标，只在现有通用图形无法表达时绘制 PoemUI 专属几何。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "miniprogram-icon-page", "h5-icon-library", "npm-icon-font-catalog"],
+    "platforms": ["wechat-miniprogram-webview", "wechat-devtools", "browser", "node"],
+    "viewports": ["20rpx", "32rpx", "56rpx", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查 miniprogram/pages/index/index.js 的当前组件目录，Badge 复用 bell、Cell 复用 list-bullet、Collapse 复用 layers、SwipeCell 复用 arrow-left-right，组件语义和动作方向不够明确。",
+    "Card、Swiper、ScrollArea、Dialog 分别引用 card、images、scroll、dialog，但这些名称不在当时 209 个真实 icon-font-catalog 中，运行时会进入未知名称回退。",
+    "PUI-FB-0358 已证明 Sheet 与 Overlay 同时复用 layers 会产生组件目录辨识冲突，不能继续把所有新组件机械映射为近似通用图形。",
+    "逐项对比 14 个数据展示新目录及 Direction、ScrollArea、Dialog 后，可确认其中多数已有清楚的通用图形，只有 Badge、Cell、SwipeCell、ScrollArea、Dialog 存在稳定的组件级辨识缺口。"
+  ],
+  "expected": "首页每个 icon 名称都存在于同一份生成目录；成熟通用语义直接复用，Lucide 已有清楚构形时只增加直接来源，只有确有组件级辨识冲突的项目进入最多 3 个图元的 PoemUI opticalAdjustments。",
+  "actual": "修改前既有无效名称，也有 bell/list-bullet/layers/arrow-left-right 等近似复用；如果按全部组件同名重画，又会重复制造复杂、难维护且没有额外辨识价值的图形。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-26 当前对话",
+      "note": "用户要求审视新组件中哪些图标应该自绘、哪些可以直接复用，并在确认分层后要求开始绘制。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.js",
+      "note": "首页映射改为 5 个专属图形、3 个新增 Lucide 直引和 9 个现有通用图形。"
+    },
+    {
+      "kind": "file",
+      "ref": "scripts/generate-icons.js",
+      "note": "217 个名称、17 类、稳定 sourceAlias、5 个新增 opticalAdjustments 和 56/32/20px 对照稿由唯一脚本维护。"
+    },
+    {
+      "kind": "file",
+      "ref": "assets/component-icons-preview.svg",
+      "note": "14 个 components 图标以 56/32/20px 同格黑白稿真实渲染。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-icon.js",
+      "note": "锁定 217 个图标、14 个专属图形的 Lucide 来源与 1–3 图元预算，以及 3 个直接 Lucide 来源。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-home.js",
+      "note": "锁定首页组件到图标的映射，并拒绝任何不在真实 icon-font-catalog 中的名称。"
+    }
+  ],
+  "rootCause": "首页目录此前以组件名称或近似语义临时选图，没有先执行“现有复用、Lucide 直引、专属几何”三级判断，也没有用生成目录门禁所有页面名称。",
+  "decision": {
+    "outcome": "Avatar、Card、Image、List、Collapse、Collapsible、Bubble、CountDown、Table 复用 user、panel-top、image、list-bullet、rows、chevron-down、message、clock、table；Tag、Swiper、Direction 新增锁定版 Lucide tag、gallery-horizontal、arrow-left-right；Badge、Cell、SwipeCell、ScrollArea、Dialog 进入 components 分类并使用 2、2、2、2、3 个图元的 PoemUI 专属几何。",
+    "rationale": "先复用可减少目录学习成本和维护面，Lucide 直引保持上游成熟构形，专属几何只解决真实辨识冲突；三种路径仍由同一 sourceAliases、manifest、Icon Font 与 H5 数据链路生成。",
+    "alternativesRejected": [
+      "为 14 个新组件全部绘制同名图标，会重复已有清楚语义并扩大视觉维护面。",
+      "继续使用 bell、layers、list-bullet 或不存在的 card、images、scroll 名称，会保留辨识冲突或运行时回退。",
+      "为首页维护私有 SVG 或图标名称数组，会与 npm Icon Font 目录和 H5 资源库漂移。",
+      "给 Badge、Cell、SwipeCell、ScrollArea、Dialog 堆叠多行内容或完整组件截图，会在 20rpx 下回到用户已否决的复杂说明图。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scripts/generate-icons.js",
+      "assets/icons-src/manifest.json",
+      "assets/icon-codepoints.json",
+      "assets/component-icons-preview.svg",
+      "icon/icon-font-map.js",
+      "icon/icon-font-catalog.js",
+      "icon/icon-font.wxss",
+      "preview/icon-font.css",
+      "preview/icons-data.js",
+      "miniprogram/pages/index/index.js",
+      "scripts/test-icon.js",
+      "scripts/test-icon-font-outlines.js",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/check-package.js",
+      "docs/components/ICON.md",
+      "docs/ICONS.md",
+      "docs/COMPONENT_API.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md",
+      "README.md"
+    ],
+    "dependencies": ["lucide-static@1.24.0", "pui-icon", "poemui-miniprogram/icon/icon-font-catalog", "微信开发者工具 WebView"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-icon-font-outlines.js", "scripts/test-miniprogram-home.js", "scripts/check-package.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-miniprogram-data-pages.js", "scripts/test-miniprogram-layout-pages.js", "scripts/test-miniprogram-feedback-pages.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": [
+      "npm run icons:generate：通过，生成 217 个图标、17 类和 22404 byte WOFF2",
+      "node scripts/test-icon.js：通过",
+      "node scripts/test-miniprogram-home.js：通过，首页所有 icon 名称均存在于真实 icon-font-catalog",
+      "node scripts/check-package.js：通过，锁定 217 个图标和 components 14 项",
+      "node scripts/test-miniprogram-data-pages.js、test-miniprogram-layout-pages.js、test-miniprogram-feedback-pages.js、test-miniprogram-form-pages.js：通过",
+      "npm run feedback:generate && npm run feedback:check：通过，Ledger 共 375 条记录",
+      "npm run miniprogram:build：通过，生成 69 个组件目录",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project miniprogram：通过，AppID wx23aa017375535746，cost 1380ms，warnings []",
+      "npm run site:build：通过",
+      "npm run example:install：通过，audited 2 packages，0 vulnerabilities",
+      "npm run pack:check：通过，333.9 kB package、1.6 MB unpacked、533 files，sha1 13ce193cd7cfc9def4c629e2ad562c227fa833da",
+      "npm run check：未通过；与本图标改动无关的并行 appearance-contract-matrix 新页面根清单未同步，测试拒绝把不完整基线视为成功",
+      "node scripts/test-miniprogram-component-pages.js：未通过；并行新增 ConfigProvider 页面已进入真实路由，但该专项测试的统一 Navbar 预期名单尚未同步"
+    ],
+    "browser": [
+      "assets/component-icons-preview.svg 已转为 .audit/icon-redraw-2026-07-26/component-icons-preview.svg.png 并实际查看；14 个专属图形同格展示 56/32/20px，新增五项在 20px 下仍保留各自锚点。",
+      "微信开发者工具 Stable v2.01.2510290 复用现有会话，在 AppID wx23aa017375535746、iPhone 12/13 Pro 390px、主 WebView 下重新编译；运行面板为 0 errors，已有文章推荐与环境噪音 warnings 仍保留。",
+      "微信首页实际打开数据展示、布局与反馈分区：Badge、Cell、SwipeCell、ScrollArea、Dialog 以 20rpx 目录尺寸可辨；Tag、Swiper、Direction 与复用图标均来自真实目录。点击 Dialog 进入 pages/components/dialog/index 并返回，目录滚动与点击未回归。",
+      "微信 Icon 独立页显示 217 个图标和 components 14 项；三列 56rpx 网格完整展示 button、divider、icon、popup、popover、sheet、action-sheet、dropdown-menu、overlay、badge、cell、swipe-cell、scroll-area、dialog，名称自然换行且无横向溢出；浅深色 currentColor 均可读。",
+      "H5 http://127.0.0.1:4179/#/icons 在真实 390×844 视口显示 217 icons、17 categories、components 14；三列卡片宽 109px，最右边界 363px，页面 scrollWidth 375px，不存在横向溢出。深浅色均实际切换查看，Popup 等 glyph 继承 currentColor，控制台 0 error / 0 warning；测试后恢复原深色偏好与默认视口。"
+    ],
+    "deviceRisks": [
+      "iOS 与 Android 真机仍需确认 20rpx 下 Cell/SwipeCell、Dialog/Overlay 的最终辨识、字体抗锯齿、触摸、读屏和惯性滚动。",
+      "当前项目不启用 Skyline；Skyline 不属于本记录验收范围。"
+    ]
+  },
+  "ai": {
+    "summary": "组件目录选图先做现有复用、Lucide 直引、专属几何三级判断，只有真实辨识冲突才新增 PoemUI opticalAdjustments。",
+    "rules": [
+      "首页任何 icon 名称都必须存在于当前生成的 icon-font-catalog，禁止依靠首字符回退伪装成功。",
+      "组件名不自动产生同名专属图标；先检查现有通用图形是否已准确表达用户心智。",
+      "Lucide 已有成熟通用构形时使用锁定 sourceAlias，不为品牌感重复造形。",
+      "专属组件图标最多 3 个可见图元，并在 56、32、20px 的真实 SVG 渲染中检查。",
+      "Cell 与 SwipeCell 必须共享单行外壳，并通过右 Chevron、动作分隔和左滑 Chevron 区分。",
+      "新增图标必须经唯一生成脚本同步 SVG、manifest、Icon Font、H5 数据、发布镜像、示例安装和微信 npm 产物。",
+      "没有用户最终视觉确认时 acceptance 保持 pending-user；开发者工具或真机失败必须保留真实错误。"
+    ],
+    "tags": ["icon", "roundline", "components-category", "miniprogram-home", "lucide", "selective-drawing", "generation"]
+  }
+}

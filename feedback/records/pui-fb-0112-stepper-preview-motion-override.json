@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0112",
+  "title": "全站视觉过渡覆盖 Stepper 固定动效生命周期",
+  "scope": "component",
+  "components": ["stepper", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Stepper 的 H5 镜像必须真实遵守源码固定 500ms 和 reduceMotion 1ms，外观开关不能静默改写组件生命周期。",
+  "environment": {
+    "surfaces": ["h5-preview", "appearance-settings"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Stepper 概览并读取根节点 transitionDuration。",
+    "旧全站表格/视觉开关规则在组件规则之后声明 transition，计算结果为 500ms，而 Stepper 自身合同为 500ms。",
+    "切换 reduceMotion 后虽然根变量为 1ms，但后置全站规则仍可能绕过组件变量，形成源码与 H5 漂移。"
+  ],
+  "expected": "Stepper 根的 opacity、background-color、border-color、border-radius、box-shadow 全部消费 --pui-stepper-duration，正常为 500ms，reduceMotion 为 1ms。",
+  "actual": "后置共享外观规则把 Stepper 计算时长覆盖为 220ms，H5 不再对应组件源码。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件无需逐项确认，由 agent 在完整证据后自主连续验收。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Stepper 在共享视觉规则之后重新声明仅属于自身的五项生命周期过渡。"},
+    {"kind": "test", "ref": "scripts/test-stepper.js", "note": "专项合同锁定 Stepper 作用域和 --pui-stepper-duration 变量。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=stepper-motion#/components/stepper", "note": "修复后正常五项均为 0.18s，reduceMotion 五项均为 0.001s。"}
+  ],
+  "rootCause": "全站外观切换为了统一 Surface 过渡，使用后置规则覆盖了组件自己的 transition，而没有保留组件固定生命周期变量。",
+  "decision": {
+    "outcome": "在共享外观规则之后为 Stepper 根恢复五项组件作用域过渡，全部消费 --pui-stepper-duration 与 --pui-stepper-ease。",
+    "rationale": "全局外观只能补充视觉 Token，不能改变已经有明确合同的组件动效时长；组件作用域声明可同时保留外观过渡和低动效。",
+    "alternativesRejected": [
+      "把 Stepper 改成全站 220ms 会破坏小程序与 H5 同源。",
+      "删除外观过渡会使主题和视觉开关瞬移。",
+      "只检查 data 属性或 CSS 变量而不读计算样式无法发现真实覆盖。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "preview/index.html", "scripts/test-stepper.js", "feedback/records/pui-fb-0112-stepper-preview-motion-override.json"],
+    "dependencies": ["preview visual settings", "reduceMotion"]
+  },
+  "verification": {
+    "tests": ["scripts/test-stepper.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-stepper.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "正常态 transition-property 为 opacity/background-color/border-color/border-radius/box-shadow，五项 transition-duration 均为 0.18s。",
+      "Props 将 reduceMotion 切为 true 后，同一五项计算时长均为 0.001s，根变量为 1ms。",
+      "390px 下 document scrollWidth/clientWidth 继续为 375/375，视觉开关前后 Stepper 几何保持 150×46px。"
+    ],
+    "deviceRisks": [
+      "微信 WXSS/rpx 中间帧、系统级减少动态效果映射和低端机合成性能仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "全站外观规则不得覆盖组件固定动效，验收必须读取最终计算样式。",
+    "rules": [
+      "外观开关规则只能改变视觉 Token，不得改写组件声明的生命周期变量。",
+      "动效验收必须同时读取 transition-property、transition-duration 和 reduceMotion 最终计算值。",
+      "新增后置共享 transition 时必须回归已有固定动效组件。"
+    ],
+    "tags": ["stepper", "preview", "motion", "reduce-motion", "computed-style"]
+  }
+}

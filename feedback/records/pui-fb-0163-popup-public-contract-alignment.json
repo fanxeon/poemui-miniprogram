@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0163",
+  "title": "Popup 公开合同曾混入业务状态、诊断事件与实例方法",
+  "scope": "component",
+  "components": ["popup", "metadata", "usage-code", "example", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "以联网 TDesign Popup 对照和真实 WXML 为依据收敛 Popup，只公开基础浮层实际能闭环的能力，基础 WXML 保持最小化。",
+  "environment": {
+    "surfaces": ["source", "h5-preview", "property-panel", "api-reference", "usage-code", "example", "miniprogram-dist"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 391px", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Popup 公开 41 项 Props，包含标题、Footer、提交、loading/error/empty/retry 等消费者业务状态，以及 open/close/submit/retry 方法和 after-* 等诊断事件。",
+    "2026-07-20 已联网访问 TDesign Popup 页面、官方仓库，并读取固定 tdesign-miniprogram@1.15.3 包内 miniprogram_dist/popup 的 props.js、type.d.ts、popup.js、popup.wxml 与 popup.wxss。"
+  ],
+  "expected": "Popup 只承担显隐请求、遮罩、位置、层级、滚动保护、关闭轨道和 0–500ms 动效；公开 TDesign 形状的基础 Props，加 PoemUI ariaLabel/reduceMotion，只有 visible-change 事件、三个 Slots、零 Methods。",
+  "actual": "历史公开面把上层业务内容和预览诊断暴露为基础浮层能力，调用者会误以为 Popup 能提交、重试、管理请求状态或自行完成打开关闭流程。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已明确授权后续组件范围化自主验收，仍要求逐项真实浏览器、Ledger 与构建证据。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/popup", "note": "2026-07-20 在线核验 Popup 的产品用法、Props 与 visible-change 语义。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/popup", "note": "2026-07-20 在线核验 TDesign Popup 源码位置；固定 npm 包用于可复现 API 判断。"},
+    {"kind": "file", "ref": "popup/popup.js", "note": "当前源码精确声明 14 Props，内部生命周期方法不作为实例 API，只通过 visible-change 请求关闭。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项合同锁定 Props、受控/非受控、遮罩门禁、动效、Slots、H5、API、示例、依赖与 dist 同源。"}
+  ],
+  "rootCause": "历史实现未从真实浮层职责分离消费者内容，直接把 Dialog/Sheet 级标题、状态、动作和预览诊断混入 Popup 根合同。",
+  "decision": {
+    "outcome": "公开 14 Props：TDesign 12 项基础浮层 Props 加 PoemUI ariaLabel/reduceMotion；仅 visible-change，default/content/close-btn 三个 Slots，零 Methods。",
+    "rationale": "标题、表单、Loading、Empty、Result、业务关闭策略和网络回写属于调用方或上层组件；Popup 只应可靠地请求显隐并保留退场。",
+    "alternativesRejected": [
+      "保留 submit/retry/confirmLoading 会伪造 Popup 的业务完成能力。",
+      "保留 after-open/after-close 与 open/close 方法会把内部渲染阶段误当公开工作流。",
+      "在基础 WXML 展示 bind:visible-change 会违背最小可用示例原则。"
+    ]
+  },
+  "impact": {
+    "files": ["popup/popup.js", "popup/popup.json", "popup/popup.wxml", "popup/popup.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/POPUP.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-popup.js"],
+    "dependencies": ["PUI Button", "shared usage-code generator", "TDesign Popup reference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js", "scripts/test-dialog.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-code-copy.js"],
+    "commands": ["2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：以最终构建记录为准。", "2026-07-20 微信 CLI build-npm：最终实际结果记录在本组件进度项，不手工伪造 miniprogram_npm。"],
+    "browser": ["真实点击 打开弹层、遮罩和 closeBtn；非受控与 visible=true 受控均经 visible-change 使父级回写后关闭，closeOnOverlayClick=false 保持可见。", "API 页实际显示 14 Props、1 Event、3 Slots、0 Methods；基础代码为 <pui-popup />，不含 bind:*。"],
+    "deviceRisks": ["微信真机仍需以合法 AppID 验证 fixed 遮罩、rpx 位移、安全区、Slot 投影、样式隔离和读屏。"]
+  },
+  "ai": {
+    "summary": "Popup 是显隐与遮罩基础设施，不是表单、请求状态或结果反馈容器。",
+    "rules": [
+      "先用在线 TDesign 页面、固定 npm 包和真实 WXML 三者交叉确定基础浮层公开面。",
+      "基础 WXML 只保留最小调用；完整 visible-change 只进入 Events 或事件专项示例。",
+      "任何 loading/error/empty/retry、标题、Footer、提交和业务成功都必须留给消费者组合，不能回填 Popup 根 API。"
+    ],
+    "tags": ["popup", "tdesign", "api-contract", "visible-change", "no-fake-success"]
+  }
+}

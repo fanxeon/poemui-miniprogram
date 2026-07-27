@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0330",
+  "title": "当前小程序明确不启用 Skyline 渲染器",
+  "scope": "global",
+  "components": ["miniprogram", "navbar", "icon", "grid", "button"],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "wont-fix",
+  "acceptance": "pending-user",
+  "source": "real-device",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "当前小程序作为 WebView 项目交付，不启用也不支持 Skyline；此前 Skyline 真机问题不能驱动当前组件库或页面的额外分支。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "miniprogram-icon-page", "wechat-component"],
+    "platforms": ["wechat-miniprogram", "wechat-webview", "wechat-devtools-webview"],
+    "viewports": ["390px", "real-device"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "历史 app.json 曾启用 renderer=skyline、componentFramework=glass-easel、defaultDisplayBlock=true。",
+    "历史 Skyline iOS 或 Android 真机中，Navbar 第二个按钮未命中，Icon 三列降为单列。",
+    "用户明确当前产品只支持 WebView，删除上述渲染器开关后重新普通编译。"
+  ],
+  "expected": "app.json 使用默认 WebView 渲染，不再声明任何 Skyline 或 glass-easel 开关；当前验收只覆盖 WebView。",
+  "actual": "历史配置错误地启用了 Skyline，导致两个未承诺支持的真机兼容问题被误当作当前产品缺陷。",
+  "evidence": [
+    {"kind": "real-device", "ref": "2026-07-24 当前任务对话", "note": "用户确认问题并非仅 iOS：Android 真机同样只有最左 Navbar 按钮生效，Icon Grid 也变为单列。"},
+    {"kind": "file", "ref": "miniprogram/app.json", "note": "当前工程已删除 renderer、rendererOptions 与 componentFramework，回到默认 WebView。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/icon/index.wxss", "note": "Icon 三列完全依赖 display:grid 与 grid-template-columns:repeat(3,minmax(0,1fr))。"},
+    {"kind": "file", "ref": "grid/grid.wxss", "note": "共享 PUI Grid 同样依赖 CSS Grid，不能被当作当前 Skyline 兼容修复。"},
+    {"kind": "file", "ref": "navbar/navbar.wxml", "note": "两个 pui-button 自定义组件直接并列在 88px 左镜像 Flex 轨内，没有独立包装命中盒。"},
+    {"kind": "test", "ref": "scripts/test-navbar.js", "note": "当前只直接调用 onLeftBtnClick/onRightBtnClick，未断言 Skyline 真机的节点矩形或触摸 target。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-component-pages.js", "note": "当前只静态锁定 CSS Grid 三列声明，未在真实 Skyline 设备验证布局。"}
+  ],
+  "rootCause": "项目配置越过了当前产品支持边界，启用了 Skyline 与 glass-easel；WebView 布局和事件结果因而被错误套用到不承诺的 Skyline 真机渲染器。",
+  "decision": {
+    "outcome": "删除 miniprogram/app.json 的 Skyline 与 glass-easel 开关，当前产品只支持默认 WebView；不为 Skyline 修改 Icon、Grid 或 Navbar。",
+    "rationale": "这与用户明确的产品定位一致，避免为未启用渲染器引入额外 API、布局分支或伪造的跨渲染器兼容承诺。",
+    "alternativesRejected": [
+      "继续启用 Skyline，再为 Icon、Grid 与 Navbar 添加仅服务于该渲染器的补丁。",
+      "把 WebView 截图或 VM handler 调用标为 Skyline 真机通过。",
+      "通过页面私有透明点击代理掩盖未支持渲染器的命中问题。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/app.json", "scripts/test-miniprogram-home.js", "docs/MINIPROGRAM_HOME.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0329-navbar-direct-dual-action-events.json", "feedback/records/pui-fb-0330-skyline-device-layout-and-hit-target-regression.json"],
+    "dependencies": ["微信 WebView", "微信开发者工具", "PUI Navbar", "PUI Icon"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "微信开发者工具普通编译"],
+    "browser": ["当前已打开开发者工具的渲染模式显示为 WebView；普通编译后应继续保持该模式。"],
+    "deviceRisks": ["WebView iOS/Android 真机仍需验证 Navbar 两项点击、Icon 三列、胶囊安全区、ScrollArea 与读屏；Skyline 不在当前支持范围。"]
+  },
+  "ai": {
+    "summary": "渲染器配置是产品边界；未启用 Skyline 的项目不得把 Skyline 回归扩大为当前组件改造。",
+    "rules": [
+      "当前 WebView 项目不得在 app.json 声明 renderer=skyline、rendererOptions 或 componentFramework=glass-easel。",
+      "WebView 模拟器、WebView 真机和 Skyline 是三种不同证据层；只验收已声明支持的渲染器。",
+      "未来若重新启用 Skyline，必须新增独立兼容 Goal、真机矩形/事件取证和组件级专项门禁，不能复用本记录的 WebView 结论。"
+    ],
+    "tags": ["webview", "renderer", "miniprogram", "navbar", "icon", "compatibility"]
+  }
+}

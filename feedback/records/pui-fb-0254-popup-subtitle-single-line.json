@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0254",
+  "title": "Popup 描述在标题区单行截断",
+  "scope": "component",
+  "components": ["popup", "preview-site"],
+  "type": "visual-layout",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Popup 标题下的描述保持紧凑单行，过长时不撑高 Header，用户仍能看到明确的省略提示。",
+  "environment": {
+    "surfaces": ["Popup 小程序组件", "Popup H5 预览"],
+    "platforms": ["browser", "wechat-miniprogram-source"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 Popup Header 设置较长 subtitle/描述。",
+    "观察标题区布局，描述此前允许换行并可能撑高 Header。"
+  ],
+  "expected": "subtitle 在标题区保持单行，宽度不足时以省略号截断；完整长文案应放入 Content Slot。",
+  "actual": "H5 scoped 样式将 Popup 描述覆盖为可换行，小程序端也没有统一的单行截断语义。",
+  "evidence": [
+    {"kind": "file", "ref": "preview/app.js", "note": "subtitle 镜像现在复用 pui-text-cut。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Popup 标题区描述恢复 overflow hidden、text-overflow ellipsis、white-space nowrap。"},
+    {"kind": "file", "ref": "popup/popup.wxss", "note": "小程序 subtitle 使用同样的单行截断规则。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项测试锁定 H5 与小程序两端单行截断合同。"}
+  ],
+  "rootCause": "Popup 标题区的通用可换行规则覆盖了描述文本的单行语义，跨端实现没有共享同一条截断合同。",
+  "decision": {
+    "outcome": "H5 与小程序端统一使用单行省略；不改变标题、Header 高度或 Content Slot 语义。",
+    "rationale": "Popup Header 只承载紧凑上下文，长文本应进入内容区，避免影响左右按钮对齐和弹窗几何。",
+    "alternativesRejected": [
+      "继续允许换行：会让 Header 高度随文案变化，破坏 Popup 的稳定布局。",
+      "用固定字符数截断：不同字体、主题和设备宽度下不可靠。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "popup/popup.wxss", "docs/COMPONENT_API.md", "docs/components/POPUP.md", "scripts/test-popup.js"],
+    "dependencies": ["PUI text-cut utility", "Popup Header layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["需在 Popup 长 subtitle 的 390px 真实预览中确认省略号与 Header 高度稳定"],
+    "deviceRisks": ["微信字体度量与 text-overflow 视觉差异仍需合法 AppID 真机确认"]
+  },
+  "ai": {
+    "summary": "Popup subtitle 是单行辅助说明，不是长文案容器；跨端统一使用单行省略。",
+    "rules": [
+      "标题区描述必须保持单行并使用省略号，不能用换行撑高 Header。",
+      "需要完整说明时放入 Popup Content Slot，不扩展 subtitle 语义。"
+    ],
+    "tags": ["popup", "subtitle", "single-line", "ellipsis", "header"]
+  }
+}

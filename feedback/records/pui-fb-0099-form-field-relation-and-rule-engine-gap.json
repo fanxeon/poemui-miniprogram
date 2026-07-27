@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0099",
+  "title": "Form 缺少真实 Field 关系、集中规则和受控重置链路",
+  "scope": "component",
+  "components": ["form", "field", "input", "switch", "radio", "example"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "表单校验、提交、重置和服务端错误必须来自真实受控数据与字段关系，保留0、false、空字符串并让父级决定最终写回。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Form 发现只按 items.required 检查内部字符串值，没有 Form–Field relation、warning、异步 validator、服务端消息或首错定位。",
+    "旧 reset 直接清理内部演示值，无法向受控父级返回 initial/empty 下一份数据。",
+    "输入0、false或空字符串时旧 truthy 与字符串化路径无法证明原始类型和字段所有权。"
+  ],
+  "expected": "Field 按 name 注册到 Form；校验读取同一份受控 data，完整报告 errors/warnings；submit 固定 validate→submit，reset 只请求父级回写。",
+  "actual": "旧组件只有本地 required 检查和内部值清理，不能为真实业务表单提供可组合验证闭环。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确授权后续共有组件无需逐项确认，由 agent 自主连续验收并完成整个队列。"},
+    {"kind": "file", "ref": "form/form.js", "note": "实现 Field child relation、13类规则与同步/异步 validator、完整结果、首错定位和五个实例方法。"},
+    {"kind": "file", "ref": "field/field.js", "note": "增加内部 Form parent relation，接收 required、消息显示、低动效和 error/warning，不扩大公开 Field API。"},
+    {"kind": "test", "ref": "scripts/test-form.js", "note": "覆盖0/false/空字符串、warning、异步 validator、validate→submit、initial/empty、服务端消息和父级不被私改。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/form", "note": "真实输入失败后显示两个字段错误；修正后 warning 不阻断 valid，结果明确业务请求尚未执行。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/form", "note": "data 改为name=0、publicRelease=false、channel空字符串后预览原样保留；empty reset 后0/false/空字符串仍保持类型语义。"}
+  ],
+  "rootCause": "旧 Form 没有字段注册协议，也没有区分受控数据、校验反馈与业务提交三个状态所有者。",
+  "decision": {
+    "outcome": "建立 Form–Field 双向 relation；规则集中在 Form，Field 只接收内部上下文；submit、reset、clearValidate、setValidateMessage 全部遵守受控边界。",
+    "rationale": "集中规则避免 Field 与 Form 两份真相，事件结果和父级回写让校验、业务请求与视图状态可以独立闭环。",
+    "alternativesRejected": [
+      "让每个 Field 自带 rules 会复制规则和表单级错误顺序。",
+      "校验通过后自动显示成功会把本地验证冒充远端业务结果。",
+      "reset 直接 setData(data) 会违反受控 Prop 的父级所有权。"
+    ]
+  },
+  "impact": {
+    "files": ["form/form.js", "field/field.js", "field/field.wxml", "docs/components/FORM.md", "docs/components/FIELD.md", "scripts/test-form.js", "scripts/test-field.js"],
+    "dependencies": ["Form-Field relation", "Promise validators", "wx.pageScrollTo", "parent controlled writeback"]
+  },
+  "verification": {
+    "tests": ["scripts/test-form.js", "scripts/test-field.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "组件名称P且包名为空时按validate→submit报告2个错误；修正两字段后valid=true且保留warning。",
+      "Switch 与 Radio 变化分别回写data.publicRelease和data.channel，initial reset恢复默认，empty reset保留类型。",
+      "showErrorMessage=false 后提交仍报告1个错误但不渲染当前 Form 错误文字。"
+    ],
+    "deviceRisks": [
+      "微信 relation linked/unlinked 次序、动态 Field 增删和重复 name 需合法 AppID 真机复核。",
+      "wx.pageScrollTo 在自定义滚动容器内的定位边界与系统低动效需目标设备确认。",
+      "异步 validator 完成期间页面卸载或连续提交的竞态仍需真实业务接入时决定取消策略。"
+    ]
+  },
+  "ai": {
+    "summary": "Form 集中校验受控data并通过真实Field relation回写反馈；submit与reset不越过父级所有权。",
+    "rules": [
+      "规则只放Form，Field只按name接收内部校验结果，不公开第二份rules。",
+      "submit必须先validate再submit，valid只代表本地校验，不代表业务成功。",
+      "reset只发布下一份data；0、false和空字符串不得被truthy判断丢失。"
+    ],
+    "tags": ["form", "field", "relation", "validation", "async", "raw-value", "reset"]
+  }
+}

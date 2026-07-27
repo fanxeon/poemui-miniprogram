@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0115",
+  "title": "Rate 公开合同重复且缺少真实拖动与可靠半星渲染",
+  "scope": "component",
+  "components": ["rate", "icon", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Rate 应对照成熟小程序组件保留真正需要的评分能力，支持点击与拖动、半星和受控回写，同时减少重复事件、私有动效与无职责 Slot。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "351px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Rate 同时公开 input/change、duration/easing 和默认 Slot，但一次评分只需要一个值变化事件。",
+    "旧原生实现只有每颗星的 tap 区，没有 TDesign Rate 主干提供的连续触摸拖动。",
+    "旧半星通过 ::after 固定组件背景色遮住右半边，深色、渐变或毛玻璃背景下会形成不属于星标的色块。",
+    "旧 color 接受 var(--token)/currentColor，但内部 PUI Icon 的微信 Canvas 着色无法把 CSS 变量当作真实 fillStyle。"
+  ],
+  "expected": "Rate 公开 13 Props、单一 change、0 Slots、0 Methods；点击与拖动使用同一受控合同；半星与颜色在微信 Icon 能力边界内真实可渲染。",
+  "actual": "旧 14 Props、2 Events、1 Slot 扩大长期 API，却缺少真实拖动；半星和安全颜色声明与 PUI Icon 实际能力不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项对照 TDesign 收敛公开 API，并授权后续组件在完整证据后由 agent 自主验收。"},
+    {"kind": "file", "ref": "rate/rate.js", "note": "最终实现 13 Props、单一 change、点击/拖动去重、受控退控保值、严格数值和颜色边界。"},
+    {"kind": "file", "ref": "rate/rate.wxml", "note": "双层 PUI Icon 以 fill 宽度裁切半星，并提供真实 touchstart/move/end 与 slider ARIA。"},
+    {"kind": "file", "ref": "docs/components/RATE.md", "note": "记录 TDesign 1.15.3 保留、增加、拒绝与真机边界。"},
+    {"kind": "test", "ref": "scripts/test-rate.js", "note": "锁定 13/1/0/0、点击/拖动、严格 0/false/空字符串、受控退控、颜色、动效、WXML 与产物一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/rate", "note": "390px 下实际点击从 3.5 到 4.5，真实 Pointer 拖动到 1.5，受控 0、退控保值、只读/禁用和 180/1ms 已验证。"}
+  ],
+  "rootCause": "旧原生整改把诊断事件、可配置动效和演示 Slot 一起提升为公共合同，同时用容器背景遮罩弥补单层 Icon，未把 TDesign 拖动主干与 PoemUI Icon 的真实 Canvas 边界纳入设计。",
+  "decision": {
+    "outcome": "对照 TDesign MiniProgram 1.15.3 收敛为 13 Props、1 Event、0 Slots、0 Methods；新增 gap 和真实触摸拖动，删除 input/duration/easing/default Slot；半星改为双层 PUI Icon 裁切，颜色只接受 Canvas 可执行的十六进制与合法 rgb。",
+    "rationale": "声明式 value/defaultValue 与一个 change 足以完成评分写入；兄弟业务内容无需进入原子输入根，双层 Icon 能在透明、深色和效果背景上保持真实形状。",
+    "alternativesRejected": [
+      "保留 input/change 双发布会让消费者承担无价值的去重。",
+      "保留默认 Slot 会把任意业务内容混入 slider 交互语义。",
+      "继续用背景遮罩半星会依赖消费者表面颜色。",
+      "照搬 icon/iconPrefix/placement/variant 会绕过资源合同或引入当前无法跨端证明的图形与提示浮层。"
+    ]
+  },
+  "impact": {
+    "files": ["rate/rate.js", "rate/rate.wxml", "rate/rate.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/RATE.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-rate.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0115-rate-api-and-touch-contract.json"],
+    "dependencies": ["pui-icon", "theme behavior", "TDesign MiniProgram 1.15.3 Rate"]
+  },
+  "verification": {
+    "tests": ["scripts/test-rate.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-shared-subcomponent-geometry.js"],
+    "commands": ["node scripts/test-rate.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "390x844 下点击 4.5 星后 fill 为 100/100/100/100/50，value 从 3.5 真实回写到 4.5；Pointer path 从右向左拖动后 value 为 1.5。",
+      "Props value=0 后 WXML 为 value={{0}}；输入 false 设置 aria-invalid 且保留 0，改回 null 后退控仍显示 0。",
+      "count=7、size=24、gap=0、color=#2563eb 分别真实产生 7 星、24px、0px 和 rgb(37,99,235)。",
+      "disabled/readonly 均移除命中 button；正常与 reduceMotion 的根/裁切 transition 分别为 0.18s 与 0.001s。"
+    ],
+    "deviceRisks": [
+      "微信 touchmove 采样、rpx 到 px 的 gap 换算、Canvas Icon 着色、样式隔离、读屏对 slider 与内部 button 的朗读和系统低动效仍需合法 AppID 真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Rate 只承担星级值输入：一个 change、声明式状态、真实点击/拖动和双层 PUI Icon 半星。",
+    "rules": [
+      "Rate 不得恢复 input、默认 Slot、实例方法或私有 duration/easing。",
+      "半星必须裁切激活 Icon，禁止用固定背景色遮罩。",
+      "微信 Icon 着色只声明真实可执行的十六进制与合法 rgb，不宣传 CSS var/currentColor。",
+      "TDesign 的 icon/iconPrefix/placement/variant 只有建立 PoemUI 资源、浮层和双图形真实合同后才可重新评估。"
+    ],
+    "tags": ["rate", "tdesign", "api-contract", "touch", "half-star", "controlled"]
+  }
+}

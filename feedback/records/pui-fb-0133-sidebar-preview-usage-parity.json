@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0133",
+  "title": "Sidebar H5 用法分区、API说明与复制代码未保持同源",
+  "scope": "component",
+  "components": ["sidebar", "preview-site", "button", "badge", "icon", "loading", "empty"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Sidebar 官网应按成熟组件文档分区展示基础、分组徽标、主题状态和受控边界，所有Props、事件、复制、主题与视觉开关都作用于真实组件镜像。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "property-panel", "appearance-menu"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "393x622 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧H5把页面Header/Footer、事件与方法诊断堆进单一示例，用户无法按常见用法筛选真实形态。",
+    "基础WXML曾展示多组bind和演示操作，掩盖Sidebar最小调用。",
+    "真实浏览器API验收发现24/2数量虽已更新，说明仍残留select/input、header/footer、实例方法与false合法值等旧合同措辞。",
+    "旧状态镜像重复拼装图标与提示，未复用共享PUI Loading/Empty，主题与视觉开关难以和原生组合对照。"
+  ],
+  "expected": "官网固定四个真实用法分区；属性、WXML、工具栏与两段代码块共用同一真相源；基础代码零bind；API全文自然换行，深浅色与视觉开关在390px可用。",
+  "actual": "旧演示混入页面框架与工程诊断，API旧文案又与已收敛实现冲突，画面变化和复制结果不能证明原生合同成立。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求演示像TDesign一样分区，基础必须基础，bind只进入API Events，并要求API文字完整展示；随后明确授权后续组件在完整证据后自主验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区共用sidebarPreviewMarkup、严格值助手、真实父级回写、共享PUI镜像和makeUsageCode。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "四区采用清晰分区间距，纯布局根透明，状态由opacity/transform切换。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "API最终只显示24 Props和2 Events，基础WXML零bind，不伪造Slot/Methods。"},
+    {"kind": "test", "ref": "scripts/test-sidebar.js", "note": "锁定四分区、API旧文案清除、基础代码必需属性、共享PUI组合和安装一致性。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-sidebar", "note": "390px实点条目、键盘、retry、Props、复制、API、深浅色及边框/阴影/毛玻璃/大圆角/渐变开关。"}
+  ],
+  "rootCause": "旧预览维护了独立于原生WXML的页面壳、诊断事件、状态拼装和API说明，没有将真实组件所有权与共享代码生成器设为唯一真相源。",
+  "decision": {
+    "outcome": "删除页面Header/Footer和事件方法诊断壳，改为基础用法、分组与徽标、主题与状态、受控与边界四区；基础代码只输出items/value/aria-label；API说明只表达最终24/2/0/0合同。",
+    "rationale": "概览应帮助用户快速筛选真实可用形态；同源Props、状态助手和代码生成器能证明H5与原生调用合同一致。",
+    "alternativesRejected": [
+      "只修CSS或提示文字不能证明父级回写、严格值和错误重试。",
+      "在基础WXML展示全部bind会淹没最小调用。",
+      "用省略号压缩items和事件detail会让关键合同不可见。",
+      "保留旧API说明会让不存在的事件和方法继续被AI与用户误用。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "preview/components-data.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/SIDEBAR.md", "scripts/test-sidebar.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-design-contracts.js", "feedback/records/pui-fb-0133-sidebar-preview-usage-parity.json"],
+    "dependencies": ["PreviewDevice", "PUI Button/Badge/Icon/Loading/Empty H5 helpers", "shared usage-code generator", "appearance menu"]
+  },
+  "verification": {
+    "tests": ["scripts/test-sidebar.js", "scripts/test-preview-code-copy.js", "scripts/test-preview-normal-code-card.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-theme-coverage.js"],
+    "commands": ["node scripts/test-sidebar.js", "npm run site:build", "npm run check"],
+    "browser": [
+      "概览恰有基础用法、分组与徽标、主题与状态、受控与边界四区；Badge的0/dot/9+、Icon、Loading和Empty都来自共享PUI镜像。",
+      "组件引用与基础WXML两个Copy均把辅助名称切换为已复制并产生真实aria-live成功反馈；基础WXML不含bind。",
+      "API为4个Props分组与1个Events表，共5表、26行、126个单元格，完整显示24/2并清除select/input、header/footer、实例方法和false合法值旧文案。",
+      "非法items JSON设置aria-invalid且不覆盖最后有效Props；重置恢复默认Props但不改变外观偏好。",
+      "light/dark、border、shadow、frost、large-radius、gradient全部实点并跨组件重置和页面刷新保持；验收后恢复浅色标准组合。",
+      "390px真实截图中目录、Header、三Tabs、工具栏、PreviewDevice与Sidebar保持在页面宽度内，无可见页面级横向溢出。"
+    ],
+    "deviceRisks": ["微信scroll-view惯性、scroll-into-view、sticky、rpx、Button触摸、backdrop-filter、样式隔离、系统低动效和读屏需合法AppID真机复核。"]
+  },
+  "ai": {
+    "summary": "Sidebar概览固定四个真实用法分区；Props、状态、复制和API必须与原生合同同源，基础代码零bind。",
+    "rules": [
+      "Sidebar官网必须保留基础用法、分组与徽标、主题与状态、受控与边界四区。",
+      "H5受控实例必须真实更新value Prop，不能只改提示文字。",
+      "基础WXML不得显示bind；完整change/retry只进入API Events或专项事件示例。",
+      "API与属性文字必须完整自然换行，禁止ellipsis、nowrap、line-clamp或固定高度裁切。"
+    ],
+    "tags": ["sidebar", "preview-parity", "code-copy", "api-readability", "appearance"]
+  }
+}

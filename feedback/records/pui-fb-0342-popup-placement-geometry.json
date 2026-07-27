@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0342",
+  "title": "Popup 顶部与侧向几何未避开 Navbar 且侧向高度过高",
+  "scope": "component",
+  "components": ["popup", "navbar", "button", "miniprogram-component-pages"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "Popup Footer 动作全宽；左右弹出面板约占 68vw 宽、70vh 高；顶部 Popup 覆盖顶部但有效内容必须低于自定义 Navbar。",
+  "environment": {
+    "surfaces": ["miniprogram-component-pages", "preview-site"],
+    "platforms": ["wechat-miniprogram", "preview-site", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Popup 独立详情页并分别触发顶部、左侧、右侧 Popup。",
+    "观察 Footer 动作区、侧向面板高度和顶部内容起始位置。"
+  ],
+  "expected": "Footer 提供满宽承载轨；left/right 面板垂直居中并固定为约 68vw 宽、70vh 高；top 面板的外层从视口顶部覆盖，card 模式外层透明无边界，真实内层内容面板从 Navbar 底部与额外 Token 间距之后开始。",
+  "actual": "Footer 的直接子级选择器无法稳定命中微信 Slot 展开后的 pui-button 宿主，且 Button 的 block 几何只停留在样式类，导致原生 Button 可满宽、组件宿主仍按内容宽度收缩；left/right 使用 max-height 时会随内容减少而变矮；top Popup 使用固定小顶部间距，未消费详情页真实 Navbar 高度，card 模式透明化时曾连内容面板一起消失。",
+  "evidence": [
+    {"kind": "file", "ref": "popup/popup.wxss", "note": "原实现 left/right 使用 top 与 bottom 同时定位，custom-navbar top 使用固定间距。"},
+    {"kind": "file", "ref": "miniprogram/utils/component-page.js", "note": "详情页已经真实测量 Navbar 高度，本修复将该值写入页面 CSS Token。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/popup/index.wxml", "note": "Popup 详情页 Footer 使用 block Button，并为 top Popup 提供 custom-navbar 上下文。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项测试锁定 Footer 承载轨、68vw × 70vh 侧向几何、top card 透明外层和 custom-navbar 顶部空间。"}
+  ],
+  "rootCause": "Popup 共享 WXSS 没有把侧向面板作为有界 Surface 处理，详情页 Navbar 的实际测量值也没有传递到 Popup 的 CSS 变量；Footer 只依赖 Slot 内 Button 自身的 block 属性和直接子级选择器，未覆盖微信 Slot 的组件宿主几何。",
+  "decision": {
+    "outcome": "Popup Footer 为 Slot Button 宿主提供满宽 Flex 轨道，并改用可命中 Slot 展开节点的后代选择器；Button 的 block 同时在根节点写入 width/max-width 与满宽 Flex 几何。left/right 改为 50% 垂直居中并固定使用 68vw 宽、70vh 高；top 贴住视口顶部并去除顶部圆角，card 模式采用透明外层承载层加真实内层 Surface 面板，外层设置 overflow:visible 让内层 Token 阴影不被裁切，内层从页面真实 navbarHeight 加额外 Token 间距之后开始，Header/Content 不再重复补偿。H5 镜像同步同一几何规则。",
+    "rationale": "几何限制属于 Popup 共享组件合同，必须由组件级 Surface 与详情页实际 Navbar 测量共同解决，不能在单个按钮或页面上添加定位补丁。",
+    "alternativesRejected": [
+      "只给详情页 Footer 增加私有宽度：无法保证 Popup 其他消费者的 Footer 轨道一致。",
+      "用固定 rpx 代替 Navbar 测量：无法适配不同胶囊、状态栏和窗口高度。",
+      "只设置 max-height 而保留 top/bottom 铺满：会造成侧向面板顶部对齐而不是稳定居中，也会让面板高度随内容变化。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "popup/popup.wxml",
+      "popup/popup.wxss",
+      "miniprogram/utils/component-page.js",
+      "miniprogram/pages/components/popup/index.wxml",
+      "preview/styles.css",
+      "docs/components/POPUP.md",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "metadata/components.js",
+      "scripts/test-popup.js",
+      "miniprogram_dist/popup/popup.wxml",
+      "miniprogram_dist/popup/popup.wxss"
+    ],
+    "dependencies": ["pui-popup", "pui-navbar", "pui-button"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-miniprogram-home.js"],
+    "commands": ["npm run miniprogram:build", "npm run feedback:check"],
+    "browser": [],
+    "deviceRisks": [
+      "微信 iOS/Android 真机仍需确认 68vw × 70vh、fixed Surface、Navbar 实际测量值继承和顶部内容触摸命中。"
+    ]
+  },
+  "ai": {
+    "summary": "Popup 的顶部、侧向和 Footer 几何必须由共享组件规则承载，顶部自定义 Navbar 间距必须消费真实页面测量值。",
+    "rules": [
+      "Footer 满宽动作由 Popup 的 Slot 宿主 Flex 轨道与 Button block 根节点的满宽几何共同完成；不要依赖直接子级选择器或页面私有绝对定位。",
+      "left/right Popup 统一使用 68vw × 70vh 和垂直居中规则，不能用 top/bottom 铺满或仅 max-height 替代。",
+      "using-custom-navbar 的 top Popup 必须消费真实 Navbar 高度，并额外保留 Token 化安全间距；top card 模式外层不得绘制第二层 Surface，但必须保留从 Navbar 下方开始的独立真实内层内容面板，并允许其 Token 阴影越出透明承载层。"
+    ],
+    "tags": ["popup", "navbar", "footer", "placement", "68vw", "70vh", "miniprogram"]
+  }
+}

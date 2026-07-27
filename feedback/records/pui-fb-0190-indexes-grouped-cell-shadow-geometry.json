@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0190",
+  "title": "Indexes H5 阴影模式把连续 Cell 集合误渲染为并列卡片",
+  "scope": "component",
+  "components": ["indexes", "cell", "preview-site"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "阴影开启后组件仍应保持清楚、可读的分组层级，不能让集合内部条目拥挤地互相叠影。",
+  "environment": {
+    "surfaces": ["h5-preview", "PreviewDevice", "native-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "访问 `http://127.0.0.1:4179/#/components/indexes`，在外观菜单开启阴影。",
+    "旧 H5 让每一个 `.pui-indexes-preview__entry.pui-cell` 获得全局卡片阴影和 8px 相邻间距，集合根也同时有阴影；截图中条目在紧凑索引区互相叠影。",
+    "原生 `indexes/indexes.wxss` 已明确 `.pui-indexes .pui-indexes__cell` 为透明且 `box-shadow:none`，所以两端视觉结构发生漂移。"
+  ],
+  "expected": "Indexes 作为一个集合 Surface，只由根承接阴影、毛玻璃和语义圆角；内部 Cell 是连续条目，保持透明、无外层阴影和圆角，并以分割线表达相邻关系。",
+  "actual": "H5 的全局 `.preview-stage .pui-cell` 阴影规则位于旧 Indexes 局部规则之后，覆盖了条目的 `box-shadow:none`，同时保留通用相邻 Cell 的内容间距。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-20 用户提供的 Indexes 阴影截图", "note": "393px PreviewDevice 中每个条目变为独立白色阴影卡片，集合层级无法辨认。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/indexes", "note": "修复前实测根与四个直接 Cell 同时具有 box-shadow，直接 Cell 间存在 8px 间距。"},
+    {"kind": "file", "ref": "indexes/indexes.wxss", "note": "原生条目规则明确保持透明且无阴影。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "专项断言锁定根唯一 Surface、直接 Cell 无阴影和零 card gap。"}
+  ],
+  "rootCause": "全局 H5 视觉选择器的书写顺序晚于旧 Indexes 局部覆盖，且集合内相邻 Cell 没有在最终 Cell 合同层再次归零，导致通用卡片外观穿透组合组件。",
+  "decision": {
+    "outcome": "在最终 H5 Cell 合同之后增加限定到 `.pui-indexes-preview` 的覆盖：直接条目固定 transparent、transparent border、0 radius、none shadow/blur，连续直接条目 margin-top 为 0。",
+    "rationale": "这与原生 Indexes 的连续分组结构一致；`shadow-safe` 的 28px 外部安全区仍只服务集合根阴影，不能被误解为每行卡片都要增加外部间距。",
+    "alternativesRejected": [
+      "给每行额外添加更大 gap：会保留多层阴影并把本应连续的索引列表改成卡片清单。",
+      "关闭 Indexes 根阴影：会损失真实组件 Surface，且没有解决通用规则错误穿透。",
+      "只降低内部阴影透明度：仍会在密集条目间制造脏边和错误层级。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-indexes.js", "docs/UI_DESIGN_CONTRACT.md", "docs/components/INDEXES.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0190-indexes-grouped-cell-shadow-geometry.json"],
+    "dependencies": ["Indexes native Cell composition", "PreviewDevice shadow-safe layout", "PUI Cell H5 mirror", "appearance shadow/frost/radius preferences"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["2026-07-20 node scripts/test-indexes.js：通过", "2026-07-20 npm run feedback:generate && npm run feedback:check：通过，190 条记录", "2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过", "2026-07-20 微信 CLI build-npm：touristappid 不存在，code 10；未生成或伪造 miniprogram_npm。"],
+    "browser": ["iPhone 15 393px PreviewDevice 实点阴影：集合根计算为 rgba(9,9,11,.08) 0 6px 18px；前四个直接 Cell 全部为 transparent、0px radius、none shadow、0px margin-top，同组条目间距为 0，组标题保留自然 28px 分组间隔。", "深色 + 阴影 + 毛玻璃 + 大圆角实点：集合根为 rgba(15,15,17,.78)、24px、blur(14px) saturate(1.2)、rgba(0,0,0,.28) 0 8px 22px；直接 Cell 仍为 transparent、0px、none shadow/blur。", "六个 Indexes 预览根、body 与滚动区均为 clientWidth=scrollWidth；桌面页面 document clientWidth=scrollWidth=1265。外观验收后已恢复浅色、边框开、阴影关、毛玻璃关、大圆角关。"],
+    "deviceRisks": ["微信真机仍需用合法 AppID 复核 scroll-view 样式隔离、1rpx 分割线、阴影裁切、触摸惯性和系统低动效；本次不修改原生产物。", "本轮浏览器可见 393px PreviewDevice 内部无横向溢出；最终 390px 真实手机浏览器外层布局仍应在下一次设备验收时保留复核。"]
+  },
+  "ai": {
+    "summary": "连续列表的阴影属于集合根，不得被通用 Cell 卡片规则穿透为每一行的独立浮层。",
+    "rules": [
+      "先判断 Cell 是独立 Surface 还是集合内部条目；后者必须让集合根拥有唯一视觉 Surface。",
+      "不要用额外 gap 掩盖多重阴影；先消除错误的子级 shadow/radius/blur，再保留原生分割线。",
+      "组合组件的最终覆盖必须放在通用子组件视觉规则之后，并用专项测试锁定书写顺序和计算样式。"
+    ],
+    "tags": ["indexes", "cell", "shadow", "grouped-list", "h5-preview"]
+  }
+}

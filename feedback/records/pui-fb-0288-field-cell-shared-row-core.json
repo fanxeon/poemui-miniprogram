@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0288",
+  "title": "Field 与 Cell 维护两套行级视觉实现",
+  "scope": "component",
+  "components": ["field", "cell", "preview-site", "form"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "Cell 是 Field 的只读版；两者必须是一套字段行逻辑，而不是两份近似却会漂移的视觉实现。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["393px PreviewDevice", "390px browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "比较 field/field.wxss 与 cell/cell.wxss：两者分别声明近似的行高、内距、背景、圆角、毛玻璃、边框和无外投影规则。",
+    "比较 #/components/field 与 #/components/cell：可编辑控件和只读值虽应属于同一字段行体系，却由两套 H5 根规则承载。"
+  ],
+  "expected": "Field 是统一字段行的 editable 形态，Cell 是 readonly 形态；两端共同消费一个内部行级视觉内核，同时保留 Field 的 Form relation 和 Cell 的导航、选择、媒体合同。",
+  "actual": "此前 Field 与 Cell 的根样式和 H5 镜像分别维护，后续调整高度、内距、圆角、主题或动效时可能发生视觉漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确确认 Cell 只是 Field 的 readonly 版，并已授权后续组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收。"},
+    {"kind": "file", "ref": "common/style/field-row.wxss", "note": "新增内部 field-row 行内核，统一高度、内距、背景、边框、圆角、毛玻璃、无外投影和动效。"},
+    {"kind": "file", "ref": "field/field.js", "note": "Field 根标记 pui-field-row--editable，并保留真实 Form relation。"},
+    {"kind": "file", "ref": "cell/cell.js", "note": "Cell 根标记 pui-field-row--readonly，并保留导航、选择、媒体与加载合同。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Field 与 Cell H5 根共同标记 pui-field-row-preview，对应 editable/readonly 形态。"},
+    {"kind": "test", "ref": "scripts/test-field.js", "note": "Field 与 Cell 专项合同锁定两端导入或使用同一行内核、状态形态和公开 API 不扩张。"},
+    {"kind": "build", "ref": "npm run site:build", "note": "生成 miniprogram_dist 后，field-row 内核、Field 和 Cell 均进入安装包。"},
+    {"kind": "build", "ref": "npm run example:install", "note": "Field-row 内核、Field 与 Cell 的源码、dist、示例 node_modules 三层 SHA256 一致。"},
+    {"kind": "build", "ref": "微信开发者工具 cli build-npm", "note": "实际调用被 touristappid 不存在的 code 10 阻断，miniprogram_npm 未生成且未手工伪造。"}
+  ],
+  "rootCause": "早期按组件目录分别实现 Field 与 Cell，只对齐外观结果，没有抽出字段行的共同语义和样式事实源。",
+  "decision": {
+    "outcome": "新增内部 field-row 原语：Field 为 editable，Cell 为 readonly。公开 Field 12 Props 和 Cell 28 Props、事件、Slot、Form relation 与导航选择能力均保持不变。",
+    "rationale": "用户只需学习一套字段行视觉；内部复用避免后续间距和主题漂移，同时不把 Form 或导航 API 混入另一个组件。",
+    "alternativesRejected": [
+      "把 Field 的 name、help、status、Form relation 全部塞进 Cell，会扩大通用 Cell API。",
+      "把 Cell 的导航、选择、媒体能力塞进 Field，会让表单行变成业务状态机。",
+      "仅在文档中声明二者相似而继续维护两套样式，无法阻止后续漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["common/style/field-row.wxss", "field/field.js", "field/field.wxss", "cell/cell.js", "cell/cell.wxss", "preview/app.js", "preview/styles.css", "scripts/test-field.js", "scripts/test-cell.js", "docs/components/FIELD.md", "docs/components/CELL.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "metadata/components.js"],
+    "dependencies": ["pui-input", "pui-icon", "Form relation", "PreviewDevice", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-field.js", "scripts/test-cell.js", "scripts/test-form-field-composition.js", "scripts/test-spacing-token-contract.js", "scripts/test-non-elevated-shadow-semantics.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "npm run feedback:check", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project _example"],
+    "browser": [
+      "浏览器打开 #/components/field 与 #/components/cell：两者根均带 pui-field-row-preview；深色下均为 min-height 52px、padding 4px 10px、radius 8px、background rgb(24,24,27)、box-shadow none。",
+      "Field 实际输入“共享字段行”后 value 真实更新且焦点保持；嵌入 Input 控件 background 为 transparent。",
+      "Cell 390px 预览下 document 375/375、行 269/269，无页面级横向溢出；Field 既有390px专项回归继续覆盖同一行级几何。"
+    ],
+    "deviceRisks": ["合法 AppID 真机仍需复核共享 WXSS import、Field Input 样式隔离、Cell Slot/导航选择与 rpx 基线。"]
+  },
+  "ai": {
+    "summary": "Field 是 editable 字段行，Cell 是 readonly 字段行；视觉只能有一个内部事实源。",
+    "rules": [
+      "修改 Field 或 Cell 的行高、内距、背景、边框、圆角、毛玻璃、无外投影或动效时，先修改 field-row 内核，不得复制第二套根样式。",
+      "Field 保留 Form relation、标签、帮助和校验反馈；Cell 保留导航、选择、媒体和只读内容，禁止跨组件透传 API。",
+      "H5 Field 与 Cell 根必须共同使用 pui-field-row-preview，并分别标记 editable/readonly。"
+    ],
+    "tags": ["field", "cell", "readonly", "editable", "shared-core", "visual-system"]
+  }
+}

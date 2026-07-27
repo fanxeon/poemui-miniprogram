@@ -1,0 +1,143 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0199",
+  "title": "ScrollArea 零高度被归一化为 1rpx/1px 并坍缩预览",
+  "scope": "component",
+  "components": [
+    "scroll-area",
+    "preview-site",
+    "documentation"
+  ],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-21",
+  "updatedAt": "2026-07-22",
+  "userGoal": "逐组件 battle 必须验证受控与非受控边界；公开高度合同写明正数时，零值不能让真实 ScrollArea 变成不可用的极小区域。",
+  "environment": {
+    "surfaces": [
+      "ScrollArea 原生组件",
+      "ScrollArea H5 PreviewDevice",
+      "属性面板与 WXML"
+    ],
+    "platforms": [
+      "Chrome",
+      "H5 preview",
+      "wechat-miniprogram"
+    ],
+    "viewports": [
+      "390x844 browser",
+      "393px PreviewDevice"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开 `#/components/scroll-area` 的属性页，将 `height` 从 `320rpx` 改为字符串 `0`，再返回概览。",
+    "修复前 H5 真实 overflow 容器的 `clientHeight=1`、计算 `height=1px`、`scrollHeight=310`；内容虽仍存在却几乎不可用。",
+    "同一输入经原生组件的 `normalizeHeight` 也会得到 `1rpx`，与 API 和组件合同中“正数、非法值回退 320rpx”的承诺冲突。"
+  ],
+  "expected": "仅正数、正 rpx 或正 px 可成为滚动高度；零值、负数、空值和非数字必须共同回退为原生 `320rpx`、H5 `160px`，并保持真实滚动容器可用。",
+  "actual": "旧的两端归一化都使用 `Math.max(1, ...)` 接受零值，分别生成 `1rpx` 与 `1px`，形成没有错误提示但不可用的滚动区域。",
+  "evidence": [
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/scroll-area",
+      "note": "2026-07-21 Chrome 390x844 实测输入 height=0 后，真实 region 为 clientHeight=1、computedHeight=1px、scrollHeight=310。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/scroll-area",
+      "note": "修复后同一路径的 height=0 真实 region 为 clientHeight=160、computedHeight=160px、scrollHeight=310；手动滚动到 120px，受控 scrollIntoView=scroll-area-build 定位到 124px 且目标可见。"
+    },
+    {
+      "kind": "file",
+      "ref": "scroll-area/scroll-area.js",
+      "note": "原生高度归一化函数在修复前把 0 经过 Math.max(1, ...) 变成可见但无意义的最小尺寸。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 高度镜像复制了同一零值归一化错误，修复前会把 height=0 渲染成 1px。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-scroll-area.js",
+      "note": "专项合同新增 0、0rpx、0px、负值的原生回退断言，并锁定 H5 正值守卫。"
+    }
+  ],
+  "rootCause": "实现将“非负数可规整到至少 1”误作高度有效性规则，未与文档和合同的“正数”定义对齐；H5 镜像复制了同一错误。",
+  "decision": {
+    "outcome": "原生 `normalizeHeight` 与 H5 `scrollAreaPreviewHeight` 都先验证数值严格大于零；无效值统一走既有默认回退。删除未使用的 `.scroll-area-demo` Surface 样式，避免后来误把透明根重新渲染成第二层卡片。官网概览以显式 `height=1128rpx` 填满 shadow-safe 可用预览高度并演示较长 slot 内容，且从同一 Props 输出当前 WXML；公开组件默认仍为 320rpx。2026-07-22 的 gradientOverlay 扩展保持该透明定位根与唯一滚动视口：顶底遮罩为无交互同级层，不参与高度计算。",
+    "rationale": "严格按公开合同回退能让原生与 H5 对同一 Props 得到可用结果，不扩张 API、不引入伪状态或浏览器私有行为。",
+    "alternativesRejected": [
+      "继续允许 0 并在 H5 显示提示文案：不能修复真实滚动区域坍缩。",
+      "将 0 强制提升为 1rpx/1px：与正数合同冲突，用户仍无法使用内容。",
+      "只修 H5：会留下小程序和文档与预览不一致。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scroll-area/scroll-area.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-scroll-area.js",
+      "docs/components/SCROLL-AREA.md",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "scripts/test-preview-normal-code-card.js",
+      "feedback/records/pui-fb-0199-scroll-area-zero-height-contract.json",
+      "feedback/records/pui-fb-0226-scroll-area-gradient-overlay.json"
+    ],
+    "dependencies": [
+      "原生 scroll-view",
+      "PreviewDevice",
+      "ScrollArea Props 归一化",
+      "PUI Cell Slot 镜像",
+      "官网 ScrollArea 长内容预览"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-scroll-area.js",
+      "scripts/test-design-contracts.js"
+    ],
+    "commands": [
+      "2026-07-21：`node --check preview/app.js`、`node scripts/test-scroll-area.js`、`node scripts/test-preview-normal-code-card.js`、`PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js`、`npm run site:build`、`npm run check`、`npm run pack:check`、`npm run example:install`、`npm run feedback:generate`、`npm run feedback:check` 与 `git diff --check` 通过。",
+      "2026-07-21：源码、`miniprogram_dist` 与 `_example/node_modules/poemui-miniprogram/miniprogram_dist` 的 ScrollArea JS/JSON/WXML/WXSS SHA256 逐项一致；微信 CLI `build-npm` 实启 IDE 后被 touristappid code 10 阻断，未生成 miniprogram_npm。",
+      "2026-07-22：`node scripts/test-scroll-area.js`、`PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js`、`npm run feedback:generate/check`（217 records）、`npm run site:build`、`npm run check`、`npm run example:install`、`npm run pack:check` 与 `git diff --check` 通过；微信 CLI `build-npm` 再次实际启动 IDE 后被 touristappid code 10 阻断，未生成或伪造 miniprogram_npm。",
+      "2026-07-22：新增 gradient overlay 后重新通过 `node --check scroll-area/scroll-area.js`、`node --check preview/app.js`、`node scripts/test-scroll-area.js`、`PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js`、`npm run feedback:generate/check`（222 records）、`npm run site:build`、完整 `npm run check`、`npm run example:install`、`npm run pack:check` 与 `git diff --check`；源码、dist、示例 npm 安装的四件套 SHA256 一致。"
+    ],
+    "browser": [
+      "Chrome 390x844：默认 region 为 160/310px、transparent/0px/none；CUA 手动滚动 scrollTop 0→120px；受控 scrollIntoView=scroll-area-build 回写后 scrollTop=124px 且目标可见；重置后为 0px。",
+      "Chrome 390x844：height=0 修复后为 160/310px，document/body 为 375/375px；API 两张 role table 全部单元格为 normal/clip/visible 且长文本自然增高；深浅色、果味阴影/毛玻璃/大圆角均实点，最后恢复浅色标准组合。",
+      "2026-07-22 浏览器复测：1280x720 下概览 shadow-safe 根与真实 ScrollArea 均为 564px，后者 scrollHeight=1116px；390x844 浅色、深色下均为 clientHeight=564px、scrollHeight=1116px，18 个真实 PUI Cell slot 条目完整存在，页面 clientWidth/scrollWidth=349/349px。当前效果 WXML 同步输出 height=1128rpx，公开 API 默认仍显示 320rpx。",
+      "2026-07-22 gradient overlay 回归：当前 API 为 5 Props；默认 2 个 32px 遮罩、关闭后 0 个而视口仍为 564/1116px。真实滚轮 0→280（最大 552）与目标定位 248 均未受遮罩影响；390x844 区域宽度 293/293px、document/body 375/375px，深色回退为 rgb(24,24,27)，均无横向溢出。"
+    ],
+    "deviceRisks": [
+      "合法 AppID 真机仍需确认微信 scroll-view 对 rpx 小数、动态 Slot id、增强滚动、样式隔离、读屏、触摸惯性和系统低动效的实际表现。"
+    ]
+  },
+  "ai": {
+    "summary": "数值 Props 不能只做字符串格式校验；0、负数、空值和非法值必须按公开范围在原生与 H5 一起验证。",
+    "rules": [
+      "当 API 写明正数时，0 不是可接受边界，不能以 Math.max(1, ...) 偷偷改成极小可见尺寸。",
+      "每个 Props 的无效值回退必须由源码、H5、WXML 生成、文档与专项测试共同约束。",
+      "透明基础组件的遗留 Surface CSS 即使未被当前演示使用，也应删除或被测试阻止，不能留给后续回归重新激活。"
+    ],
+    "tags": [
+      "scroll-area",
+      "zero-value",
+      "height",
+      "h5-preview",
+      "api-contract",
+      "390px"
+    ]
+  }
+}

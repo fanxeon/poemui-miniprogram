@@ -1,0 +1,83 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0009",
+  "title": "H5 Dialog 通配直接子节点规则覆盖语义分区",
+  "scope": "component",
+  "components": ["dialog", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "Dialog Content 必须按 16rpx/8px 垂直组合正文、默认 Slot 和运行状态，不能因预览站旧样式横排、重叠或破坏三区结构。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Dialog H5 预览并在 390px 下观察正文、Dialog default slot 与运行状态。",
+    "检查 .pui-dialog-preview__body--content 计算样式，旧 .pui-dialog > div 以更高选择器权重把 Content 从 grid 改为 flex，并把 gap 改为 4px。",
+    "正文换行后，Tag 与运行状态横向挤压在同一行，出现视觉重叠。"
+  ],
+  "expected": "Dialog 直接子区必须由 Header、Content、Footer 各自的语义类管理；Content 使用单列 Grid 和 8px content gap，三个直接子项之间均无重叠。",
+  "actual": "旧通配直接子节点规则把所有 div 子区当成动作行，覆盖 Content 的 Grid 语义，导致三个内容子项横排并互相挤压。",
+  "evidence": [
+    {
+      "kind": "browser",
+      "ref": "http://192.168.31.117:4179/#/components/shadcn-dialog",
+      "note": "修复前计算样式 display=flex、gap=4px，三个子项 top/bottom 相同；修复后 display=grid、gap=8px，两个相邻分隔均为 8px。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "删除 .pui-dialog > div 通配布局，将旧动作规则收窄到 .pui-dialog > .pui-dialog__actions。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "全局设计合同禁止重新引入 .pui-dialog > div 通配规则。"
+    }
+  ],
+  "rootCause": "预览站早期把 Dialog 的任意直接 div 默认为横向动作容器；三区重构后 Header 和 Content 也成为直接 div，更高权重的遗留规则穿透覆盖了新的语义类。",
+  "decision": {
+    "outcome": "将通配直接子节点选择器收窄为语义化 .pui-dialog__actions，并用契约测试禁止恢复通配规则。",
+    "rationale": "父容器只能按明确角色管理子区；语义选择器可避免未来增加 Slot、状态层或 Header action 时再次被旧级联误伤。",
+    "alternativesRejected": [
+      "给 Content 增加 !important，只会提高级联军备且保留错误的通配规则。",
+      "把正文强制不换行，会牺牲 390px 可读性并掩盖结构错误。",
+      "只给 Tag 绝对定位或缩小字号，会制造新的重叠和可读性问题。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/styles.css",
+      "scripts/test-design-contracts.js",
+      "feedback/records/pui-fb-0009-dialog-preview-direct-child-cascade.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["tag"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-dialog.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "390x844 四种外观组合实测 Content display=grid、gap=8px、相邻子项 separation=[8,8]；Dialog clientHeight=scrollHeight=259px，document scrollWidth=clientWidth=375px。"
+    ],
+    "deviceRisks": [
+      "本问题仅存在于 H5 预览级联；原生 WXML/WXSS 不受影响，但仍需通过真实小程序 Slot 组合验收视觉一致性。"
+    ]
+  },
+  "ai": {
+    "summary": "Dialog 直接子区必须按 Header、Content、Footer 语义选择器布局，禁止使用 .pui-dialog > div 通配所有 div。",
+    "rules": [
+      "新增或修改组件分区时，禁止用标签类型选择器推断子节点角色。",
+      "父级预览样式只能命中明确的语义类，不得覆盖 Slot 子组件或其他分区的 display/gap。",
+      "390px 验收 Content 时要测量计算 display、直接子项间距和重叠，而不只观察 Dialog 外框。"
+    ],
+    "tags": ["dialog", "preview", "css-cascade", "semantic-region", "content-gap", "overlap", "responsive"]
+  }
+}

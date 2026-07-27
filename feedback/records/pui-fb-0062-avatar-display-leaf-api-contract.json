@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0062",
+  "title": "Avatar 展示叶子被点击、禁用、别名和私有动效参数过度扩张",
+  "scope": "component",
+  "components": ["avatar", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Avatar 应快速表达图片、Icon、文字或 Slot 头像，不把宿主点击、禁用状态、重复图片别名和可由全局 Token 管理的动效暴露成头像自身 API。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Avatar properties：同时公开 src/image、clickable/disabled、duration/easing，并把图片 load 和根 click 作为公共事件。",
+    "旧 WXML 把 Avatar 根切换为可点击节点，宿主 Button/Cell 的点击、禁用和选择职责与展示叶子重复。",
+    "对照 tdesign-miniprogram@1.15.3 安装包 avatar/props.js、type.d.ts、WXML 与官方文档：核心为图片、Icon、形状、尺寸、边线、失败隐藏和 error；AvatarGroup 是独立组件。"
+  ],
+  "expected": "Avatar 只承担图片加载、回退、形状、尺寸、边线、可访问名称和低动效；交互状态由外层 PUI Button/Cell 承担，组合头像不复制独立 AvatarGroup 包。",
+  "actual": "旧合同把图片来源、宿主交互、禁用门禁、加载诊断和私有动画配置混在同一组件内，基础用法和调用职责都不清晰。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求双方共有组件逐项参考 TDesign，精简不必要公开 API，并授权完整 battle 后自主连续验收。"},
+    {"kind": "file", "ref": "avatar/avatar.js", "note": "最终固定 11 Props，只公开 error；load 只更新内部绘制，根节点不再处理 tap。"},
+    {"kind": "file", "ref": "avatar/avatar.wxml", "note": "根固定 role=img，回退优先级为 Slot、Icon、文字，真实 image 负责 load/error。"},
+    {"kind": "test", "ref": "scripts/test-avatar.js", "note": "专项合同锁定 11 Props、1 Event、1 Slot、0 业务 Methods，并禁止恢复 image/clickable/disabled/duration/easing。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-avatar", "note": "真实页面确认 Avatar 本体内没有 button；组合操作由 PUI Button 回写为资料已打开，禁用宿主保持 disabled。"}
+  ],
+  "rootCause": "旧设计追求把头像资源、交互和动画细节全部配置化，没有先确定 Avatar 是纯展示叶子的稳定职责边界。",
+  "decision": {
+    "outcome": "公开合同收敛为 src/text/alt/icon/shape/size/bordered/hideOnLoadFailed/useSlot/ariaLabel/reduceMotion 11 Props、error 1 Event、default 1 Slot、0 业务 Methods；删除 image/clickable/disabled/duration/easing 和 click/load。",
+    "rationale": "头像的独立用户任务是稳定展示身份；点击、禁用、loading、selected 和业务反馈属于宿主，固定 500ms/1ms 动效可避免重复入口并保持跨端一致。",
+    "alternativesRejected": [
+      "机械复制 TDesign 的 badgeProps/imageProps 会让父组件透传子组件全量配置并形成第二套组合 API。",
+      "保留 Avatar click/disabled 会让嵌套 Button 出现重复交互根和两套门禁。",
+      "新增 AvatarGroup 只为演示叠放会超出双方已有组件范围；重复 Avatar 加布局即可完成组合。"
+    ]
+  },
+  "impact": {
+    "files": ["avatar/avatar.js", "avatar/avatar.wxml", "avatar/avatar.wxss", "metadata/components.js", "metadata/shadcn.js", "docs/COMPONENT_API.md", "docs/components/AVATAR.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-avatar.js"],
+    "dependencies": ["pui-icon", "pui-button", "pui-badge", "theme behavior"]
+  },
+  "verification": {
+    "tests": ["scripts/test-avatar.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "真实输入 text=0 后预览和 WXML 都保留 0；键盘清空后回退为 ? 且 WXML 删除默认空 Prop。",
+      "元素选择模式选中 Avatar 根后只显示 5 个内容字段和 6 个设置字段，未暴露宿主 click/disabled。",
+      "API 完整显示 11 Props、1 Event、1 Slot，不渲染 Methods。"
+    ],
+    "deviceRisks": [
+      "微信 image 解码、rpx 抗锯齿、Slot 字体基线、读屏图片语义和系统级低动效仍需合法 AppID 真机复核。",
+      "旧消费者若使用 image/clickable/disabled/click/load/duration/easing，需要迁移到 src、外层交互组件与固定 Token 动效。"
+    ]
+  },
+  "ai": {
+    "summary": "Avatar 是纯展示叶子，只负责图片与回退；交互、禁用和业务状态永远交给 Button、Cell 等宿主。",
+    "rules": [
+      "禁止恢复 image 别名、clickable/disabled、Avatar 自身 click/load 或私有 duration/easing。",
+      "基础用法只写最小 Avatar WXML，不绑定 error；完整 error 只进入 API Events 或真实失败专项示例。",
+      "需要 Badge 时使用外层组合，需要点击时使用 PUI Button/Cell 包裹，不新增重复透传 Prop。",
+      "图片 load 只改变内部 opacity；只有 error 对消费者有独立处理价值。"
+    ],
+    "tags": ["avatar", "api", "tdesign", "display-leaf", "composition"]
+  }
+}

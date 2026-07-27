@@ -1,0 +1,32 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}}{{customStyle}}"
+  role="progressbar"
+  aria-label="{{semanticLabel}}"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="{{normalizedPercentage}}"
+  aria-valuetext="{{labelText}}"
+>
+  <view wx:if="{{currentTheme === 'line'}}" class="pui-progress__body pui-progress__body--line">
+    <view class="pui-progress__track" style="{{trackStyle}}"><view class="pui-progress__bar" style="{{barStyle}}"></view></view>
+    <view wx:if="{{showLabel}}" class="pui-progress__info">
+      <pui-icon wx:if="{{statusIcon}}" name="{{statusIcon}}" size="28" color="{{iconColor}}" color-scheme="{{colorScheme}}" />
+      <text>{{labelText}}</text><slot name="label"></slot>
+    </view>
+  </view>
+  <view wx:elif="{{currentTheme === 'plump'}}" class="pui-progress__body pui-progress__body--plump" style="{{trackStyle}}">
+    <view class="pui-progress__track pui-progress__track--plump"><view class="pui-progress__bar" style="{{barStyle}}"><view wx:if="{{showLabel && normalizedPercentage > 10}}" class="pui-progress__info pui-progress__info--inside"><text>{{labelText}}</text><slot name="label"></slot></view></view></view>
+    <view wx:if="{{showLabel && normalizedPercentage <= 10}}" class="pui-progress__info pui-progress__info--outside"><text>{{labelText}}</text><slot name="label"></slot></view>
+  </view>
+  <view wx:else class="pui-progress__body pui-progress__body--circle">
+    <view class="pui-progress__circle" style="{{circleStyle}}">
+      <view class="pui-progress__circle-track" style="{{circleTrackStyle}}"></view>
+      <view class="pui-progress__circle-progress">
+        <view class="pui-progress__circle-mask pui-progress__circle-mask--full" style="{{circleClipStyle}}transform:rotate({{halfRotation}}deg);"><view class="pui-progress__circle-fill" style="{{fillClipStyle}}transform:rotate({{halfRotation}}deg);"></view></view>
+        <view class="pui-progress__circle-mask pui-progress__circle-mask--half" style="{{circleClipStyle}}"><view class="pui-progress__circle-fill" style="{{fillClipStyle}}transform:rotate({{halfRotation}}deg);"></view><view class="pui-progress__circle-fill pui-progress__circle-fill--fix" style="{{fillClipStyle}}transform:rotate({{fullRotation}}deg);"></view></view>
+      </view>
+      <view class="pui-progress__circle-inner" style="{{circleInnerStyle}}"><view wx:if="{{showLabel}}" class="pui-progress__info pui-progress__info--circle"><pui-icon wx:if="{{statusIcon}}" name="{{statusIcon}}" size="32" color="{{iconColor}}" color-scheme="{{colorScheme}}" /><text>{{labelText}}</text><slot name="label"></slot></view></view>
+    </view>
+  </view>
+</view>

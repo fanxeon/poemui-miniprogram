@@ -1,0 +1,114 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0019",
+  "title": "官网左侧目录缺少任务分类与全局快速抵达",
+  "scope": "global",
+  "components": ["preview-site", "input", "button", "icon", "dialog"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "左侧导航需要按用户任务清晰分区，不能把绝大多数入口塞进一个 Components 大组；同时提供类似成熟组件库的 Ctrl/⌘ + K 全局搜索弹窗，让用户通过键盘快速抵达组件或规范。",
+  "environment": {
+    "surfaces": ["h5-preview", "site-shell"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网并查看左侧组件目录。",
+    "生成数据只有 Foundation 基础和 Components 组件两个主要分区，97 个入口中的绝大多数集中在单一 Components 大组。",
+    "尝试使用 Ctrl/Command + K，旧站点没有全局搜索弹窗；左侧 Input 只能原位过滤当前目录。"
+  ],
+  "expected": "目录按开始与规范、基础组件、布局、导航、数据录入、数据展示、反馈、浮层、高级九类任务组织，每个路由只属于一组；Ctrl/⌘ + K 打开固定边界的全局搜索 Dialog，支持中文、英文和分类搜索、方向键、Enter、Esc、Tab 焦点圈、点击与遮罩关闭。",
+  "actual": "旧生成器把 shadcnCatalogItems 整体放入 Components 组件大组，已有 legacy 语义分类没有进入官网；站点也没有全局命令搜索状态、Mount、快捷键或键盘导航。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "current conversation",
+      "note": "用户明确指出左侧导航分区质量差，并要求 Ctrl+K 打开搜索弹窗快速抵达。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://tdesign.tencent.com/miniprogram/components/button?tab=demo",
+      "note": "TDesign 小程序官方目录按基础、导航、输入、数据展示等用户任务分类。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://mobile.ant.design/components/button/",
+      "note": "Ant Design Mobile 官方目录使用通用、布局、导航、信息展示、信息录入、反馈等语义分类。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://ui.shadcn.com/docs/components/base/button",
+      "note": "shadcn/ui 官方站点以独立 Search documentation Dialog 承载分组结果和快速导航。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-navigation-search.js",
+      "note": "专项合同锁定九组分类、单一归属、PUI 组合、快捷键、键盘闭环、固定边界与 390px 响应式。"
+    }
+  ],
+  "rootCause": "metadata 中本来存在通用、表单、反馈、导航、数据展示、浮层和高级语义，但最终 groups 为对标 shadcn 字母目录另建了单一 Components 大组，导致真实任务分类丢失；左侧过滤又被当作完整搜索能力，没有站点级命令面板状态和路由选择模型。",
+  "decision": {
+    "outcome": "以 metadata/components.js 为唯一分类源，将目录重建为九组中文优先任务分类，并通过 taxonomyId 把 shadcn 别名映射到对应 PoemUI 语义；左侧搜索保留原位过滤并以 PUI Button 后缀暴露 ⌘K。新增站点级搜索 Dialog，输入、结果、关闭分别调用 PUI Input、Button、IconButton，结果沿用同一分类并支持完整键盘与焦点闭环。",
+    "rationale": "任务分类帮助用户先按目的缩小范围，命令搜索帮助熟悉名称的用户直接跳转；二者共享同一生成数据可避免左栏、搜索和文档分类漂移，复用 PUI 组件可保持主题、圆角、阴影和无障碍一致。",
+    "alternativesRejected": [
+      "只调整分区标题颜色和间距，不能修复单一 Components 大组的信息架构。",
+      "完全照搬某一家组件库分类，会忽略 PoemUI 的原生扩展、浮层和高级能力边界。",
+      "用第三方命令面板或手写原生 input/button，会违反 PUI 组件优先和可维护性合同。",
+      "用 Ctrl/⌘ + K 只聚焦左侧 Input，无法提供全局分组结果、键盘选择和固定弹窗边界。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "metadata/components.js",
+      "preview/components-data.js",
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-navigation-search.js",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0019-preview-navigation-taxonomy-command-search.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["input", "button", "icon", "dialog", "metadata catalog"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-navigation-search.js", "scripts/test-preview-infrastructure-composition.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "桌面真实页面显示开始与规范、基础组件、布局、导航、数据录入、数据展示、反馈、浮层、高级九组与 97 个唯一入口；左侧按“反馈”过滤后只保留该组 13 项。",
+      "Ctrl + K 真实打开搜索 Dialog 并将焦点落到 PUI Input；查询“对话框”只返回反馈组的 Dialog，ArrowDown 后 Enter 打开当前高亮 Dialog 路由，搜索结果索引与路由一致。",
+      "Esc、PUI Close 图标按钮和遮罩点击都能真实关闭；从左侧快捷按钮打开后 Esc/Close 会把焦点还给该按钮。查询 done 返回 0 项，证明搜索不暴露开发状态。",
+      "浅色默认和 dark + shadow + frost + large-radius + gradient 五项全开均能正常打开并滚动搜索结果；刷新后五项偏好保持，验收结束已恢复 light/off/off/normal/off。",
+      "390px 最大边界、内部滚动、Tab 焦点圈与无横向溢出由 scripts/test-preview-navigation-search.js 响应式和键盘合同锁定；本轮浏览器控制层未可靠推进系统 Tab 默认焦点，因此不替代真实移动浏览器与辅助技术复核。"
+    ],
+    "deviceRisks": [
+      "Ctrl/⌘ + K 只属于 H5 官网导航，不改变或扩展微信小程序的系统级快捷键能力。",
+      "移动端系统软键盘和不同浏览器对 100dvh 的处理仍需目标设备复核。"
+    ]
+  },
+  "ai": {
+    "summary": "PoemUI 官网目录使用九组用户任务分类，并以 Ctrl/⌘ + K 打开复用 PUI Input/Button/Icon 的全局搜索 Dialog。",
+    "rules": [
+      "官网左侧目录必须保持开始与规范、基础组件、布局、导航、数据录入、数据展示、反馈、浮层、高级九组，禁止恢复单一 Components 大组。",
+      "每个官网路由只能归属一个任务分类；左侧目录、全局搜索和生成文档必须读取同一 metadata 源。",
+      "Ctrl/⌘ + K 快速搜索必须调用 PUI Input、Button、IconButton，并支持中文、英文和分类检索。",
+      "快速搜索必须支持 ArrowUp/ArrowDown 循环、Enter 打开、Esc 关闭、Tab 焦点圈、遮罩关闭和焦点恢复。",
+      "搜索语料和结果不得暴露 done、beta、experimental 或成熟度等开发状态。",
+      "命令弹窗必须固定最大边界、结果内部滚动，并验证 390px、light/dark 和五项外观模式无横向溢出。",
+      "站点 Ctrl/⌘ + K 不得写入或宣传为微信小程序的系统级快捷键能力。"
+    ],
+    "tags": ["preview-site", "navigation", "taxonomy", "search", "command-palette", "keyboard", "accessibility", "ctrl-k", "390px"]
+  }
+}

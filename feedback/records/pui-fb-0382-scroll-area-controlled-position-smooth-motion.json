@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0382",
+  "title": "ScrollArea 受控回顶缺少真实平滑滚动",
+  "scope": "component",
+  "components": ["scroll-area", "back-top", "style-utilities", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "点击快速样式页的 BackTop 后，唯一 ScrollArea 应真实、连续地向顶部滚动，而不是瞬间跳到 0。",
+  "environment": {
+    "surfaces": ["miniprogram styles page", "H5 component preview"],
+    "platforms": ["wechat-miniprogram", "web"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入快速样式页，将唯一 ScrollArea 滚动到 BackTop 可见。",
+    "点击 primary 圆形向上箭头。",
+    "观察受控 scrollTop 从非零直接定位到 0，内容缺少可感知的连续位移动画。"
+  ],
+  "expected": "ScrollArea 的 scrollTop 与 scrollIntoView 受控定位默认使用平台原生平滑滚动；API 仍保持既有 7 Props，不增加可配置动画开关、时长、easing、方法或完成事件。",
+  "actual": "小程序原生 scroll-view 未声明 scroll-with-animation；H5 镜像直接写 area.scrollTop，两个端都瞬移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 当前任务对话", "note": "用户指出点击向上滚动缺乏动画。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/blob/develop/packages/components/scroll-view/scroll-view.wxml", "note": "2026-07-26 重新读取官方当前 WXML：固定 scroll-y/enhanced/show-scrollbar=false，只公开 scrollIntoView；PoemUI 平滑回顶继续作为有证据的内部产品扩展，不复制为公共 Prop。"},
+    {"kind": "file", "ref": "scroll-area/scroll-area.wxml", "note": "唯一原生 scroll-view 固定启用 scroll-with-animation=true。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 受控 scrollTop 与 scrollIntoView 统一调用真实 scrollTo smooth，并在 prefers-reduced-motion 时使用 auto。"},
+    {"kind": "test", "ref": "scripts/test-scroll-area.js", "note": "锁定原生固定动画、H5 smooth/auto 与公共 Props 不扩张。"}
+  ],
+  "rootCause": "PUI-FB-0379 建立了 scrollTop 受控回顶闭环，但只验证了最终真实位置，没有把位移过程作为组件合同；原生 scroll-view 和 H5 runtime 因而仍使用默认即时定位。",
+  "decision": {
+    "outcome": "ScrollArea 内部固定开启微信 scroll-with-animation；H5 统一通过 scrollTo({ behavior: prefers-reduced-motion ? 'auto' : 'smooth' }) 镜像。现有 scrollTop、scrollIntoView 与 scroll 事件合同不变，禁止新增 scrollWithAnimation、duration、easing、reduceMotion Props 或滚动 Methods。",
+    "rationale": "平滑定位是 ScrollArea 受控位置的默认体验，不应要求每个 BackTop 消费者重复配置平台细节；保留最小公共 API同时让小程序/H5 都执行真实滚动，而不是只做按钮动画或状态回显。",
+    "alternativesRejected": [
+      "只给快速样式页增加私有动画：其他 ScrollArea + BackTop 组合仍会瞬移。",
+      "恢复公开 scrollWithAnimation/duration/easing：重新扩张已收敛的平台包装 API。",
+      "使用 setInterval 或 requestAnimationFrame 手写 500ms 坐标：会与微信原生滚动、用户手势和真实 scroll 事件竞争。",
+      "只延迟隐藏 BackTop：内容位置仍瞬移，属于视觉伪修复。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scroll-area/scroll-area.wxml",
+      "preview/app.js",
+      "docs/components/SCROLL-AREA.md",
+      "docs/components/BACKTOP.md",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "scripts/test-scroll-area.js"
+    ],
+    "dependencies": ["微信原生 scroll-view", "pui-scroll-area", "pui-back-top", "browser scrollTo"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js", "scripts/test-miniprogram-style-utilities-page.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm"],
+    "browser": [
+      "H5 390px：属性页把 scrollTop 从 0 写到 500 后进入概览，真实 viewport 在完成前依次采到 475、60ms 后 496、最终 500，证明 scrollTo smooth 存在非最终中间帧；最终 clientHeight/scrollHeight 为 564/1116，document clientWidth/scrollWidth 为 375/375，组件根仍透明、无阴影，控制台 0 error。",
+      "微信开发者工具现有 iPhone 12/13 Pro 模拟器会话：重建 miniprogram_npm 后滚动两页出现 BackTop，点击后真实回到首项并隐藏按钮；自动化状态读取需等待约 1.6s，未能单独采样微信原生动画中间帧。"
+    ],
+    "deviceRisks": ["开发者工具模拟器和 H5 不能替代 iOS/Android 真机；仍需确认长距离平台动画、快速重复点击、用户中途反向手势与不同基础库表现。"]
+  },
+  "ai": {
+    "summary": "ScrollArea 受控位置默认平滑滚动，但动画是内部固定平台行为，不扩张公共 API。",
+    "rules": [
+      "ScrollArea 唯一原生 scroll-view 固定 scroll-with-animation=true；不要让页面重复传平台动画属性。",
+      "H5 受控 scrollTop 与 scrollIntoView 必须调用真实 scrollTo smooth，系统低动效使用 auto。",
+      "不得为平滑回顶恢复 scrollWithAnimation、duration、easing、reduceMotion Props 或滚动 Methods。",
+      "验收必须采样非零中间 scrollTop 和最终 0；只看到按钮隐藏或最终位置不算动画通过。"
+    ],
+    "tags": ["scroll-area", "back-top", "smooth-scroll", "motion", "miniprogram", "h5"]
+  }
+}

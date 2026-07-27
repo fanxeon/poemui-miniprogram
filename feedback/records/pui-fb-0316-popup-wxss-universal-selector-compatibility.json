@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0316",
+  "title": "Popup WXSS 通配选择器阻断微信页面编译",
+  "scope": "component",
+  "components": ["popup", "preview-site", "miniprogram-home"],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "regression",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "首页菜单改用底部 pui-popup 后，合法 AppID 的微信小程序必须可以真实编译并保持 Popup 的受控关闭、Slot 和低动效合同。",
+  "environment": {
+    "surfaces": ["popup", "miniprogram-home", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 miniprogram 首页通过 npm 包路径声明并渲染 pui-popup。",
+    "使用合法 AppID wx23aa017375535746 执行微信开发者工具 build-npm，并在已打开的开发者工具中热重载页面。",
+    "渲染层编译 miniprogram_npm/poemui-miniprogram/popup/popup.wxss，在 `.pui-popup__footer > *` 报 `error at token '*'`；后续低动效规则同样含有通配选择器。"
+  ],
+  "expected": "Popup 的 WXSS 仅使用当前微信编译器支持的选择器；Footer 不穿透覆盖 Slot 子节点，低动效只约束 Popup 自己的 Layer、Mask 与 Surface；页面真实编译且底部 Popup 可用。",
+  "actual": "Popup 源码以 `*` 选择 Footer Slot 子节点并把低动效穿透到全部后代，当前微信 WXSS 编译器拒绝该 token，首页无法渲染。",
+  "evidence": [
+    {"kind": "browser", "ref": "微信开发者工具 RC 2.02.2607161 控制台", "note": "真实渲染层报告 `popup.wxss(33:22): error at token '*'`，页面显示 WXSS 编译错误。"},
+    {"kind": "file", "ref": "popup/popup.wxss", "note": "修复前 Footer 与 reduced-motion 规则均使用 WXSS 通配选择器；修复后只保留 Popup 自身规则。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 低动效同步收敛为 Popup Mask 与 Surface，不覆盖 Slot 后代。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "锁定源 WXSS 与 H5 镜像不再出现 Popup 通配选择器，且保持低动效与结构合同。"}
+  ],
+  "rootCause": "Popup 将 Web CSS 的后代通配选择器直接用于 WXSS，既假设微信编译器接受 `*`，又错误将 Popup 自己的低动效和 Footer 排列职责扩张到消费者 Slot 子树。",
+  "decision": {
+    "outcome": "移除 `.pui-popup__footer > *` 与 `.pui-popup--reduced *`；Footer 只提供分区容器，满宽动作由调用方的 PUI Button `block` Props 表达。H5 低动效仅作用 Popup Mask 与 Surface，Slot 内 PUI 子组件仍由各自合同控制。",
+    "rationale": "这同时满足微信 WXSS 编译限制、Popup 只管理浮层几何的职责边界，以及 PUI 子组件各自低动效和尺寸语义。",
+    "alternativesRejected": [
+      "在首页用私有 WXSS 绕过 Popup 会保留共享组件的编译阻断，且不能保护其他消费者。",
+      "把 Slot 内容包成页面私有节点并重新手写 Button 外观会破坏可组合性和 PUI Button 合同。",
+      "继续让 Popup 通配覆盖全部后代会篡改 Slot 内组件的独立动效与布局语义。"
+    ]
+  },
+  "impact": {
+    "files": ["popup/popup.wxss", "preview/styles.css", "docs/components/POPUP.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "scripts/test-popup.js", "feedback/records/pui-fb-0316-popup-wxss-universal-selector-compatibility.json"],
+    "dependencies": ["pui-popup", "pui-button", "pui-config-provider"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js", "scripts/test-miniprogram-home.js", "scripts/test-config-provider.js"],
+    "commands": ["node scripts/test-popup.js", "npm run feedback:generate", "npm run feedback:check", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": ["修复前：合法 AppID 的微信开发者工具 RC 2.02.2607161 实际显示 Popup WXSS 编译错误。修复后：同一合法 AppID 的 CLI build-npm 成功（cost 1096ms，warnings=[]），并确认生成的 miniprogram_npm Popup WXSS 不含 `*`；开发者工具焦点已切换到另一 PoemCoder 项目，底部 Popup、关闭按钮和遮罩关闭的 390px 模拟器视觉仍待回到 PoemUI 项目确认。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认 Popup fixed 遮罩、Slot 投影、触摸关闭、backdrop-filter、safe-area、读屏和系统低动效。"]
+  },
+  "ai": {
+    "summary": "WXSS 不得使用 Web 通配选择器来穿透 Popup Slot；Popup 只管理自身浮层，Slot 子组件的尺寸、布局与低动效属于各自合同。",
+    "rules": [
+      "任何共享组件首次被真实小程序页面引用后，都必须在微信开发者工具实际渲染层编译，JS 静态测试与 build-npm 成功不能代替 WXSS 编译证据。",
+      "WXSS 不得用 `*` 或 `> *` 穿透消费者 Slot；需要布局时由组件公开容器、调用方 PUI Props 或明确 Slot 内布局表达。",
+      "父级 reduceMotion 只缩短自己声明的动画；PUI 子组件的低动效必须继续按各自合同生效。",
+      "发现共享组件阻断页面编译时，修复必须同步 H5、合同、专项测试、Ledger、dist、示例安装与微信 npm 产物，不能用页面私有样式掩盖。"
+    ],
+    "tags": ["popup", "wxss", "wechat-devtools", "slot", "reduce-motion", "compatibility"]
+  }
+}

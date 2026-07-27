@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0258",
+  "title": "BackTop 预览圆形操作缺少 FAB 语义且未回写局部滚动",
+  "scope": "component",
+  "components": ["back-top", "button", "fab", "preview-site"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "BackTop 预览中的圆形操作应读作真正的 FAB，固定按钮要浮在滚动内容上方，局部滚动和回顶动作必须真实改变可见状态与 Props。",
+  "environment": {
+    "surfaces": ["h5-preview", "BackTop showcase", "PreviewDevice"],
+    "platforms": ["browser", "wechat-miniprogram-source"],
+    "viewports": ["390x844 browser", "desktop browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/back-top，并在 390px 预览中观察显示阈值、形状与文案、主题与定位分区。",
+    "修复前这些示例直接套用 Button；threshold/shape 的按钮出现在 228px 局部滚动区下方，圆形表面尺寸还被通用 Button 规则压缩。",
+    "基础用法滚动局部容器后，BackTop 没有监听 scroll 事件，demo.backTopScroll 和 Props 面板仍停留在初始值，显隐链路不完整。"
+  ],
+  "expected": "FAB 表面由共享 Button 家族原语提供，固定示例覆盖在滚动区右下角，扩展文案保持完整；真实滚动达到阈值后按钮显示，点击后局部容器滚回 0 并同步当前 Props。",
+  "actual": "直接 Button 同时承担了 FAB 的尺寸、主题和定位语义，静态示例看起来像列表下方普通按钮；基础预览没有把局部 scrollTop 回写到运行态。",
+  "evidence": [
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/back-top · 2026-07-23 · 390x844", "note": "修复前 threshold 局部滚动区 bottom=1175.47，按钮 top=1183.47；shape round/half 也出现在滚动区之后，基础 current scrollTop=0 且根为 is-hidden。document/body clientWidth 与 scrollWidth 均为 375px。"},
+    {"kind": "file", "ref": "back-top/back-top.wxml", "note": "BackTop 原先直接声明 pui-button；修复后声明 pui-fab，父级继续拥有定位与显隐，FAB 内部复用 pui-button。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "新增 fabSample 与 bindBackTopPreviewRuntime；真实局部 scroll 事件更新 demo.backTopScroll、按钮 aria-disabled 和当前 Props。"},
+    {"kind": "test", "ref": "scripts/test-fab.js", "note": "专项测试锁定 FAB Props/组合树/生成物哈希；BackTop 专项测试同步锁定 pui-fab 依赖和 H5 FAB 镜像。"}
+  ],
+  "rootCause": "BackTop 的圆形动作没有独立的共享表面语义，H5 直接 Button 样式被全局 Button 规则覆盖；同时预览事件分发只处理点击回顶，没有建立局部滚动到运行态的真实回写。",
+  "decision": {
+    "outcome": "在 button/fab 下新增不占目录编号的 Button 家族内部 FAB 原语；BackTop 原生端和 H5 端统一复用它，固定/静态定位仍由 BackTop 父级负责；绑定当前局部滚动容器的 scroll 事件并回写 Props。",
+    "rationale": "圆形/扩展浮动动作需要稳定的尺寸、主题、阴影和文案规则，但不应让每个复合组件复制一套 Button CSS；滚动状态必须来自真实 DOM scrollTop，不能由提示文字或静态类名伪造。",
+    "alternativesRejected": [
+      "继续给 BackTop 私有 Button 加尺寸补丁：会在其他浮动操作中重复实现并继续受全局样式覆盖。",
+      "只把按钮移到滚动区底部：不能表达 fixed FAB 语义，也不能修复基础用法的滚动回写。",
+      "点击时直接把 Props 写成 0：无法证明真实滚动完成，且会绕过局部容器的真实 scroll 行为。"
+    ]
+  },
+  "impact": {
+    "files": ["button/fab/fab.js", "button/fab/fab.json", "button/fab/fab.wxml", "button/fab/fab.wxss", "back-top/back-top.js", "back-top/back-top.json", "back-top/back-top.wxml", "back-top/back-top.wxss", "preview/app.js", "preview/styles.css", "docs/components/FAB.md", "docs/components/BACKTOP.md", "scripts/test-fab.js", "scripts/test-back-top.js"],
+    "dependencies": ["PUI Button", "BackTop local scroll mirror", "PreviewDevice shadow-safe layout" ]
+  },
+  "verification": {
+    "tests": ["scripts/test-fab.js", "scripts/test-back-top.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["需在构建后以 390x844 真实 BackTop 路由确认 fixed FAB 覆盖局部滚动区、扩展文案不截断、滚动/点击回顶和当前 Props 回写。", "需复核 light/dark、shadow、large radius、reduceMotion 与 document/body scrollWidth。"],
+    "deviceRisks": ["合法 AppID 真机仍需复核 pui-fab 样式隔离、wx.pageScrollTo、fixed 安全区、Button 触摸命中和读屏；当前示例 touristappid 可能阻断 build-npm。"]
+  },
+  "ai": {
+    "summary": "圆形或短文案浮动操作统一使用共享 FAB；定位由父级拥有，预览显隐必须由真实局部 scrollTop 驱动。",
+    "rules": [
+      "不要把 FAB 识别为普通 Button 后在复合组件里复制尺寸/主题 CSS；建立 Button 家族内部原语并继续复用 Button 交互树。",
+      "预览中的 fixed FAB 必须覆盖其滚动内容区，而不是作为列表后的普通流按钮；静态示例也要明确表达定位差异。",
+      "scrollTop、显隐和回顶后的状态必须来自真实滚动容器与真实 scroll 行为，不能只更新提示文字或静态属性。"
+    ],
+    "tags": ["back-top", "fab", "button", "preview-site", "local-scroll", "390px", "dark-mode"]
+  }
+}

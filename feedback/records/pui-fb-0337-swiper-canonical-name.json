@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0337",
+  "title": "轮播图公开英文名必须统一为 Swiper，不能残留 Carousel 双合同",
+  "scope": "component",
+  "components": ["swiper", "documentation", "preview-site", "example", "npm-dist"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "将轮播图组件的英文正式名称统一为 Swiper，并让源码、官网、安装入口、文档和后续 AI 记忆使用同一名称。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist", "obsidian-memory"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390px", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计原实现发现组件目录、标签、路由、测试、组件合同和发布产物使用 carousel / Carousel，而底层平台能力、TDesign 官方组件及用户期望均使用 swiper / Swiper。",
+    "在同一产品中同时保留 Carousel 与 Swiper 名称，会令 AI、用户和 npm 消费者无法确定唯一导入路径、路由和 Generic 名称。"
+  ],
+  "expected": "正式组件、包路径、H5 路由、PUI 标签、组件元数据、示例、专项测试、API、合同、Ledger 与安装产物都以 swiper / Swiper 为唯一当前标识；不保留 carousel 兼容别名。",
+  "actual": "旧公开合同以 Carousel 为名，虽然真实底层是微信 swiper，造成命名和外部参照不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务对话", "note": "用户明确要求把轮播图组件英文名改为 swiper，并要求全局与记忆生效。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/swiper", "note": "2026-07-24 联网访问的 TDesign 官方页面使用 Swiper / 轮播图命名。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/swiper", "note": "2026-07-24 联网访问的官方源码目录为 packages/components/swiper，README 标题为 Swiper 轮播图。"},
+    {"kind": "file", "ref": "swiper/swiper.wxml", "note": "迁移后组件仍直接使用微信原生 swiper 与 swiper-item；自定义 Generic 改为 swiper-slide，避免与原生 swiper-item 标签冲突。"},
+    {"kind": "test", "ref": "scripts/test-swiper.js", "note": "专项测试以 swiper 源码、元数据、路由和发布目录为唯一合同。"}
+  ],
+  "rootCause": "早期将外部映射组件命名为 Carousel，未将底层微信与 TDesign 已使用的 Swiper 名称同步到所有公开面。",
+  "decision": {
+    "outcome": "正式名称固定为 Swiper，组件 ID、目录、PUI 标签、H5 路由与 npm 路径均为 swiper；customItem 的唯一 Generic 固定为 swiper-slide；删除 Carousel/carousel 与 shadcn-carousel 当前别名。",
+    "rationale": "统一为平台与 TDesign 已使用的术语，消除双合同，并避免 swiper-item 作为自定义 Generic 时与微信原生标签发生语义冲突。",
+    "alternativesRejected": [
+      "保留 carousel 兼容别名会让后续 AI 和用户继续生成两套导入与路由，违背全局唯一名称要求。",
+      "将自定义 Generic 命名为 swiper-item 会与微信原生 swiper-item 标签重名，无法明确区分原生轮播条目与可替换内容。"
+    ]
+  },
+  "impact": {
+    "files": ["swiper/swiper.js", "swiper/swiper.json", "swiper/swiper.wxml", "swiper/swiper.wxss", "index.js", "metadata/components.js", "preview/app.js", "scripts/test-swiper.js", "docs/components/SWIPER.md", "docs/COMPONENT_API.md", "_example/miniprogram/pages/components/index.wxml", "miniprogram_dist/swiper/swiper.wxml"],
+    "dependencies": ["微信原生 swiper", "TDesign Swiper", "PreviewDevice", "组件目录生成器", "微信 npm 构建"]
+  },
+  "verification": {
+    "tests": ["scripts/test-swiper.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-runtime-dispatch.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": ["2026-07-24 实测 http://127.0.0.1:4179/#/components/swiper：目录与页面标题均为 Swiper，基础代码为 pui-swiper；点击下一项仍由同一轮播运行态处理，点击加载后预览根变为 aria-busy=true / is-loading。"],
+    "deviceRisks": ["微信开发者工具 build-npm 已实际尝试，但 touristappid 查询详细信息返回 code 10，未生成也未手工伪造 miniprogram_npm；仍需合法 AppID 真机确认新 swiper 路径被安装端重新识别。"]
+  },
+  "ai": {
+    "summary": "轮播图只使用 Swiper / swiper / pui-swiper；自定义条目 Generic 使用 swiper-slide，原生 swiper-item 只用于微信轮播节点。",
+    "rules": [
+      "生成、搜索或文档化轮播图时只使用 swiper、Swiper、pui-swiper 和 #/components/swiper，不生成 carousel 或 shadcn-carousel 别名。",
+      "微信原生 swiper-item 不能作为 PoemUI componentGeneric；customItem 固定绑定 generic:swiper-slide。",
+      "名称迁移必须同步源码、元数据、官网、示例、专项测试、Ledger、dist 和安装产物，不能只改展示标题。",
+      "全库门禁若因无关既有页面合同失败，必须精确报告失败文件和断言，不得为追求全绿覆盖用户当前文案。"
+    ],
+    "tags": ["swiper", "naming", "api-contract", "migration", "tdesign", "wechat"]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0195",
+  "title": "AspectRatio 概览泄漏 clipped content 诊断且圆角类名没有镜像 WXSS",
+  "scope": "component",
+  "components": ["aspect-ratio", "preview-site"],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "组件概览应只呈现用户可以理解的真实能力，不保留 clipped content 等实现诊断；H5 圆角与小程序 WXSS 保持一致。",
+  "environment": {
+    "surfaces": ["h5-preview", "native-source"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["393px PreviewDevice", "390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 `#/components/shadcn-aspect-ratio`。",
+    "旧 H5 在媒体区域右下角直接输出 `clipped content`，即使 overflow 是真实布局策略，也把工程术语泄漏到用户概览。",
+    "旧 Showcase 生成 `--radius-none/small/medium/large`，CSS 却只匹配一组错误的旧 token 拼接类，默认 medium 计算为 0px 圆角。"
+  ],
+  "expected": "AspectRatio 预览以真实百分比占位展示可组合的媒体内容；用户文案不泄漏 Slot/裁切诊断，H5 的 none/small/medium/large 圆角、边界、overflow 与 WXSS 一致。",
+  "actual": "旧预览显示 `clipped content`，并因 CSS 类名不匹配丢失了默认圆角，造成概览信息层级和跨端视觉漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-20 当前会话的 11 号反馈", "note": "用户指出页面上出现 clipped content，并质疑该组件的用户价值。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-aspect-ratio", "note": "修复前审计：根为 335x190px，overflow hidden、padding-top 188px，但计算 border-radius 为 0px 且可见 clipped content 徽标。"},
+    {"kind": "file", "ref": "aspect-ratio/aspect-ratio.wxss", "note": "原生真实能力为百分比占位、语义圆角、可选边界和 overflow；没有 clipped 诊断或外阴影。"},
+    {"kind": "test", "ref": "scripts/test-aspect-ratio.js", "note": "专项测试锁定 padding-top、无假事件、四个圆角映射、无 clipped content 和无外阴影。"}
+  ],
+  "rootCause": "AspectRatio H5 原始 Showcase 遗留开发诊断 badge，CSS 使用的圆角选择器来自过时 token 命名，和函数实际输出的 `radius-*` 类名脱节。",
+  "decision": {
+    "outcome": "删除诊断 badge，将 Slot 演示改为用户可理解的媒体内容；修正 H5 四档 radius class 与真实 WXSS 映射，新增专属合同和测试。组件继续保留为跨基础库稳定比例占位能力，是否退役需用户明确授权后执行完整破坏性 API 移除。",
+    "rationale": "该组件在小程序端以百分比占位解决浏览器 CSS 不可假定的场景，仍有明确的媒体/封面 Slot 用途；先修复实际预览错误，不把一次用户疑问静默扩大为 API 删除。",
+    "alternativesRejected": [
+      "只用 CSS 隐藏 clipped badge：工程节点仍进入 DOM 和可访问树，不能满足 component-only 合同。",
+      "改用浏览器 aspect-ratio：会脱离小程序 WXSS 的真实实现。",
+      "直接删除公开组件：用户仅提出考虑，未授权破坏性 API 删除。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "docs/components/ASPECT-RATIO.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "_example/miniprogram/pages/components/index.wxml", "scripts/test-aspect-ratio.js", "package.json", "feedback/records/pui-fb-0195-aspect-ratio-preview-diagnostic-leak.json"],
+    "dependencies": ["PUI Icon/Tag H5 mirrors", "PreviewDevice shadow-safe parent layout", "WXSS percentage layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-aspect-ratio.js", "scripts/test-component-semantic-contracts.js"],
+    "commands": ["node scripts/test-aspect-ratio.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["真实浏览器已验证：390x844 视口中根为 293x166.8125px、border-radius:8px、overflow:hidden、box-shadow:none；页面 document/clientWidth 均为 375px，诊断节点为 0。深色态复核后仍保持同一比例、圆角、裁切边界及无外阴影。"],
+    "deviceRisks": ["微信 CLI 已实际启动 IDE 服务，但示例 `touristappid` 权限查询返回 code 10，未生成且未手工伪造 `miniprogram_npm`。合法 AppID 真机仍需验证 WXSS 百分比占位、overflow、Slot 投影和样式隔离；H5 无法证明不同基础库的相关行为。"]
+  },
+  "ai": {
+    "summary": "AspectRatio 是百分比比例布局，不是状态组件；H5 不得泄漏裁切诊断，四档圆角必须逐项镜像 WXSS。",
+    "rules": [
+      "只要裁切属于布局策略，就不得把 clipped/slot 等实现词写进默认概览。",
+      "H5 生成的 class 与 CSS 选择器必须一一对应，并用专项测试锁定每个公开枚举值。",
+      "布局根不承担外阴影、业务状态或静态假成功。",
+      "删除公开组件属于破坏性 API 变更；用户只提出考虑时先完成审计和修复，再等待明确授权。"
+    ],
+    "tags": ["aspect-ratio", "preview-parity", "component-only", "radius", "overflow", "slot"]
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0116",
+  "title": "Rate 官网单块诊断演示与透明组件语义不一致",
+  "scope": "component",
+  "components": ["rate", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Rate 官网应像成熟组件文档一样按用法分区，属性与 API 全文可读、交互真实，并在深浅色和视觉开关下保持透明输入组件语义。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-panel", "usage-code"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "351px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览只有一个 Rate、工程状态 Cell 与默认 Slot Tag，无法比较半星、文案、尺寸、间距、0 分、只读与禁用。",
+    "旧 H5 只支持 button click，没有 Pointer 拖动，受控演示与 TDesign 触摸主干不一致。",
+    "共享外观选择器把透明 Rate 根当作 Surface，强加圆角、阴影、毛玻璃和 500ms 外观 transition。",
+    "旧 API 和兼容说明仍宣传 input、默认 Slot、0–500ms duration/easing 与不可执行的 CSS 变量颜色。"
+  ],
+  "expected": "概览按四类用户任务陈列，当前实例真实点击/拖动并由 Props 回写；API 完整显示 13/1/0/0；Rate 保持透明，视觉效果只由 PreviewDevice 与真实有 Surface 的组件承担。",
+  "actual": "旧官网偏向单例调试，缺少多用法筛选和拖动，且全局外观样式改变了 Rate 的原子输入边界。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户确认授权后续共有组件在完整源码、浏览器、测试、文档与安装产物证据后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区 showcase、Pointer Runtime、父级回写、严格 Props 和专属 API 说明来自同一 helper。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Rate 删除私有 Surface 与全局 Surface 选择器覆盖，保留透明根、真实 Icon 裁切和 180/1ms。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "基础零 bind、事件专项、13 Props/1 Event 和 TDesign 取舍完整记录。"},
+    {"kind": "test", "ref": "scripts/test-rate.js", "note": "锁定四区、基础 WXML、无 Slot/方法/私有动效和 H5 共享边界。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/rate", "note": "390px 下真实交互、API 全文、复制、三视图稳定、页面边界和全部外观已验证。"}
+  ],
+  "rootCause": "旧 Rate 继承通用单例诊断与 Surface 白名单模板，没有区分原子输入、文档静态样例和真实组件 Surface；H5 事件层也只实现了最低点击能力。",
+  "decision": {
+    "outcome": "官网重建为基础用法、半星与文案、尺寸与间距、状态与受控四区；只有当前实例保留真实按钮和 Pointer 拖动，静态样例标为只读；API/WXML/兼容说明同步 13/1/0/0；从全局 Surface 外观选择器移除 Rate。",
+    "rationale": "用户需要快速比较真实用法并复制最小调用；透明输入根不能因为全局效果开关被误画成卡片，静态文档样例也不能保留无响应假按钮。",
+    "alternativesRejected": [
+      "在旧单例下追加说明卡不能帮助比较，也会继续堆叠诊断信息。",
+      "让所有静态样例都保留无绑定 button 会制造伪交互。",
+      "给 Rate 根强加 Surface 以展示视觉开关会改变组件真实语义。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/components/RATE.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "README.md", "scripts/test-rate.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0116-rate-preview-api-parity.json"],
+    "dependencies": ["PreviewDevice", "PUI Tabs", "Props helpers", "previewCodeBlockSample"]
+  },
+  "verification": {
+    "tests": ["scripts/test-rate.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node scripts/test-rate.js", "npm run site:build", "npm run check", "npm run feedback:check"],
+    "browser": [
+      "390px 概览四个分区完整可见，修正大尺寸静态样例后 PreviewDevice clientWidth/scrollWidth 为 338/338，document 为 375/375。",
+      "概览/API/属性/概览四态 Tabs 均为 x=12、y=348、351x40px，scrollY 均为 0。",
+      "API 共 68 个 cell（13 Props 五列与 1 Event 三列）无 ellipsis、nowrap、hidden 或内容溢出，change detail 完整显示。",
+      "深色、border off、shadow、frost、large-radius、gradient 同时开启后 PreviewDevice 为 351x622、26px、真实 blur/shadow；Rate 仍 transparent/0px/none/none，激活色为 rgb(250,204,21)，页面无横向溢出。",
+      "组件引用和基础用法复制均通过真实复制链；基础复制按钮进入 check/success 和“已复制基础用法代码”。"
+    ],
+    "deviceRisks": [
+      "H5 Pointer 与 px 只近似微信触摸和 rpx；局域网旧式剪贴板回退的最终粘贴内容、真实移动浏览器字体回流和辅助技术仍需人工/真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Rate 官网按任务陈列真实能力；静态样例只读，当前实例交互，透明根不参与 Surface 外观映射。",
+    "rules": [
+      "Rate 概览固定为基础、半星文案、尺寸间距、状态受控四区。",
+      "只有绑定真实状态路径的实例可以保留交互按钮；静态样例必须无假交互并表达只读。",
+      "透明原子输入不得加入全局 Surface 阴影、毛玻璃或圆角选择器。",
+      "浏览器 battle 必须同时测页面与 PreviewDevice 横向边界、API 计算样式和三视图几何。"
+    ],
+    "tags": ["rate", "preview", "api-docs", "transparent-component", "responsive", "accessibility"]
+  }
+}

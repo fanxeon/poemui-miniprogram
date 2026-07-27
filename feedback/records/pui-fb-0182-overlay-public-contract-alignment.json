@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0182",
+  "title": "Overlay 旧公开合同把遮罩原语误扩展为可关闭浮层容器",
+  "scope": "component",
+  "components": ["overlay", "preview-site", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "联网参考 TDesign 后逐组件收敛真实可交付能力，遮罩不能以非受控状态、位置、内容关闭策略、生命周期、实例方法或静态反馈伪装成完整浮层。",
+  "environment": {
+    "surfaces": ["native-source", "h5-preview", "metadata", "documentation", "example"],
+    "platforms": ["node", "browser", "wechat-miniprogram"],
+    "viewports": ["PreviewDevice 393px", "Chrome iPhone 12 Pro 390×844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 overlay 四件套、metadata、H5、API 与示例：公开 15 Props，兼有 defaultVisible、position、padding、safeArea、closeOnClick、closeOnContentClick、disabled、easing、after-* 与 open/close/toggle；H5 还渲染私有 Card、方法按钮和工程反馈。",
+    "联网打开 https://tdesign.tencent.com/miniprogram/components/overlay 与 https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/overlay，并读取固定 tdesign-miniprogram@1.15.3 的 miniprogram_dist/overlay/{props.js,type.d.ts,overlay.js,overlay.wxml,overlay.wxss}。",
+    "固定包表明 Overlay 只处理 visible、backgroundColor、duration、preventScrollThrough、usingCustomNavbar、zIndex、默认 Slot 与 click({ visible: !visible })；遮罩本身不保存非受控值或私自关闭。"
+  ],
+  "expected": "PoemUI Overlay 应作为受控全屏遮罩原语，真实点击只通知父级下一 visible 值；内容布局和业务结果继续由 Slot 与页面组合。",
+  "actual": "旧合同混入了 Popup/Sheet 的位置、内容、关闭和生命周期职责，H5/示例提供了小程序基础遮罩不应承诺的实例命令和事件反馈。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求联网对照 TDesign、真实浏览器 battle，并授权本 Goal 在完整单组件证据后自主验收。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/overlay", "note": "2026-07-20 联网核对 Overlay 的公开 Props、Slot 和 click 事件。"},
+    {"kind": "browser", "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/overlay", "note": "2026-07-20 在线定位 Overlay 源码，并以固定 npm 包复核顶距、过渡和根点击语义。"},
+    {"kind": "file", "ref": "overlay/overlay.js", "note": "修复后仅公开 visible、backgroundColor、duration、preventScrollThrough、usingCustomNavbar、zIndex、ariaLabel、reduceMotion。"},
+    {"kind": "test", "ref": "scripts/test-overlay.js", "note": "专项覆盖受控 click 回写、动画留节点、背景/层级安全规整、导航栏距离、H5/API/示例/合同同源。"}
+  ],
+  "rootCause": "旧实现把可组合遮罩当作通用浮层容器，历史 metadata 的 done 状态没有触发 TDesign 主语义复核，导致 API、演示和文档共同扩大了承诺。",
+  "decision": {
+    "outcome": "收敛为 8 Props、click({ visible:false }) 一个 Event、default 一个 Slot、零 Methods；visible 始终受控，500ms opacity 过渡（reduceMotion 为 1ms），usingCustomNavbar 通过胶囊/状态栏真实距离设置根 top。",
+    "rationale": "保留 TDesign 的遮罩主干、滚动阻断、层级和导航栏上下文，同时仅补可验证的 ariaLabel/reduceMotion；默认 Slot 保持页面组合能力而不把布局提升为 Overlay API。",
+    "alternativesRejected": [
+      "保留 defaultVisible、closeOnClick/content-click 和 open/close/toggle，会继续把父级回写伪装为组件内部状态机。",
+      "保留 center/top/bottom/stretch、padding/safeArea 或 Card 演示，会让遮罩拥有 Popup/Sheet 的内容布局责任。",
+      "照搬 style/custom-style 逃生口或在 H5 伪造浏览器系统导航栏，会绕过 Token 或承诺无法验证的平台能力。"
+    ]
+  },
+  "impact": {
+    "files": ["overlay/overlay.js", "overlay/overlay.wxml", "overlay/overlay.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/OVERLAY.md", "docs/components/README.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.wxss", "scripts/test-overlay.js", "scripts/test-preview-overview-hierarchy.js"],
+    "dependencies": ["theme behavior", "PUI Button", "PUI Cell", "buttonSample", "cellSample", "PreviewDevice edge-to-edge layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-overlay.js", "scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "PUI_VERIFY_DIST=1 node scripts/test-overlay.js", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project /Users/fanx/Documents/poemUI 小程序组件库/_example（IDE server 启动后 touristappid 不存在，code 10；未生成 miniprogram_npm）"],
+    "browser": ["Chrome 390×844 实点默认入口、默认 Slot 冒泡与 click({ visible:false }) 父级回写；duration=400 的离场节点保留且 pointer-events:none，随后卸载。", "usingCustomNavbar=true 时遮罩 top=44px；激活遮罩上的真实 CUA 滚动未带动页面。", "实际调整 rgba 背景、visible、duration、usingCustomNavbar 和 reduceMotion；reduceMotion 计算 transitionDuration=0.001s。", "实际切换 light/dark、border、shadow、frosted glass、large radius、gradient 并恢复标准组合；390px document/client=375/375，无页面级横向溢出。", "API 8 Props、1 Event、1 Slot；65 个单元格无 ellipsis、nowrap、宽高滚动裁断。"],
+    "deviceRisks": ["微信 CLI 因 touristappid 不存在（code 10）未生成 miniprogram_npm，不能用 H5 或安装产物替代。", "合法 AppID 真机仍需核验 fixed 遮罩、胶囊距离、catchtouchmove、rpx/安全区、Slot 投影、样式隔离、读屏、系统低动效和真实 390px 设备窗口。"]
+  },
+  "ai": {
+    "summary": "Overlay 是受控遮罩原语，不是可关闭浮层、内容布局器或业务状态机。",
+    "rules": [
+      "处理 Overlay 前必须联网阅读 TDesign 官方页、仓库和固定 npm 包，再审计点击根、过渡与 custom navbar 的实际语义。",
+      "只保留 visible/backgroundColor/duration/preventScrollThrough/usingCustomNavbar/zIndex 与可验证的 ariaLabel/reduceMotion；不要恢复 defaultVisible、位置、padding、安全区、disabled、easing、生命周期或 Methods。",
+      "click 只通知 { visible:false }，Overlay 不自行关闭；H5 必须实际更新父级 Props，不能只修改提示文字。",
+      "默认 Slot 的布局和业务状态属于消费者；H5 触发入口与 Slot 内容优先组合 PUI Button、Cell 等，原生 button 只可承担遮罩桥接。"
+    ],
+    "tags": ["overlay", "tdesign", "api-contract", "controlled-state", "no-fake-state"]
+  }
+}

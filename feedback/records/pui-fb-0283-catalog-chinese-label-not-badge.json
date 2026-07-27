@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0283",
+  "title": "官网目录将中文辅助名误作 Badge/Tag",
+  "scope": "global",
+  "components": ["preview-site", "sidebar", "button", "badge", "tag"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "官网全局目录右侧的中文说明应是低层级灰色文字，不应显示为 Tag 或 Badge。",
+  "environment": {
+    "surfaces": ["h5-preview", "site-shell"],
+    "platforms": ["browser"],
+    "viewports": ["desktop", "390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网任一组件页的全局左侧目录。",
+    "观察英文组件名右侧的中文辅助名；修复前它由 badgeSample 输出，拥有 Badge 的状态表面语义。"
+  ],
+  "expected": "英文主名保留 PUI Button 的可达导航语义；中文辅助名作为普通灰色辅助文本，分区数量等真实计数仍可使用 PUI Badge。",
+  "actual": "中文辅助名被渲染为 standalone Badge，视觉上误导为状态或数量标记。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 当前任务对话", "note": "用户明确要求右侧中文说明不要 Tag，使用灰色文字。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "renderGroups 已将 component-item__translation 作为 Button Slot 内的普通文本输出。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "component-item__translation 使用现有辅助文字 Token，不建立状态 Surface。"},
+    {"kind": "test", "ref": "scripts/test-preview-navigation-search.js", "note": "专项合同禁止中文辅助名重新调用 badgeSample，并保留分区计数 Badge。"}
+  ],
+  "rootCause": "此前把所有目录的右侧信息统一套用 Badge，未区分真实计数与组件名称的辅助说明。",
+  "decision": {
+    "outcome": "中文辅助名固定为 PUI Button default Slot 内的灰色文本；只有分区项数等真实计数保留 PUI Badge。",
+    "rationale": "中文名用于解释英文主名，不传达状态、数量或筛选结果；文本层级比 Badge/Tag 更符合其语义，且不改变目录按钮、筛选和无障碍名称。",
+    "alternativesRejected": [
+      "保留 neutral Badge：仍会把辅助名称误读为状态标记。",
+      "改用 Tag：Tag 具有状态/分类表面语义，仍不适合作为同名说明。",
+      "完全隐藏中文名：会降低中文用户在目录中的可扫读性。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-preview-navigation-search.js", "scripts/test-preview-infrastructure-composition.js", "scripts/test-design-contracts.js", "docs/UI_DESIGN_CONTRACT.md", "docs/PREVIEW_INFORMATION_HIERARCHY.md", "feedback/records/pui-fb-0283-catalog-chinese-label-not-badge.json"],
+    "dependencies": ["PUI Button default Slot", "PUI Badge group count", "global catalog metadata"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-navigation-search.js", "scripts/test-preview-infrastructure-composition.js", "scripts/test-design-contracts.js"],
+    "commands": ["node scripts/test-preview-navigation-search.js", "node scripts/test-preview-infrastructure-composition.js", "node scripts/test-design-contracts.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": ["待本轮 H5 视觉复核：中文辅助名应无 pui-badge-demo/pui-tag 类，分区数量仍保留 PUI Badge。"],
+    "deviceRisks": ["本项仅调整 H5 官网站点目录，不修改小程序 Sidebar 的公开 API、WXML 或 WXSS；微信真机不受此文本层级变更影响。"]
+  },
+  "ai": {
+    "summary": "目录名称的辅助说明是文本层级，不应滥用 Tag 或 Badge；Badge 只承载真实数量或状态。",
+    "rules": [
+      "目录英文主名后的中文辅助名必须是普通灰色文本，不能调用 tagSample 或 badgeSample。",
+      "分区总数等真实计数仍调用 badgeSample，不能为统一外观改成私有文本徽标。",
+      "修改目录 Slot 后保留 Button 的默认 Slot、aria-label、搜索语料和稳定反馈序号。"
+    ],
+    "tags": ["preview-site", "catalog", "sidebar", "badge", "tag", "typography", "information-hierarchy"]
+  }
+}

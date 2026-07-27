@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0371",
+  "title": "快速样式生成目录仍暴露主题与行为旧分类",
+  "scope": "component",
+  "components": ["style-utilities", "tabs", "miniprogram"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "快速样式的五个 Tabs 必须使用布局、尺寸、间距、字体、背景等可理解分类，不保留含义不清的主题与行为。",
+  "environment": {
+    "surfaces": ["miniprogram pages/styles/index", "style utilities generated catalog", "pui-tabs controlled selection"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 miniprogram/pages/styles/index，页面从 miniprogram/common/data/style-utilities-catalog.js 读取 groupTabs。",
+    "旧生成目录仍输出布局、尺寸与间距、字体与内容、背景与外观、主题与行为四类，即使生成器源码已经改为五类。"
+  ],
+  "expected": "目录与页面真实展示固定为布局、尺寸、间距、字体、背景；所有 utility 都映射到一个稳定 group key，Tabs 切换继续通过该 key 回写。",
+  "actual": "生成器源码和文档已使用五类，但没有刷新运行页读取的生成目录，页面仍展示旧的主题与行为分类；刷新目录后页面示例仍保留 visual/behavior 条件，background 无法命中示例。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前任务对话", "note": "用户明确表示不了解主题与行为的含义，并指定五个分类。"},
+    {"kind": "file", "ref": "scripts/generate-miniprogram-style-utilities-catalog.js", "note": "生成器定义 layout、size、spacing、typography、background 五个 group key。"},
+    {"kind": "file", "ref": "miniprogram/common/data/style-utilities-catalog.js", "note": "重新生成后真实运行数据输出五类及 530 个 utility 映射。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-style-utilities-page.js", "note": "专项断言五个 key、五个中文标签、background 示例条件、无 visual/behavior 残留及分类切换回写。"},
+    {"kind": "build", "ref": "npm run site:build", "note": "构建链重新生成小程序样式目录和发布产物。"}
+  ],
+  "rootCause": "分类规则已在生成器中更新，但运行中的生成目录没有随之刷新；页面示例又把已删除的 visual/behavior key 硬编码在 WXML，导致文档、生成器、目录与真实 UI 出现双重漂移。",
+  "decision": {
+    "outcome": "以生成器的五类 key 作为唯一目录真相；通过 site:build 刷新运行目录，页面继续将 group key 显式派生为 PUI Tabs 的 value，并把示例条件改为 background、移除 visual/behavior。",
+    "rationale": "分类只在生成器维护，避免在页面层手写同一份 utility 清单或用文案转换掩盖过期生成物。",
+    "alternativesRejected": [
+      "仅在页面把主题与行为改名会保留错误的 utility 归属。",
+      "把尺寸和间距合并可减少一项，但不符合用户指定的五类信息架构。",
+      "保留主题与行为作为兼容别名会继续让用户面对含义不清的入口。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/generate-miniprogram-style-utilities-catalog.js", "miniprogram/common/data/style-utilities-catalog.js", "miniprogram/pages/styles/index.js", "miniprogram/pages/styles/index.wxml", "scripts/test-miniprogram-style-utilities-page.js", "docs/MINIPROGRAM_HOME.md", "docs/STYLE_UTILITIES.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["common/style/utilities.wxss", "pui-tabs", "site:build"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-style-utilities-page.js", "scripts/test-tabs.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm", "微信 CLI islogin"],
+    "browser": ["未改动 H5 交互；本记录的直接运行面是小程序生成目录与页面状态测试。"],
+    "deviceRisks": ["2026-07-25 已在新版微信开发者工具 Stable 2.01.2510290 回读 islogin=true，并以 AppID wx23aa017375535746 完成官方 CLI build-npm（1854ms、0 warnings）；微信 390px 模拟器和 iOS/Android 真机仍尚未复验五项横向滚动、触摸和深浅色外观组合。"]
+  },
+  "ai": {
+    "summary": "生成器、生成目录和运行页必须同步；文档里已更新的分类不等于小程序已经展示新分类。",
+    "rules": [
+      "修改 style utilities 分组后必须运行 site:build，再读取 miniprogram/common/data/style-utilities-catalog.js 验证真实输出。",
+      "PUI Tabs 必须接收由 group key 显式派生的 value，不能依赖对象顺序或旧标签。",
+      "深色文字归字体，深色背景、边框和阴影归背景；溢出、动效、展示和辅助类归布局。",
+      "微信 CLI code 10 或 islogin=false 只能说明环境登录阻断，不能声称小程序已编译或真机已验收。"
+    ],
+    "tags": ["style-utilities", "miniprogram", "generated-artifact", "tabs", "information-architecture"]
+  }
+}

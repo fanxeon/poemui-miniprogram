@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0058",
+  "title": "Cell 当前 WXML 把空字符串 title 回退成演示文案",
+  "scope": "component",
+  "components": ["cell", "preview-site"],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "属性面板中的空字符串必须真实作用于 Cell，并由当前效果 WXML 原样表达；基础示例文案不能污染用户当前代码。",
+  "environment": {"surfaces": ["h5-preview", "props-workspace", "code-copy"], "platforms": ["browser"], "viewports": ["390x844", "desktop"], "themes": ["light", "dark"]},
+  "reproduction": [
+    "进入 Cell 属性页，通过真实文本控件清空 title。",
+    "预览中的 title 消失，但旧 makeUsageCode 把空字符串替换为“单行标题”。",
+    "属性页 WXML 与工具栏复制因此不再对应当前预览。"
+  ],
+  "expected": "当前 WXML 输出 `title=\"\"`；只有独立的基础用法代码固定使用“单行标题”。",
+  "actual": "旧生成器用基础演示文案覆盖空字符串，导致预览与复制代码不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/cell", "note": "键盘清空 title 后预览无标题；修复前 WXML 为单行标题，修复后为 title 空字符串并保留 value=false。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Cell 当前代码生成只对 null/undefined 转为空，不再对空字符串使用演示回退。"},
+    {"kind": "test", "ref": "scripts/test-cell.js", "note": "专项断言锁定空字符串 title 的生成路径和独立基础 WXML。"}
+  ],
+  "rootCause": "Cell 专用 WXML 分支复用了基础示例的可读文案兜底，没有区分默认教学代码与当前用户状态代码。",
+  "decision": {"outcome": "当前 WXML 对 title 使用 nullish 归一化并保留空字符串；基础用法继续由独立真相源固定为单行标题。", "rationale": "教学示例和当前效果代码用途不同，后者必须无损表达 Props。", "alternativesRejected": ["继续回退会隐藏空字符串边界。", "完全删除 title 属性会把显式空值误写成未传入。"]},
+  "impact": {"files": ["preview/app.js", "scripts/test-cell.js"], "dependencies": ["makeUsageCode", "code copy"]},
+  "verification": {"tests": ["scripts/test-cell.js", "scripts/test-preview-code-copy.js"], "commands": ["node scripts/test-cell.js", "npm run precheck"], "browser": ["真实清空 title 并把 value 输入 false，属性页 WXML 显示 `<pui-cell title=\"\" value=\"{{false}}\" />`。", "基础复制仍严格为 `<pui-cell title=\"单行标题\" />`，当前复制无 bind。"], "deviceRisks": []},
+  "ai": {"summary": "基础示例可以有教学文案，当前效果代码必须保留空字符串。", "rules": ["不要把 Cell 基础示例的 title 回退应用到当前 WXML。", "0、false、空字符串和未传入必须在代码生成中保持不同。"], "tags": ["cell", "empty-string", "wxml", "copy", "props"]}
+}

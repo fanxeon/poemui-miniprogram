@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0092",
+  "title": "Checkbox H5 全选统计误把内容节点计为选项",
+  "scope": "component",
+  "components": ["checkbox", "checkbox-group", "preview-site"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "H5 全选、半选和取消全选必须和真实 CheckboxGroup 一致，状态由真实选项输入决定。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "351px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 Checkbox 概览打开全选与半选分区，初始选择0与disabled false。",
+    "点击全选后所有可写项已经选中，但全选控件仍显示 mixed；再次点击无法得到正确取消结果。",
+    "检查同步选择器发现 `[data-checkbox-option]` 同时命中 input 和内容包装节点，统计数量被翻倍。"
+  ],
+  "expected": "全选统计只遍历真实 input 选项；全选后为 checked，取消后保留 disabled 已选项并显示 mixed。",
+  "actual": "内容节点被当作额外未选选项，使完成态持续为 mixed，演示与真实 Group 合同不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件完成真实浏览器 battle 后自主验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=checkbox-v7#/components/checkbox", "note": "修复前全选后仍为mixed；修复后[0,false]全选为[0,false,空字符串]且checked，再次取消只保留disabled false并为mixed。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "syncCheckboxGroupPreview 的选项选择器收紧为 input[data-checkbox-option]，内容节点不再进入状态统计。"},
+    {"kind": "test", "ref": "scripts/test-checkbox.js", "note": "专项锁定输入级选择器、disabled selected 保留和全选/半选数组语义。"}
+  ],
+  "rootCause": "H5 为事件定位复用了同名 data 属性，但同步逻辑没有限定平台 input 根，DOM 展示节点意外进入集合统计。",
+  "decision": {
+    "outcome": "集合查询精确限定为 input[data-checkbox-option]；内容节点仍可保留事件标识，但不得参与选项总数、checked 或 indeterminate 推导。",
+    "rationale": "状态统计应以真实平台输入为唯一事实源，避免展示结构变化改变业务结果。",
+    "alternativesRejected": [
+      "从结果数量中除以二依赖固定 DOM 结构，增加 Slot 后会再次失效。",
+      "移除内容点击能力会破坏 Checkbox 整行命中合同。",
+      "只手工改全选 class 会留下数组值和 ARIA 不一致。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-checkbox.js", "docs/components/CHECKBOX.md"],
+    "dependencies": ["checkboxPreviewMarkup", "syncCheckboxGroupPreview"]
+  },
+  "verification": {
+    "tests": ["scripts/test-checkbox.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "初始[0,false]显示mixed；第一次全选加入空字符串并显示checked。",
+      "第二次取消只保留disabled false并恢复mixed，原始值类型未变化。",
+      "纵向和横向普通组点击仍只更新当前真实 input。"
+    ],
+    "deviceRisks": ["该缺陷属于 H5 DOM 统计；微信原生 Group 使用 relation 状态机，但其触摸与属性传播仍需真机复核。"]
+  },
+  "ai": {
+    "summary": "H5 CheckboxGroup 统计必须只查询真实 input 选项，展示节点不能进入集合状态。",
+    "rules": [
+      "集合状态查询必须限定组件平台根标签与精确 data 标识。",
+      "不得根据展示 DOM 数量推导业务选项数量。",
+      "全选验收必须同时读取数组值、checked、indeterminate 与 disabled 保留。"
+    ],
+    "tags": ["checkbox", "checkbox-group", "preview", "selector", "check-all", "indeterminate"]
+  }
+}

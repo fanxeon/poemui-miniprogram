@@ -1,0 +1,55 @@
+<view
+  wx:if="{{rendered}}"
+  class="{{rootClass}} {{active ? 'pui-bubble--active' : ''}} {{customClass}}"
+  style="{{customStyle}};{{rootStyle}}{{measureStyle}}"
+>
+  <view class="pui-bubble__shell">
+    <view
+      class="pui-bubble__surface"
+      role="{{interactive ? 'button' : 'group'}}"
+      aria-label="{{bubbleLabel}}"
+      aria-live="{{bubbleAriaLive}}"
+      aria-disabled="{{disabled}}"
+      hover-class="{{interactive ? 'pui-bubble__surface--hover' : 'none'}}"
+      bindtap="onContentTap"
+      bindlongpress="onContentLongPress"
+    >
+      <view class="pui-bubble__clip">
+        <slot wx:if="{{customContent}}"></slot>
+        <text wx:else class="pui-bubble__text" user-select="{{selectable}}">{{displayContent}}</text>
+      </view>
+      <view wx:if="{{collapsible && !customContent}}" class="pui-bubble__measure pui-bubble__measure--full" aria-hidden="true">{{displayContent}}</view>
+      <view wx:if="{{collapsible && !customContent}}" class="pui-bubble__measure pui-bubble__measure--clamped" aria-hidden="true">{{displayContent}}</view>
+      <view wx:if="{{collapsible && showToggle}}" class="pui-bubble__toggle" catchtap="stopTap">
+        <pui-button
+          size="small"
+          variant="text"
+          content="{{expandedState ? collapseText : expandText}}"
+          icon="{{expandedState ? 'chevron-up' : 'chevron-down'}}"
+          disabled="{{disabled}}"
+          aria-label="{{expandedState ? collapseText : expandText}}"
+          custom-class="pui-bubble__toggle-button"
+          bind:click="onToggleTap"
+        />
+      </view>
+    </view>
+    <view wx:if="{{hasReactions}}" class="pui-bubble__reactions" role="group" aria-label="消息回应">
+      <slot wx:if="{{customReactions}}" name="reactions"></slot>
+      <block wx:else>
+        <pui-button
+          wx:for="{{reactionItems}}"
+          wx:key="key"
+          data-index="{{index}}"
+          size="small"
+          theme="{{item.active ? 'primary' : 'default'}}"
+          variant="{{item.active ? 'base' : 'outline'}}"
+          content="{{item.text}}"
+          disabled="{{disabled || item.disabled}}"
+          aria-label="{{item.ariaLabel}}"
+          custom-class="pui-bubble__reaction-button"
+          bind:click="onReactionTap"
+        />
+      </block>
+    </view>
+  </view>
+</view>

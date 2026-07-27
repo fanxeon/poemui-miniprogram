@@ -1,0 +1,84 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0272",
+  "title": "NavigationMenu Trigger 后缀 Badge 锚定到菜单根并被裁切",
+  "scope": "component",
+  "components": ["navigation-menu", "badge", "button", "preview-site"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "NavigationMenu 根入口的 Badge 必须准确落在 Button suffix 内，完整可见且不影响触发器布局。",
+  "environment": {
+    "surfaces": ["h5-preview", "miniprogram-source", "component-contract"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["desktop", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 #/components/navigation-menu 的默认概览。",
+    "根入口“组件”有 Badge 82，Badge 被放进 PUI Button suffix。",
+    "H5 未声明 standalone，Badge 仍采用展示宿主的绝对定位，锚定到 navigation-menu 根并被 Trigger 的 overflow:hidden 裁切。"
+  ],
+  "expected": "根入口 Badge 作为 suffix 的内联子项，位于文字与展开 Icon 之间，完整可见且其几何只参与当前 Trigger。",
+  "actual": "修复前 Badge 的定位坐标落在整个菜单根右上角，超出当前 Trigger 约 210px，视觉上被截断或与错误锚点重叠。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务截图",
+      "note": "用户指出第 20 项有 Badge 但锚点错误且被截断。"
+    },
+    {
+      "kind": "file",
+      "ref": "badge/badge.wxss",
+      "note": "原生 Badge 在内容宿主为空时改为 position:relative 的内联布局。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/navigation-menu",
+      "note": "修复前 H5 Badge left=1170.95px，而所属 Trigger right=960px，且 Trigger 为 overflow:hidden。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "根 Trigger 的 badgeSample 现显式传 standalone=true。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-navigation-menu.js",
+      "note": "专项断言锁定 Badge 的内联调用和 static 锚点样式。"
+    }
+  ],
+  "rootCause": "H5 Badge helper 默认用于附着展示宿主，NavigationMenu 却把它作为 Button suffix 使用，遗漏了与原生空宿主一致的 standalone 映射。",
+  "decision": {
+    "outcome": "NavigationMenu 根 Trigger 的 Badge 显式使用 standalone=true；组件作用域 CSS 再锁定 static、flex 子项与无 transform。",
+    "rationale": "Button suffix 是内联排列区域，静态 Badge 同时保持原生空宿主语义、正确锚点和完整点击区。",
+    "alternativesRejected": [
+      "给 Trigger 放宽 overflow，会让错误绝对定位继续逃出当前操作区。",
+      "手写一个私有 Badge，会绕过共享 PoemUI Badge 镜像。",
+      "通过负 margin 把绝对 Badge 拉回，会随文案和机型漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-navigation-menu.js", "docs/components/NAVIGATION-MENU.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0272-navigation-menu-suffix-badge-anchor.json"],
+    "dependencies": ["PUI Badge standalone layout", "PUI Button suffix", "NavigationMenu Trigger", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-navigation-menu.js", "scripts/test-design-contracts.js"],
+    "commands": ["feedback:generate/check（263 records）、site:build、check、pack:check 与 example:install 均通过；微信 CLI 实际启动 IDE server，但 touristappid 查询报 code 10，未将其伪报为 build-npm 成功。"],
+    "browser": ["重新构建官网后实际点击根 Trigger：关闭 aria-expanded=false、再打开=true；iPhone 15 393px PreviewDevice 内 Trigger left/right=886/991.05px，Badge left/right=939/965.05px，完整落在 Trigger 内；页面 overflow=0，PreviewDevice viewport=369/369px。通过真实外观菜单切换深色后 Badge 仍为 static、完整在 Trigger 内且页面 overflow=0，随后恢复浅色。"],
+    "deviceRisks": ["合法 AppID 真机仍需确认 PUI Button suffix Slot 中 Badge 的 rpx 尺寸、样式隔离、触摸命中和读屏顺序。"]
+  },
+  "ai": {
+    "summary": "共享 Badge 被放入 Button suffix 时必须明确切换到内联布局，不能沿用附着展示宿主的绝对锚点。",
+    "rules": [
+      "先核对原生 Badge 是否有内容宿主；空宿主的 H5 镜像必须使用 standalone。",
+      "Badge 在 Button suffix 中必须以当前 Trigger 为唯一布局边界，不能让 overflow 裁切掩盖错误锚点。",
+      "修复锚点时继续复用 badgeSample，不得手写私有徽标或用负间距补偿。"
+    ],
+    "tags": ["navigation-menu", "badge", "button-suffix", "anchor", "preview-parity", "clipping"]
+  }
+}

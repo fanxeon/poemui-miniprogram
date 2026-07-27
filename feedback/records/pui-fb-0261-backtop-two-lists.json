@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0261",
+  "title": "BackTop 预览应只保留两个列表并让 FAB 使用安全内距",
+  "scope": "component",
+  "components": ["back-top", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-23",
+  "updatedAt": "2026-07-23",
+  "userGoal": "BackTop 预览只展示两个有区分度的列表；Cell 列表在内容区视觉居中，FAB 保持右下浮动但不得越出编辑预览边距。",
+  "environment": {
+    "surfaces": ["h5-preview", "BackTop showcase", "PreviewDevice"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 http://127.0.0.1:4179/#/components/back-top，在概览预览区观察四个分区。",
+    "修复前除基础用法和显示阈值外还展示形状与文案、主题与定位两个 FAB 舞台，导致列表内容被压缩。",
+    "列表内 FAB 使用右下固定定位，扩展文案可能越过 frame 的内容边界，无法作为列表内真实入口阅读。"
+  ],
+  "expected": "概览只有基础用法和显示阈值两个真实列表；Cell 内容区与 frame 水平中线一致，FAB 保持右下浮动并落在 Cell 的视觉边界内。",
+  "actual": "第一轮修复移除了独立 FAB 舞台，但错误地把“视觉水平居中”理解为 FAB 居中，导致 BackTop 的右下浮动语义丢失。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-23 BackTop 预览澄清", "note": "用户明确指出需要视觉居中的是 Cell 列表；FAB 只需不超出边距，不应位于中心。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "backTopShowcase 只生成基础用法和显示阈值两个列表，已删除 centered 选项与 is-centered class。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?refresh=bt7#/components/back-top · 2026-07-23 · 390x844", "note": "修正 FAB 定位后测得 frame 中线 x=182、首个 Cell 中线 x=176.5，局部滚动条占用约 11px 使 Cell 左偏 5.5px。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "局部滚动区高度为 260px且滚动条不占横向布局；fixed FAB 的 right/bottom 使用 frame padding 与 scroll content gap 之和，对齐 Cell 视觉边界。"}
+  ],
+  "rootCause": "展示任务与工程诊断原先混在同一概览；第一轮修复又把“视觉水平居中”的对象误判为 FAB。撤销居中后，原生滚动条仍占用右侧布局宽度，使 Cell 实际中线左偏。",
+  "decision": {
+    "outcome": "概览收敛为两个真实列表；形状、主题和定位保留在 Props/API，不额外占用预览；局部滚动条不占横向布局，Cell 列表水平居中，FAB 恢复右下定位并使用共享安全内距。",
+    "rationale": "两个列表足以表达滚动和阈值任务；BackTop 的 FAB 是右下浮动入口，视觉居中应由列表内容承担，FAB 只需与 Cell 内容边界一致。",
+    "alternativesRejected": [
+      "继续保留四个分区：会压缩真实列表并重复展示 FAB。",
+      "把 FAB 放在 frame 中心：破坏 BackTop 的右下浮动语义并遮挡主要 Cell 内容。",
+      "用 overflow:hidden 粗暴裁切 FAB：会隐藏阴影和动效，不能替代正确安全内距。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-back-top.js", "feedback/records/pui-fb-0261-backtop-two-lists.json", "docs/components/BACKTOP.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["PUI FAB mirror", "PreviewDevice shadow-safe layout", "BackTop local-scroll runtime"]
+  },
+  "verification": {
+    "tests": ["scripts/test-back-top.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": ["2026-07-23 在 http://127.0.0.1:4179/?refresh=bt7#/components/back-top、390x844 真实路由确认两个 frame 中线与首个 Cell 中线均为 x=182，偏差 0px；可见 FAB 位于右下，距 frame 右/下均为 22px，右边缘与 Cell 右边缘偏差 0px，is-centered 节点为 0。基础列表真实滚动至 scrollTop=320 后 FAB 显示，点击后 scrollTop=0、aria-hidden=true；document/body clientWidth=375、scrollWidth=375。"],
+    "deviceRisks": ["本轮仅修改官网预览；合法 AppID 真机仍需复核 fixed/static、rpx、FAB 触摸命中和样式隔离。"]
+  },
+  "ai": {
+    "summary": "组件概览优先展示真实用户任务；Cell 负责内容视觉居中，FAB 保持右下浮动并遵守安全内距。",
+    "rules": [
+      "概览只保留能表达用户任务的真实示例，组件外观枚举放入 Props/API，不为每个枚举复制舞台。",
+      "先确认用户描述中的视觉对象；不能把 Cell 的居中要求错误应用到 FAB。",
+      "浮动操作的 fixed/static 语义由父级保留，预览几何必须限制在共享 frame 内并与内容边界对齐。",
+      "需要滚动验证的长列表只保留必要分区；释放的设备高度优先给真实内容和可操作空间。"
+    ],
+    "tags": ["back-top", "preview-site", "two-lists", "fab", "centered", "content-area", "390px"]
+  }
+}

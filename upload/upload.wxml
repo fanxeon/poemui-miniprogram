@@ -1,0 +1,91 @@
+<view
+  class="{{rootClass}} {{customClass}}"
+  style="{{rootStyle}}{{customStyle}}"
+  role="group"
+  aria-label="{{semanticLabel}}"
+  aria-disabled="{{disabled}}"
+  aria-busy="{{choosing}}"
+>
+  <view
+    wx:if="{{innerFiles.length}}"
+    class="pui-upload__files pui-upload__files--{{displayTheme}}"
+    style="--pui-upload-columns:{{normalizedColumns}}"
+  >
+    <view
+      wx:for="{{innerFiles}}"
+      wx:key="id"
+      class="pui-upload__file pui-upload__file--{{item.status}}"
+      role="group"
+      aria-label="{{item.name}}"
+    >
+      <view class="pui-upload__visual" aria-hidden="true">
+        <pui-image
+          wx:if="{{item.type === 'image'}}"
+          src="{{item.path}}"
+          mode="aspectFill"
+          width="100%"
+          height="100%"
+          shape="round"
+          aria-label="{{item.name}}缩略图"
+          reduce-motion="{{reduceMotion}}"
+          color-scheme="{{colorScheme}}"
+        />
+        <pui-icon wx:else name="{{item.type === 'video' ? 'video' : 'file'}}" size="40" color-scheme="{{colorScheme}}" />
+      </view>
+
+      <view class="pui-upload__file-body">
+        <view class="pui-upload__file-heading">
+          <view class="pui-upload__file-name">{{item.name}}</view>
+          <pui-tag wx:if="{{item.status !== 'error'}}" content="{{item.statusText}}" theme="{{item.statusTheme}}" variant="outline" size="small" icon="{{item.statusIcon}}" color-scheme="{{colorScheme}}" />
+        </view>
+        <view class="pui-upload__file-meta">
+          <text>{{item.sizeText}}</text>
+        </view>
+        <view wx:if="{{item.status === 'error'}}" class="pui-upload__file-error" role="alert">
+          <pui-icon name="error-circle" size="28" color-scheme="{{colorScheme}}" />
+          <text class="pui-upload__file-message">{{item.message || item.statusText}}</text>
+        </view>
+        <pui-progress
+          wx:if="{{item.status === 'uploading' || item.status === 'paused'}}"
+          percentage="{{item.progress}}"
+          status="{{item.status === 'uploading' ? 'active' : item.status}}"
+          show-info="{{true}}"
+          show-status-icon="{{true}}"
+          stroke-width="8"
+          aria-label="{{item.name}}上传进度"
+          duration="180"
+          reduce-motion="{{reduceMotion}}"
+          color-scheme="{{colorScheme}}"
+        />
+      </view>
+
+      <view class="pui-upload__actions">
+        <pui-button wx:if="{{preview && item.canPreview}}" icon="eye" variant="outline" size="small" shape="square" disabled="{{disabled || choosing}}" aria-label="预览 {{item.name}}" data-index="{{index}}" bind:click="previewFile" />
+        <view wx:if="{{item.status === 'error'}}" class="pui-upload__retry-action">
+          <pui-button content="重试" icon="refresh" theme="default" variant="base" size="small" custom-style="width:120rpx;min-width:120rpx;max-width:120rpx;padding:0;" disabled="{{disabled || choosing}}" aria-label="重试 {{item.name}}" data-index="{{index}}" bind:click="retryFile" />
+        </view>
+        <pui-button wx:if="{{removeBtn}}" icon="delete" theme="danger" variant="outline" size="small" shape="square" disabled="{{disabled || choosing}}" aria-label="移除 {{item.name}}" data-index="{{index}}" bind:click="removeFile" />
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{canAdd && customAdd}}" class="pui-upload__add pui-upload__add--custom" role="button" aria-label="{{addContent}}" bind:tap="chooseFile">
+    <slot name="add"></slot>
+  </view>
+  <view wx:elif="{{canAdd}}" class="pui-upload__add">
+    <pui-button
+      content="{{addContent}}"
+      icon="attachment"
+      theme="primary"
+      variant="outline"
+      block="{{true}}"
+      loading="{{choosing}}"
+      loading-props="{{buttonLoadingProps}}"
+      disabled="{{disabled}}"
+      aria-label="{{addContent}}"
+      reduce-motion="{{reduceMotion}}"
+      bind:click="chooseFile"
+    />
+    <view class="pui-upload__add-hint">{{pickerMode === 'message' ? '微信聊天文件' : '相册或相机媒体'}} · {{innerFiles.length}} / {{normalizedMax}}</view>
+  </view>
+</view>

@@ -1,0 +1,59 @@
+<view class="{{rootClass}} {{customClass}}" style="{{layerStyle}} {{customStyle}}">
+  <view class="pui-dropdown-menu__triggers" role="menubar" aria-label="{{ariaLabel || '下拉菜单'}}">
+    <pui-button
+      wx:for="{{itemViews}}"
+      wx:key="key"
+      custom-class="pui-dropdown-menu__trigger {{item.active ? 'pui-dropdown-menu__trigger--active' : ''}}"
+      variant="text"
+      size="medium"
+      disabled="{{item.disabled}}"
+      aria-label="{{item.label}}：{{item.summary}}"
+      aria-haspopup="menu"
+      aria-expanded="{{item.active}}"
+      data-index="{{index}}"
+      bind:click="onTriggerTap"
+    >
+      <view class="pui-dropdown-menu__trigger-inner">
+        <view class="pui-dropdown-menu__trigger-label">{{item.label}}</view>
+        <view class="pui-dropdown-menu__trigger-summary">{{item.summary}}</view>
+        <pui-icon name="{{item.active ? 'chevron-up' : 'chevron-down'}}" size="26" aria-label="{{item.active ? '收起' : '展开'}}" />
+      </view>
+    </pui-button>
+  </view>
+
+  <view wx:if="{{mounted && showOverlay}}" class="pui-dropdown-menu__mask {{active ? 'pui-dropdown-menu__mask--active' : ''}}" catchtap="onOverlayTap" catchtouchmove="noop"></view>
+  <view wx:if="{{mounted}}" class="pui-dropdown-menu__panel {{active ? 'pui-dropdown-menu__panel--active' : ''}}" role="menu" aria-hidden="{{!active}}" aria-label="{{ariaLabel || '下拉菜单'}}" catchtap="noop">
+    <scroll-view class="pui-dropdown-menu__body" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+      <view wx:if="{{activeItem && activeOptions.length}}" class="pui-dropdown-menu__options">
+        <pui-button
+          wx:for="{{activeOptions}}"
+          wx:key="key"
+          custom-class="pui-dropdown-menu__option {{item.checked ? 'pui-dropdown-menu__option--checked' : ''}}"
+          variant="text"
+          size="medium"
+          block
+          disabled="{{activeItem.disabled || item.disabled || !active}}"
+          role="{{activeItem.multiple ? 'menuitemcheckbox' : 'menuitemradio'}}"
+          aria-checked="{{item.checked}}"
+          aria-label="{{item.label}}"
+          data-index="{{index}}"
+          bind:click="onOptionTap"
+        >
+          <view class="pui-dropdown-menu__option-inner">
+            <view class="pui-dropdown-menu__option-label">{{item.label}}</view>
+            <pui-icon wx:if="{{item.checked}}" name="check" size="28" aria-label="已选中" />
+          </view>
+        </pui-button>
+      </view>
+      <view wx:else class="pui-dropdown-menu__empty"><pui-empty description="暂无可选项" icon="inbox" reduce-motion="{{reduceMotion}}" /></view>
+      <slot></slot>
+    </scroll-view>
+    <view class="pui-dropdown-menu__footer">
+      <slot name="footer"></slot>
+      <view wx:if="{{activeItem && activeItem.multiple}}" class="pui-dropdown-menu__footer-actions">
+        <pui-button size="small" variant="outline" disabled="{{activeItem.disabled || !active}}" bind:click="onResetTap">重置</pui-button>
+        <pui-button size="small" theme="primary" disabled="{{activeItem.disabled || !active}}" bind:click="onConfirmTap">确定</pui-button>
+      </view>
+    </view>
+  </view>
+</view>

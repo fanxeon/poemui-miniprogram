@@ -1,0 +1,127 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0174",
+  "title": "H5 API 表和 DropdownMenu 路由分别引用过缺失的共享 helper",
+  "scope": "global",
+  "components": [
+    "dropdown-menu",
+    "preview-site"
+  ],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "官网 API 表格必须完整显示所有文字，组件路由必须能运行真实预览；不能用静态标题或构建成功掩盖运行时失败。",
+  "environment": {
+    "surfaces": [
+      "h5-preview",
+      "api-reference",
+      "browser"
+    ],
+    "platforms": [
+      "browser"
+    ],
+    "viewports": [
+      "PreviewDevice",
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开 DropdownMenu 实时路由，浏览器曾报 ReferenceError: dialogMotionEasing is not defined，PreviewDevice 不能渲染。",
+    "API Reference 的 renderApiPropsTable 已调用 apiTypeLabel、formatApiDefault、formatApiOptions，但三个函数不存在；API 可选值表头与数据因此无法作为可靠运行态交付。",
+    "这两个共享 helper 缺失不会被只读源码搜索或旧 metadata done 捕捉。"
+  ],
+  "expected": "所有标准组件路由都能渲染，API 由同一份 Prop 定义派生参数、类型、演示初值、可选值和完整说明，浏览器窄屏允许换行而不省略。",
+  "actual": "遗留重构删除了 helper 定义但保留调用点，导致实时 H5 路由/API 可能报错或不可完整展示。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户授权本 Goal 在每个组件完成真实浏览器、Ledger、构建和产物证据后由 agent 自主验收。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/dropdown-menu",
+      "note": "2026-07-20 首次实战观察到 dialogMotionEasing 未定义，预览不能渲染。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "已恢复 dialogMotionEasing，并新增 apiTypeLabel、formatApiDefault、formatApiOptions，由 componentPropDefinitions 生成 API 五列。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-infrastructure-composition.js",
+      "note": "锁定 dialogMotionEasing 存在。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-api-reference-readability.js",
+      "note": "锁定 API 五列、完整换行、枚举/布尔/范围可选值派生和窄屏纵向重排。"
+    }
+  ],
+  "rootCause": "共享 H5 helper 在先前的预览重构中被删除或遗漏，而调用点和覆盖测试没有同步验证定义存在。",
+  "decision": {
+    "outcome": "恢复固定动效 helper；将 API 值展示收敛为独立纯函数，枚举、Boolean、nullable Boolean、范围和无约束分别有明确输出，且在基础设施测试中断言其存在。",
+    "rationale": "API 表和组件预览是全站基础设施，必须由真实 Prop 定义驱动并被路由级浏览器测试覆盖。",
+    "alternativesRejected": [
+      "只在当前 DropdownMenu 分支内内联格式化，会让其他组件继续引用缺失共享能力。",
+      "用 CSS 裁切或默认文本掩盖 API 渲染失败，会违反完整展示合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-api-reference-readability.js"
+    ],
+    "dependencies": [
+      "renderApiPropsTable",
+      "componentPropDefinitions",
+      "PreviewDevice"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-api-reference-readability.js",
+      "scripts/test-design-contracts.js"
+    ],
+    "commands": [
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check",
+      "npm run example:install"
+    ],
+    "browser": [
+      "恢复后刷新 DropdownMenu 路由，标题、Tabs、Props、API 五列与真实 trigger 全部可见并可操作；Chrome 390×844 API 文本自然换行，无省略号或页面级横向溢出。"
+    ],
+    "deviceRisks": [
+      "该问题为 H5 运行态基础设施；微信真机不直接覆盖浏览器 API 表，但仍需合法 AppID 复核组件本体。"
+    ]
+  },
+  "ai": {
+    "summary": "当预览模板引用共享 helper 时，必须同时验证 helper 定义、实时路由和窄屏 API 表，不能把静态构建当成运行态成功。",
+    "rules": [
+      "每次修改预览共享函数后，真实打开受影响路由并查看新控制台错误。",
+      "API 的类型、默认值和可选值必须从 Prop 定义派生，不能另维护裁切版表格。",
+      "API 表格无约束时显示明确的“—”，枚举和 Boolean 用逗号分隔，范围显示边界和步长。"
+    ],
+    "tags": [
+      "preview-site",
+      "api-reference",
+      "runtime-error",
+      "readability",
+      "shared-helper"
+    ]
+  }
+}

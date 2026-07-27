@@ -1,0 +1,23 @@
+<view wx:if="{{normalizedItems.length}}" class="{{rootClass}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="region" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}">
+  <scroll-view class="pui-steps__scroller" scroll-x="{{normalizedLayout === 'horizontal' && scrollable}}" enable-flex enhanced show-scrollbar="{{false}}">
+    <view class="pui-steps__list" role="list">
+      <view wx:for="{{normalizedItems}}" wx:key="id" class="pui-steps__item pui-steps__item--{{item.status}} {{item.active ? 'pui-steps__item--active' : ''}}" role="listitem" aria-current="{{item.active ? 'step' : 'false'}}" aria-disabled="{{readonly || disabled || item.disabled}}">
+        <pui-button custom-class="pui-steps__button" custom-style="position:absolute;inset:0;width:100%;height:100%;min-height:100%;padding:0;" theme="default" variant="text" surface="transparent" size="small" disabled="{{readonly || disabled || item.disabled}}" aria-label="{{item.ariaLabel}}" color-scheme="{{colorScheme}}" data-index="{{item.index}}" bind:click="onSelect" />
+        <view wx:if="{{index < normalizedItems.length - 1}}" class="pui-steps__line {{item.lineActive ? 'pui-steps__line--active' : ''}}" aria-hidden="true"></view>
+        <view class="pui-steps__body" aria-hidden="true">
+          <view class="pui-steps__indicator">
+            <pui-icon wx:if="{{item.icon}}" name="{{item.icon}}" size="24" color-scheme="{{colorScheme}}" />
+            <pui-icon wx:elif="{{item.status === 'finish'}}" name="check" size="24" color-scheme="{{colorScheme}}" />
+            <pui-icon wx:elif="{{item.status === 'error'}}" name="error-circle" size="24" color-scheme="{{colorScheme}}" />
+            <text wx:elif="{{theme !== 'dot'}}">{{item.displayIndex}}</text>
+          </view>
+          <view class="pui-steps__copy">
+            <text class="pui-steps__title">{{item.title}}</text>
+            <text wx:if="{{item.content}}" class="pui-steps__content">{{item.content}}</text>
+            <text wx:if="{{item.extra}}" class="pui-steps__extra">{{item.extra}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0400",
+  "title": "首页浮层分区排序与首显自动展开时机不符合阅读动线",
+  "scope": "component",
+  "components": ["miniprogram-home", "collapsible", "popup", "popover", "sheet", "action-sheet", "dropdown-menu", "overlay"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-26",
+  "updatedAt": "2026-07-26",
+  "userGoal": "首页应把浮层紧接在基础组件之后，并在用户进入首页两秒后自动展开该分区，同时不覆盖用户的手动选择。",
+  "environment": {
+    "surfaces": ["miniprogram/pages/index/index", "微信小程序首页"],
+    "platforms": ["wechat-miniprogram", "Wechat DevTools simulator"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 miniprogram/pages/index/index。",
+    "修复前“浮层”位于反馈之后，且 data.activeCatalogSection 初始就是 overlay，页面首显立刻展开目录。",
+    "用户无法先阅读首页品牌与目录层级，再看到浮层分区的渐进展开。"
+  ],
+  "expected": "“浮层”紧接“基础组件”；首页初显全部目录收起，页面可见满 2000ms 后展开“浮层”；用户提前切换任一分区、页面隐藏或卸载时，未触发的自动动作必须取消。",
+  "actual": "浮层分区排序靠后，且页面数据初值立即展开浮层，没有用户可见的首显等待和取消边界。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-26 当前任务要求", "note": "用户明确要求浮层移至基础组件下方，并在进入首页两秒后自动展开。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "CATALOG_SECTIONS 将 overlay 放在 basic 后，页面以 HOME_OVERLAY_AUTO_EXPAND_DELAY 安排、取消和执行受控展开。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "专项测试锁定分区顺序、空初始状态、2000ms 定时器、自动回写和手动切换取消。"},
+    {"kind": "file", "ref": "docs/MINIPROGRAM_HOME.md", "note": "首页当前目录顺序和首显交互规则已同步为可检索合同。"}
+  ],
+  "rootCause": "首页目录顺序直接由 CATALOG_SECTIONS 固定，初始展开状态直接写为 overlay；此前没有首页首显延迟和用户优先的定时器控制。",
+  "decision": {
+    "outcome": "将 overlay 移至 basic 后，初始 activeCatalogSection 设为空，并在 onShow 后以 2000ms 定时器受控写回 overlay；用户分区操作、onHide 和 onUnload 都取消未完成的定时器。",
+    "rationale": "页面进入先让用户建立首页层级，再显示浮层入口；由页面维护唯一展开状态和取消条件，继续复用 Collapsible 的公开 open/change 合同。",
+    "alternativesRejected": [
+      "继续以 overlay 作为 data 初值：无法满足两秒后展开的节奏。",
+      "改为默认展开基础组件：会改变用户指定的自动目标，也不能表达延迟行为。",
+      "在 Collapsible 内增加首页私有延迟：会把页面导航策略错误下沉到通用组件。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/index/index.js", "scripts/test-miniprogram-home.js", "docs/MINIPROGRAM_HOME.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md", "feedback/records/pui-fb-0400-home-overlay-section-entry-timing.json"],
+    "dependencies": ["collapsible", "微信 Page onShow/onHide/onUnload 生命周期"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": ["node scripts/test-miniprogram-home.js", "npm run feedback:generate", "npm run feedback:check", "npm run check", "npm run site:build", "npm run pack:check", "微信开发者工具 build-npm"],
+    "browser": ["源码和 Node 生命周期模拟覆盖了等待、自动展开和用户操作优先；本轮微信开发者工具 390px 的实际两秒首显与触摸取消仍待验证。"],
+    "deviceRisks": ["iOS/Android 真机仍需确认首页首显计时、后台前台切换、Collapsible 动效与读屏提示。"]
+  },
+  "ai": {
+    "summary": "首页目录顺序属于页面信息架构；首显自动展开必须由页面受控状态实现，并让用户先行操作取消自动行为。",
+    "rules": [
+      "首页目录排序只修改 CATALOG_SECTIONS，Search 必须继续由同一数据源扁平化生成。",
+      "延迟展开前 activeCatalogSection 保持空值；不得以默认展开或 CSS 动画伪造等待。",
+      "任何手动分区 change、onHide 和 onUnload 都必须清理首页自动展开定时器，不能覆盖用户的当前选择。"
+    ],
+    "tags": ["miniprogram", "home", "catalog", "overlay", "collapsible", "entry-timing", "user-priority"]
+  }
+}

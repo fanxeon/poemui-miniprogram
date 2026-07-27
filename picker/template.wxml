@@ -1,0 +1,31 @@
+<view class="pui-picker__body pui-picker__body--{{stateType}}">
+  <picker-view
+    wx:if="{{stateType === 'content'}}"
+    class="pui-picker__view"
+    style="height:{{viewportHeight}}rpx"
+    value="{{draftIndexes}}"
+    indicator-style="{{indicatorStyle}}"
+    mask-style="background:transparent;"
+    disabled="{{pickerBlocked}}"
+    bindchange="onPickerChange"
+    aria-label="{{semanticLabel}}选项"
+  >
+    <picker-view-column wx:for="{{columnsData}}" wx:for-item="column" wx:for-index="columnIndex" wx:key="columnIndex" class="pui-picker__column">
+      <view
+        wx:for="{{column}}"
+        wx:for-item="option"
+        wx:for-index="optionIndex"
+        wx:key="value"
+        class="pui-picker__item {{draftIndexes[columnIndex] === optionIndex ? 'pui-picker__item--selected' : ''}} {{option.disabled ? 'pui-picker__item--disabled' : ''}}"
+        style="height:{{itemHeightValue}}rpx;line-height:{{itemHeightValue}}rpx"
+        aria-disabled="{{option.disabled}}"
+      >
+        <pui-icon wx:if="{{option.icon}}" name="{{option.icon}}" size="28" />
+        <text class="pui-picker__item-text">{{option.label}}</text>
+      </view>
+    </picker-view-column>
+  </picker-view>
+  <pui-loading wx:elif="{{stateType === 'loading'}}" loading="{{true}}" text="{{loadingText}}" reduce-motion="{{reduceMotion}}" />
+  <view wx:elif="{{stateType === 'error'}}" class="pui-picker__state"><pui-empty description="{{errorText}}" icon="error-circle" reduce-motion="{{reduceMotion}}" /><pui-button wx:if="{{showRetry}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled}}" bind:click="onRetryTap">{{retryText}}</pui-button></view>
+  <pui-empty wx:else description="{{emptyText}}" icon="inbox" reduce-motion="{{reduceMotion}}" />
+</view>

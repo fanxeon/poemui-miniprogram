@@ -1,0 +1,130 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0403",
+  "title": "快速样式需要可直接使用的精选色彩 utility",
+  "scope": "component",
+  "components": ["style-utilities", "color", "config-provider", "preview-site", "miniprogram"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "快速样式需要像 text-blue、bg-red 一样可直接写入 class 的颜色能力，但色板应由 PoemUI 统一挑选和治理，而不是无边界复制完整色阶。",
+  "environment": {
+    "surfaces": ["native-wxml", "h5-preview", "docs"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查 common/style/utilities.wxss，原有颜色工具只覆盖品牌色、四种业务语义色和中性角色。",
+    "尝试直接组合 pui-text-blue、pui-bg-red 或柔和色面，旧生成目录与小程序/H5 预览均无对应 class。"
+  ],
+  "expected": "提供一组克制、主题感知、可直接挂在 View/Text 上的精选色彩 utility；小程序、H5、Color 文档和生成目录同源，并明确装饰色与业务状态的边界。",
+  "actual": "用户只能借用 info/danger 等业务语义类，或在页面写私有固定色，容易把装饰意图误写成状态并造成跨主题漂移。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前任务对话",
+      "note": "用户明确提出 text-blue、bg-red 等快速样式，并授权 PoemUI 对色彩质量把关扩充。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "8 个精选色相各提供 light/dark 的基础、solid、soft 三层 Token。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/utilities.wxss",
+      "note": "新增 32 个静态 utility：每个色相包含文字、实色背景、柔和背景和边框。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-style-utilities.js",
+      "note": "锁定 562 个发布类、32 个精选色彩 utility、Token 双主题覆盖和 H5 生成链。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/styles/index.wxss",
+      "note": "文字预览根不再固定 color，避免页面私有规则覆盖 pui-text-* 的真实结果。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-style-utilities-page.js",
+      "note": "锁定 pui-text-pink 进入真实 Text 目标，并禁止预览根重新声明 color。"
+    }
+  ],
+  "rootCause": "原色彩合同只有中性色和业务语义色，没有为非状态的页面强调建立受控色相层；首次实现后，小程序文字预览根又以页面私有 color 覆盖了同特异性的 pui-text-* utility，造成状态已写入但计算样式未生效。",
+  "decision": {
+    "outcome": "选取 red、orange、amber、emerald、teal、blue、violet、pink 八个色相；每个只公开 pui-text-{hue}、pui-bg-{hue}、pui-bg-{hue}-soft、pui-border-{hue} 四类，共 32 个 utility。",
+    "rationale": "八色足以覆盖常见强调表达，同时避免 50–950 全量色阶膨胀。基础 Token 服务文字与边框，solid 服务饱和色面，soft 服务可承载普通内容的弱背景；深浅色分别调校。H5 从生成的 theme 数据注入同名变量，不维护第二份色板。",
+    "alternativesRejected": [
+      "复制完整 Tailwind 50–950 色阶：选择成本和发布体积过高，也会削弱 PoemUI 的统一视觉。",
+      "在 utility 或 H5 CSS 中写死十六进制色：会产生双端与深浅色漂移。",
+      "直接复用 success/warning/danger/info：把装饰意图错误绑定到业务状态。",
+      "只在快速样式页面手写样例 class：不能随 npm 安装，也不属于组件级能力。",
+      "让实色背景自动附带文字颜色：单一 utility 会隐式覆盖消费者前景，组合不可控。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/style/theme.wxss",
+      "common/style/utilities.wxss",
+      "scripts/style-utilities-preview-schema.js",
+      "scripts/generate-miniprogram-style-utilities-catalog.js",
+      "miniprogram/common/data/style-utilities-catalog.js",
+      "preview/style-utilities-data.js",
+      "preview/style-utilities.css",
+      "preview/app.js",
+      "miniprogram/pages/styles/index.wxss",
+      "metadata/components.js",
+      "docs/STYLE_UTILITIES.md",
+      "docs/COLOR.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "scripts/test-style-utilities.js",
+      "scripts/test-miniprogram-style-utilities-page.js"
+    ],
+    "dependencies": ["theme-tokens", "config-provider", "style-utilities-generator"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-style-utilities.js",
+      "scripts/test-miniprogram-style-utilities-page.js",
+      "scripts/test-preview-css-token-contract.js"
+    ],
+    "commands": [
+      "npm run site:build",
+      "npm run check",
+      "npm run example:install",
+      "npm run pack:check",
+      "wechat-cli build-npm"
+    ],
+    "browser": [
+      "2026-07-27 H5 390x844：点击 pui-bg-red 后，深色计算背景为 rgb(185, 28, 28)、Shell --pui-color-red-solid=#b91c1c；通过外观 Switch 切至浅色后，同一目标变为 rgb(220, 38, 38)、Token=#dc2626，选择态保持 pui-bg-red。",
+      "2026-07-27 H5 390x844：pui-text-blue 计算 color=rgb(37, 99, 235)；pui-border-violet 自动组合 0.5px solid scaffold，计算边框为 rgb(124, 58, 237)。document clientWidth/scrollWidth=375/375，utility 文档根无横向溢出。",
+      "2026-07-27 H5 390x844 全量预览复核：字体分类逐项提供 8 个文字色，背景分类逐项提供 8 个实色、8 个柔和背景和 8 个边框色；实际点击此前未展示的 pui-bg-amber-soft 后深色背景为 rgb(43, 33, 12)，点击 pui-text-orange 后文字为 rgb(251, 146, 60)，浏览器 warning/error 为 0。",
+      "2026-07-27 微信开发者工具热重载复核 pui-text-pink：修复前页面状态已有 pui-text-body-md pui-font-medium pui-text-pink，但节点计算色仍为 rgb(24, 24, 27)；删除预览根私有 color 后，选中态为 true，节点计算色变为浅色 Token rgb(190, 24, 93)。未重启开发者工具。",
+      "2026-07-27 H5 Color：从真实 PUI Select 选择 accent 后，浅深两列各显示 24 个 Token，red/violet 均包含基础、solid、soft；浏览器 warning/error 为 0。",
+      "2026-07-27 构建链：site:build 生成 562 类；完整 check、example:install、pack:check、feedback:check 通过。当前微信开发者工具工程 build-npm 为 1182ms、warnings=[]；源码/dist/示例安装/真实 miniprogram_npm 的 utilities/theme WXSS 逐字节一致。"
+    ],
+    "deviceRisks": [
+      "H5 390px 的 light/dark 计算样式、边框 scaffold、Color accent 色板和零横向溢出已验证；微信开发者工具与 iOS/Android 真机的色彩管理、字体抗锯齿和可读性仍需合法 AppID 最终复核。",
+      "实色背景不自动设置文字颜色，消费者必须显式选择可读前景；普通正文优先使用 soft 背景。"
+    ]
+  },
+  "ai": {
+    "summary": "Style Utilities 提供八个精选色相的文字、实色背景、柔和背景和边框，全部读取 light/dark Theme Token。",
+    "rules": [
+      "装饰与轻量强调使用 pui-text-{hue}、pui-bg-{hue}、pui-bg-{hue}-soft、pui-border-{hue}，不要在页面写固定色。",
+      "错误、警告、成功和信息状态必须继续使用 danger/warning/success/info，不得用相近 hue 冒充业务语义。",
+      "pui-bg-{hue} 不隐式设置文字颜色；承载普通正文时优先使用 pui-bg-{hue}-soft 并显式组合中性文字。",
+      "新增颜色必须先进入 theme.wxss 的 light/dark Token，再由生成链同步小程序与 H5；禁止逐端硬编码。",
+      "小程序目录与 H5 分类浏览器都必须逐项暴露全部 32 个精选色彩 utility，不能只保留少数代表色预览。",
+      "预览目标不得用页面私有声明覆盖正在演示的属性；状态里出现 utility class 不等于视觉已实装，必须读取运行态计算样式。"
+    ],
+    "tags": ["style-utilities", "color", "theme-token", "h5-parity", "wxss"]
+  }
+}

@@ -1,0 +1,21 @@
+<view wx:if="{{rendered}}" class="{{rootClass}} {{innerVisible ? 'pui-alert--visible' : ''}} {{customClass}}" style="{{motionStyle}} {{customStyle}}" role="alert">
+  <view class="pui-alert__main">
+    <pui-icon wx:if="{{showIcon}}" class="pui-alert__icon" name="{{iconName}}" size="44" color="{{iconColor}}" color-scheme="{{colorScheme}}" />
+    <view class="pui-alert__body">
+      <view wx:if="{{title}}" class="pui-alert__title">{{title}}</view>
+      <view wx:if="{{description}}" class="pui-alert__description">{{description}}</view>
+      <view class="pui-alert__slot"><slot></slot></view>
+    </view>
+  </view>
+  <pui-button
+    wx:if="{{closable}}"
+    custom-class="pui-alert__close"
+    variant="text"
+    size="extra-small"
+    shape="square"
+    icon="{{closeIcon}}"
+    aria-label="关闭提示"
+    color-scheme="{{colorScheme}}"
+    catch:click="onClose"
+  />
+</view>

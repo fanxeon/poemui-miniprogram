@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0417",
+  "title": "Stepper 独立页主控件未在内容区水平居中",
+  "scope": "component",
+  "components": ["stepper", "miniprogram"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "Stepper 的独立演示在页面内容区水平居中，同时保持 minus/value/plus 的组件内部几何。",
+  "environment": {
+    "surfaces": ["stepper component page"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390x844"],
+    "themes": ["light"]
+  },
+  "reproduction": [
+    "进入 Stepper 独立页。",
+    "三组 Stepper 都贴近内容左侧，主控件视觉重心偏左。",
+    "Stepper 内部三段坐标正确，问题只发生在页面透明父布局。"
+  ],
+  "expected": "三组 Stepper 在各自可用内容宽度内水平居中，组件自身宽度、事件和三段固定轨不变。",
+  "actual": "共享 component-page__inline 只设置 align-items，没有设置水平居中。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/stepper/index.wxml", "note": "三组演示均挂载 component-page__inline--center。"},
+    {"kind": "file", "ref": "miniprogram/styles/component-page.wxss", "note": "透明共享修饰类只增加 justify-content:center。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-form-pages.js", "note": "锁定三组 Stepper 页面居中入口。"},
+    {"kind": "browser", "ref": "/tmp/poemui-stepper-after-1.png", "note": "390x844 微信模拟器确认三组 Stepper 的中心与页面内容区中心一致。"}
+  ],
+  "rootCause": "页面复用面向文本和组合内容的左对齐 inline 布局，没有为唯一主控件声明水平视觉中心。",
+  "decision": {
+    "outcome": "新增透明页面修饰类 component-page__inline--center，并只用于 Stepper 三组演示。",
+    "rationale": "把页面排版职责留在页面父级，不修改 Stepper 公共组件的默认布局或消费者调用方式。",
+    "alternativesRejected": [
+      "让 Stepper 根自动 margin:auto 会强迫所有消费者居中。",
+      "修改 Stepper 内部三段轨无法解决页面位置。",
+      "写三个页面私有魔法 margin 会随宽度漂移。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/components/stepper/index.wxml", "miniprogram/styles/component-page.wxss", "scripts/test-miniprogram-form-pages.js", "docs/components/STEPPER.md"],
+    "dependencies": ["component page shared layout"]
+  },
+  "verification": {
+    "tests": ["scripts/test-stepper.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信开发者工具 build-npm"],
+    "browser": ["微信开发者工具 390x844 截图确认三组 Stepper 居中，minus/value/plus 顺序未改变。"],
+    "deviceRisks": ["iOS/Android 真机字体缩放与不同窗口宽度下的视觉中心仍需复核。"]
+  },
+  "ai": {
+    "summary": "独立页主控件居中属于页面父级职责，不得写回 Stepper 基础组件。",
+    "rules": [
+      "页面居中使用透明 Flex 修饰类。",
+      "不得改动 Stepper 公共根的默认 margin 或 width。",
+      "居中后仍需确认三段固定轨的微信运行态顺序。"
+    ],
+    "tags": ["stepper", "alignment", "component-page", "wechat-runtime"]
+  }
+}

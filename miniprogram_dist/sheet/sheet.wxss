@@ -1,0 +1,34 @@
+.pui-popup.pui-sheet { --pui-sheet-header-inset: var(--pui-surface-inset); right: 0; bottom: 0; left: 0; width: 100%; max-width: 100%; max-height: calc(100vh - 24rpx); gap: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; transform: translateY(calc(100% + var(--pui-sheet-drag-offset, 0rpx))); transition: opacity var(--pui-sheet-duration) var(--pui-sheet-ease), transform var(--pui-sheet-duration) var(--pui-sheet-ease), background-color var(--pui-sheet-duration) var(--pui-sheet-ease), border-color var(--pui-sheet-duration) var(--pui-sheet-ease); }
+.pui-popup.pui-sheet.pui-popup--entered { transform: translateY(var(--pui-sheet-drag-offset, 0rpx)); }
+.pui-popup.pui-sheet--dragging { transition-duration: 0ms; }
+.pui-popup.pui-sheet--disabled { opacity: .64; }
+/* Popup supplies the overlay and Sheet Surface. Its default content inset must
+   not stack with Sheet's Header/Body/Footer insets. */
+.pui-popup.pui-sheet .pui-popup__content { display: flex; box-sizing: border-box; width: 100%; min-width: 0; max-height: none; flex-direction: column; padding: 0; overflow: hidden; }
+.pui-sheet__header { position: relative; display: grid; box-sizing: border-box; width: 100%; min-width: 0; }
+.pui-sheet__handle-area { position: absolute; z-index: 1; top: var(--pui-space-xs); left: 50%; display: flex; box-sizing: border-box; width: var(--pui-space-step-24); min-height: var(--pui-space-step-12); align-items: center; justify-content: center; transform: translateX(-50%); }
+.pui-sheet__handle-area--draggable { cursor: grab; }
+.pui-sheet__handle { width: 64rpx; height: 8rpx; background: var(--pui-text-placeholder); border-radius: var(--pui-radius-round); transition: width var(--pui-sheet-duration) var(--pui-sheet-ease), background-color var(--pui-sheet-duration) var(--pui-sheet-ease); }
+.pui-sheet--dragging .pui-sheet__handle { width: 88rpx; background: var(--pui-text-secondary); }
+.pui-sheet__header-row { display: grid; box-sizing: border-box; width: 100%; min-width: 0; min-height: 80rpx; grid-template-columns: minmax(0, 1fr) 72rpx; align-items: center; gap: var(--pui-content-gap); padding: var(--pui-sheet-header-inset) var(--pui-sheet-header-inset) 0; }
+.pui-sheet__title-area { min-width: 0; }
+.pui-sheet__header-action { display: grid; box-sizing: border-box; width: 72rpx; min-width: 72rpx; height: 72rpx; align-items: center; justify-items: end; }
+.pui-sheet__title { overflow: hidden; font-size: 30rpx; font-weight: 700; line-height: 42rpx; text-overflow: ellipsis; white-space: nowrap; }
+.pui-sheet__description { display: -webkit-box; margin-top: var(--pui-space-step-1); overflow: hidden; color: var(--pui-text-secondary); font-size: 24rpx; line-height: 34rpx; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.pui-sheet__body { position: relative; display: grid; box-sizing: border-box; width: 100%; min-width: 0; overflow: hidden; }
+.pui-sheet__content { display: block; grid-area: 1 / 1; box-sizing: border-box; width: 100%; min-width: 0; max-height: 0; overflow: hidden; padding: 0 var(--pui-panel-padding); opacity: 0; pointer-events: none; transform: translateY(8rpx); transition: max-height var(--pui-sheet-duration) var(--pui-sheet-ease), padding var(--pui-sheet-duration) var(--pui-sheet-ease), opacity var(--pui-sheet-duration) var(--pui-sheet-ease), transform var(--pui-sheet-duration) var(--pui-sheet-ease); }
+.pui-sheet__content--active { max-height: 1200rpx; padding-top: var(--pui-panel-padding-compact); padding-bottom: var(--pui-panel-padding-compact); opacity: 1; pointer-events: auto; transform: translateY(0); }
+.pui-sheet__fallback { color: var(--pui-text-secondary); font-size: 26rpx; line-height: 40rpx; white-space: pre-wrap; word-break: break-all; }
+.pui-sheet__state { position: absolute; inset: 0; display: flex; box-sizing: border-box; align-items: center; justify-content: center; gap: var(--pui-space-sm); padding: var(--pui-space-normal); opacity: 0; pointer-events: none; transform: translateY(8rpx); transition: opacity var(--pui-sheet-duration) var(--pui-sheet-ease), transform var(--pui-sheet-duration) var(--pui-sheet-ease); }
+.pui-sheet__state--error { flex-direction: column; }
+.pui-sheet__state--active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.pui-sheet__footer { display: flex; box-sizing: border-box; width: 100%; min-width: 0; flex: 0 0 auto; align-items: stretch; padding: 0 var(--pui-panel-padding) var(--pui-panel-padding); border-top: 1rpx solid var(--pui-glass-border); }
+.pui-sheet__footer-content { display: flex; box-sizing: border-box; width: 100%; min-width: 0; flex: 1 1 auto; flex-direction: column; align-items: stretch; justify-content: flex-start; }
+
+/* Sheet is a Popup-backed Surface. Equal spacing only changes its direct
+   header/body/footer rhythm; drag handle and consumer Slot internals remain
+   on their own contracts. */
+.pui-spacing--equal .pui-sheet__header-row { padding: var(--pui-surface-inset); }
+.pui-spacing--equal .pui-sheet__content--active { padding-top: 0; padding-bottom: var(--pui-surface-inset); }
+.pui-spacing--equal .pui-sheet__footer { padding: 0 var(--pui-surface-inset) var(--pui-surface-inset); }
+.pui-popup.pui-sheet { box-shadow: var(--pui-shadow-edge-bottom); }

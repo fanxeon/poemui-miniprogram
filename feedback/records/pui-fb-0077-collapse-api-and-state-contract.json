@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0077",
+  "title": "Collapse 字符串化值、重复事件与自由区域扩张多面板合同",
+  "scope": "component",
+  "components": ["collapse", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Collapse 应参考 TDesign 的多面板主干，使用克制、可理解的数组值、互斥、主题、面板组合和真实状态；基础用法零 bind，事件只在 API 与受控专项示例出现。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["393px PreviewDevice", "1280x720", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Collapse 的20 Props、5 Events、2 Slots和4个业务方法：value 同时接受数组与单值，theme 同时公开五种状态色，customHeader/customFooter、duration/easing、input/change/open/close 和 open/close/toggle/retry 并行存在。",
+    "旧值身份通过 String(value) 比较，数字0、布尔false、空字符串和字符串0会发生碰撞；受控/非受控事件与方法因此无法可靠表达原始值。",
+    "对照 TDesign Miniprogram 1.15.3 Collapse/CollapsePanel 的文档与安装源码，确认主干是数组 value/defaultValue、defaultExpandAll、expandIcon、expandMutex、default/card 和 change，而不是状态色与重复生命周期事件。"
+  ],
+  "expected": "Collapse 使用严格原始值数组、受控与非受控边界、default/card、单一 change、真实 retry 和一个面板 Generic；状态与动效统一，不由 Header/Footer、私有时长或业务方法扩张。",
+  "actual": "旧合同把值别名、状态色、自由区域、动效旋钮、重复事件和便捷方法同时公开，且字符串化身份会吞掉本轮必须验证的0/false/空字符串边界。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API，并授权完整门禁后由 agent 自主连续验收。"},
+    {"kind": "file", "ref": "collapse/collapse.js", "note": "最终固定17 Props、2 Events、0 Slots、1 collapse-panel Generic和0业务方法；值身份使用 typeof:value。"},
+    {"kind": "file", "ref": "collapse/collapse.wxml", "note": "Trigger 保持组件自有 role=button，内容常驻测量，状态组合 PUI Empty/Loading，Generic 默认 PUI Cell。"},
+    {"kind": "test", "ref": "scripts/test-collapse.js", "note": "专项锁定17/2/0/1/0、严格值、受控退控、互斥、迟到数据、禁用、状态优先级和180ms/1ms。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/collapse", "note": "真实面板点按同时展开数字0与布尔false，互斥后只保留数字0；键盘Space、全局禁用、错误Retry保持、空态恢复和Generic均生效。"}
+  ],
+  "rootCause": "旧设计没有先固定 Collapse 是数组展开值与面板结构根，后续把状态色、业务区域、调试动效、重复事件和便利方法不断累加，并使用字符串化比较掩盖类型边界。",
+  "decision": {
+    "outcome": "收敛为17 Props、2 Events、0 Slots、1 Generic、0业务方法；value/defaultValue 只接受数组并严格匹配string/number/boolean，theme只保留default/card，内容差异交给collapse-panel Generic，删除customHeader/customFooter、duration/easing、input/open/close和公开方法。",
+    "rationale": "多面板组件的核心是展开值、互斥、Trigger、Content与状态；expanded 已足以区分展开和收起，change 足以表达一次值请求，业务布局和额外操作应放在组件外。",
+    "alternativesRejected": [
+      "机械复制 TDesign 的独立 CollapsePanel 目录会增加安装注册和父子关系复杂度；items + Generic 可保留同一语义并更适合当前数据驱动仓库。",
+      "保留旧事件和方法并标记deprecated仍会诱导 AI 同时生成 input/change/open/close 和 selectComponent 调用。",
+      "继续允许单值 value 会让互斥模式形成第二种类型合同，并扩大0/false/空字符串歧义。"
+    ]
+  },
+  "impact": {
+    "files": ["collapse/collapse.js", "collapse/collapse.wxml", "collapse/collapse.wxss", "collapse/collapse.json", "metadata/components.js", "docs/COMPONENT_API.md", "docs/components/COLLAPSE.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-collapse.js"],
+    "dependencies": ["pui-cell", "pui-icon", "pui-loading", "pui-empty", "theme behavior", "selector query"]
+  },
+  "verification": {
+    "tests": ["scripts/test-collapse.js", "scripts/test-component-semantic-contracts.js", "scripts/test-core-state-composition.js"],
+    "commands": ["npm run precheck", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "受控数字0初始展开；真实点按布尔false后两项同时展开，互斥开关把值规整为数字0，数字0与false没有字符串碰撞。",
+      "Space 键改变同一 Trigger；disabled Props 真实回写aria-disabled且移除tabindex；error优先、Retry后仍保持error，empty恢复后重新出现5个真实面板。",
+      "card与collapse-panel Generic同时生效，五个面板内容均调用共享Cell镜像；reduceMotion把内容行内过渡从500ms改为1ms。"
+    ],
+    "deviceRisks": [
+      "微信 SelectorQuery 的首次测量时序、rpx取整、Generic样式隔离、tap反馈和辅助技术朗读仍需合法AppID真机复核。",
+      "旧消费者若使用单值value、状态色theme、Header/Footer Slot、input/open/close或公开方法，需要迁移到数组value、default/card、组件外组合与change。"
+    ]
+  },
+  "ai": {
+    "summary": "Collapse 只围绕严格数组值、多面板互斥、default/card和collapse-panel Generic建模。",
+    "rules": [
+      "value/defaultValue 只接受数组，值身份固定为typeof+value；禁止String(value)比较。",
+      "只发布change/retry，不恢复input/open/close或公开业务方法；受控模式等待父级回写。",
+      "业务Header/Footer与额外操作放在组件外；面板结构差异使用collapse-panel Generic。",
+      "状态优先级固定error > loading > content > empty，Retry保持error直到父级真实更新。"
+    ],
+    "tags": ["collapse", "accordion", "api", "tdesign", "controlled-state", "strict-value", "generic"]
+  }
+}

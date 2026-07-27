@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0057",
+  "title": "Cell 概览以工程诊断代替用户用法且 API 缺少 Events 和 Slots",
+  "scope": "component",
+  "components": ["cell", "preview-site", "documentation", "example"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Cell 官网应像成熟组件文档一样按真实用户任务分区，基础 WXML 最小且零 bind，API 完整展示真实 Props、Events、Slots，示例可以直接筛选常见用法。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-workspace", "example", "documentation"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开旧 Cell 概览：主内容混入实例方法按钮、事件日志、运行态和参数诊断，缺少基础、多行、状态、组合四类直观比较。",
+    "旧 metadata/API 没有登记 Cell Events 和 Slots，文档却宣称多类事件与内容区域，官网与真实实现不一致。",
+    "旧 _example 同时绑定完整事件并调用 selectComponent 实例方法，基础使用者无法看到最小调用。"
+  ],
+  "expected": "概览按基础用法、多行与内容、状态与选择、组合内容分区；第一项由当前 Props 真实驱动。API 显示 28 Props、7 Events、7 Slots；基础代码固定为零 bind 的单行 Cell。",
+  "actual": "旧预览把工程诊断当作主要内容，API 缺失事件/Slot 表格，示例过度绑定，无法快速筛选常见 Cell 用法。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "cellShowcase 现按四类用户任务输出，第一项真实交互，组合项调用 Badge/Tag/Button helper。"},
+    {"kind": "file", "ref": "metadata/components.js", "note": "Cell 已登记 28 Props、7 Events、7 Slots和两组属性说明。"},
+    {"kind": "file", "ref": "_example/miniprogram/pages/components/index.wxml", "note": "示例改为基础、多行、受控选择、导航、loading 与 Slot 组合，不再展示全量 bind 和实例方法。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/cell", "note": "四个分区、7 个 Cell 根、真实选择和右侧 Button 已实际点击；API 28/7/7 全文显示。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/cell", "note": "390px innerWidth=390/clientWidth=375/documentWidth=375，PreviewDevice=351，Cell=282/280，工具栏=375/375，API clipped=[]。"},
+    {"kind": "test", "ref": "scripts/test-cell.js", "note": "专项合同锁定分区、最小 WXML、无诊断方法、API/示例/兼容说明一致性。"}
+  ],
+  "rootCause": "旧 Cell 以覆盖内部状态机为演示目标，没有把概览、API 和属性页按用户学习路径拆分；metadata 也没有作为 Events/Slots 的完整真相源维护。",
+  "decision": {
+    "outcome": "重建概览为四个真实分区，删除方法/事件诊断卡；基础 WXML 固定 `<pui-cell title=\"单行标题\" />`。补齐 API Events/Slots、专属合同、H5 兼容说明和克制的真实示例。",
+    "rationale": "Cell 使用者首先需要比较单行、多行、状态和组合；事件与完整参数应在 API 检索，不能挤入基础示例。",
+    "alternativesRejected": [
+      "保留方法面板会继续鼓励绕过父级状态写回。",
+      "把 7 个事件全部绑进基础示例会重复 Button 已明确淘汰的过度展示。",
+      "只更新文档不改 H5 和示例会留下三套互相冲突的事实源。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "preview/components-data.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/CELL.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxss", "scripts/test-cell.js"],
+    "dependencies": ["buttonSample", "badgeSample", "tagSample", "loadingComponent", "makeUsageCode", "API reference renderer"]
+  },
+  "verification": {
+    "tests": ["scripts/test-cell.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-api-reference-readability.js"],
+    "commands": ["npm run catalog:generate", "npm run precheck", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "四段标题和 7 个 Cell 根可见；当前 Cell 点击与 Enter 切换，组合 Button 把 Badge 2 更新为已检查。",
+      "基础复制结果严格为 `<pui-cell title=\"单行标题\" />` 且无 bind；当前效果复制只输出非默认 Props 和环境注释。",
+      "API 四张表为 28 Props、7 Events、7 Slots，桌面和 390px 的 190 个单元格均无 ellipsis、nowrap 或内容溢出。",
+      "light/dark、border、shadow、frostedGlass、largeRadius、gradient 和 Esc/焦点均真实操作，完成后恢复标准浅色组合；浏览器 warn/error 为 0。"
+    ],
+    "deviceRisks": [
+      "具名 Slot 在微信端的默认/追加顺序、right catchtap 与内部 Button 事件隔离仍需开发者工具和真机复核。",
+      "微信 build-npm 因 Service Port 关闭尚未补回 miniprogram_npm，安装端状态保留 pending-cli。"
+    ]
+  },
+  "ai": {
+    "summary": "Cell 概览按用户任务分区，完整事件和 Slot 只进入 API，基础示例永远最小且零 bind。",
+    "rules": [
+      "Cell 概览固定为基础、多行与内容、状态与选择、组合内容，禁止实例方法和事件日志卡。",
+      "第一项必须消费当前 Props，固定项只用于比较，不能覆盖用户调参结果。",
+      "基础 WXML 只输出单行 title，任何 bind 仅出现在事件专项示例或 API。",
+      "复杂内容必须调用 PUI Badge、Tag、Button helper，不得手写静态占位。"
+    ],
+    "tags": ["cell", "preview", "api", "events", "slots", "example", "390px"]
+  }
+}

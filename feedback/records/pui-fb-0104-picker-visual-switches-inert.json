@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0104",
+  "title": "Picker Popup 阴影和毛玻璃外观开关实际不生效",
+  "scope": "component",
+  "components": ["picker", "preview-site", "config-provider"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Picker 必须在深浅色、边框、阴影、毛玻璃、大圆角和渐变背景开关下真实变化且不改变布局。",
+  "environment": {
+    "surfaces": ["h5-preview", "appearance-menu"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 Picker 概览依次开启阴影、毛玻璃、大圆角、渐变和深色，并关闭边框。",
+    "修复前 Popup panel 的 box-shadow 读取未定义 --shadow-card，计算值为 none；背景固定 --surface-solid，backdrop-filter 仍为 none。",
+    "开关 ARIA 与 App Shell data 属性正确，证明问题在组件消费 Token 而非设置入口。"
+  ],
+  "expected": "Popup 使用 preview-surface/preview-shadow-card/preview-blur/preview-border；每项开关能从计算样式证明，390px 几何不变。",
+  "actual": "阴影和毛玻璃开关对 Picker panel 没有实际视觉作用，形成只切 data 属性的伪验收。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件由 agent 完成证据闭环后自主连续验收。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/picker", "note": "修复后深色果味组合计算为 rgba(39,39,42,.74)、blur(18px)、双层阴影、20px 顶圆角和透明边界。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/picker", "note": "恢复浅色标准组合后为白色 Surface、无 blur/shadow、12px 顶圆角和可见中性边界。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "Picker panel 改为消费 preview 系列实际外观 Token，并保持 inline 单一 Surface。"},
+    {"kind": "test", "ref": "scripts/test-picker.js", "note": "锁定 Picker 对 preview surface/shadow/blur Token 的消费。"}
+  ],
+  "rootCause": "Picker 私有 CSS 引用了未定义的 --shadow-card，并使用不会随毛玻璃开关变化的 --surface-solid，也没有消费 --preview-blur。",
+  "decision": {
+    "outcome": "Popup panel 统一消费 --preview-surface、--preview-border、--preview-shadow-card 和 --preview-blur；inline 外壳保持透明避免双层 Surface。",
+    "rationale": "共享 preview Token 已承载站点视觉设置，组件直接消费可同时保证持久化、主题与布局稳定。",
+    "alternativesRejected": [
+      "新增 Picker 私有 data-* 选择器会复制全局偏好逻辑。",
+      "只验证 App Shell data 属性无法证明组件实际变化。",
+      "让 inline 外壳和 panel 同时有 Surface 会形成面板套面板。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/styles.css", "scripts/test-picker.js"],
+    "dependencies": ["preview appearance tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-picker.js", "scripts/test-preview-css-token-contract.js", "scripts/test-preview-theme-coverage.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "六项 PUI Switch 均通过真实点击切换；深色与浅色 panel 文字/Surface 对比清晰。",
+      "边框关闭只透明化颜色并保持 1px 盒模型；阴影、blur 与大圆角计算值真实改变。",
+      "开启全部视觉选项时页面横向溢出仍为 0。"
+    ],
+    "deviceRisks": [
+      "微信 WebView 对 backdrop-filter 不提供同等能力；小程序端按 WXSS/Provider 能力降级，需目标机型确认视觉性能。"
+    ]
+  },
+  "ai": {
+    "summary": "外观验收必须读取 Picker panel 计算样式，不能只看 App Shell data 属性。",
+    "rules": [
+      "Picker H5 Surface 消费 preview-surface/shadow/blur/border Token，禁止私有未定义变量。",
+      "每项视觉开关必须读取代表 panel 的计算样式。",
+      "inline Picker 只能有一个可见 Surface。"
+    ],
+    "tags": ["picker", "appearance", "shadow", "frost", "theme", "computed-style"]
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0090",
+  "title": "Checkbox 旧多值别名与重复事件方法扩张公开合同",
+  "scope": "component",
+  "components": ["checkbox", "documentation", "example", "npm-dist"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Checkbox 应参考 TDesign 的常用选择主干，基础用法保持基础，公开合同只保留单一选中所有权、真实值标识、三态、状态门禁、内容和可访问性。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844 browser", "351px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 Checkbox 的 checked/value 双状态入口、defaultChecked/defaultValue 别名、click/input/change 重复事件、loading/custom 等外观开关和命令式方法。",
+    "旧 value 被当作 Boolean 状态而非条目原始标识，无法稳定表达 value=0、false 或空字符串的组选择。",
+    "对照 TDesign Miniprogram 1.15.3 Checkbox 文档、props.js、type.d.ts、JS、WXML 与 WXSS，确认单项主干应围绕 checked/defaultChecked、value、三态、内容、状态和单一 change。"
+  ],
+  "expected": "Checkbox 只有一套选中所有权和一次 change 请求；value 始终是原始条目标识，0、false、空字符串均不得被真假值归一化。",
+  "actual": "旧合同把值标识与选中状态混为一谈，并同时暴露重复事件、视觉开关和命令式入口，使父级回写与组合语义不明确。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项参考 TDesign 收敛 API、分区 demo、基础 WXML 不堆 bind，并授权剩余队列由 agent 自主连续验收。"},
+    {"kind": "file", "ref": "checkbox/checkbox.js", "note": "最终固定19 Props、1 change Event、3 Slots、0 Methods，checked/defaultChecked 区分受控和非受控，value 保留原始标量。"},
+    {"kind": "file", "ref": "checkbox/checkbox.wxml", "note": "根只保留一个 role=checkbox 操作区，内部组合 PUI Icon，并提供 default/label/content 三个内容通道。"},
+    {"kind": "test", "ref": "scripts/test-checkbox.js", "note": "专项锁定19/1/3/0、0/false/空字符串、退控连续性、三类门禁、事件 detail、源码/dist/示例和旧 API 禁入。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/?battle=checkbox-v7#/components/checkbox", "note": "属性页真实验证 checked 受控回写、indeterminate 清除，以及 value=0、false、空字符串完整往返；API 为19 Props、1 Event、3 Slots。"}
+  ],
+  "rootCause": "旧实现按可枚举能力追加状态别名、重复事件和方法，没有先定义单项选中所有权与原始值身份的边界。",
+  "decision": {
+    "outcome": "公开合同收敛为19 Props、1 Event、3 Slots、0 Methods；checked/defaultChecked 唯一负责状态，value 唯一负责原始身份，删除重复值别名、click/input、loading/custom、私有动效和全部实例方法。",
+    "rationale": "单一声明式所有权能与 CheckboxGroup、Form 和父级回写组合，原始标量身份则覆盖真实数据边界而不制造字符串化碰撞。",
+    "alternativesRejected": [
+      "继续让 value 同时表达 checked 会使 false 和空字符串永远无法成为合法条目标识。",
+      "保留 click/input/change 三事件会把一次选择请求复制成多个公开入口。",
+      "增加 toggle/check/reset 方法会绕过父级受控写回。"
+    ]
+  },
+  "impact": {
+    "files": ["checkbox/checkbox.js", "checkbox/checkbox.wxml", "checkbox/checkbox.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/CHECKBOX.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-checkbox.js"],
+    "dependencies": ["pui-icon", "checkbox-group relation", "form-field", "parent controlled writeback"]
+  },
+  "verification": {
+    "tests": ["scripts/test-checkbox.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "checked=true 后实点组件，父级真实回写为 false；indeterminate=true 实点后变为 checked 且 mixed 清除。",
+      "value=0、false、空字符串分别在状态反馈中保持 0、false 和双引号空值，未被字符串化或当作缺省。",
+      "readonly、disabled 与 contentDisabled 分别阻断对应操作边界，只有可写 mark 发布真实 change。"
+    ],
+    "deviceRisks": [
+      "微信自定义组件 observer、wx://form-field、Slot 投影、受控父级 setData 时序和辅助技术朗读仍需合法 AppID 真机复核。",
+      "rpx 标记几何、Icon 字体抗锯齿和系统低动效读取需目标设备确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Checkbox 使用19/1/3/0合同；checked 管状态，value 管原始身份，唯一请求事件是 change。",
+    "rules": [
+      "基础 Checkbox WXML 禁止 bind；事件只进入 API Events 或事件专项示例。",
+      "value 的0、false和空字符串都是合法身份，不得用于判断是否选中。",
+      "受控 Checkbox 只发布请求并等待父级回写，退控必须保留最后渲染状态。",
+      "禁止恢复重复状态别名、click/input、loading/custom 或命令式状态方法。"
+    ],
+    "tags": ["checkbox", "api", "tdesign", "controlled", "raw-value", "events"]
+  }
+}

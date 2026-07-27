@@ -1,0 +1,98 @@
+<pui-popup
+  visible="{{visible}}"
+  placement="center"
+  close-btn="{{false}}"
+  close-on-overlay-click="{{showOverlay}}"
+  show-overlay="{{showOverlay}}"
+  z-index="{{resolvedZIndex}}"
+  aria-label="{{semanticLabel}}"
+  reduce-motion="{{reduceMotion}}"
+  overlay-props="{{overlayProps}}"
+  prevent-scroll-through="{{preventScrollThrough}}"
+  using-custom-navbar="{{usingCustomNavbar}}"
+  bind:visible-change="onPopupVisibleChange"
+>
+  <view class="{{rootClass}} {{customClass}}" style="{{customStyle}}" role="document" aria-label="{{semanticLabel}}">
+    <slot name="top"></slot>
+
+    <view wx:if="{{hasHeader}}" class="pui-dialog__header">
+      <view class="pui-dialog__header-action pui-dialog__header-action--start"></view>
+      <view class="pui-dialog__heading">
+        <view wx:if="{{title}}" class="pui-dialog__title">{{title}}</view>
+        <slot name="title"></slot>
+      </view>
+      <view class="pui-dialog__header-action pui-dialog__header-action--end">
+        <pui-button
+          wx:if="{{normalizedCloseBtn}}"
+          custom-class="pui-dialog__close"
+          variant="text"
+          shape="circle"
+          size="small"
+          icon="{{normalizedCloseBtn.icon}}"
+          disabled="{{normalizedCloseBtn.disabled}}"
+          aria-label="{{normalizedCloseBtn.ariaLabel}}"
+          reduce-motion="{{reduceMotion}}"
+          bind:click="onCloseTap"
+        />
+      </view>
+    </view>
+    <slot wx:else name="title"></slot>
+
+    <view class="pui-dialog__body">
+      <view wx:if="{{content}}" class="pui-dialog__content">{{content}}</view>
+      <slot name="content"></slot>
+    </view>
+
+    <slot name="middle"></slot>
+
+    <view class="pui-dialog__footer pui-dialog__actions pui-dialog__actions--{{normalizedButtonLayout}}" style="{{normalizedButtonLayout === 'horizontal' ? 'grid-template-columns:repeat(' + footerColumnCount + ',minmax(0,1fr));' : ''}}">
+      <pui-button
+        wx:for="{{normalizedActions}}"
+        wx:key="key"
+        block
+        theme="{{item.theme}}"
+        variant="{{item.variant}}"
+        size="{{item.size}}"
+        shape="{{item.shape}}"
+        icon="{{item.icon}}"
+        loading="{{item.loading}}"
+        disabled="{{item.disabled}}"
+        aria-label="{{item.ariaLabel}}"
+        reduce-motion="{{reduceMotion}}"
+        data-index="{{index}}"
+        bind:click="onAction"
+      >{{item.content}}</pui-button>
+      <slot name="actions"></slot>
+      <pui-button
+        wx:if="{{!normalizedActions.length && normalizedCancelBtn}}"
+        block
+        theme="{{normalizedCancelBtn.theme}}"
+        variant="{{normalizedCancelBtn.variant}}"
+        size="{{normalizedCancelBtn.size}}"
+        shape="{{normalizedCancelBtn.shape}}"
+        icon="{{normalizedCancelBtn.icon}}"
+        loading="{{normalizedCancelBtn.loading}}"
+        disabled="{{normalizedCancelBtn.disabled}}"
+        aria-label="{{normalizedCancelBtn.ariaLabel}}"
+        reduce-motion="{{reduceMotion}}"
+        bind:click="onCancel"
+      >{{normalizedCancelBtn.content}}</pui-button>
+      <slot name="cancel-btn"></slot>
+      <pui-button
+        wx:if="{{!normalizedActions.length && normalizedConfirmBtn}}"
+        block
+        theme="{{normalizedConfirmBtn.theme}}"
+        variant="{{normalizedConfirmBtn.variant}}"
+        size="{{normalizedConfirmBtn.size}}"
+        shape="{{normalizedConfirmBtn.shape}}"
+        icon="{{normalizedConfirmBtn.icon}}"
+        loading="{{normalizedConfirmBtn.loading}}"
+        disabled="{{normalizedConfirmBtn.disabled}}"
+        aria-label="{{normalizedConfirmBtn.ariaLabel}}"
+        reduce-motion="{{reduceMotion}}"
+        bind:click="onConfirm"
+      >{{normalizedConfirmBtn.content}}</pui-button>
+      <slot name="confirm-btn"></slot>
+    </view>
+  </view>
+</pui-popup>

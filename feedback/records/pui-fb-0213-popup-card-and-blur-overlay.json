@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0213",
+  "title": "Popup 需要明确区分卡片留白、贴边呈现与遮罩模糊",
+  "scope": "component",
+  "components": ["popup", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-22",
+  "updatedAt": "2026-07-22",
+  "userGoal": "Popup 默认保留当前左右留白的卡片布局，card=false 时去除外侧间距；blur-overlay=true 时遮罩必须呈现真实模糊。",
+  "environment": {
+    "surfaces": ["miniprogram", "h5-preview", "component-contract"],
+    "platforms": ["browser", "node", "wechat"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Popup 官网预览，在属性面板保留默认 card=true 并打开面板，可见 Surface 与 PreviewDevice 左右和底部保留 12px 留白。",
+    "将 card 切换为 false 后再次打开，之前实现没有公开 Prop，无法令 Bottom Surface 贴合左右和底部边缘。",
+    "将 blur-overlay 切换为 true 后，之前实现只允许 overlayProps.backgroundColor，遮罩没有可验证的 backdrop-filter。"
+  ],
+  "expected": "card 默认保留现有 24rpx / 12px 卡片安全距离；card=false 只取消弹出边缘的外侧距离并保留内容内边距。blurOverlay=true 且 showOverlay=true 时，完整遮罩使用可计算的 backdrop-filter，不影响 Popup Surface 或全局毛玻璃设置。",
+  "actual": "Popup 的五向定位规则写死了卡片 inset，公开 Props 和 H5 属性面板没有贴边选择；遮罩仅支持安全背景色，无法表达真实的遮罩模糊。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-22 当前任务", "note": "用户明确要求新增 card 默认卡片/false 无间距，以及 blur-overlay=true 真实模糊。"},
+    {"kind": "file", "ref": "popup/popup.js", "note": "新增 card 和 blurOverlay 真实原生属性，并为根节点输出 card/edge 布局类。"},
+    {"kind": "file", "ref": "popup/popup.wxml", "note": "遮罩节点按 blurOverlay 真实挂载模糊 class，未以提示文字代替效果。"},
+    {"kind": "file", "ref": "popup/popup.wxss", "note": "新增五向贴边规则与 --pui-popup-overlay-blur backdrop-filter。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 属性面板、镜像 class 和 Props 默认值与 WXML 同源。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "元素选择 Inspector 的 Popup 打开操作与遮罩映射显式保留 card、placement、showOverlay、blurOverlay，避免上下文筛选把已公开 Props 隐藏。"},
+    {"kind": "file", "ref": "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "note": "记录 2026-07-22 TDesign 在线核验：其 Popup 不公开 card 或遮罩模糊 Prop，本项是 PoemUI 明确扩展。"},
+    {"kind": "test", "ref": "scripts/test-popup.js", "note": "专项测试锁定默认 card、贴边 class、遮罩 blur class、Token、H5 镜像和文档合同。"}
+  ],
+  "rootCause": "原 Popup 只把默认卡片 inset 作为内部 WXSS 定位细节，且 OverlayProps 只承载安全背景色，缺少可组合、可文档化的视觉意图字段；初次接入后，元素选择 Inspector 的通用操作/遮罩字段白名单又把这两个公开字段过滤，导致用户无法在选中触发器或遮罩时发现并编辑它们。",
+  "decision": {
+    "outcome": "公开 card:Boolean=true 与 blurOverlay:Boolean=false。card=false 将五向 Surface 贴合相应屏幕边缘；blurOverlay=true 仅为已渲染遮罩应用 --pui-popup-overlay-blur。元素选择 Inspector 中，Popup 打开操作公开 card/placement/showOverlay/blurOverlay，遮罩公开 blurOverlay，二者均走同一 Props 回写路径。",
+    "rationale": "默认完全保留既有观感，贴边不会破坏 Header/Content/Footer 的语义间距；独立遮罩 Token 使模糊可真实验证，并避免把显式 Popup 效果错误绑定到全局毛玻璃偏好。",
+    "alternativesRejected": [
+      "用 overlayProps.backgroundColor 的半透明色伪造模糊：颜色不会产生背景失焦，无法满足真实效果。",
+      "让 card=false 同时删除 Content padding：贴边是 Surface 定位，不是内容密度配置，会破坏三段结构。",
+      "把 blurOverlay 作为全局外观开关的别名：消费者无法按一个 Popup 显式控制遮罩，且会产生跨组件副作用。"
+    ]
+  },
+  "impact": {
+    "files": ["popup/popup.js", "popup/popup.wxml", "popup/popup.wxss", "common/style/theme.wxss", "preview/app.js", "preview/styles.css", "metadata/components.js", "scripts/test-popup.js", "docs/COMPONENT_API.md", "docs/components/POPUP.md", "docs/UI_DESIGN_CONTRACT.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md"],
+    "dependencies": ["popup-placement", "popup-overlay", "preview-prop-panel", "visual-token-contract"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project /Users/fanx/Documents/poemUI 小程序组件库/_example"],
+    "browser": ["2026-07-22 在 H5 #/components/popup 的 390x844 真实点击入口、关闭按钮并切换属性：默认 card=true 时 Bottom Surface 左/右/底 inset 均为 12px、遮罩 backdropFilter=none；card=false + blurOverlay=true 后同一真实入口打开，Surface class 包含 pui-popup-preview--edge，左/右/底 inset 均为 0px，遮罩计算 backdropFilter=blur(10px)，document/body 宽均为 375px（innerWidth=390），无页面级横向溢出。浏览器 console error/warn 为空。", "2026-07-22 在元素选择模式真实点选 Popup 的“打开弹层”按钮：右侧 Inspector 显示 card、placement、showOverlay、blurOverlay；在 Inspector 内实际写入 card=false、blurOverlay=true，返回常规模式并打开，Surface 左右 inset=0px、遮罩计算 backdropFilter=blur(10px)，证明上下文 Inspector 与预览使用同一回写路径。"],
+    "deviceRisks": ["微信 WebView 对 backdrop-filter 的合成性能、fixed 遮罩、rpx 贴边圆角和安全区仍需合法 AppID 真机确认；touristappid 失败时不得手工伪造 miniprogram_npm。"]
+  },
+  "ai": {
+    "summary": "Popup 的卡片/贴边属于同一 Surface 的定位语义，遮罩模糊必须是遮罩的真实 CSS 效果。",
+    "rules": [
+      "新增 Popup card 视觉变体时，默认值必须保持当前发布布局，card=false 只移除外侧 inset，不可删 Content padding。",
+      "blurOverlay 必须仅作用于 showOverlay=true 的完整遮罩，并以 backdrop-filter 计算样式验收，不能用半透明颜色或提示文字伪造。",
+      "五个 placement 都要有 card 与 edge 的明确几何规则，贴边角归零、非贴边角保留语义圆角。",
+      "H5 Props 面板、WXML、API、合同和专项测试必须使用同一字段名与默认值。",
+      "元素选择 Inspector 的角色白名单不能因目标是触发器或遮罩而隐藏会直接改变该组件呈现的公开 Props；至少要对相应组件的打开操作和遮罩进行实测。"
+    ],
+    "tags": ["popup", "card", "edge-to-edge", "blur-overlay", "backdrop-filter", "api-contract"]
+  }
+}

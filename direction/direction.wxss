@@ -1,0 +1,20 @@
+.pui-direction {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  color: inherit;
+  opacity: 1;
+  transition: opacity var(--pui-direction-duration, 250ms) var(--pui-direction-ease, cubic-bezier(0.2, 0, 0, 1));
+}
+
+.pui-direction--ltr { direction: ltr; }
+.pui-direction--rtl { direction: rtl; }
+.pui-direction--align-left { text-align: left; }
+.pui-direction--align-right { text-align: right; }
+.pui-direction--align-center { text-align: center; }
+.pui-direction--block { display: block; width: 100%; }
+.pui-direction--inline-block { display: inline-block; width: auto; }
+.pui-direction--flex { display: flex; width: 100%; }
+.pui-direction--inline-flex { display: inline-flex; width: auto; }
+.pui-direction--changing { opacity: .62; }
+.pui-direction__content { overflow-wrap: anywhere; white-space: pre-wrap; }

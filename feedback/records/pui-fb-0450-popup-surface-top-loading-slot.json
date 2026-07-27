@@ -1,0 +1,95 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0450",
+  "title": "Popup 内的 TopLoading 错贴在 Content 顶部",
+  "scope": "component",
+  "components": ["popup", "top-loading"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-27",
+  "userGoal": "更新公告的顶部加载轨必须贴住 Popup 面板顶边，并成为可复用的组件级组合能力。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开我的页更新公告 Popup，并在云请求期间观察 TopLoading 的纵向位置。"
+  ],
+  "expected": "TopLoading 从 Popup Surface 的顶边框开始，受 Surface 圆角裁切且不改变 Header、Content、Footer 布局。",
+  "actual": "TopLoading 被放进 Content，只能从 Content 内距后的顶部开始，和 Popup 顶边框之间存在明显距离。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-27 当前对话",
+      "note": "用户明确要求顶部加载位于 Popup 顶边框。"
+    },
+    {
+      "kind": "file",
+      "ref": "popup/popup.wxml",
+      "note": "surface-top Slot 位于 Surface 内且先于 Header。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "公告 TopLoading 通过 Popup surface-top Slot 投影。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-popup.js",
+      "note": "专项测试锁定 Slot 顺序、Surface 定位与裁切以及 H5 镜像。"
+    }
+  ],
+  "rootCause": "Popup 只有 Header、Content、Footer 内容轨，没有公开的 Surface 顶边附着点，页面因此把绝对定位 TopLoading 错放进 Content。",
+  "decision": {
+    "outcome": "Popup 新增 surface-top Slot；Surface 统一提供相对定位和圆角裁切，TopLoading 状态仍由消费者真实请求控制。",
+    "rationale": "顶边反馈是独立 Surface 的可复用结构能力，不应依赖页面知道 Popup 的内部 padding 或圆角。",
+    "alternativesRejected": [
+      "页面以负位移越过 Content 内距会绑定 Popup 私有几何。",
+      "把 TopLoading 内建为 Popup Prop 会错误扩张 Popup 的业务状态。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "popup/popup.wxml",
+      "popup/popup.wxss",
+      "metadata/components.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/me/index.wxml",
+      "scripts/test-popup.js"
+    ],
+    "dependencies": ["pui-top-loading"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js", "scripts/test-miniprogram-me-page.js", "scripts/test-top-loading.js"],
+    "commands": [
+      "node scripts/test-popup.js",
+      "node scripts/test-miniprogram-me-page.js",
+      "node scripts/test-top-loading.js",
+      "npm run feedback:generate",
+      "npm run feedback:check"
+    ],
+    "browser": [
+      "H5 390×844 真实打开 Bottom Popup 后，Panel 为 x=25/y=265.039/325×290px，Surface 为 x=26/y=266.039/323×288px，surface-top 与共享 TopLoading 均为 x=26/y=266.039/323×2px；TopLoading 与 Surface 顶边完全同坐标，Surface 计算 position=relative、overflow=hidden，document client/scrollWidth=375/375，console warning/error=0。",
+      "微信开发者工具 npm 构建 cost=1193ms、warnings=[]；源码、miniprogram_dist、miniprogram_npm 的 Popup WXML/WXSS SHA256 分别三路一致。当前模拟器会话打开 pages/me/index 时出现既有 wx://not-found 且页面节点为空，未以空白截图冒充小程序几何通过。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机仍需确认具名 Slot 投影、4rpx 轨道抗锯齿、圆角裁切和请求快速完成时的动效。"
+    ]
+  },
+  "ai": {
+    "summary": "Surface 顶部反馈必须由容器公开附着点，不得由 Content 或页面私有定位模拟。",
+    "rules": [
+      "Popup TopLoading 只能放入 surface-top Slot。",
+      "Popup 负责定位和裁切，消费者负责真实加载状态。",
+      "surface-top 不占布局高度，也不承接标题、操作栏或第二个 Surface。"
+    ],
+    "tags": ["popup", "top-loading", "surface-top", "slot"]
+  }
+}

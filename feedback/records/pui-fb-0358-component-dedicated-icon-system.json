@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0358",
+  "title": "已落地组件在首页复用近似图标，浮层语义难以辨识",
+  "scope": "component",
+  "components": ["icon", "miniprogram-home", "button", "divider", "popup", "popover", "sheet", "action-sheet", "dropdown-menu", "overlay"],
+  "type": "design-decision",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-25",
+  "updatedAt": "2026-07-25",
+  "userGoal": "为真实小程序现有的九个组件独立页设计可辨识的 PoemUI Roundline 图标，并经 pui-icon 的唯一生成链路在首页与 Icon 资源页正式提供。",
+  "environment": {
+    "surfaces": ["miniprogram-home", "miniprogram-icon-page", "h5-icon-library", "npm-icon-font-catalog"],
+    "platforms": ["wechat-miniprogram-webview", "wechat-devtools", "browser"],
+    "viewports": ["20rpx", "32rpx", "56rpx", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 miniprogram/pages/index/index.js 的基础组件与浮层目录。",
+    "观察 Button、Divider、Icon 仍分别复用 component、minus、spark；Popup、Popover、Sheet、ActionSheet、DropdownMenu、Overlay 分别复用 panel-bottom、chat、layers、list-bullet、filter、layers。",
+    "Sheet 与 Overlay 同为 layers，Popup/Popover 与通用聊天或面板图形没有稳定的组件级差异，用户无法仅凭目录图形辨认真实目的地。",
+    "首轮专属稿又同时描绘视口、面板、拖手、连接线或多行内容；用户明确反馈“线条太多，没有一个能用”，因此首轮工程验证不能作为视觉通过证据。",
+    "第二版整体获得“好一点”的反馈，但 Popup 的前面板与错层背板仍容易被读成 Copy/Layers；用户要求继续精进 Popup。",
+    "开放视口角标方案仍然过于抽象；用户进一步明确 Popup 应为后方竖向手机，并由下面上来的较小方形卡片覆盖，像真实 Popup 的层级。"
+  ],
+  "expected": "九个独立页使用同一份 pui-icon manifest 中的专属稳定名称；新增 components / 组件 分类，浮层家族通过贴边、锚点、面板位置、操作行和焦点遮罩建立清晰差异；单枚最多 3 个可见图元，Popup 使用后方竖向手机和由下覆盖其局部的较小方形卡片，不为页面维护第二份图标数组。",
+  "actual": "初始首页把多个不同组件映射到相近通用图标；首轮专属稿把组件说明图压入 24×24，整体被用户否决；第二版 Popup 的局部错层背板仍有复制/叠层歧义，随后的开放角标又没有直接表达真实手机与 Popup 卡片的覆盖关系。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-25 当前 Goal", "note": "用户指定九个公开名称、Roundline 几何、浮层家族辨识边界和唯一生成链路。"},
+    {"kind": "user-report", "ref": "2026-07-25 当前对话", "note": "用户否决首轮九项视觉稿，明确指出线条太多、没有一个可用并要求全部重画。"},
+    {"kind": "user-report", "ref": "2026-07-25 当前对话 Popup 复核", "note": "用户认为第二版好一点，并明确指出 Popup 还可以继续精进。"},
+    {"kind": "user-report", "ref": "2026-07-25 当前对话 Popup 结构确认", "note": "用户明确要求以竖向手机为后层，并由下方较小方形卡片覆盖手机局部，像真实 Popup。"},
+    {"kind": "user-report", "ref": "2026-07-25 当前对话最终确认", "note": "用户在查看手机叠卡版九宫格、微信与 390px 验收结论后明确回复“确认”，完成本记录的最终视觉验收。"},
+    {"kind": "file", "ref": "scripts/generate-icons.js", "note": "components 分类、九个稳定 Lucide sourceAlias、光学校正和九宫格辨识稿均由唯一生成脚本维护。"},
+    {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "首页九个真实目录项改为对应的专属 pui-icon 名称。"},
+    {"kind": "file", "ref": "assets/component-icons-preview.svg", "note": "生成的黑白九宫格用于复核 Popup/Popover、Popup/Overlay、Sheet/ActionSheet、Icon/component、Divider/minus 的成对差异。"},
+    {"kind": "test", "ref": "scripts/test-icon.js", "note": "专项锁定 209 图标、17 分类、九个来源、Roundline SVG 合同、Icon Font 目录与九宫格生成物。"}
+  ],
+  "rootCause": "初始首页只按通用近似语义选图；首轮修复没有建立小尺寸轮廓预算；后续先沿用 Copy/Layers 的错层语法、再使用开放视口角标，均没有直接复现用户心智中的手机视口与 Popup 卡片覆盖关系。",
+  "decision": {
+    "outcome": "保留 components / 组件 分类和九个公开名称，以每枚最多 3 个可见图元的减线几何生成；Popup 改为一条中断式竖向手机轮廓与一张从右下方覆盖的较小方形卡片。继续以锁定 lucide-static 骨架结合 take、append、transform 生成 SVG、Icon Font 目录、H5 数据和九宫格辨识稿。",
+    "rationale": "manifest 仍是小程序、H5、npm 和首页唯一可复现的图标真相源；竖向长方形建立手机视口语义，较小方卡建立前景 Popup，手机右边与底边在遮挡处中断，从而用两个图元直接表达真实层级且不产生穿透线。",
+    "alternativesRejected": [
+      "继续在首页复用 layers、filter、chat 或 panel-bottom，不能满足组件级语义和浮层家族辨识。",
+      "只对首轮稿做路径微调，仍会保留视口、面板和内容三层竞争，无法回应用户的整体否决。",
+      "继续使用完整或局部错层双面板，即使只有两个 SVG 图元，也仍容易被读成复制或叠层。",
+      "使用开放视口角标围绕中央卡片，虽然减线但仍然抽象，不能直接表达用户指定的手机与 Popup 覆盖关系。",
+      "在首页或 Icon 页维护私有 SVG/名称数组，会与 npm Icon Font 目录漂移。",
+      "手工编辑 assets/icons-src、Icon Font 目录或 H5 数据，破坏唯一生成链路和发布可复现性。"
+    ]
+  },
+  "impact": {
+    "files": ["scripts/generate-icons.js", "assets/icons-src/manifest.json", "icon/icon-font-catalog.js", "preview/icons-data.js", "assets/component-icons-preview.svg", "miniprogram/pages/index/index.js", "miniprogram/pages/components/icon/index.js", "scripts/test-icon.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "docs/components/ICON.md", "docs/ICONS.md"],
+    "dependencies": ["lucide-static@1.24.0", "pui-icon", "poemui-miniprogram/icon/icon-font-catalog", "微信开发者工具 WebView"]
+  },
+  "verification": {
+    "tests": ["scripts/test-icon.js", "scripts/test-miniprogram-home.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-miniprogram-overlay-pages.js"],
+    "commands": ["npm run icons:generate", "node scripts/test-icon.js", "node scripts/test-miniprogram-home.js", "node scripts/test-miniprogram-component-pages.js", "node scripts/test-miniprogram-overlay-pages.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project miniprogram"],
+    "browser": ["首轮 assets/component-icons-preview.svg 的视觉结论已被用户否决，不再计为通过证据；开放视口角标方案也被后续更明确的手机叠卡要求替代。", "最新减线稿已由生成链路重新输出并转为 .audit/component-icons-preview-popup-phone.png 实际查看；Popup 另以 20rpx、32rpx、56rpx 三档栅格图检查竖向手机和前景方卡的遮挡关系，背景边线没有穿过前景卡片。", "390px H5 #/icons 筛选 components 后显示 9 项，document scrollWidth/clientWidth 为 375/375，Popup SVG 计算尺寸为 28×28px、深色 currentColor 为 rgb(250,250,250)，实际 DOM 路径与生成源一致且九项卡片无自身横向溢出；该 H5 视口实际为两列，因此不将其冒充微信 Icon 页三列证据。", "微信开发者工具 RC 2.02.2607161 使用 AppID wx23aa017375535746 的标准 build-npm 成功（1054ms、warnings=[]）；复用现有 iPhone 12/13 Pro 390px 主 WebView 会话热重载，首页浮层目录的 20rpx Popup 已呈现后方竖向手机与右下方小方卡，随后通过真实搜索进入 Icon 页并筛选 popup，56rpx 图标与完整名称均正确显示。"],
+    "deviceRisks": ["iOS 与 Android WebView 真机仍需确认 20rpx 浮层家族辨识、56rpx 长名称换行、深浅色 currentColor、长目录惯性滚动、读屏与点击命中。", "当前项目不支持 Skyline；其布局或命中结果不作为本记录的验收范围。"]
+  },
+  "ai": {
+    "summary": "真实独立页需要专属图标时，先把名称、Lucide 来源和光学调整接入 pui-icon 的唯一 manifest 生成链路，再让首页和 Icon 页消费生成的 Icon Font 目录。",
+    "rules": [
+      "首页组件目录的 icon 必须是当前 pui-icon manifest 中的稳定名称，禁止凭相近语义复用或猜测。",
+      "24×24 组件图标先建立不超过 3 个可见图元的复杂度预算，禁止同时画完整视口、组件外壳和多行内容。",
+      "Popup 固定使用后方竖向手机轮廓与下方覆盖上来的较小方卡；手机被遮挡的边线必须中断，禁止让背景轮廓穿过前景卡片。",
+      "Popup、Popover、Sheet、ActionSheet、DropdownMenu、Overlay 必须分别表达手机上的覆盖卡、锚点连接、底边贴合、操作行、Trigger 下拉和覆盖焦点区。",
+      "新增图标分类时同步生成 manifest、SVG、Icon Font 目录、H5 数据、miniprogram_dist、示例安装和微信 npm 构建，不维护页面私有图标名单。",
+      "没有用户最终视觉确认时，记录保持 resolved / pending-user；微信 CLI 或真机失败必须保留真实错误，不能用静态图或构建替代。"
+    ],
+    "tags": ["icon", "roundline", "components-category", "miniprogram-home", "overlay-family", "lucide", "generation"]
+  }
+}

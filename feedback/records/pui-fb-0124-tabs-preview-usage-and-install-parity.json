@@ -1,0 +1,78 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0124",
+  "title": "Tabs 官网用法代码丢失必要数据绑定且安装专项曾静默跳过",
+  "scope": "component",
+  "components": ["tabs", "preview-site", "documentation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Tabs 官网应按真实用法分区、代码可直接使用、Props 与预览同源、API 全文可读，并真实校验源码、dist 和示例 npm 安装产物。",
+  "environment": {
+    "surfaces": ["h5-preview", "api-reference", "props-panel", "usage-code", "example-install"],
+    "platforms": ["browser", "node", "npm"],
+    "viewports": ["390x844 browser", "349x620 PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧概览是单块工程诊断，堆叠状态、事件和实例方法，缺少基础、样式、徽标禁用与受控边界的可筛选分区。",
+    "首次重建后 makeUsageCode 仍用演示初值判断默认值，导致基础 WXML 省略 items 与 defaultValue，只剩空 pui-tabs 外壳。",
+    "旧基础 WXML 展示多组 bind 和工程控制；API 仍显示 30 Props、5 Events、4 Methods、3 Slots。",
+    "新专项测试最初错误查找 _example/miniprogram/node_modules，文件不存在时又条件跳过，example:install 并未进入真实一致性断言。"
+  ],
+  "expected": "概览固定四个用户用法分区，基础 WXML 包含必要 items/defaultValue 且零 bind；API 完整显示 12/2/1/0；示例安装文件必须存在并与源码、dist 逐字节一致。",
+  "actual": "旧官网偏工程诊断，首次生成代码不可直接运行，API 陈旧；安装测试路径错误且静默跳过，可能制造假通过。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求演示按用法分区、分区标题有清晰间距、代码块可复制、API 文字不得省略，并授权 agent 自主连续验收。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "最终四区 showcase、严格值、真实点击/拖动、per-sample 状态和基于 componentPropDefaults.tabs 的可用 WXML。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "18px 分区 margin、局部横向滚动、主题 Surface、固定 180/1ms 和 390px 无页面级溢出。"},
+    {"kind": "file", "ref": "docs/COMPONENT_API.md", "note": "12 Props、2 Events、1 Slot、0 Methods 与零 bind 基础用法完整记录。"},
+    {"kind": "test", "ref": "scripts/test-tabs.js", "note": "锁定四分区、最小代码、API、兼容说明和真实 _example/node_modules/miniprogram_dist 三层产物强校验。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/tabs", "note": "390px 完成真实点击、受控回写、CUA 拖动、Props、API、主题和所有外观开关，日志为空。"}
+  ],
+  "rootCause": "旧预览复用单实例诊断模板；首次收敛时 usagePropEntries 把 metadata 演示值误当源码默认值；专项测试沿用了错误示例路径并以 existsSync 逃避缺失文件。",
+  "decision": {
+    "outcome": "官网重建基础用法、样式、徽标与禁用、受控边界与滑动四区；Tabs 用法单独比较 componentPropDefaults.tabs；安装路径改为 _example/node_modules/.../miniprogram_dist 并强制存在。",
+    "rationale": "用户需要复制即可运行的最小代码、快速比较真实用法和可靠的安装产物证据；缺失产物不能被当作通过。",
+    "alternativesRejected": [
+      "继续复用 metadata 演示初值作为源码默认值会持续省略调用必需的数据入口。",
+      "在旧诊断块下追加说明不能解决用法筛选和事件噪声。",
+      "existsSync 后跳过安装校验会把路径错误和产物缺失都伪装成成功。",
+      "手工复制 dist 到微信 miniprogram_npm 会掩盖 touristappid 的真实 CLI 阻断。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "metadata/components.js", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/TABS.md", "scripts/test-tabs.js", "scripts/test-design-contracts.js", "scripts/test-shared-subcomponent-geometry.js", "feedback/records/pui-fb-0124-tabs-preview-usage-and-install-parity.json"],
+    "dependencies": ["PreviewDevice", "PUI Tabs", "Props helpers", "previewCodeBlockSample", "npm pack", "example:install"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabs.js", "scripts/test-preview-overview-hierarchy.js", "scripts/test-api-reference-readability.js", "scripts/test-preview-normal-code-card.js"],
+    "commands": ["node scripts/test-tabs.js", "npm run site:build", "npm run check", "npm run feedback:check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "基础代码真实显示 items=\"{{tabItems}}\"、default-value=\"{{defaultTabValue}}\" 和 aria-label，零 bind。",
+      "四分区标题后续 margin-top 为 18px，实际分区间空隙为 26px；390px document clientWidth/scrollWidth 均为 375。",
+      "API 六表行数为 4/5/4/3/3/2，含 12 Props、2 Events、1 Slot、0 Methods；93 个单元格全部至少 14px，无 nowrap、ellipsis 或高度裁切。",
+      "概览/API 页面分类 Tabs 坐标尺寸完全一致；深色与 border/shadow/frost/large-radius/gradient 开关真实生效并跨 reload 持久化，随后恢复浅色标准组合。",
+      "源码、miniprogram_dist、_example npm 安装三层 JS/JSON/WXML/WXSS SHA256 分别一致为 873cc7eb...、c83b6f59...、6b2dc8fb...、62d5cb20...；浏览器日志为空。"
+    ],
+    "deviceRisks": [
+      "微信 build-npm 因 touristappid 不存在报内部 code 10，现有 miniprogram_npm 无 Tabs；必须在合法 AppID 下重新生成并核对。",
+      "微信 rpx 回流、sticky 与 scroll-view、触摸/取消时序、SelectorQuery 测量、读屏和系统低动效仍需真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "Tabs 官网必须给出可直接运行的最小代码、真实分区与强安装校验；演示初值不能冒充组件源码默认值，缺失产物不能静默跳过。",
+    "rules": [
+      "Tabs 用法代码必须以 componentPropDefaults.tabs 判断默认值，items/defaultValue 等必需非默认数据不得丢失。",
+      "基础 WXML 禁止 bind:*；完整 click/change 只进入 API，事件专项示例只绑定当前能力所需事件。",
+      "Tabs 概览固定四个用户用法分区，分区标题保留 18px 上间距。",
+      "示例安装校验必须指向 _example/node_modules/poemui-miniprogram/miniprogram_dist，文件缺失直接失败。",
+      "微信 CLI 失败时保留 pending-cli，不得手工复制产物冒充 build-npm 成功。"
+    ],
+    "tags": ["tabs", "preview", "usage-code", "api-docs", "artifact-parity"]
+  }
+}

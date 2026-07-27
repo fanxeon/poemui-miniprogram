@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0162",
+  "title": "PullRefresh H5 触摸路径曾阻断真实局部滚动",
+  "scope": "component",
+  "components": ["pull-refresh", "preview-site", "responsive-layout", "animation"],
+  "type": "preview-parity",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-20",
+  "updatedAt": "2026-07-20",
+  "userGoal": "H5 必须把 PullRefresh 镜像为可真实滚动的局部容器，只有顶部向下手势才接管刷新；Props、低动效、主题和视觉开关必须作用于实际预览。",
+  "environment": {
+    "surfaces": ["h5-preview", "preview-styles", "property-panel", "appearance-menu", "api-reference"],
+    "platforms": ["browser"],
+    "viewports": ["PreviewDevice 391px", "390px contract"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 H5 根使用 touch-action:pan-x，纵向触摸不再由真实 overflow 容器自然处理；只依赖 Pointer Events 时，浏览器在允许原生滚动的触摸手势中会触发 pointercancel。",
+    "将局部内容滚动到非顶部后再向下拖，或拖动横向手势，历史演示不能同时保持原生滚动和顶部刷新门禁。"
+  ],
+  "expected": "H5 根保留 overflow-y:auto、touch-action:pan-y 与 overscroll-behavior-y:contain；真实 Touch Events 仅在起点为顶部且主轴向下时 preventDefault 并驱动轨道，其他手势交还局部滚动。",
+  "actual": "历史 H5 的触摸策略会把垂直局部滚动错误限制为横向手势路径，导致 H5 与小程序内部 scroll-view 的可用性和门禁漂移。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续组件在完整审计、浏览器、专项测试、文档、Ledger 与构建门禁后自主验收。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "PullRefresh 根已显式 overflow-y:auto、overscroll-behavior-y:contain、touch-action:pan-y；滚动条隐藏仅在 showScrollbar=false 生效。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "真实 pointer 与 touch 监听分流；touchstart 记录 startScrollTop，只有顶部向下 touchmove 调用 preventDefault 并更新同一轨道。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/pull-refresh", "note": "2026-07-20 实测局部区 clientHeight=418、scrollHeight=527；非顶部 scrollTop=100 下拉和 disabled 下拉均不刷新，顶部长拖真实进入 loading。"},
+    {"kind": "test", "ref": "scripts/test-pull-refresh.js", "note": "专项测试禁止 pan-x，锁定 touchmove 路径、局部锚点、180ms/1ms 和 showScrollbar 选择器。"}
+  ],
+  "rootCause": "通用触摸简化把刷新轨道与浏览器局部滚动视为互斥，未处理 Pointer Events 与原生触摸滚动的取消语义。",
+  "decision": {
+    "outcome": "拆分非触摸 Pointer 与触摸监听；保留浏览器的纵向局部滚动，并把 scrollIntoView 改为依据实际 DOM 几何定位真实锚点。",
+    "rationale": "这既让长内容可读，又避免非顶部、横向、向上和取消手势误触发刷新；同一 Props 面板可实测改变轨道、Loading、滚动条、无障碍名称和低动效。",
+    "alternativesRejected": [
+      "继续用 pan-x 会阻断用户的纵向内容阅读。",
+      "禁止所有浏览器滚动再手写 scrollTop 会造成假滚动和触摸漂移。",
+      "用静态状态文案替代轨道位移不会验证真实交互。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "preview/styles.css", "scripts/test-pull-refresh.js", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/components/PULLREFRESH.md", "docs/COMPONENT_API.md"],
+    "dependencies": ["PreviewDevice shadow-safe layout", "PUI Loading mirror", "appearance preferences"]
+  },
+  "verification": {
+    "tests": ["scripts/test-pull-refresh.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-layout-contracts.js"],
+    "commands": ["2026-07-20 npm run site:build、npm run check、npm run pack:check、npm run example:install：通过", "2026-07-20 微信 CLI build-npm：touristappid 不存在，code 10，未生成 miniprogram_npm。"],
+    "browser": ["真实属性输入把 aria-label 更新为联网刷新区域、showScrollbar=false 得到 scrollbar-width:none、reduceMotion=true 得到 --pull-refresh-duration:1ms。", "真实切换深色、阴影、毛玻璃、大圆角和边框：PreviewDevice 为 rgb(24,24,27)、32px 圆角，PullRefresh 得到 blur(14px)、阴影和透明中性边界；恢复浅色标准组合。", "391px PreviewDevice 实测 device/viewport scrollWidth=clientWidth=391，PullRefresh 为318/318，未发现可见 overflowX 元素；API 95 个表头/单元格没有 ellipsis、nowrap、hidden 或高度裁切。"],
+    "deviceRisks": ["当前浏览器使用 391px 内部 PreviewDevice 进行窄宽核验；仍需合法 AppID 真机补录真实 390px 设备窗口、触摸惯性、系统手势竞争、动画中间帧和辅助技术。"]
+  },
+  "ai": {
+    "summary": "触摸下拉预览必须让本地滚动和顶部刷新在同一真实容器中按手势边界协作。",
+    "rules": [
+      "对于同时有局部滚动和下拉刷新能力的 H5，不得以 touch-action:pan-x 禁止阅读；只在顶部向下手势接管。",
+      "Pointer Events 被浏览器取消时，必须有真实 Touch Events 路径，而非用定时器或静态提示伪造刷新。",
+      "scrollIntoView 的 H5 镜像必须定位到真实内容锚点，并通过 Props 面板实测回写。"
+    ],
+    "tags": ["pull-refresh", "preview-parity", "touch", "scroll", "reduced-motion", "390px"]
+  }
+}

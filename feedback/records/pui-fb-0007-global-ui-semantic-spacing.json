@@ -1,0 +1,118 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0007",
+  "title": "全局 UI 缺少可执行的语义间距层级",
+  "scope": "global",
+  "components": ["preview-site", "style-utilities", "dialog"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-17",
+  "updatedAt": "2026-07-18",
+  "userGoal": "全部组件、预览和后续 Agent 必须按相同语义使用 PUI 组件、Token、容器、字体和间距规则，并把约束固化到仓库文件而不是依赖对话记忆。",
+  "environment": {
+    "surfaces": ["miniprogram", "h5-preview", "documentation"],
+    "platforms": ["wechat-miniprogram", "browser", "agent-workflow"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "比较组件源码、官网预览和既有间距文档，面板 padding 与 content gap 已有 Token，但主要语义分区没有共享 Token。",
+    "检查旧 Dialog，Header→Content 使用 20rpx，Content→Footer 使用 28rpx，无法表达已确认的分区层级。",
+    "让 Agent 仅依据零散组件规则工作，会出现同类结构选择不同 Token、预览穿透覆盖子组件和重复容器。",
+    "再次扫描官网最终级联：PreviewDevice 虽然使用变量，但历史断点把实际 padding 分成 15px/12px，直接演示根还有 12px shell gap 与首项 4px margin；另有 21 处 padding-inline/block 直接使用固定 px。"
+  ],
+  "expected": "仓库提供一份全局 UI 合同和共享 section-gap Token，明确 36/28/20/16/12/8rpx 语义层级；PreviewDevice 的普通组件父布局在滚动裁切以内提供 28px 阴影安全区，屏幕附着组件使用 0px edge-to-edge，直接演示根固定使用 8px 内容间距且无私有 margin；AGENTS、文档和自动测试共同执行。",
+  "actual": "初版规则虽然已集中到合同，但官网最终级联仍把 Token 当作数值别名而非语义边界：PreviewDevice 的 padding 和演示根 gap 随历史规则漂移，透明分组与可见 Surface 的 padding 职责没有被专项测试区分，逻辑轴 padding 也逃过旧扫描。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求把 UI 约束写入文档并应用到全局组件。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/UI_DESIGN_CONTRACT.md",
+      "note": "新增全局组件复用、语义间距、三区结构、Slot、Tag、预览和验收合同。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "新增 --pui-section-gap 并映射现有 spacious 面板原语。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "全局设计合同锁定共享 Token、文档层级、Tag 双端几何和最低可读性。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-spacing-token-contract.js",
+      "note": "扫描完整官网 CSS 与 87 份源码 WXSS 的 padding/margin/gap；PUI-FB-0038 进一步锁定普通组件 28px shadow-safe、屏幕附着组件 0px edge-to-edge、直接演示根 8px、站点 gutter 和可见 PROP Surface 边界。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "新增 PreviewDevice、站点 gutter 语义 Token，并把 21 处固定逻辑轴 padding 改为 PUI step Token。"
+    }
+  ],
+  "rootCause": "原有治理重点在禁止魔法数和保证面板 padding，但初版扫描未覆盖 padding-inline/padding-block 及全部源码 WXSS，也没有锁定最终级联中的可见面板、透明分组和站点 gutter 职责；因此多个变量仍可表达相互冲突的最终数值。",
+  "decision": {
+    "outcome": "保留 --pui-section-gap=36rpx/18px 与 36/28/20/16/12/8rpx 层级。PUI-FB-0038 将 PreviewDevice 的 padding 职责移入唯一滚动 viewport 内的共享父布局：普通组件由 14px base + 14px shadow bleed 合成 28px，屏幕附着组件为 0px edge-to-edge，直接演示根保持 8px content gap+margin 0。站点 Header/Stage 继续使用独立 --pui-site-* gutter Token。",
+    "rationale": "Token 只有同时锁定语义消费者与最终级联才不会退化成换名字的魔法数；区分站点 gutter、可见 Surface 和透明分组根可以在不移动固定 Tabs 的前提下统一组件预览节奏。",
+    "alternativesRejected": [
+      "只把偏好写进一次对话，后续 Agent 和人工维护无法可靠继承。",
+      "把所有组件全部改成同一个 gap，会破坏分区、列表和控件内部的层级。",
+      "只增加文档不增加 Token/测试，仍会被局部 CSS 和预览级联绕过。",
+      "让移动端继续使用更小 PreviewDevice padding 会使同一组件在机型和断点之间产生不可解释的视觉漂移。",
+      "给透明 .panel 统一增加 padding 会重新制造面板套面板，并把 PROP 子 Surface 的安全内距叠加两次。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/style/theme.wxss",
+      "preview/styles.css",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/SPACING.md",
+      "docs/DESIGN_TOKENS.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "scripts/test-design-contracts.js",
+      "scripts/test-spacing-token-contract.js",
+      "package.json",
+      "feedback/records/pui-fb-0007-global-ui-semantic-spacing.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["config-provider", "style-utilities"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-layout-contracts.js", "scripts/test-spacing-token-contract.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "390x844 Dialog H5 镜像实测 section=18px、panel/action=14px、content=8px；四种外观模式同时开启后数值不漂移，页面无横向溢出。",
+      "关闭四个 PUI Switch 后刷新页面，阴影、毛玻璃、大圆角、深色模式均保持关闭，确认外观设置已从本地持久化恢复。",
+      "390x844 抽查 Button、Dialog、旧输入组合层、Table、Swiper、Upload、Search、Switch：PreviewDevice 均为 622px 高、四向 14px padding，直接演示根均为 8px gap + 0 margin，viewport 与页面横向溢出均为 0。浏览器首次发现 Button 高权重规则把演示根算成 6px，提升最终标准页选择器后复测为 8px。",
+      "Dialog 概览/API/PROP/概览四态 Tabs 始终为 12/402/351×40px，操作行始终为 12/450/351×36px、scrollY=112；API 只将操作行设为不可见，不折叠尺寸。",
+      "Combobox PROP 实测元信息、字段、兼容项均为 14px padding，代码 Surface 为 18px；页面横向溢出为 0。四项外观开启并刷新后保持 dark/on/on/large，同时 PreviewDevice 仍为 14px、演示根仍为 8px，验收后恢复 light/off/off/normal；页面日志为空。",
+      "2026-07-18 全局收口复验：真实浏览器以 390×844 逐一打开左侧目录全部 97 个路由；97/97 的 document scrollWidth 均未超过 clientWidth，可见文本节点计算字号均不低于 12px，没有发现页面级横向溢出或过小正文。"
+    ],
+    "deviceRisks": [
+      "全局 Token 与 WXSS 已通过静态合同，仍需消费者用合法 AppID 对不同设备密度和自定义 Slot 组合做真机复核。"
+    ]
+  },
+  "ai": {
+    "summary": "PoemUI 以 36/28/20/16/12/8rpx 表达分区到紧密信息的全局语义间距层级。",
+    "rules": [
+      "修改组件前先按关系判断是分区、面板、列表、内容组合、控件内部还是紧密信息，再选择对应 PUI Token。",
+      "标准 PreviewDevice 外框不直接持有组件 padding；普通组件使用 28px shadow-safe 父布局，屏幕附着组件使用 0px edge-to-edge，直接演示根固定使用 8px content gap 且 margin 为 0。",
+      "透明分组根可以 padding 0，但任何带背景、边框、阴影或毛玻璃的可见 Surface 必须自行消费 panel padding。",
+      "官网页面 gutter 使用独立 --pui-site-* Token，不得借用组件 panel/content Token，也不得改变固定 Tabs 坐标。",
+      "新增 spacing 声明不得直接写 px/rpx；只有 pui-sr-only 的 -1rpx 是无障碍裁切例外。",
+      "父组件只管理 Slot 的排列和 gap，不穿透覆盖 PUI 子组件自己的 padding、尺寸、圆角和对齐。",
+      "涉及 UI 合同时同步更新 docs/UI_DESIGN_CONTRACT.md、双端实现、Feedback Ledger 和自动测试。"
+    ],
+    "tags": ["global", "ui-contract", "spacing", "tokens", "composition", "slot", "agent-rule", "preview-parity"]
+  }
+}

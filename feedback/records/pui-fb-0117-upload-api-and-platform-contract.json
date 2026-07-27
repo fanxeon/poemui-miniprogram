@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0117",
+  "title": "Upload 公开合同混入整体状态、重复事件与调试方法",
+  "scope": "component",
+  "components": ["upload", "button", "image", "progress", "tag", "preview-site"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Upload 应对照成熟小程序上传组件保留文件选择、列表和单文件状态主干，基础调用足够简单，选择成功不得冒充远端上传成功。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example-install"],
+    "platforms": ["browser", "wechat-miniprogram"],
+    "viewports": ["390x844 browser", "351px PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "旧 Upload 同时公开 31 Props、16 个事件、5 个 Slot 和 6 个实例方法，把整体 loading/empty/error 与工程诊断塞入文件选择组件。",
+    "旧基础 WXML 绑定 choose-start/end、input/change、clear/exceed、file-load/error 等全部事件，无法表达最小调用。",
+    "旧 files 只按 null 判定受控，边界值与受控退控缺少稳定合同；选择、校验、列表状态和远端上传职责混在一起。",
+    "TDesign MiniProgram 1.15.3 的 Upload/Attachments 主干是文件、添加入口、列表/网格、限制、删除、预览与状态，并不要求 PoemUI 暴露整套调试面。"
+  ],
+  "expected": "Upload 只公开跨微信/H5 可真实闭环的 20 Props、8 Events、1 个 add Slot、0 个公开 Methods；只有 Array files 受控，空列表就是添加状态，单文件状态由消费者回写。",
+  "actual": "旧合同过度暴露且基础调用噪声很大，整体状态和方法面板改变了组件职责，也让 H5 与原生长期同步成本失控。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求共有组件逐项对照 TDesign 收敛 API，并明确授权后续组件由 agent 在完整证据后自主验收。"},
+    {"kind": "file", "ref": "upload/upload.js", "note": "最终 20 Props、严格 Array 受控、退控保值、媒体/聊天文件真实平台选择、校验和 8 个事件。"},
+    {"kind": "file", "ref": "upload/upload.wxml", "note": "列表/网格组合 PUI Button/Image/Icon/Tag/Progress，不再组合整体 Empty/Loading。"},
+    {"kind": "file", "ref": "docs/components/UPLOAD.md", "note": "记录 TDesign 1.15.3 的保留、增加、拒绝、职责边界与真机风险。"},
+    {"kind": "test", "ref": "scripts/test-upload.js", "note": "VM 与静态合同覆盖 20/8/1/0、事件顺序、受控边界、校验、平台回调、预览失败、180/1ms 和文档。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/upload", "note": "390px 下受控删除固定 change→remove，Retry 保持 error，false/0/空字符串/null 全部退控保留最后列表。"}
+  ],
+  "rootCause": "旧整改把上传业务诊断、全局状态容器和平台生命周期都提升为公共 API，没有先限定 Upload 只负责本地选择与消费者状态呈现，也没有以 TDesign 两个真实组件面和微信平台能力共同校准。",
+  "decision": {
+    "outcome": "收敛为 files/defaultFiles/max/picker/mediaType/messageType/source/extensions/maxSize/addContent/addBtn/theme/columns/allowDuplicate/preview/removeBtn/customAdd/disabled/ariaLabel/reduceMotion；事件固定 change/add/remove/preview/retry/cancel/reject/error；只保留 add Slot，不公开实例方法。",
+    "rationale": "声明式文件列表、单一列表变化事件链和平台选择回调足以形成真实闭环；整体状态、远端请求与业务说明应由消费者在外部组合。",
+    "alternativesRejected": [
+      "保留 input 与 change 双发布会迫使消费者无价值去重。",
+      "保留 choose-start/end、clear/exceed/file-load/file-error 会把内部过程和已有 reject/error/change 重复公开。",
+      "保留整体 loading/empty/error 会让 Upload 变成第二个状态容器并产生重复 Surface。",
+      "直接照搬 requestMethod/config/draggable/gridConfig/imageProps 会引入当前没有双端真实合同的远端请求、排序和穿透配置。"
+    ]
+  },
+  "impact": {
+    "files": ["upload/upload.js", "upload/upload.json", "upload/upload.wxml", "upload/upload.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/UPLOAD.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "docs/UI_DESIGN_CONTRACT.md", "AGENTS.md", "_example/miniprogram/pages/components/index.js", "_example/miniprogram/pages/components/index.wxml", "scripts/test-upload.js", "scripts/test-core-state-composition.js", "feedback/records/pui-fb-0117-upload-api-and-platform-contract.json"],
+    "dependencies": ["pui-button", "pui-icon", "pui-image", "pui-progress", "pui-tag", "TDesign MiniProgram 1.15.3 Upload/Attachments"]
+  },
+  "verification": {
+    "tests": ["scripts/test-upload.js", "scripts/test-core-state-composition.js", "scripts/test-component-semantic-contracts.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["node scripts/test-upload.js", "npm run site:build", "npm run check", "npm run pack:check", "npm run example:install"],
+    "browser": [
+      "受控四文件按 max=3 截断；点击 error 文件 Retry 后仍为 error，反馈为等待消费者启动真实上传。",
+      "受控删除 uploading.pdf 后列表真实变为 workspace.png/broken.zip，反馈固定为 change → remove 且父级已回写。",
+      "files 从 Array 依次切到 false、0、空字符串、null 后都保持最后两个文件并进入非受控模式。",
+      "theme=grid、columns=4 产生四列 64.5px 网格；disabled 同时禁用 input、预览、Retry、删除，addBtn=false 删除真实添加入口。"
+    ],
+    "deviceRisks": [
+      "微信 wx.chooseMedia/wx.chooseMessageFile 的权限、取消、基础库返回结构、图片/视频/文档预览、rpx 网格、样式隔离和读屏仍需合法 AppID 真机复核。",
+      "当前内置浏览器不提供文件注入接口，真实 input/accept/multiple/disabled 已检查，选择成功/拒绝/取消/失败回调由微信 VM 合同测试覆盖；不能把该限制冒充人工系统文件选择验收。"
+    ]
+  },
+  "ai": {
+    "summary": "Upload 只负责本地选择、文件列表和单文件状态；远端上传与整体状态属于消费者。",
+    "rules": [
+      "Upload 不得恢复 input、choose-start/end、clear/exceed/file-load/file-error 或公开实例方法。",
+      "只有 Array files 受控；false/0/空字符串/null 不得被当作受控空列表，退控必须保留最后值。",
+      "选择成功只加入 ready 文件，禁止内置定时器或假请求自动改成 success。",
+      "整体 Loading/Empty/Error 必须在 Upload 外组合，文件 error 只提供真实 Retry 请求并等待父级回写。"
+    ],
+    "tags": ["upload", "attachment", "tdesign", "api-contract", "controlled", "platform-picker"]
+  }
+}

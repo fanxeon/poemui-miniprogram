@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poemui.dev/schema/component-feedback.schema.json",
+  "title": "PoemUI Component Feedback Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "id",
+    "title",
+    "scope",
+    "components",
+    "type",
+    "severity",
+    "status",
+    "acceptance",
+    "source",
+    "reportedAt",
+    "updatedAt",
+    "userGoal",
+    "environment",
+    "reproduction",
+    "expected",
+    "actual",
+    "evidence",
+    "rootCause",
+    "decision",
+    "impact",
+    "verification",
+    "ai"
+  ],
+  "properties": {
+    "$schema": { "const": "../schema.json" },
+    "id": { "type": "string", "pattern": "^PUI-FB-[0-9]{4}$" },
+    "title": { "type": "string", "minLength": 4 },
+    "scope": { "enum": ["component", "global"] },
+    "components": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "type": { "enum": ["bug", "capability-gap", "api-contract", "preview-parity", "visual-layout", "accessibility", "compatibility", "ai-usability", "design-decision"] },
+    "severity": { "enum": ["critical", "high", "medium", "low"] },
+    "status": { "enum": ["open", "investigating", "planned", "resolved", "wont-fix", "needs-device"] },
+    "acceptance": { "enum": ["pending-user", "accepted", "not-required"] },
+    "source": { "enum": ["battle", "user-report", "agent-audit", "real-device", "regression", "design-review"] },
+    "reportedAt": { "type": "string", "format": "date" },
+    "updatedAt": { "type": "string", "format": "date" },
+    "userGoal": { "type": "string", "minLength": 8 },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surfaces", "platforms", "viewports", "themes"],
+      "properties": {
+        "surfaces": { "$ref": "#/$defs/nonEmptyStrings" },
+        "platforms": { "$ref": "#/$defs/nonEmptyStrings" },
+        "viewports": { "$ref": "#/$defs/nonEmptyStrings" },
+        "themes": { "$ref": "#/$defs/nonEmptyStrings" }
+      }
+    },
+    "reproduction": { "$ref": "#/$defs/nonEmptyStrings" },
+    "expected": { "type": "string", "minLength": 8 },
+    "actual": { "type": "string", "minLength": 8 },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "ref", "note"],
+        "properties": {
+          "kind": { "enum": ["file", "browser", "test", "build", "user-report", "real-device"] },
+          "ref": { "type": "string", "minLength": 1 },
+          "note": { "type": "string", "minLength": 4 }
+        }
+      }
+    },
+    "rootCause": { "type": "string", "minLength": 4 },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "rationale", "alternativesRejected"],
+      "properties": {
+        "outcome": { "type": "string", "minLength": 8 },
+        "rationale": { "type": "string", "minLength": 8 },
+        "alternativesRejected": { "type": "array", "items": { "type": "string", "minLength": 4 } }
+      }
+    },
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files", "dependencies"],
+      "properties": {
+        "files": { "$ref": "#/$defs/nonEmptyStrings" },
+        "dependencies": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tests", "commands", "browser", "deviceRisks"],
+      "properties": {
+        "tests": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "commands": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "browser": { "type": "array", "items": { "type": "string", "minLength": 4 } },
+        "deviceRisks": { "type": "array", "items": { "type": "string", "minLength": 4 } }
+      }
+    },
+    "ai": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "rules", "tags"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 8 },
+        "rules": { "$ref": "#/$defs/nonEmptyStrings" },
+        "tags": { "$ref": "#/$defs/nonEmptyStrings" }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

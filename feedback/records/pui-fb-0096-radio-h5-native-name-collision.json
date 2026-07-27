@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0096",
+  "title": "Radio H5 独立状态示例复用 name 导致意外互斥",
+  "scope": "component",
+  "components": ["radio", "radio-group", "preview-site"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "H5 状态与图标分区中的独立 Radio 必须各自保留声明的选中态，只有真实 RadioGroup 内的 input 才互斥。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844 browser", "338px PreviewDevice viewport"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开 Radio 概览，检查组件状态和图标与内容分区的初始 checked。",
+    "已选、只读、圆点、勾选、实心和图标 Slot 都在模板中声明 checked，但浏览器最终只保留最后一个图标 Slot 选中。",
+    "读取真实 input.name 发现主项和所有独立示例都继承 Props 的 release-channel，被浏览器自动归为同一原生 radio group。"
+  ],
+  "expected": "主项使用 Props name；真实 Group 内共享组 name；每个独立静态示例使用唯一 name，互不改写初始 checked。",
+  "actual": "所有静态示例复用 release-channel，浏览器解析 DOM 时自动取消前面的 checked，预览状态与模板和小程序能力不一致。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户已授权 agent 对后续共有组件自主连续验收，不再逐组件等待确认。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/radio", "note": "修复前15个input中仅release稳定版、raw数值0和最后的图标Slot保留checked；修复后已选、只读和四类图标均各自checked。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "radioPreviewMarkup 按 main、group 和 static 三类上下文分别生成 name，静态 key 不再继承当前 Props name。"},
+    {"kind": "test", "ref": "scripts/test-radio.js", "note": "专项锁定真实 radio input 和独立 name 分支，防止静态状态再次意外互斥。"}
+  ],
+  "rootCause": "H5 helper 先读取 props.name，再判断示例上下文，导致静态演示误继承业务 Group 的原生 name。",
+  "decision": {
+    "outcome": "name 生成顺序改为 Group 显式 name、主项 Props name、静态示例唯一 key；每个上下文只影响自己的真实 input 集合。",
+    "rationale": "原生 radio 的互斥事实源就是 name，演示上下文必须在 DOM 生成时明确分组，不能靠 class 修补 checked。",
+    "alternativesRejected": [
+      "为每个静态项改用 checkbox 会破坏真实 Radio 语义。",
+      "渲染后强写 checked 会与浏览器 Group 规则和键盘行为冲突。",
+      "只隐藏错误视觉会留下 input.checked 与 ARIA 不一致。"
+    ]
+  },
+  "impact": {
+    "files": ["preview/app.js", "scripts/test-radio.js"],
+    "dependencies": ["HTML radio name grouping", "radioPreviewMarkup", "bindRadioPreviewRuntime"]
+  },
+  "verification": {
+    "tests": ["scripts/test-radio.js", "scripts/test-preview-native-control-boundaries.js"],
+    "commands": ["npm run site:build", "npm run check"],
+    "browser": [
+      "修复后15个真实 radio input 按 main、release、raw 和八个 static key 分组。",
+      "已选、只读、圆点、勾选、实心和图标 Slot 初始 checked 同时成立。",
+      "release 与 raw 两组内部仍保持真实互斥，跨组互不影响。"
+    ],
+    "deviceRisks": ["该缺陷属于 H5 原生 name 规则；微信端 relation 不依赖 HTML name，但其 form-field 语义仍需真机复核。"]
+  },
+  "ai": {
+    "summary": "H5 Radio 的 name 必须按真实 Group 边界生成，独立示例不能共享业务 name。",
+    "rules": [
+      "只有同一个 RadioGroup 内的 input 可以共享 name。",
+      "主项读取 Props name，静态状态和图标示例必须使用唯一 name。",
+      "互斥验收必须读取真实 input.checked 和 input.name，不能只看 class。"
+    ],
+    "tags": ["radio", "preview", "html-input", "name", "grouping", "checked"]
+  }
+}

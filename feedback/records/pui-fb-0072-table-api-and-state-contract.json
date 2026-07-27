@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0072",
+  "title": "Table 重复布局入口、选择事件与滚动别名扩张核心数据合同",
+  "scope": "component",
+  "components": ["table", "shadcn-data-table", "documentation", "example"],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "accepted",
+  "source": "battle",
+  "reportedAt": "2026-07-19",
+  "updatedAt": "2026-07-19",
+  "userGoal": "Table 应以真实行列、局部滚动、固定列、受控选择和稳定排序为核心，公开 API 克制，基础代码最小且事件顺序清楚。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
+    "platforms": ["browser", "wechat-miniprogram", "npm"],
+    "viewports": ["390x844", "1280x720"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "审计旧 table/table.js：39 Props 同时公开 data/items、compact、minTableWidth、stickyHeader、表头/行高、选择列固定、clickable、四类 Slot 和可变动效，多个入口表达同一布局或交互事实。",
+    "旧选择路径对同一次操作重复触发 input、change、selection-change、row-select，通用 scrollTo 之外又公开 scrollToLeft/scrollToRight。",
+    "对照 TDesign Miniprogram 1.15.3 的 Table 文档和安装源码，确认其核心仍是 columns/data/rowKey、边线/条纹/高度/表头、固定列、loading/empty 及 row/cell/scroll 事件。"
+  ],
+  "expected": "Table 只公开真实数据、滚动布局、选择排序、状态、语义和低动效；同一次选择只有一套 input/change，单元格与行点击保留明确先后，通用方法不再复制别名。",
+  "actual": "旧合同把兼容别名、内部布局常量、装饰 Slot、重复事件和便捷滚动别名都提升为公开 API，使基础调用、文档和父级状态回写过度复杂。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求按 TDesign 逐组件收敛公开 API，并授权完成单组件全部门禁后自主连续推进。"},
+    {"kind": "file", "ref": "table/table.js", "note": "最终固定 26 Props、7 Events、1 empty Slot 和 9 Methods；选择只触发 input/change，cell-click 先于冒泡后的 row-click。"},
+    {"kind": "file", "ref": "table/table.wxml", "note": "真实 scroll-view、sticky 固定列、Checkbox/Tag/Icon/Loading/Empty/Button 组合及唯一 empty Slot共享同一状态机。"},
+    {"kind": "test", "ref": "scripts/test-table.js", "note": "专项锁定 26/7/1/9、0/false 行键、点路径、受控退控、稳定排序、状态优先级、方法和固定 180ms/1ms。"},
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/table", "note": "实际选择 false 与 0、全选/单选、受控父级回写、priority 三态排序、cell-click 到 row-click 顺序、真实横滚和 retry。"}
+  ],
+  "rootCause": "旧设计没有先限定 Table 是行列数据交互根，因而把调用者外层工具区、内部布局常量、兼容数据别名和重复通知都持续累加到顶层合同。",
+  "decision": {
+    "outcome": "收敛为 26 Props、7 Events、1 empty Slot、9 Methods；删除 items/compact/minTableWidth/stickyHeader/headerHeight/rowHeight/showSelectAll/selectionFixed/clickable/customHeader/customFooter/duration/easing、重复 selection-change/row-select、header/footer/default Slots 和左右滚动别名。",
+    "rationale": "columns/data 是唯一结构真相源，列宽自然决定横滚；固定表头和选择列属于组件稳定实现；父级只需接收一次 input/change、独立 sort-change、cell/row/scroll/retry 事实。",
+    "alternativesRejected": [
+      "机械复制 TDesign 全部 Props 会引入 rowspanAndColspan 函数、任意 class 回调和布局模式，不符合 PoemUI 小程序数据与 Token 合同。",
+      "保留旧 39 Props 只标为兼容会继续让 AI 和调用者生成重复布局入口。",
+      "保留 selection-change/row-select 会让一次 Checkbox 操作发布四个等价通知。"
+    ]
+  },
+  "impact": {
+    "files": ["table/table.js", "table/table.wxml", "table/table.wxss", "metadata/components.js", "preview/app.js", "docs/COMPONENT_API.md", "docs/components/TABLE.md", "_example/miniprogram/pages/components/index.wxml", "_example/miniprogram/pages/components/index.js", "scripts/test-table.js"],
+    "dependencies": ["pui-checkbox", "pui-tag", "pui-icon", "pui-loading", "pui-empty", "pui-button", "theme behavior"]
+  },
+  "verification": {
+    "tests": ["scripts/test-table.js", "scripts/test-component-semantic-contracts.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run precheck", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
+    "browser": [
+      "非受控选择 false 后保留默认 0，事件严格为 input 后 change；受控 [false] 选择 0 后 Props 真实回写为 [false,0]。",
+      "单选加 selectOnRowClick 时 cell-click 先发布，随后 input/change 与 row-click，且只保留一个选中行。",
+      "priority 表头按 ascending、descending、none 循环，键盘 Enter 回传 source=keyboard；受控 sort 由父级真实回写 desc。",
+      "error 优先于 loading，retry 后仍保持 error 并明确等待消费者；默认 Empty 与 custom empty Slot 不重叠。"
+    ],
+    "deviceRisks": [
+      "微信 scroll-view 惯性、sticky 左右列层叠、字体回流、大数据性能和辅助技术播报仍需合法 AppID 真机复核。",
+      "旧消费者若使用已删除 Props、事件、Slots 或左右滚动方法，需要迁移到 columns/data、外层业务布局、input/change、empty Slot 与 scrollTo。"
+    ]
+  },
+  "ai": {
+    "summary": "Table 只用 columns/data 建立行列，选择用 input/change，排序独立，滚动只保留 scrollTo。",
+    "rules": [
+      "禁止恢复 items、内部尺寸 Props、clickable、自由 header/footer/default Slots 或组件私有 duration/easing。",
+      "选择事件固定为 input 后 change；禁止重复发布 selection-change 或 row-select。",
+      "数据单元格点击先发布 cell-click，再由行根发布 row-click；Checkbox 必须阻断行 tap 冒泡。",
+      "列宽是横滚唯一宽度来源；固定表头、选择列和 500ms 动效属于稳定实现。"
+    ],
+    "tags": ["table", "data-table", "api", "tdesign", "controlled-state", "events"]
+  }
+}

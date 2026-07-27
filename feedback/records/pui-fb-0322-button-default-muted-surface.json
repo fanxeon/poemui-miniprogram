@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0322",
+  "title": "Button 默认操作误用玻璃卡片而非 muted 弱填充",
+  "scope": "global",
+  "components": ["button", "popup", "preview-site", "config-provider"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-24",
+  "updatedAt": "2026-07-24",
+  "userGoal": "所有 PUI Button 的 default 默认视觉应是 muted 弱填充，Popup Header 的圆形关闭按钮也应复用这一统一形态。",
+  "environment": {
+    "surfaces": ["miniprogram-component", "miniprogram-home", "h5-preview", "component-contract"],
+    "platforms": ["wechat-devtools", "browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "渲染未显式设置 theme/variant 的 pui-button，或 Popup Header 的默认关闭按钮。",
+    "检查 button/button.wxss 与 preview/styles.css：default/base 继承 glass-surface-strong 或 surface-solid，并带 card/soft 外投影。"
+  ],
+  "expected": "theme=default + variant=base 在小程序和 H5 都使用同名 muted 背景 Token、保留中性边界且不产生外投影或毛玻璃；primary/danger 实色操作和其它变体不受影响。",
+  "actual": "默认中性 Button 被渲染为独立玻璃卡片，视觉层级强于其取消、关闭和辅助操作角色，且 Popup Header 的关闭入口无法复用预期的 muted 形态。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-24 当前任务对话", "note": "用户明确要求将 default 全局改为 muted 版本。"},
+    {"kind": "file", "ref": "button/button.wxss", "note": "修复前 default/base 没有专属选择器，继承 glass surface 与 card shadow；--pui-button-soft 已定义为 --pui-bg-muted。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "修复前 H5 default/base 同样继承 surface-solid 与 shadow-soft。"},
+    {"kind": "test", "ref": "scripts/test-button.js", "note": "专项测试锁定原生与 H5 的 default/base muted Token、无外投影语义。"}
+  ],
+  "rootCause": "Button 初始基线将 default/base 与独立 Card Surface 共用，未给已经存在的 muted Token 建立默认中性操作的选择器，因此同一 theme 在页面、Popup 和官网镜像中都表现得过重。",
+  "decision": {
+    "outcome": "在 Button 组件级别增加 default/base 的唯一视觉选择器：小程序使用 --pui-button-soft（--pui-bg-muted），H5 使用同名镜像 Token（--surface-soft），两端保留中性边界并清除外投影；不新增 API 或无效 mute variant。",
+    "rationale": "以已有 Token 改变现有合法组合，可以使所有默认 Button 和 Popup 的关闭入口立即同源，不需要页面私有 class 或破坏 Button 已收敛的 theme/variant 合同。",
+    "alternativesRejected": [
+      "传入不存在的 variant=muted：Button 会静默回退 base，继续传播无效 API。",
+      "只在 Popup 加 muted 覆盖：其它 default Button 仍是重卡片，无法形成全局语义。",
+      "把 primary/danger 也改为 muted：会抹掉主要和危险操作的实色优先级。"
+    ]
+  },
+  "impact": {
+    "files": ["button/button.wxss", "preview/styles.css", "docs/UI_DESIGN_CONTRACT.md", "docs/components/BUTTON.md", "docs/components/POPUP.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "scripts/test-button.js", "miniprogram_dist/button/button.wxss"],
+    "dependencies": ["pui-button", "pui-icon", "pui-popup", "visualConfig", "H5 Button helper"]
+  },
+  "verification": {
+    "tests": ["scripts/test-button.js", "scripts/test-popup.js", "scripts/test-non-elevated-shadow-semantics.js"],
+    "commands": ["node scripts/test-button.js", "node scripts/test-popup.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check", "微信 CLI build-npm --project miniprogram"],
+    "browser": [],
+    "deviceRisks": ["仍需在合法 AppID 的 390px 开发者工具和 iOS/Android 真机确认默认 Button 在深浅色、边框、阴影、毛玻璃和大圆角下的 Token 继承、样式隔离、触摸命中和读屏表现。"]
+  },
+  "ai": {
+    "summary": "Button 的默认中性操作只有 default/base 一种合法组合，必须消费 muted Token；不生成不存在的 muted variant。",
+    "rules": [
+      "需要弱化中性 Button 时使用 theme=default + variant=base，不增加 muted theme 或 variant。",
+      "default/base 的背景、边界、阴影资格必须由 Button 组件级 Token 规则提供，页面和 Popup 不得私有覆盖。",
+      "变更默认视觉时同步小程序 WXSS、H5 CSS、全局与组件合同、专项测试、Ledger 和发布产物。"
+    ],
+    "tags": ["global", "button", "muted", "design-token", "popup", "preview-parity"]
+  }
+}

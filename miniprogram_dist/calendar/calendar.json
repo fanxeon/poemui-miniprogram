@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "pui-button": "../button/button",
+    "pui-empty": "../empty/empty",
+    "pui-loading": "../loading/loading"
+  }
+}

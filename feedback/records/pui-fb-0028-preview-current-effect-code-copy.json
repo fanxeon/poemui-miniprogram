@@ -1,0 +1,105 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0028",
+  "title": "概览工具栏缺少按当前效果复制代码的入口",
+  "scope": "global",
+  "components": ["preview-site", "button", "icon", "config-provider"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "在预览工具栏最右侧提供复制按钮，让用户直接复制与当前组件展示 Props 对应的代码，并通过注释理解视觉环境和运行态边界。",
+  "environment": {
+    "surfaces": ["h5-preview", "component-overview", "clipboard"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件概览并修改当前 Props。",
+    "旧工具栏最右侧只有刷新与重置，用户必须切换到 PROP、定位 WXML 面板后才能复制。",
+    "复制入口离当前视觉结果较远，也没有说明站点视觉开关和临时交互状态是否会进入代码。"
+  ],
+  "expected": "概览工具栏最右侧提供 PUI Copy IconButton；点击复制当前 Props 对应的最小小程序用法，默认 Props 不输出。代码包含组件、视觉环境、页面渐变边界和临时运行态说明，复制成功或失败有真实可访问反馈。",
+  "actual": "旧概览没有复制入口；PROP 虽能复制 makeUsageCode，但不能从当前预览任务直接触发，也没有统一的当前视觉环境注释。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户要求在预览工具栏最右增加复制按钮，按当前展示效果复制代码并提供注释。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "componentCopyAction 调用共享 iconButtonSample；makeCurrentPreviewCopyCode 复用 usagePropEntries 与 makeUsageCode，并添加视觉/运行态注释。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-code-copy.js",
+      "note": "专项合同锁定按钮顺序、PUI 组合、默认 Prop 过滤、注释、剪贴板回退、反馈与三按钮响应式宽度。"
+    }
+  ],
+  "rootCause": "概览工具栏此前只承载预览方式、机型和运行态恢复，复制能力被限制在 PROP 的代码面板；两处没有抽象出共享的当前代码入口，也未定义全局视觉与 H5 临时状态的序列化边界。",
+  "decision": {
+    "outcome": "在刷新、重置之后追加最右侧 PUI Copy IconButton。复制继续调用 makeUsageCode，并先通过 usagePropEntries 读取同一默认 Prop 源；头部注释记录当前组件、非默认 Props、theme/bordered/shadow/frostedGlass/largeRadius 和 gradientBackground，明确渐变属于页面画布，打开/滚动/焦点/动画属于临时运行态。成功切换为 Check，失败切换为 ErrorCircle，并通过 aria-live 回传；1.2 秒后恢复 Copy。",
+    "rationale": "复用 PROP 真相源可保证两个入口输出一致，默认值过滤避免把组件默认合同写死；注释能解释视觉效果中哪些由 ConfigProvider 提供、哪些不能安全转换为小程序 Props。将复制固定在最右符合完成预览后导出结果的自然顺序。",
+    "alternativesRejected": [
+      "抓取 H5 DOM、computed style 或当前像素会生成无法安装的小程序假代码，并把镜像实现误当成原生合同。",
+      "为概览重新编写 WXML 生成器会与 PROP 输出产生漂移。",
+      "把临时 open、scroll 或 animation 进度序列化为 Props 会混淆运行态和公开 API。",
+      "复制全部默认 Props 会增加噪音，并让未来默认值升级失去作用。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-code-copy.js",
+      "scripts/test-preview-utility-toolbar.js",
+      "scripts/test-preview-component-reset.js",
+      "scripts/test-preview-infrastructure-composition.js",
+      "scripts/test-design-contracts.js",
+      "package.json",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0028-preview-current-effect-code-copy.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["button", "icon", "config-provider", "clipboard"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-code-copy.js", "scripts/test-preview-utility-toolbar.js", "scripts/test-preview-infrastructure-composition.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "1265px 桌面实测工具栏为 1021×44px、透明/0 border/无阴影；右侧机型+操作组为 312px，三按钮组为 124×36px，刷新/重置/复制依次排列且复制为最右侧 36×36px，右缘与工具组同为 1233px。",
+      "将 Button 的 content 改为“复制后的危险操作”、theme 改为 danger 后，PROP 的同源 usageCode 同时出现自定义内容与 theme=\"danger\"，证明当前 Props 已进入唯一生成器；切回概览点击复制，局域网 HTTP 回退真实返回 success，按钮 Icon 变为 check、aria-label 变为“已复制当前组件效果代码”，aria-live 播报完成，1.2 秒后恢复 copy。",
+      "390×844 覆盖下工具栏为 375×88px、右侧工具组为 351px、三按钮组 124px、复制按钮右缘与工具组同为 363px；document client/scroll width 均为 375px。深色和大圆角同时开启时几何不变，截图确认机型/刷新/重置/复制完整可见且无额外 Surface。",
+      "首次移动验收发现 aria-live 节点未命中 H5 pui-sr-only，额外产生 8px Flex gap；补齐公开 utility 的 H5 镜像后状态节点改为 absolute + clip，复制按钮真实贴到最右。验收结束恢复 light/normal-radius 与默认视口，浏览器 warning/error 日志为空。"
+    ],
+    "deviceRisks": [
+      "局域网 HTTP 环境通常不能使用 Clipboard API，真实复制依赖浏览器对 document.execCommand('copy') 的兼容；失败时必须保持失败反馈，不能伪报成功。",
+      "复制内容记录站点视觉环境但不自动包裹消费者页面；每页根 ConfigProvider 和页面渐变仍需按业务工程结构接入。"
+    ]
+  },
+  "ai": {
+    "summary": "概览最右复制当前效果代码，必须复用 PROP 生成器、过滤默认 Props并注释视觉与运行态边界。",
+    "rules": [
+      "工具栏复制必须调用 makeUsageCode/usagePropEntries，禁止维护第二套 WXML 生成器。",
+      "复制代码只输出非默认 Props；组件默认值不应被写死。",
+      "复制注释必须说明当前全局视觉配置、渐变画布边界和临时运行态不序列化。",
+      "禁止抓取 H5 DOM 或 computed style 生成小程序代码。",
+      "复制必须使用最右侧 PUI IconButton，并提供成功、失败和 aria-live 反馈。",
+      "390px 下三按钮操作组必须保持右对齐且不得产生页面横向溢出。"
+    ],
+    "tags": ["preview-site", "toolbar", "copy", "wxml", "clipboard", "comments", "default-props", "config-provider", "runtime-state", "390px"]
+  }
+}

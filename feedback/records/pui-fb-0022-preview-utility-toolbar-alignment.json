@@ -1,0 +1,125 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0022",
+  "title": "预览模式与设备操作分散且工具栏层级过重",
+  "scope": "global",
+  "components": ["preview-site", "tabs", "button", "icon", "select"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "把常规/选择元素、机型、刷新和重置统一到同一条无底色工具栏，模式在左，其余操作整组居右，同时让 Header 只承担 Tabs 分类，并为工具栏保留清晰的顶部内距。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件页概览。",
+    "常规/选择元素位于独立带底色区域，而机型、刷新和重置位于 Header 的 Tabs 下属操作行。",
+    "模式与预览控制属于同一任务却分散在两处，多出一层工具 Surface，右侧动作也没有作为一组贴右。",
+    "统一工具栏首版只有横向 padding 和底部 gap，控件上方没有内部留白，视觉上过于贴近上方内容。"
+  ],
+  "expected": "Header 只保留固定 Tabs。PreviewDevice 上方使用一条透明工具栏：模式切换在左，机型、刷新和重置组成一组居右对齐；工具栏无背景、边框、阴影和毛玻璃。顶部内距统一使用 8px PUI content gap 并计入语义高度。390px 可换行，但右侧工具组继续右对齐。",
+  "actual": "旧结构把设备与动作留在 Header 二级行，把模式切换单独放在有底色的区域；功能分散、容器层级偏多，且无法形成明确的左模式/右工具视觉分组。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求把切换机型、刷新、重置放入模式所在行，工具栏不要底色，并进一步指定这些操作居右对齐。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户指出预览区工具栏顶部内间距不足，要求调整工具栏内部节奏。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/index.html",
+      "note": "previewUtilityToolbar 按 previewModeMount + preview-utility-toolbar__right 编排，右组依次挂载 PUI Select 与刷新/重置 IconButton。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "工具栏显式透明、无边框/阴影/毛玻璃；右组使用 margin-left:auto 与 justify-content:flex-end，390px 断点换行后仍右对齐。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-utility-toolbar.js",
+      "note": "专项合同锁定 DOM 顺序、共享 PUI helper、透明 Surface、桌面居右与移动端换行规则。"
+    }
+  ],
+  "rootCause": "模式选择、页面分类和设备操作分批加入站点，最初都放进 Header 或独立控制面板，没有按分类导航、概览工具和组件内容三种职责重新归组。",
+  "decision": {
+    "outcome": "删除 Header 的二级操作行，Header navigation 只保留固定 PUI Tabs。概览在 PreviewDevice 前挂载统一透明工具栏：PUI 模式按钮组靠左，共享 PUI Select、Refresh IconButton、Reset IconButton 组成右侧工具组并通过 auto margin 贴右。桌面使用单行固定语义高度；390px 下模式组和右侧工具组分两行，右组仍靠右。API/PROP 隐藏概览工具栏；PROP 的同源 Reset 保留在 Props 标题区。",
+    "rationale": "分类、预览方式与设备操作各归其位后，用户能按左右分组快速理解工具职责；透明布局根避免再制造面板套面板，右侧整组对齐也能稳定不同控件的扫描顺序。",
+    "alternativesRejected": [
+      "继续把机型和动作留在 Tabs 下方会让 Header 同时承担分类和概览操作，并保持功能分散。",
+      "给模式工具栏保留底色会制造没有业务分组职责的额外 Surface。",
+      "在 Header、Stage 或空白容器上增加私有 margin 只能掩盖工具栏自身缺少顶部内距，并会让 Tabs/Inspector 偏移合同分叉。",
+      "在 390px 强行压缩全部控件为一行会牺牲机型文案、按钮点击区或模式可读性。",
+      "把 PROP 重置也塞进概览工具栏会让不可见视图的操作失去任务上下文。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-preview-utility-toolbar.js",
+      "scripts/test-preview-element-inspector.js",
+      "scripts/test-preview-component-reset.js",
+      "scripts/test-design-contracts.js",
+      "scripts/test-style-utilities.js",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0013-component-page-tabs-information-architecture.json",
+      "feedback/records/pui-fb-0020-preview-element-selection-context-inspector.json",
+      "feedback/records/pui-fb-0021-preview-component-default-reset.json",
+      "feedback/records/pui-fb-0022-preview-utility-toolbar-alignment.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["tabs", "button", "icon", "select", "preview-device"]
+  },
+  "verification": {
+    "tests": ["scripts/test-preview-utility-toolbar.js", "scripts/test-preview-element-inspector.js", "scripts/test-preview-component-reset.js", "scripts/test-design-contracts.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "顶部内距修正后，1265px 桌面工具栏实测为 1021×44px，padding-top=8px、margin-bottom=8px、transparent、border=0、box-shadow=none；右侧工具组仍为 268px 且右缘保持 1233px，页面 client/scrollWidth 均为 1265px。",
+      "进入元素选择并选中 Dialog 标题后，上下文 Inspector top 计算值由共享工具栏高度得到 52px（44px 工具栏 + 8px content gap），面板正常显示；验收后恢复常规模式。",
+      "首版 1265px 桌面实测 Header Tabs 为 270×40px 且只占一行；当时透明工具栏为 1021×36px，模式组位于 x=276，右侧工具组位于 x=965、宽 268px并贴合 32px 页面 gutter。机型为固定 180px，刷新/重置组为 80px，中间 gap 为 8px；该 36px 高度随后因顶部内距反馈调整为 44px。",
+      "工具栏、模式 Mount 与右侧工具组的计算样式均为 transparent、border 0、box-shadow none、backdrop-filter none；DOM 顺序固定为 previewModeMount 后接 preview-utility-toolbar__right。",
+      "API 与 PROP 切换后 Tabs 始终为 x=963、y=81、270×40px；概览工具栏整体退出。PROP 交互树中刷新按钮为 0，只在 Props 标题区显示一个可用的“重置为组件默认样式”PUI IconButton。",
+      "首版 390×844 覆盖下 document client/scroll 均为 375px；当时透明工具栏为 375×80px并分两行，模式行 x=12、宽351px，右侧工具组 x=12、宽351px且 justify-content=flex-end，机型 x=95、180px，动作组 x=283、80px，二者右缘为 363px，无横向溢出；加入 8px 顶部内距后语义高度由专项合同锁定为 88px。",
+      "深色模式开启并刷新后 app-shell 恢复 dark、Switch aria-checked=true，工具栏仍为透明/0边框/无阴影/无毛玻璃；验收结束恢复 393px 与 light/off/off/normal/off。"
+      ,"PUI-FB-0028 加入最右复制后，桌面右侧工具组扩为 312px、三 IconButton 组为 124px；390px 仍使用 351px 右侧行并贴右，工具栏高度继续保持 44px/88px。"
+    ],
+    "deviceRisks": [
+      "本次只调整 H5 官网基础设施，不改变小程序组件 API 或 WXML。",
+      "390px 换行与右对齐已有静态合同，真实移动浏览器字体回流、触摸与辅助技术仍需目标设备复核。"
+    ]
+  },
+  "ai": {
+    "summary": "概览统一使用透明预览工具栏：模式在左，机型、刷新、重置和复制整组居右；Header 只保留 Tabs，PROP Reset 留在 Props 标题区。",
+    "rules": [
+      "标准组件 Header 只承载唯一标题信息和固定 Tabs，不得放概览机型、刷新或重置。",
+      "概览模式、机型、刷新、重置和复制必须位于 PreviewDevice 上方同一透明工具栏。",
+      "模式切换在左；机型、刷新、重置和复制必须作为一个组通过 auto margin 居右对齐，复制固定在最右。",
+      "工具栏布局根必须透明、无边框、无阴影、无毛玻璃，不能形成第二层面板。",
+      "工具栏顶部内距固定消费 --pui-preview-content-gap（8px）并计入桌面与移动语义高度，禁止用外层 margin、空容器或魔法数补位。",
+      "390px 下可换为两行，但右侧工具组仍须右对齐，控件不得缩小到不可读或不可操作。",
+      "机型必须调用共享 PUI Select；刷新、重置与复制必须调用共享 PUI IconButton，不得手写原生控件。",
+      "API/PROP 不显示概览工具栏；PROP 重置留在 Props 标题区并与概览共享 resetCurrentComponent/default Props 源。"
+    ],
+    "tags": ["preview-site", "utility-toolbar", "right-align", "transparent", "tabs", "responsive", "pui-composition"]
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0014",
+  "title": "组件预览缺少统一固定设备面板与空闲滚动条策略",
+  "scope": "global",
+  "components": ["preview-site", "dialog"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-18",
+  "updatedAt": "2026-07-18",
+  "userGoal": "组件父容器应像固定手机屏幕一样始终有明确、统一的中性主题底色和固定高宽，长内容只在容器内部滚动，滚动条停止滚动时隐藏；设备外不再套一层不同底色的可见面板。",
+  "environment": {
+    "surfaces": ["h5-preview"],
+    "platforms": ["browser"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开任意标准组件概览，检查 PreviewDevice 外框、内部长内容和页面级滚动关系。",
+    "打开 Dialog 概览，旧实现通过高优先级 phone--dialog 规则把统一设备外框改成透明 height:auto，导致组件间预览边界不一致。",
+    "滚动普通组件的内部 viewport，旧实现设置 scrollbar-gutter:stable 但没有滚动中/空闲状态，无法保证空闲时隐藏滚动条。",
+    "在 390x844 横向比较 Button 与 Dialog：统一 PreviewDevice 已存在，但 Dialog 的 preview-canvas--dialog 又给外层 body 增加 16px 私有 padding，使设备宽度从标准 351px 缩成 319px。",
+    "切换到标准深色模式，旧 renderPreviewDevice 注入 phone--dark，使设备从页面中性 #09090b 变成靛蓝 #17202e；外层 preview-canvas 同时显示 #111113，形成多层不一致底色。"
+  ],
+  "expected": "全部标准组件包括 Dialog 共享常驻中性主题底色的固定 PreviewDevice；浅色为 #fafafa、深色为 #09090b，概览 Stage 直接挂载设备而不再套可见 canvas。桌面宽度跟随 375/393/430px 机型，高度固定 622px，窄屏只收缩宽度。只有内部 viewport 滚动，滚动条仅在滚动期间显示。",
+  "actual": "普通组件虽然已有 622px 高度和内部 overflow，但外框合同曾分散；Dialog 先后通过透明 auto-height 外壳和 preview-canvas 私有 16px 外围内距绕过统一宽度。后续仍残留可见 preview-canvas 外层与 phone--dark 靛蓝私有主题，使深色页面、外层画布和设备出现三种底色。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户明确要求组件父容器成为固定手机屏幕式底色面板，内部滚动且空闲隐藏滚动条。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "PreviewDevice 统一锁定所选设备宽度上限、622px 高度、Surface、边框、圆角与裁切；viewport 默认透明滚动条，is-scrolling 时显示 thumb。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "内部 viewport 的真实 scroll 事件保存滚动位置、增加 is-scrolling，并在 360ms 空闲后移除状态。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "全局合同锁定固定宽高、常驻底色、内部 overflow、滚动状态类和文档规则。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dialog.js",
+      "note": "Dialog 合同禁止恢复透明 auto-height 外壳或 preview-canvas 私有 inset，并要求复用同宽全局 PreviewDevice。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/dialog",
+      "note": "深色审计确认页面 Stage 为 #09090b、旧 preview-canvas 为 #111113、旧 PreviewDevice 为靛蓝 #17202e；设备改为继承 --page 并直接挂载后消除这两层色差。"
+    }
+  ],
+  "rootCause": "PreviewDevice 的高度、Surface 和滚动能力由多段历史 CSS 叠加，renderPreviewDevice 又给设备注入 phone--dark 私有靛蓝变量；概览 Stage 与设备之间仍保留可见 preview-canvas。Dialog 还先后通过更高优先级选择器建立透明 auto-height 与外层 16px inset 例外。",
+  "decision": {
+    "outcome": "以唯一 PreviewDevice 统一设备边界：概览 Stage 直接挂载设备，删除可见 preview-canvas/body 外壳；设备 surface 读取全局 --page，桌面宽度读取机型 Token、高度固定 622px。内部 viewport 独占纵向滚动，thumb 默认透明并在滚动时短暂显示。PUI-FB-0038 进一步把父布局放入该 viewport：普通组件使用 28px shadow-safe，屏幕附着组件使用 0px edge-to-edge，外框只负责屏幕边界和裁切。",
+    "rationale": "唯一设备边界和统一中性主题让所有组件在同一可比较画布中运行，避免近似底色的多层面板竞争；内部滚动避免交互撑高页面，按活动状态显示滚动条既保留位置反馈，又减少常驻视觉噪音。",
+    "alternativesRejected": [
+      "继续保留 Dialog 透明 auto-height 例外会让同一概览系统出现两套容器合同。",
+      "保留 phone--dark 靛蓝设备主题会让官网深色体系出现第二套事实源，并与 #09090b 页面底发生色偏。",
+      "保留可见 preview-canvas 作为设备外框会重复 PreviewDevice 的边界职责。",
+      "完全禁用滚动条会丢失长内容的位置反馈和鼠标拖动入口。",
+      "让外层页面承接组件长内容滚动会破坏固定设备边界，并重新引入点击后页面增长。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-design-contracts.js",
+      "scripts/test-dialog.js",
+      "scripts/test-preview-overview-hierarchy.js",
+      "scripts/test-style-utilities.js",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "feedback/records/pui-fb-0011-dialog-preview-engineering-panels.json",
+      "feedback/records/pui-fb-0014-preview-device-fixed-scroll-surface.json",
+      "docs/COMPONENT_FEEDBACK_LEDGER.md"
+    ],
+    "dependencies": ["preview-device"]
+  },
+  "verification": {
+    "tests": ["scripts/test-design-contracts.js", "scripts/test-layout-contracts.js", "scripts/test-dialog.js", "scripts/test-preview-overview-hierarchy.js"],
+    "commands": ["npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "桌面复验：Dialog 外框为 393x622px、overflow=hidden，内部 viewport 为 391x620px；edge-to-edge 父布局、Dialog 根与透明 Stage 都精确为 391x620px，四边距离为 0。",
+      "390x844 覆盖下选择 430px 宽屏机型时，PreviewDevice 安全收缩为 343x622px，内部长内容 viewport 为 317x596px、scrollHeight=865px；document client/scroll 均为 375px，没有页面横向溢出。",
+      "Navigation Menu 内部 viewport 滚到 scrollTop=180 时 is-scrolling=true，scrollbar/thumb 为 34% 文本色；停止 420ms 后 is-scrolling=false，scrollbar/thumb 均恢复 transparent，scrollTop 仍保持 180。",
+      "深浅色切换下 Stage、PreviewDevice 与 viewport 分别统一为 rgb(250,250,250) / rgb(9,9,11)，设备 class 不再含 phone--dark；真实 Dialog Surface 在深色下仍为 rgb(24,24,27)，scrim 保持 rgba(17,18,23,.38)。",
+      "桌面深色遍历目录 99 条路由，其中 89 个交互组件页全部满足：无 preview-canvas、设备/viewport 为 #09090b、固定 622px、component-only 正确且页面横向溢出为 0。",
+      "390x844 Card 复验：设备为 351×622px，shadow-safe 父布局为 28px，Card 根四边起始安全距离均为 28px、内容宽 293px，document client/scroll 为 375/375px。"
+    ],
+    "deviceRisks": [
+      "本次只调整 H5 官网统一预览外壳；小程序各组件仍使用自身 scroll-view，真机滚动条、触摸惯性和嵌套滚动竞争需按组件合同复核。"
+    ]
+  },
+  "ai": {
+    "summary": "标准组件概览必须复用固定 PreviewDevice，只有内部 viewport 滚动，滚动条空闲隐藏。",
+    "rules": [
+      "标准组件包括浮层组件不得建立透明或 height:auto 的 PreviewDevice 私有例外。",
+      "Dialog 等浮层组件不得在 PreviewDevice 外再增加 preview-canvas 私有 padding；同机型同断点的设备外框宽度必须一致。",
+      "PreviewDevice 桌面宽度跟随机型、高度固定 622px；390px 只收缩宽度且页面不得横向溢出。",
+      "长内容只能在 preview-device__viewport 内滚动，外框不得随交互增长。",
+      "预览滚动条默认隐藏，只在真实 scroll 活动期间显示，并在空闲后自动隐藏。",
+      "标准深色 PreviewDevice 必须继承 --page = #09090b，不得注入 phone--dark 等私有靛蓝主题。",
+      "概览 Stage 直接挂载 PreviewDevice，不得再套可见 preview-canvas 面板。",
+      "普通组件必须在 viewport 内使用 shadow-safe 父布局，屏幕附着组件必须使用 edge-to-edge；不得把 padding 放到滚动裁切层外。"
+    ],
+    "tags": ["preview-site", "preview-device", "fixed-size", "scroll", "scrollbar", "dialog", "responsive", "surface", "dark-theme", "neutral"]
+  }
+}
