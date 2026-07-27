@@ -6,11 +6,11 @@
   "components": ["h5", "miniprogram", "npm", "skill", "documentation"],
   "type": "ai-usability",
   "severity": "high",
-  "status": "investigating",
+  "status": "resolved",
   "acceptance": "accepted",
   "source": "user-report",
   "reportedAt": "2026-07-27",
-  "updatedAt": "2026-07-27",
+  "updatedAt": "2026-07-28",
   "userGoal": "把 PoemUI 从本地完成态推进到可公开验证的受限 Beta：H5 提供真实快速开始与 AI Skill，公告不混淆 MIT Core、未来 Pro、本地构建和公共发布。",
   "environment": {
     "surfaces": ["H5 快速开始", "npm README", "PoemUI AI Skill", "受限 Beta 公告", "PoemCoder 落地页"],
@@ -23,8 +23,8 @@
     "运行 npm whoami 返回 ENEEDAUTH，npm view poemui-miniprogram 返回 E404；本地仓库没有 Git remote。",
     "README 和旧快速开始直接给出 npm 安装命令，容易把已填写包名或本地 tarball 误读为公共包已发布。"
   ],
-  "expected": "快速开始只复制当前可执行的页面代码；npm/GitHub 未发布时明确显示尚未发布。仓库提供标准 poemui-miniprogram Skill、只读审计与安装验证脚本，并公开受限 Beta、MIT Core 与未来独立 Pro 的边界。",
-  "actual": "H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成并通过运行态验收；公共 npm、GitHub、云端 pui-codepage 写入、正式小程序码与真机仍保持明确未完成状态，页面不显示假成功。",
+  "expected": "快速开始只展示当前可执行的页面、安装与 Skill 动作；仓库提供标准 poemui-miniprogram Skill、只读审计与安装验证脚本，并公开受限 Beta、MIT Core 与未来独立 Pro 的边界。",
+  "actual": "H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成；公共 npm 0.1.0 与 GitHub 仓库已公开并通过 Registry 安装、微信 build-npm 和公开回读。云端 pui-codepage、正式小程序码与真机继续保持独立未验证状态。",
   "evidence": [
     {
       "kind": "user-report",
@@ -70,11 +70,21 @@
       "kind": "file",
       "ref": "deploy/h5/Dockerfile",
       "note": "生产静态镜像与 OpenResty 子路径代理拥有独立部署和回滚边界。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://www.npmjs.com/package/poemui-miniprogram",
+      "note": "2026-07-28 公共 Registry 可回读 poemui-miniprogram@0.1.0，tarball shasum 为 bd9a2468d771ff3d631d59c6096247fdccc83b7d。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/fanxeon/poemui-miniprogram",
+      "note": "2026-07-28 仓库已公开，默认分支 codex/public-beta-0.1.0 提供 MIT Core 源码、组件合同与 Skill。"
     }
   ],
   "rootCause": "项目此前专注逐组件实现与本地回归，公开安装、AI 使用、许可证、官网入口和远程交付没有形成同一可验证发布合同，导致本地完成状态可能被误报为公共可用。",
   "decision": {
-    "outcome": "采用 MIT Core + 未来独立 Pro；H5 安装入口升级为快速开始；建立 poemui-miniprogram Skill 与两个只读验证脚本；npm/GitHub 未真实发布时禁用安装复制并显示尚未发布。",
+    "outcome": "采用 MIT Core + 未来独立 Pro；H5 安装入口升级为快速开始；建立 poemui-miniprogram Skill 与两个只读验证脚本；npm/GitHub 发布前禁用动作，发布且通过独立回读后才开放固定版本入口。",
     "rationale": "将用户可执行动作绑定到 Registry、公开仓库、浏览器和微信运行态证据，既保留当前 Beta 的开放体验，也不追溯限制已经以 MIT 交付的代码。",
     "alternativesRejected": [
       "在 npm 登录前直接展示可复制安装命令，会把 E404 包伪装为可用。",
@@ -109,8 +119,11 @@
       "npm run check",
       "npm run pack:check",
       "npm run example:install",
+      "npm publish --access public：poemui-miniprogram@0.1.0 发布成功。",
+      "npm view poemui-miniprogram@0.1.0：版本、integrity、shasum、repository 与 homepage 回读成功。",
+      "全新临时目录 npm install poemui-miniprogram@0.1.0 --save-exact：通过，0 vulnerabilities。",
       "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project \"/Users/fanx/Documents/poemUI 小程序组件库/miniprogram\"：AppID wx23aa017375535746 通过，warnings=[]。",
-      "miniprogram_dist、_example/node_modules 安装目录与真实 miniprogram_npm：540 个文件逐文件 SHA-256 一致。",
+      "公共 Registry 安装包 miniprogram_dist 与真实 miniprogram_npm：540 个文件逐文件 SHA-256 一致。",
       "node skills/poemui-miniprogram/scripts/inspect-project.mjs .",
       "node skills/poemui-miniprogram/scripts/verify-install.mjs ."
     ],
@@ -119,8 +132,6 @@
       "https://poemcoder.com/poem-ui/docs/：390px 与更窄移动视口无横向溢出，light/dark、真实剪贴板结果、资源加载和 console 通过。"
     ],
     "deviceRisks": [
-      "公共 npm 尚未登录和发布，Registry 安装链未验证。",
-      "GitHub owner/repository 尚未确认，公开 clone、Tag、Release 和 Skill 网络安装未验证。",
       "_example 使用 touristappid，微信 CLI 返回 code 10，不存在此 AppID；真实 AppID 工程已通过，但游客安装示例未生成 miniprogram_npm。",
       "小程序 pui-codepage 云端更新仍等待数据库写操作确认，未把待确认任务报告成成功。",
       "正式小程序码、微信审核/发布以及 iOS/Android 真机的组件、Skill 指导产物和共享云安装页仍需发布版本复核。"
@@ -129,8 +140,8 @@
   "ai": {
     "summary": "PoemUI 的 AI 和公开安装入口必须由真实版本与发布证据驱动；本地包名、tarball、页面卡片或构建不能替代公共可用性。",
     "rules": [
-      "公共 npm 未能通过 npm view 读取目标版本时，不展示可复制的 npm 安装动作。",
-      "GitHub 未绑定远端和公开 clone 前，不展示 Skill 一键网络安装或声称源码已公开。",
+      "公共 npm 未能通过 npm view 读取目标版本时，不展示可复制的 npm 安装动作；发布后还必须做全新目录安装与微信 build-npm。",
+      "GitHub 未公开回读前，不展示 Skill 网络安装或声称源码已公开；公开快照不得带云凭据、开发者私有配置和生成的 miniprogram_npm。",
       "Skill 从固定版本的包入口和组件合同工作，不复制会漂移的完整 API。",
       "已经进入 MIT 根包的代码继续属于 MIT Core；未来 Pro 只包含独立发行的新能力。",
       "快速开始的复制结果必须来自真实剪贴板成功或失败，并复用 PUI Button/Icon。",

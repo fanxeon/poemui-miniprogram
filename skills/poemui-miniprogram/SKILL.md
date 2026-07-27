@@ -42,4 +42,6 @@ description: 使用 PoemUI 开发、迁移或排查原生微信小程序界面�
 
 ## 版本合同
 
-本 Skill 的最低适配版本与当前验证版本均为 `poemui-miniprogram@0.1.0`。公共 npm/GitHub 尚未实际发布时，只能对本地包或已确认的 tarball 使用本 Skill，不得声称网络安装可用。遇到其他版本，先比较 `package.json`、公开入口、组件目录和合同，再继续修改。
+本 Skill 的最低适配版本与当前验证版本均为 `poemui-miniprogram@0.1.0`。公共 npm 与
+`https://github.com/fanxeon/poemui-miniprogram` 是当前网络安装真相源；遇到其他版本，
+先比较 `package.json`、公开入口、组件目录和合同，再继续修改。

@@ -1,6 +1,6 @@
 # PoemUI 受限 Beta 上线、H5、npm、GitHub 与 AI Skill Goal
 
-> 状态：Goal Mode 执行中；本地、H5 与官网已交付，npm/GitHub/正式小程序材料待外部权限
+> 状态：Goal Mode 收尾中；公共 npm、GitHub、H5 与官网已交付，正式小程序材料和真机仍待外部流程
 > 建立日期：2026-07-27
 > 主项目：`/Users/fanx/Documents/poemUI 小程序组件库`
 > 官网项目：`/Users/fanx/Documents/GitHub/poemcoder.com/poemcoder`
@@ -8,7 +8,7 @@
 > 推荐 H5 地址：`https://poemcoder.com/poem-ui/docs/`
 > 假定 npm 包名：`poemui-miniprogram`
 
-## 0. 2026-07-27 执行快照
+## 0. 2026-07-28 执行快照
 
 ### 已完成并有运行证据
 
@@ -20,8 +20,9 @@
   npm/GitHub 待发布状态和 H5 真实 CTA；桌面、390px、light/dark、链接点击和 console 已验。
 - `skills/poemui-miniprogram/` 已按标准 Skill 结构建立，并安装到当前 Codex Skill
   目录。`quick_validate.py`、真实小程序审计和安装验证脚本均通过。
-- H5 “安装”已升级为“快速开始”，公共 npm/GitHub 未发布时禁用不可执行的安装或
-  网络 Skill 动作；可复制的本地页面、视觉配置与 AI 任务示例均基于真实剪贴板结果。
+- H5 “安装”已升级为“快速开始”，现在提供固定版本
+  `npm install poemui-miniprogram@0.1.0`、公开 GitHub 与网络 Skill 动作；所有复制仍以
+  真实剪贴板结果为准。
 - `docs/PUBLIC_BETA_NOTICE.md` 已成为 MIT Core、当前免费受限 Beta 与未来独立
   PoemUI Pro 的公开边界。
 - `npm run site:build`、`npm run check`、`npm run pack:check`、
@@ -29,13 +30,16 @@
   `/Users/fanx/Documents/poemUI 小程序组件库/miniprogram` 的微信
   `build-npm` 通过，`warnings=[]`；`miniprogram_dist`、示例安装包与真实
   `miniprogram_npm` 的 540 个运行文件逐文件 SHA-256 一致。
+- 公共 npm `poemui-miniprogram@0.1.0` 已发布。Registry 回读的 tarball shasum 为
+  `bd9a2468d771ff3d631d59c6096247fdccc83b7d`；全新目录安装成功，真实
+  `miniprogram/` 已切换到公开固定版并再次完成微信 `build-npm`，安装包和微信产物
+  540 个运行文件逐文件 SHA-256 一致。
+- GitHub 仓库 <https://github.com/fanxeon/poemui-miniprogram> 已公开，默认分支为
+  `codex/public-beta-0.1.0`。公开快照排除了开发者私有配置、云凭据、缓存和生成的
+  `miniprogram_npm`；旧远端 `main` 保留，没有 force push。
 
 ### 精确外部阻断
 
-- 公共 npm：当前机器 `npm whoami` 为 `ENEEDAUTH`，Registry 查询
-  `poemui-miniprogram` 为 `E404`。需要用户完成 npm 登录/2FA 后才能发布和执行公共干净安装。
-- GitHub：当前仓库没有 remote，且目标 owner/repository 未指定。需要一个明确的公开仓库归属，
-  才能补齐 `repository/bugs`、推送、Tag、Release 和网络 Skill 安装。
 - 小程序云端快速开始：`pui-codepage` 的真实写入已提交，但仍等待云数据库写操作确认；
   未确认前不声明线上内容已更新。
 - `_example` 使用 `touristappid`，微信 CLI 报 `code 10 / 不存在此 AppID`，因此没有生成
@@ -64,8 +68,8 @@ Goal 完成不等于小程序已经通过微信正式审核，也不等于 npm�
 - npm 包名当前配置为 `poemui-miniprogram`，版本为 `0.1.0`，`publishConfig.access=public`。
 - `main` 与 `miniprogram` 均指向 `miniprogram_dist`。
 - `npm pack --dry-run` 已成功；本地 tarball 已在全新临时项目安装成功。
-- 当前机器尚未登录 npm，`npm whoami` 返回 `ENEEDAUTH`。
-- 公共 Registry 当前查询 `poemui-miniprogram` 返回 `E404`；包名看起来尚未公开，但最终注册权仍以登录后的发布校验为准。
+- 当前 npm 身份为 `poemcoder`；公共 Registry 已可回读
+  `poemui-miniprogram@0.1.0` 的版本、integrity、shasum、repository 与 homepage。
 - 小程序真实工程是 `miniprogram/`；`_example/` 仅用于安装链与历史示例，不得重新成为产品真相源。
 - 小程序第三个 Tab 已有真实“安装”页面，并通过共享云集合 `pui-codepage` 读取快速开始与未来 Skill 数据。
 - 小程序“我的”页已有“更新公告”和“高级版商业授权”入口；公告通过 `pui_updatelog` 读取，商业授权尚无支付、订单或授权后端。
