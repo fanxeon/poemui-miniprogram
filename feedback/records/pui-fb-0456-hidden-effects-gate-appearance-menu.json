@@ -7,7 +7,7 @@
   "type": "design-decision",
   "severity": "medium",
   "status": "resolved",
-  "acceptance": "pending-user",
+  "acceptance": "accepted",
   "source": "user-report",
   "reportedAt": "2026-07-28",
   "updatedAt": "2026-07-28",
@@ -30,6 +30,11 @@
       "kind": "user-report",
       "ref": "2026-07-28 当前任务对话",
       "note": "用户确认从外观设置移除暂停视觉效果入口。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 用户明确回复“我已确认”",
+      "note": "用户确认本轮受限 Beta 最终交付与外观菜单验收结果；PUI-FB-0456 由 pending-user 更新为 accepted。"
     },
     {
       "kind": "file",

@@ -2,7 +2,7 @@
 
 > 本文件由 `feedback/records/*.json` 自动生成，请勿手工编辑。工作流见 `docs/COMPONENT_FEEDBACK.md`。
 
-当前 438 条记录，数据更新至 2026-07-28：open 0、investigating 0、planned 0、needs-device 1、resolved 436；pending-user 250、accepted 181。
+当前 438 条记录，数据更新至 2026-07-28：open 0、investigating 0、planned 0、needs-device 1、resolved 436；pending-user 249、accepted 182。
 
 | ID | 范围 | 类型 | 严重度 | 状态 | 验收 | 问题 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -443,7 +443,7 @@
 | PUI-FB-0453 | miniprogram, card, input, cell, cell-group | visual-layout | medium | resolved | pending-user | 我的页服务 CellGroup 需要避让资料输入区的投影 |
 | PUI-FB-0454 | miniprogram, button, icon, tabbar | visual-layout | low | resolved | pending-user | 我的页客服入口应进入 Navbar 左 Slot |
 | PUI-FB-0455 | h5, miniprogram, npm, skill, documentation | ai-usability | high | resolved | accepted | 公共发布准备需要真实快速开始、Beta 边界与 AI Skill |
-| PUI-FB-0456 | config-provider, miniprogram, preview-site, switch | design-decision | medium | resolved | pending-user | 用户外观菜单不应暴露含糊的总效果闸门 |
+| PUI-FB-0456 | config-provider, miniprogram, preview-site, switch | design-decision | medium | resolved | accepted | 用户外观菜单不应暴露含糊的总效果闸门 |
 
 ## PUI-FB-0001 · Style Utilities 缺少显式深色条件变体
 
@@ -11965,7 +11965,7 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0456-hidden-effects-gate-appearance-menu.json`
 - 范围：`global` / `config-provider`、`miniprogram`、`preview-site`、`switch`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-28
 - 用户目标：删除外观设置中含糊且重复的视觉效果总开关，同时保留开发者 API、预设与旧偏好兼容。
 - 实际问题：小程序和 H5 已移除总效果 Switch及其禁用逻辑；外观 UI 归一化旧暂停状态，公共 visualConfig、ConfigProvider 和 setEffectsEnabled 保持不变。
 - 决策：小程序与 H5 用户菜单隐藏 effectsEnabled；旧 false 在外观 UI 初始化时迁移为 true 并保留 shadow/frost/radius；公共 Store/API、Provider 和预设继续支持该字段。
