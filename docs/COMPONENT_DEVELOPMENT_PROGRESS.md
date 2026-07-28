@@ -1203,4 +1203,4 @@
 
 - **用户界面**：小程序共享 `appearance-settings` 与 H5 外观菜单删除含糊且重复的 `effectsEnabled` Switch，只保留边框、阴影、毛玻璃、大圆角、渐变、间距相等和深色七项；阴影、毛玻璃和大圆角不再因不可见闸门进入 disabled。
 - **兼容边界**：公共 `visualConfig.effectsEnabled / setEffectsEnabled()`、ConfigProvider 有效值、持久化 Schema 和预设继续保留。外观 UI 读取旧的 `effectsEnabled=false` 时恢复为开启，同时保留三个单项，避免隐藏状态锁死用户；开发者不使用该示例菜单时仍可通过 API 暂停效果。
-- **验证**：小程序 AppearanceSettings、H5 外观菜单、ConfigProvider、果味预设、全部组件详情页与 `test-miniprogram-home` 专项通过；后者的依赖断言已从发布前 `file:..` 更新为公共固定版 `0.1.0`。完整 `npm run check`、`site:build`、`pack:check` 与 `git diff --check` 均通过。Ledger：`PUI-FB-0456`（resolved / pending-user）。
+- **验证**：小程序 AppearanceSettings、H5 外观菜单、ConfigProvider、果味预设、全部组件详情页与 `test-miniprogram-home` 专项通过；后者的依赖断言已从发布前 `file:..` 更新为公共固定版 `0.1.0`。完整 `npm run check`、`site:build`、`pack:check` 与 `git diff --check` 均通过；用户于 2026-07-28 明确确认最终交付。Ledger：`PUI-FB-0456`（resolved / accepted）。
