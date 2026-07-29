@@ -3,6 +3,7 @@
 var tabbarNavigation = require('../../common/utils/tabbar-navigation');
 var catalog = require('../../common/data/style-utilities-catalog');
 var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
+var platformInfo = require('poemui-miniprogram/common/utils/platform-info');
 var backgroundPreference = require('../../common/utils/page-background-preference');
 
 var DEFAULT_GROUP = 'layout';
@@ -103,7 +104,7 @@ function filterItems(items, query) {
 }
 
 function rpxToPx(rpx) {
-  var info = wx.getWindowInfo ? wx.getWindowInfo() : (wx.getSystemInfoSync ? wx.getSystemInfoSync() : {});
+  var info = platformInfo.getWindowInfo();
   var width = Number(info && info.windowWidth) || 375;
   return width * Number(rpx || 0) / 750;
 }

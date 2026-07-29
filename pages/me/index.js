@@ -7,32 +7,182 @@ var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
 
 var SHISHANG_APP_ID = 'wxa1b9a4d6549c6cd1';
 var LICENSE_PAGE_ROUTE = '/pages/license/index';
+var CHART_VERSION_THEMES = ['blue', 'teal', 'violet', 'amber', 'pink', 'neutral'];
+var COLLAPSED_CATEGORY_COUNT = 4;
+var HIDDEN_CHART_CATEGORIES = {
+  'getting-started': true
+};
 var ANNOUNCEMENTS = updateAnnouncements.initial();
 var LATEST_ANNOUNCEMENT = updateAnnouncements.latest(ANNOUNCEMENTS);
 
-function dashboardTrendItems() {
-  return [
-    {
-      key: componentStatus.previousVersion,
-      label: componentStatus.previousVersion,
-      segments: [{
-        key: 'components',
-        label: '组件总数',
-        value: componentStatus.previousTotal,
-        theme: 'blue'
-      }]
-    },
-    {
-      key: componentStatus.currentVersion,
-      label: componentStatus.currentVersion,
-      segments: [{
-        key: 'components',
-        label: '组件总数',
-        value: componentStatus.total,
-        theme: 'blue'
-      }]
-    }
-  ];
+function categoryCountMap(announcement) {
+  var result = {};
+  var categories = announcement && Array.isArray(announcement.categoryCounts)
+    ? announcement.categoryCounts
+    : [];
+  categories.forEach(function rememberCategory(category) {
+    result[category.key] = Math.max(0, Number(category.count) || 0);
+  });
+  return result;
+}
+
+function chartItemSummary(item) {
+  var total = item.segments.reduce(function sumSegments(sum, segment) {
+    return sum + segment.value;
+  }, 0);
+  return item.label + '共 ' + total + ' 个（' + item.segments.map(function summarizeSegment(segment) {
+    return segment.label + ' ' + segment.value + ' 个';
+  }).join('，') + '）';
+}
+
+function prioritizeIncrementedCategories(items) {
+  return items.map(function rememberSourceOrder(item, index) {
+    return {
+      item: item,
+      index: index,
+      hasIncrement: item.segments.slice(1).some(function hasPositiveIncrement(segment) {
+        return segment.value > 0;
+      })
+    };
+  }).sort(function sortIncrementedFirst(left, right) {
+    if (left.hasIncrement !== right.hasIncrement) return left.hasIncrement ? -1 : 1;
+    return left.index - right.index;
+  }).map(function restoreItem(entry) {
+    return entry.item;
+  });
+}
+
+function chartVersionTagStyle(theme) {
+  var normalizedTheme = CHART_VERSION_THEMES.indexOf(theme) >= 0 ? theme : 'neutral';
+  var backgroundToken = normalizedTheme === 'neutral'
+    ? '--pui-bg-secondary'
+    : '--pui-color-' + normalizedTheme + '-soft';
+  return 'color:var(--pui-chart-accent-' + normalizedTheme + ');'
+    + 'background:var(' + backgroundToken + ');'
+    + 'box-shadow:none;';
+}
+
+function chartVersionLegend(items) {
+  var seen = {};
+  return items.reduce(function collectLegend(result, item) {
+    item.segments.forEach(function collectSegment(segment) {
+      var key = segment.theme + ':' + segment.label;
+      if (seen[key]) return;
+      seen[key] = true;
+      result.push({
+        key: key,
+        label: segment.label,
+        theme: segment.theme,
+        customStyle: chartVersionTagStyle(segment.theme)
+      });
+    });
+    return result;
+  }, []);
+}
+
+function visibleCategoryChart(chart, expanded) {
+  var visibleItems = expanded
+    ? chart.items
+    : chart.items.slice(0, COLLAPSED_CATEGORY_COUNT);
+  return {
+    items: visibleItems,
+    ariaLabel: chart.ariaPrefix
+      + '；' + (expanded
+        ? '已展开全部 ' + chart.items.length + ' 类：'
+        : '已折叠，当前显示前 ' + visibleItems.length + ' 类：')
+      + visibleItems.map(chartItemSummary).join('；')
+  };
+}
+
+function dashboardCategoryChart(announcements) {
+  var list = Array.isArray(announcements) ? announcements : [];
+  var versions = list.filter(function validVersion(announcement) {
+    return announcement
+      && announcement.version
+      && Array.isArray(announcement.categoryCounts)
+      && announcement.categoryCounts.length;
+  }).slice().sort(function oldestFirst(left, right) {
+    return String(left.date || '').localeCompare(String(right.date || ''));
+  });
+  var current = versions[versions.length - 1];
+  var baseline = versions[0];
+  var currentCategories = current && Array.isArray(current.categoryCounts)
+    ? current.categoryCounts
+    : [];
+  var versionCategoryMaps = versions.map(categoryCountMap);
+  var currentVersion = current && current.version ? current.version : '当前版本';
+  var baselineVersion = baseline && baseline.version ? baseline.version : '前序版本';
+  var items = currentCategories.filter(function visibleCategory(category) {
+    return !HIDDEN_CHART_CATEGORIES[category.key];
+  }).map(function mapCategory(category) {
+    var currentCount = Math.max(0, Number(category.count) || 0);
+    var allocated = 0;
+    return {
+      key: category.key,
+      label: category.label,
+      segments: versions.map(function mapVersion(announcement, versionIndex) {
+        var versionCount = Math.min(
+          currentCount,
+          versionCategoryMaps[versionIndex][category.key] || 0
+        );
+        var value = versionIndex === 0
+          ? versionCount
+          : Math.max(0, versionCount - allocated);
+        allocated += value;
+        return {
+          key: 'version-' + versionIndex,
+          label: announcement.version,
+          value: value,
+          theme: CHART_VERSION_THEMES[versionIndex % CHART_VERSION_THEMES.length]
+        };
+      })
+    };
+  });
+  if (!items.length) {
+    items = componentStatus.items().filter(function visibleGeneratedCategory(category) {
+      return !HIDDEN_CHART_CATEGORIES[category.key];
+    }).map(function mapGeneratedCategory(category) {
+      return {
+        key: category.key,
+        label: category.label,
+        segments: category.segments.map(function mapSegment(segment) {
+          return {
+            key: segment.key === 'previous' ? 'baseline' : segment.key,
+            label: String(segment.label || '').replace(/\s+(已有|新增)$/, ''),
+            value: segment.value,
+            theme: segment.theme
+          };
+        })
+      };
+    });
+  }
+  items = prioritizeIncrementedCategories(items);
+  var maximum = items.reduce(function findMaximum(result, item) {
+    return Math.max(result, item.segments.reduce(function sumSegments(sum, segment) {
+      return sum + segment.value;
+    }, 0));
+  }, 0);
+  var totalIncrement = Math.max(
+    0,
+    Number(current && current.componentCount) - Number(baseline && baseline.componentCount)
+  ) || 0;
+  var versionLabels = versions.map(function versionLabel(announcement) {
+    return announcement.version;
+  });
+  var legendItems = chartVersionLegend(items);
+  var ariaPrefix = 'PoemUI 组件分类分版本增量，'
+    + (versionLabels.length ? '依次展示 ' + versionLabels.join('、') : '展示可用版本')
+    + '；从 ' + baselineVersion + ' 到 ' + currentVersion
+    + ' 共新增 ' + totalIncrement + ' 个';
+  return {
+    items: items,
+    maximum: maximum,
+    ariaPrefix: ariaPrefix,
+    legendItems: legendItems,
+    legendAriaLabel: '版本颜色：' + legendItems.map(function legendLabel(item) {
+      return item.label;
+    }).join('、')
+  };
 }
 
 function componentCategoryValue(key) {
@@ -47,7 +197,14 @@ function dashboardMetrics() {
   return [
     { key: 'components', label: '组件', value: componentStatus.total },
     { key: 'styles', label: '样式', value: styleUtilitiesCatalog.items.length },
-    { key: 'advanced', label: '高级', value: componentCategoryValue('advanced') }
+    { key: 'advanced', label: '高级', value: componentCategoryValue('advanced') },
+    {
+      key: 'increment',
+      label: '新增',
+      value: componentStatus.incrementTotal,
+      icon: 'sparkles',
+      iconColor: 'var(--pui-chart-accent-violet)'
+    }
   ];
 }
 
@@ -55,16 +212,29 @@ function getWindowHeight() {
   return wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
 }
 
+var INITIAL_CATEGORY_CHART = dashboardCategoryChart(ANNOUNCEMENTS);
+var INITIAL_VISIBLE_CATEGORY_CHART = visibleCategoryChart(INITIAL_CATEGORY_CHART, false);
+
 Page({
   data: {
     activeTab: 'me',
     tabbarItems: tabbarNavigation.getItems(),
     componentStatusMetrics: dashboardMetrics(),
-    componentStatusTrendItems: dashboardTrendItems(),
-    componentStatusMaximum: componentStatus.total,
+    componentStatusCategoryItems: INITIAL_CATEGORY_CHART.items,
+    componentStatusVisibleCategoryItems: INITIAL_VISIBLE_CATEGORY_CHART.items,
+    componentStatusMaximum: INITIAL_CATEGORY_CHART.maximum,
+    componentStatusVersionLegendItems: INITIAL_CATEGORY_CHART.legendItems,
+    componentStatusVersionLegendAriaLabel: INITIAL_CATEGORY_CHART.legendAriaLabel,
     componentStatusAnimationDuration: 1000,
-    componentStatusMetricsAriaLabel: 'PoemUI 当前有 ' + componentStatus.total + ' 个组件、' + styleUtilitiesCatalog.items.length + ' 个样式和 ' + componentCategoryValue('advanced') + ' 个高级组件',
-    componentStatusAriaLabel: 'PoemUI 组件总数从版本 ' + componentStatus.previousVersion + ' 的 ' + componentStatus.previousTotal + ' 个增长到版本 ' + componentStatus.currentVersion + ' 的 ' + componentStatus.total + ' 个，本版新增 ' + componentStatus.incrementTotal + ' 个',
+    componentStatusMetricsAriaLabel: 'PoemUI 当前有 ' + componentStatus.total + ' 个组件、' + styleUtilitiesCatalog.items.length + ' 个样式、' + componentCategoryValue('advanced') + ' 个高级组件，本版新增 ' + componentStatus.incrementTotal + ' 个组件',
+    componentStatusAriaPrefix: INITIAL_CATEGORY_CHART.ariaPrefix,
+    componentStatusAriaLabel: INITIAL_VISIBLE_CATEGORY_CHART.ariaLabel,
+    componentStatusChartExpanded: false,
+    componentStatusChartToggleVisible: INITIAL_CATEGORY_CHART.items.length > COLLAPSED_CATEGORY_COUNT,
+    componentStatusChartToggleLabel: '查看更多',
+    componentStatusChartToggleIcon: 'chevron-down',
+    componentStatusChartTransitioning: false,
+    componentStatusChartViewportStyle: '',
     announcements: ANNOUNCEMENTS,
     latestAnnouncementVersion: LATEST_ANNOUNCEMENT ? LATEST_ANNOUNCEMENT.version : '',
     announcementSource: 'local',
@@ -73,6 +243,7 @@ Page({
     announcementPopupVisible: false,
     appearancePopupVisible: false,
     announcementScrollTop: 0,
+    announcementScrollTarget: 'me-announcement-top-a',
     announcementPopupStyle: '',
     licenseDialogVisible: false,
     licenseNavigating: false,
@@ -92,6 +263,7 @@ Page({
 
   onLoad: function onLoad() {
     var self = this;
+    this._componentStatusChart = INITIAL_CATEGORY_CHART;
     backgroundPreference.restore();
     this._unsubscribeBackgroundPreference = backgroundPreference.subscribe(function onPreferenceChange(enabled) {
       self.setData({ backgroundGradientEnabled: Boolean(enabled) });
@@ -107,10 +279,12 @@ Page({
 
   onReady: function onReady() {
     this.scheduleMeasureLayout();
+    this.scheduleMeasureComponentStatusChart();
   },
 
   onUnload: function onUnload() {
     clearTimeout(this._measureTimer);
+    clearTimeout(this._componentStatusChartMeasureTimer);
     if (this._unsubscribeBackgroundPreference) this._unsubscribeBackgroundPreference();
     if (wx.offWindowResize && this._windowResizeHandler) wx.offWindowResize(this._windowResizeHandler);
   },
@@ -169,12 +343,27 @@ Page({
   },
 
   onOpenAnnouncements: function onOpenAnnouncements() {
+    var self = this;
+    var nextScrollTarget = this.data.announcementScrollTarget === 'me-announcement-top-a'
+      ? 'me-announcement-top-b'
+      : 'me-announcement-top-a';
     this.setData({
       appearancePopupVisible: false,
       announcementPopupVisible: true,
       announcementScrollTop: 0
+    }, function announcementPopupOpened() {
+      wx.nextTick(function scrollAnnouncementToTop() {
+        self.setData({ announcementScrollTarget: nextScrollTarget });
+      });
     });
     this.loadAnnouncements();
+  },
+
+  onAnnouncementScroll: function onAnnouncementScroll(event) {
+    var detail = event && event.detail ? event.detail : {};
+    var scrollTop = Math.max(0, Number(detail.scrollTop) || 0);
+    if (scrollTop === this.data.announcementScrollTop) return;
+    this.setData({ announcementScrollTop: scrollTop });
   },
 
   onOpenAppearance: function onOpenAppearance() {
@@ -206,12 +395,26 @@ Page({
         : [];
       var latest = updateAnnouncements.latest(announcements);
       var error = result && result.error;
+      var categoryChart = dashboardCategoryChart(announcements);
+      var expanded = Boolean(self.data.componentStatusChartExpanded);
+      var visibleChart = visibleCategoryChart(categoryChart, expanded);
+      self._componentStatusChart = categoryChart;
       self.setData({
         announcements: announcements,
+        componentStatusCategoryItems: categoryChart.items,
+        componentStatusVisibleCategoryItems: visibleChart.items,
+        componentStatusMaximum: categoryChart.maximum,
+        componentStatusVersionLegendItems: categoryChart.legendItems,
+        componentStatusVersionLegendAriaLabel: categoryChart.legendAriaLabel,
+        componentStatusAriaPrefix: categoryChart.ariaPrefix,
+        componentStatusAriaLabel: visibleChart.ariaLabel,
+        componentStatusChartToggleVisible: categoryChart.items.length > COLLAPSED_CATEGORY_COUNT,
         latestAnnouncementVersion: latest ? latest.version : '',
         announcementSource: result && result.source ? result.source : 'local',
         announcementSyncError: error ? String(error.errMsg || error.message || error) : '',
         announcementLoadingState: result && result.source === 'cloud' && !error ? 'success' : 'idle'
+      }, function announcementsCommitted() {
+        self.scheduleMeasureComponentStatusChart();
       });
       return result;
     }).catch(function onLoadFailed(error) {
@@ -279,6 +482,117 @@ Page({
 
   onWindowResize: function onWindowResize() {
     this.scheduleMeasureLayout();
+    this.scheduleMeasureComponentStatusChart();
+  },
+
+  scheduleMeasureComponentStatusChart: function scheduleMeasureComponentStatusChart() {
+    clearTimeout(this._componentStatusChartMeasureTimer);
+    this._componentStatusChartMeasureTimer = setTimeout(
+      this.syncComponentStatusChartHeight.bind(this),
+      0
+    );
+  },
+
+  measureComponentStatusChart: function measureComponentStatusChart(callback) {
+    var chart = this.selectComponent && this.selectComponent('#me-component-status-chart');
+    if (!chart || typeof chart.createSelectorQuery !== 'function') return false;
+    chart.createSelectorQuery().select('.pui-bar-chart').boundingClientRect().exec(function measured(rects) {
+      var height = rects && rects[0] ? Math.ceil(Number(rects[0].height) || 0) : 0;
+      if (height > 0 && typeof callback === 'function') callback(height);
+    });
+    return true;
+  },
+
+  syncComponentStatusChartHeight: function syncComponentStatusChartHeight() {
+    var self = this;
+    this.measureComponentStatusChart(function applyMeasuredHeight(height) {
+      if (self.data.componentStatusChartExpanded) {
+        self._componentStatusChartExpandedHeight = height;
+      } else {
+        self._componentStatusChartCollapsedHeight = height;
+      }
+      self.setData({
+        componentStatusChartViewportStyle: 'height:' + height + 'px;'
+      });
+    });
+  },
+
+  onToggleComponentStatusChart: function onToggleComponentStatusChart() {
+    if (this.data.componentStatusChartTransitioning) return false;
+    var nextExpanded = !this.data.componentStatusChartExpanded;
+    var chart = this._componentStatusChart || {
+      items: this.data.componentStatusCategoryItems,
+      ariaPrefix: this.data.componentStatusAriaPrefix
+    };
+    var visibleChart = visibleCategoryChart(chart, nextExpanded);
+    var self = this;
+    if (!nextExpanded) {
+      var collapsedHeight = Number(this._componentStatusChartCollapsedHeight) || 0;
+      if (!collapsedHeight) {
+        this.setData({
+          componentStatusChartExpanded: false,
+          componentStatusVisibleCategoryItems: visibleChart.items,
+          componentStatusAriaLabel: visibleChart.ariaLabel,
+          componentStatusChartToggleLabel: '查看更多',
+          componentStatusChartToggleIcon: 'chevron-down',
+          componentStatusChartTransitioning: false
+        }, function collapsedWithoutCachedHeight() {
+          self.scheduleMeasureComponentStatusChart();
+        });
+        return true;
+      }
+      this.setData({
+        componentStatusChartExpanded: false,
+        componentStatusAriaLabel: visibleChart.ariaLabel,
+        componentStatusChartToggleLabel: '查看更多',
+        componentStatusChartToggleIcon: 'chevron-down',
+        componentStatusChartTransitioning: true,
+        componentStatusChartViewportStyle: 'height:' + collapsedHeight + 'px;'
+      });
+      return true;
+    }
+    this.setData({
+      componentStatusChartExpanded: true,
+      componentStatusVisibleCategoryItems: visibleChart.items,
+      componentStatusAriaLabel: visibleChart.ariaLabel,
+      componentStatusChartToggleLabel: '收起',
+      componentStatusChartToggleIcon: 'chevron-up',
+      componentStatusChartTransitioning: true
+    }, function expandedItemsCommitted() {
+      var measureExpanded = function measureExpanded() {
+        self.measureComponentStatusChart(function applyExpandedHeight(height) {
+          self._componentStatusChartExpandedHeight = height;
+          self.setData({
+            componentStatusChartViewportStyle: 'height:' + height + 'px;'
+          });
+        });
+      };
+      if (typeof wx.nextTick === 'function') {
+        wx.nextTick(measureExpanded);
+      } else {
+        setTimeout(measureExpanded, 0);
+      }
+    });
+    return true;
+  },
+
+  onComponentStatusChartTransitionEnd: function onComponentStatusChartTransitionEnd(event) {
+    var propertyName = event && event.detail && event.detail.propertyName;
+    if (propertyName && propertyName !== 'height') return;
+    if (this.data.componentStatusChartExpanded) {
+      this.setData({ componentStatusChartTransitioning: false });
+      return;
+    }
+    var chart = this._componentStatusChart || {
+      items: this.data.componentStatusCategoryItems,
+      ariaPrefix: this.data.componentStatusAriaPrefix
+    };
+    var visibleChart = visibleCategoryChart(chart, false);
+    this.setData({
+      componentStatusVisibleCategoryItems: visibleChart.items,
+      componentStatusAriaLabel: visibleChart.ariaLabel,
+      componentStatusChartTransitioning: false
+    });
   },
 
   scheduleMeasureLayout: function scheduleMeasureLayout() {
@@ -298,8 +612,10 @@ Page({
       if (!navbarHeight || !tabbarHeight) return;
       this.setData({
         contentHeight: Math.max(1, Math.floor(windowHeight - navbarHeight - tabbarHeight)) + 'px',
-        announcementPopupStyle: 'height:calc(100vh - ' + navbarHeight + 'px - 24rpx);',
+        announcementPopupStyle: 'max-height:calc(100vh - ' + navbarHeight + 'px - 24rpx);',
         layoutReady: true
+      }, function layoutCommitted() {
+        this.scheduleMeasureComponentStatusChart();
       });
     }.bind(this));
   },

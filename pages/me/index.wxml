@@ -55,35 +55,87 @@
               shadow
               aria-label="PoemUI 组件状态仪表盘"
             >
-              <view
-                id="me-component-status-metrics"
-                class="me-page__dashboard-metrics"
-                role="group"
-                aria-label="{{componentStatusMetricsAriaLabel}}"
-              >
+              <view class="me-page__dashboard-content">
                 <view
-                  wx:for="{{componentStatusMetrics}}"
-                  wx:key="key"
-                  class="me-page__dashboard-metric"
-                  aria-label="{{item.value}} 个{{item.label}}"
+                  id="me-component-status-metrics"
+                  class="me-page__dashboard-metrics"
+                  role="group"
+                  aria-label="{{componentStatusMetricsAriaLabel}}"
                 >
-                  <text class="me-page__dashboard-metric-value">{{item.value}}</text>
-                  <text class="me-page__dashboard-metric-label">{{item.label}}</text>
+                  <view
+                    wx:for="{{componentStatusMetrics}}"
+                    wx:key="key"
+                    class="me-page__dashboard-metric"
+                    aria-label="{{item.value}} 个{{item.label}}"
+                  >
+                    <text class="me-page__dashboard-metric-value">{{item.value}}</text>
+                    <view class="me-page__dashboard-metric-label-row">
+                      <text class="me-page__dashboard-metric-label">{{item.label}}</text>
+                      <pui-icon
+                        wx:if="{{item.icon}}"
+                        name="{{item.icon}}"
+                        size="{{20}}"
+                        color="{{item.iconColor}}"
+                      />
+                    </view>
+                  </view>
+                </view>
+                <view
+                  class="me-page__dashboard-chart"
+                  role="group"
+                  aria-label="PoemUI 组件分类版本增量"
+                  aria-expanded="{{componentStatusChartExpanded}}"
+                >
+                  <view
+                    id="me-component-status-chart-viewport"
+                    class="me-page__dashboard-chart-viewport"
+                    style="{{componentStatusChartViewportStyle}}"
+                    bindtransitionend="onComponentStatusChartTransitionEnd"
+                  >
+                    <pui-bar-chart
+                      id="me-component-status-chart"
+                      items="{{componentStatusVisibleCategoryItems}}"
+                      max="{{componentStatusMaximum}}"
+                      orientation="horizontal"
+                      mode="stacked"
+                      size="small"
+                      duration="{{componentStatusAnimationDuration}}"
+                      show-value
+                      show-legend="{{false}}"
+                      aria-label="{{componentStatusAriaLabel}}"
+                    />
+                  </view>
+                  <view
+                    class="me-page__dashboard-version-tags"
+                    role="group"
+                    aria-label="{{componentStatusVersionLegendAriaLabel}}"
+                  >
+                    <pui-tag
+                      wx:for="{{componentStatusVersionLegendItems}}"
+                      wx:key="key"
+                      content="{{item.label}}"
+                      theme="default"
+                      variant="light"
+                      size="small"
+                      shape="round"
+                      custom-style="{{item.customStyle}}"
+                    />
+                  </view>
+                  <pui-button
+                    wx:if="{{componentStatusChartToggleVisible}}"
+                    id="me-component-status-chart-toggle"
+                    block
+                    theme="default"
+                    variant="transparent"
+                    size="small"
+                    icon="{{componentStatusChartToggleIcon}}"
+                    content="{{componentStatusChartToggleLabel}}"
+                    disabled="{{componentStatusChartTransitioning}}"
+                    aria-label="{{componentStatusChartExpanded ? '收起组件分类图表' : '查看更多组件分类图表'}}"
+                    bind:click="onToggleComponentStatusChart"
+                  />
                 </view>
               </view>
-              <pui-area-chart
-                wx:if="{{!announcementPopupVisible && !licenseDialogVisible && !appearancePopupVisible}}"
-                id="me-component-status-chart"
-                items="{{componentStatusTrendItems}}"
-                max="{{componentStatusMaximum}}"
-                size="small"
-                duration="{{componentStatusAnimationDuration}}"
-                show-grid
-                show-x-axis
-                show-legend="{{false}}"
-                show-dots
-                aria-label="{{componentStatusAriaLabel}}"
-              />
             </pui-card>
           </view>
           <view id="me-services" class="me-page__services">
@@ -184,13 +236,17 @@
       <view id="me-announcement-content" slot="content" class="me-announcement-popup__content">
         <pui-scroll-area
           id="me-announcement-scroll-area"
-          height="78vh"
+          height="auto"
+          max-height="60vh"
           scroll-top="{{announcementScrollTop}}"
+          scroll-into-view="{{announcementScrollTarget}}"
           content-padding-bottom="0"
           gradient-overlay-size="sm"
           aria-label="PoemUI 更新公告内容"
-          custom-style="max-height:100%;"
+          bind:scroll="onAnnouncementScroll"
         >
+          <view id="me-announcement-top-a" aria-hidden="true"></view>
+          <view id="me-announcement-top-b" aria-hidden="true"></view>
           <view class="me-announcements">
             <view
               wx:for="{{announcements}}"

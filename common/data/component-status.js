@@ -8,6 +8,20 @@ var STATUS = {
   "previousTotal": 71,
   "incrementTotal": 3,
   "maximum": 19,
+  "versions": [
+    {
+      "version": "0.1.0",
+      "total": 71
+    },
+    {
+      "version": "0.1.1",
+      "total": 74
+    },
+    {
+      "version": "0.1.2",
+      "total": 74
+    }
+  ],
   "items": [
     {
       "key": "getting-started",
@@ -175,6 +189,15 @@ function items() {
   });
 }
 
+function versions() {
+  return STATUS.versions.map(function clone(version) {
+    return {
+      version: version.version,
+      total: version.total
+    };
+  });
+}
+
 module.exports = {
   baseline: STATUS.baseline,
   currentVersion: STATUS.currentVersion,
@@ -183,5 +206,6 @@ module.exports = {
   previousTotal: STATUS.previousTotal,
   incrementTotal: STATUS.incrementTotal,
   maximum: STATUS.maximum,
+  versions: versions,
   items: items
 };

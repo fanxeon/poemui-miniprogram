@@ -1,5 +1,4 @@
 {
-  "enableShareTimeline": true,
   "usingComponents": {
     "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
     "pui-navbar": "poemui-miniprogram/navbar/navbar",

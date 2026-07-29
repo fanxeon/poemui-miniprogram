@@ -2,6 +2,20 @@ var RESOURCE_APP_ID = 'wxa1b9a4d6549c6cd1';
 var RESOURCE_ENV = 'poemcoder-1gkbkid139b08f45';
 var COLLECTION_NAME = 'pui_updatelog';
 var CACHE_KEY = 'poemui-update-announcements';
+var componentStatus = require('../data/component-status');
+
+function categoryCounts(usePreviousValue) {
+  return componentStatus.items().map(function mapCategory(item) {
+    return {
+      key: item.key,
+      label: item.label,
+      count: usePreviousValue ? item.previousValue : item.value
+    };
+  });
+}
+
+var CURRENT_CATEGORY_COUNTS = categoryCounts(false);
+var PREVIOUS_CATEGORY_COUNTS = categoryCounts(true);
 
 var FALLBACK_ANNOUNCEMENTS = [
   {
@@ -10,6 +24,8 @@ var FALLBACK_ANNOUNCEMENTS = [
     date: '2026-07-29',
     title: 'PoemUI v0.1.2 更新',
     summary: '新增高级图表，完成组件交互与跨端体验修缮。',
+    componentCount: componentStatus.total,
+    categoryCounts: CURRENT_CATEGORY_COUNTS,
     highlights: [
       {
         component: '高级图表',
@@ -38,12 +54,12 @@ var FALLBACK_ANNOUNCEMENTS = [
       {
         component: '小程序',
         icon: 'cloud',
-        title: '安装与状态页升级',
-        description: '安装内容云端读取；“我的”以 AreaChart 展示 71 → 74。'
+        title: '状态页与首页修正',
+        description: 'Me BarChart 按八类展示 v0.1.0、v0.1.1、v0.1.2 增量并平滑展开；首页移除无效分享配置。'
       }
     ],
     status: 'published',
-    schemaVersion: 1
+    schemaVersion: 2
   },
   {
     id: 'pui-v0-1-1-20260728',
@@ -51,6 +67,10 @@ var FALLBACK_ANNOUNCEMENTS = [
     date: '2026-07-28',
     title: 'PoemUI v0.1.1 更新',
     summary: '新增高级图表，集中优化组件交互与小程序体验。',
+    componentCount: componentStatus.versions().filter(function findVersion(item) {
+      return item.version === '0.1.1';
+    })[0].total,
+    categoryCounts: CURRENT_CATEGORY_COUNTS,
     highlights: [
       {
         component: '高级图表',
@@ -84,7 +104,7 @@ var FALLBACK_ANNOUNCEMENTS = [
       }
     ],
     status: 'published',
-    schemaVersion: 1
+    schemaVersion: 2
   },
   {
     id: 'pui-v0-1-0-20260727',
@@ -92,6 +112,8 @@ var FALLBACK_ANNOUNCEMENTS = [
     date: '2026-07-27',
     title: 'PoemUI v0.1.0 更新',
     summary: '小程序入口、组件体验与快速样式完成一轮系统更新。',
+    componentCount: componentStatus.previousTotal,
+    categoryCounts: PREVIOUS_CATEGORY_COUNTS,
     highlights: [
       {
         component: '我的',
@@ -125,7 +147,7 @@ var FALLBACK_ANNOUNCEMENTS = [
       }
     ],
     status: 'published',
-    schemaVersion: 1
+    schemaVersion: 2
   }
 ];
 
@@ -146,6 +168,14 @@ function cloneHighlight(highlight) {
   };
 }
 
+function cloneCategoryCount(category) {
+  return {
+    key: category.key,
+    label: category.label,
+    count: category.count
+  };
+}
+
 function cloneAnnouncement(announcement) {
   return {
     id: announcement.id,
@@ -153,9 +183,24 @@ function cloneAnnouncement(announcement) {
     date: announcement.date,
     title: announcement.title,
     summary: announcement.summary,
+    componentCount: announcement.componentCount,
+    categoryCounts: announcement.categoryCounts.map(cloneCategoryCount),
     highlights: announcement.highlights.map(cloneHighlight),
     status: announcement.status,
     schemaVersion: announcement.schemaVersion
+  };
+}
+
+function normalizeCategoryCount(category) {
+  var source = category && typeof category === 'object' ? category : {};
+  var key = cleanText(source.key);
+  var label = cleanText(source.label);
+  var count = Number(source.count);
+  if (!key || !label || !Number.isFinite(count) || count < 0 || Math.floor(count) !== count) return null;
+  return {
+    key: key,
+    label: label,
+    count: count
   };
 }
 
@@ -175,6 +220,9 @@ function normalizeHighlight(highlight) {
 
 function normalizeAnnouncement(announcement) {
   var source = announcement && typeof announcement === 'object' ? announcement : {};
+  var categoryCounts = Array.isArray(source.categoryCounts)
+    ? source.categoryCounts.map(normalizeCategoryCount).filter(Boolean)
+    : [];
   var highlights = Array.isArray(source.highlights)
     ? source.highlights.map(normalizeHighlight).filter(Boolean)
     : [];
@@ -182,13 +230,37 @@ function normalizeAnnouncement(announcement) {
   var version = cleanText(source.version);
   var date = cleanText(source.date);
   var title = cleanText(source.title);
-  if (!id || !version || !date || !title || !highlights.length) return null;
+  var componentCount = Number(source.componentCount);
+  var categoryTotal = categoryCounts.reduce(function sumCategories(sum, category) {
+    return sum + category.count;
+  }, 0);
+  var categoryKeys = {};
+  var hasUniqueCategories = categoryCounts.every(function rememberCategory(category) {
+    if (categoryKeys[category.key]) return false;
+    categoryKeys[category.key] = true;
+    return true;
+  });
+  if (
+    !id
+    || !version
+    || !date
+    || !title
+    || !highlights.length
+    || !Number.isFinite(componentCount)
+    || componentCount <= 0
+    || Math.floor(componentCount) !== componentCount
+    || !categoryCounts.length
+    || !hasUniqueCategories
+    || categoryTotal !== componentCount
+  ) return null;
   return {
     id: id,
     version: version,
     date: date,
     title: title,
     summary: cleanText(source.summary),
+    componentCount: componentCount,
+    categoryCounts: categoryCounts,
     highlights: highlights,
     status: cleanText(source.status) || 'published',
     schemaVersion: Number(source.schemaVersion) || 1

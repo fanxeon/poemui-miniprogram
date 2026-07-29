@@ -6,7 +6,7 @@
     "pui-tabbar": "poemui-miniprogram/tabbar/tabbar",
     "pui-button": "poemui-miniprogram/button/button",
     "pui-card": "poemui-miniprogram/card/card",
-    "pui-area-chart": "poemui-miniprogram/area-chart/area-chart",
+    "pui-bar-chart": "poemui-miniprogram/bar-chart/bar-chart",
     "pui-cell": "poemui-miniprogram/cell/cell",
     "pui-cell-group": "poemui-miniprogram/cell/cell-group",
     "pui-dialog": "poemui-miniprogram/dialog/dialog",
