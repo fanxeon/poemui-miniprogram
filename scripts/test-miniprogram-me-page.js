@@ -194,7 +194,7 @@ assert.ok(pageWxml.indexOf('id="me-update-announcement-popup"') !== -1 && pageWx
 ['show-header', 'show-footer', 'slot="content"', 'slot="footer"', 'content="知道了"', 'bind:visible-change="onAnnouncementPopupVisibleChange"'].forEach(function (fragment) {
   assert.ok(pageWxml.indexOf(fragment) !== -1, '更新公告 Popup 缺少结构：' + fragment);
 });
-assert.ok(pageWxml.indexOf('custom-style="{{announcementPopupStyle}}"') !== -1 && pageJs.indexOf("announcementPopupStyle: 'max-height:calc(100vh - ' + navbarHeight + 'px - 24rpx);'") !== -1, '长公告 Popup 必须用实测 Navbar 高度限制上限，而不是固定成近全屏高度');
+assert.ok(pageWxml.indexOf('custom-style="{{announcementPopupStyle}}"') !== -1 && pageJs.indexOf("announcementPopupStyle: 'max-height:calc(100vh - ' + INITIAL_TABBAR_PAGE_LAYOUT.navbarHeight + 'px - 24rpx);'") !== -1, '长公告 Popup 必须复用 Navbar 同源同步几何限制上限，而不是固定成近全屏高度');
 assert.ok(pageWxml.indexOf('content-scrollable="{{false}}"') !== -1, '公告 Popup 必须关闭自身 Content 滚动，避免与内部 ScrollArea 形成双滚动所有者');
 assert.ok(pageWxml.indexOf('height="auto"') !== -1 && pageWxml.indexOf('max-height="60vh"') !== -1 && pageWxml.indexOf('aria-label="PoemUI 更新公告内容"') !== -1, '公告内容必须自然增高，并仅在超过 60vh 后由 PUI ScrollArea 滚动');
 assert.ok(pageWxml.indexOf('height="78vh"') === -1 && pageWxml.indexOf('custom-style="max-height:100%;"') === -1, '公告不得保留固定 78vh 与页面私有高度补丁');
@@ -393,6 +393,14 @@ vm.runInNewContext(pageJs, {
         }
       };
     }
+    if (request === 'poemui-miniprogram/common/utils/tabbar-page-layout') {
+      return {
+        getLayout: function () {
+          return { navbarHeight: 87, tabbarHeight: 92, contentHeightStyle: '665px' };
+        },
+        getContentHeight: function () { return '665px'; }
+      };
+    }
     throw new Error('unexpected require ' + request);
   }
 }, { filename: 'miniprogram/pages/me/index.js' });
@@ -588,8 +596,8 @@ var cachedAnnouncements;
 var cloudAnnouncement = {
   _id: 'pui-cloud-contract',
   product: 'poemui',
-  version: 'v9.9.9',
-  date: '2026-07-27',
+  version: 'v0.1.3',
+  date: '2026-07-29',
   title: '云端契约公告',
   summary: '验证共享云读取。',
   componentCount: 3,
@@ -607,6 +615,11 @@ var cloudAnnouncement = {
   status: 'published',
   schemaVersion: 2
 };
+var sameDateOlderAnnouncement = Object.assign({}, cloudAnnouncement, {
+  _id: 'pui-cloud-contract-older',
+  version: 'v0.1.2',
+  title: '同日旧版本公告'
+});
 vm.runInNewContext(serviceSource, {
   module: serviceModule,
   exports: serviceModule.exports,
@@ -647,7 +660,7 @@ vm.runInNewContext(serviceSource, {
                     return this;
                   },
                   get: function () {
-                    return Promise.resolve({ data: [cloudAnnouncement] });
+                    return Promise.resolve({ data: [sameDateOlderAnnouncement, cloudAnnouncement] });
                   }
                 };
               }
@@ -671,11 +684,12 @@ runtime.loadAnnouncements().then(function (pageResult) {
   assert.strictEqual(queriedCollection, 'pui_updatelog', '共享云只能读取 PUI 命名空间集合');
   assert.strictEqual(result.source, 'cloud', '成功读取后必须标记真实云端来源');
   assert.strictEqual(result.announcements[0].id, 'pui-cloud-contract', '云文档 _id 必须归一化为页面 id');
+  assert.strictEqual(result.announcements[0].version, 'v0.1.3', '同日公告必须按语义版本倒序，不能让旧版本占据最新公告');
   assert.strictEqual(result.announcements[0].componentCount, 3, '云公告必须保留组件总数字段');
   assert.deepStrictEqual(JSON.parse(JSON.stringify(result.announcements[0].categoryCounts)), [
     { key: 'foundation', label: '基础', count: 3 }
   ], '云公告必须保留类别数量字段');
-  assert.strictEqual(cachedAnnouncements[0].version, 'v9.9.9', '云端成功结果必须写入离线缓存');
+  assert.strictEqual(cachedAnnouncements[0].version, 'v0.1.3', '云端成功结果必须按最新语义版本写入离线缓存');
   console.log('miniprogram me page contract tests passed');
 }).catch(function (error) {
   console.error(error);
