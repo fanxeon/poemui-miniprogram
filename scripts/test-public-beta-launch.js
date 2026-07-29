@@ -1,4 +1,5 @@
 const assert = require('assert');
+const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -26,13 +27,17 @@ assert(previewCss.includes('.pui-guide__status-grid') && previewCss.includes('@m
 assert(notice.includes('当前随 `poemui-miniprogram` 根包或公开仓库以 MIT 许可证交付的代码仍遵循 MIT'), 'Beta 公告必须锁定 MIT Core 边界');
 assert(notice.includes('当前没有已发布的 Pro 代码、支付入口或商业授权合同'), '不得伪造 Pro 发布或购买能力');
 assert(readme.includes(`当前公开版本为 \`poemui-miniprogram@${packageJson.version}\``), 'README 必须显式声明公共发布版本');
-assert(skill.includes('name: poemui-miniprogram') && skill.includes('pending-device'), 'Skill 必须包含触发元数据和真机边界');
+assert(skill.includes('name: poemui-miniprogram') && skill.includes('未验证'), 'Skill 必须包含触发元数据和真机未验证边界');
+assert(packageJson.files.includes('skills/poemui-miniprogram'), 'npm 包必须随组件版本交付完整 PoemUI Skill');
 for (const file of ['inspect-project.mjs', 'verify-install.mjs']) {
   assert(fs.existsSync(path.join(root, 'skills/poemui-miniprogram/scripts', file)), `Skill 缺少 ${file}`);
 }
-for (const file of ['installation.md', 'component-selection.md', 'composition-rules.md', 'styling-and-theme.md', 'platform-boundaries.md', 'examples.md']) {
+for (const file of ['installation.md', 'component-selection.md', 'composition-rules.md', 'styling-and-theme.md', 'platform-boundaries.md', 'examples.md', 'library-workflow.md', 'ui-governance.md', 'quality-gates.md', 'validation-matrix.md']) {
   assert(fs.existsSync(path.join(root, 'skills/poemui-miniprogram/references', file)), `Skill 缺少 ${file}`);
 }
+childProcess.execFileSync(process.execPath, [
+  path.join(root, 'skills/poemui-miniprogram/scripts/check-skill.mjs')
+], { stdio: 'pipe' });
 assert.strictEqual(packageJson.homepage, 'https://poemcoder.com/poem-ui', 'npm homepage 必须指向正式产品落地页');
 assert.strictEqual(packageJson.repository?.url, 'git+https://github.com/fanxeon/poemui-miniprogram.git', 'npm repository 必须指向公开 GitHub');
 assert.strictEqual(packageJson.bugs?.url, 'https://github.com/fanxeon/poemui-miniprogram/issues', 'npm bugs 必须指向公开 Issue');

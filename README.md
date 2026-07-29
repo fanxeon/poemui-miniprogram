@@ -3,7 +3,7 @@
 PoemUI 是面向微信小程序原生开发的 UI 组件库，目标是通过 npm 安装、按需引入组件，并内置深浅色主题能力。工程结构和使用方式对标 `tdesign-miniprogram`：开发者安装包后，在页面 JSON 的 `usingComponents` 中指向包内组件路径。
 
 > **受限 Beta / 发布状态（2026-07-29）**
-> 当前公开版本为 `poemui-miniprogram@0.1.2`，源码位于
+> 当前公开版本为 `poemui-miniprogram@0.1.3`，源码位于
 > [fanxeon/poemui-miniprogram](https://github.com/fanxeon/poemui-miniprogram)。
 > 本地 tarball、构建成功或代码中的包名仍不能替代 Registry 回读和微信
 > `build-npm`；完整稳定性与授权边界见 [受限 Beta 公告](docs/PUBLIC_BETA_NOTICE.md)。
@@ -15,7 +15,7 @@ PoemUI 是面向微信小程序原生开发的 UI 组件库，目标是通过 np
 固定版本安装：
 
 ```bash
-npm i poemui-miniprogram@0.1.2 -S --production
+npm i poemui-miniprogram@0.1.3 -S --production
 ```
 
 安装后在微信开发者工具中执行：
@@ -23,6 +23,17 @@ npm i poemui-miniprogram@0.1.2 -S --production
 1. 工具 -> 构建 npm
 2. 勾选“将 JS 编译成 ES5”
 3. 在页面或全局 JSON 中引入组件
+
+### 安装 PoemUI Skill
+
+`0.1.3` 起 npm 包同时包含与组件版本一致的 Codex Skill。安装依赖后可复制到个人 Skill 目录：
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R node_modules/poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/
+```
+
+重启 Codex 后，涉及 PoemUI 原生小程序开发、组件级 UI 修复、H5 镜像或微信构建验收时会按该 Skill 的触发描述使用。Skill 只提供工作流与合同，不会替代真实 `build-npm`、390px 或真机验证。
 
 ```json
 {
@@ -134,12 +145,12 @@ visualConfig.setEffectsEnabled(false); // 暂停装饰效果，不删除单项�
 ## 组件范围
 
 当前 npm 包内包含 `74` 个可按需引入的小程序组件目录；这里指当前工作树。
-公开 Registry `poemui-miniprogram@0.1.0` 是不可变的 71 组件历史版本；当前 `0.1.2` 包含 74 个组件。组件分为明确的发布层级：
+公开 Registry `poemui-miniprogram@0.1.0` 是不可变的 71 组件历史版本；当前 `0.1.3` 包含 74 个组件。组件分为明确的发布层级：
 
 - `done`：API 与主要交互稳定，具有独立 WXML、WXSS、JS 实现、可传参数、事件与官网交互预览。
 - `beta`：具有真实原生实现与受控发布边界，升级时仍可能出现非破坏性调整。
 
-完整名单、当前状态和 Props 以自动生成的 [组件目录](./docs/COMPONENT_CATALOG.md) 为准。
+完整名单、当前状态和 Props 以自动生成的 [组件清单](./docs/COMPONENT_MATRIX.md) 为准。
 复制后立即可见的最小注册、WXML 与页面数据/逻辑以自动生成的 [Starter Usage](./docs/COMPONENT_STARTER_USAGE.md) 为准；它与组件运行时安全默认值、小程序独立组件页演示及 H5 当前效果复制相互独立。
 
 `TopLoading`、`DynamicMessage`、`PullRefresh`、`VirtualList`、`Sticky`、`Watermark` 已完成独立原生实现与官网调参预览，分别覆盖卡片顶边请求进度、顶部非模态灵动通知、刷新状态机、固定行高窗口化渲染、WXSS 吸顶与按真实尺寸铺排的图文水印层。正式业务只应使用 `done` 和 `beta` 组件。PoemUI 参考 shadcn 的目录与组合思路，但不会承诺和 Web 实现逐项同构。
@@ -202,7 +213,7 @@ Icon 内置 17 类、220 个 `PoemUI Roundline` 单色 SVG 设计真相源；其
 
 `pui-direction` 是真实的子树阅读方向 Provider：支持 ltr/rtl/auto、显式/系统语言解析、fallback、逻辑文本对齐、四种容器形态、slot/content、完整解析生命周期与实例方法；它不会假装自动迁移旧物理 left/right 样式或翻转方向性图标。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
 
-完整组件规划见 [docs/COMPONENT_MATRIX.md](./docs/COMPONENT_MATRIX.md)，与 shadcn 目录的逐项映射、原生交互替代和限制见 [docs/SHADCN_COMPATIBILITY.md](./docs/SHADCN_COMPATIBILITY.md)，当前 npm 组件与公开 Props 见自动生成的 [docs/COMPONENT_CATALOG.md](./docs/COMPONENT_CATALOG.md)，API 规范见 [docs/COMPONENT_API.md](./docs/COMPONENT_API.md)。
+完整组件规划、npm 引入路径与公开 Props 见自动生成的 [docs/COMPONENT_MATRIX.md](./docs/COMPONENT_MATRIX.md)，与 shadcn 目录的逐项映射、原生交互替代和限制见 [docs/SHADCN_COMPATIBILITY.md](./docs/SHADCN_COMPATIBILITY.md)，API 规范见 [docs/COMPONENT_API.md](./docs/COMPONENT_API.md)。
 
 ## 快速样式集
 

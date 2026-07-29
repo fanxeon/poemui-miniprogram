@@ -96,7 +96,7 @@ var metricLabelBlock = pageWxml.slice(
   assert.ok(metricLabelBlock.indexOf(fragment) !== -1, '新增数据块必须在“新增”标签右侧组合小尺寸真实 PUI Icon：' + fragment);
 });
 assert.ok(pageWxml.indexOf('class="me-page__dashboard-metric-value-row"') === -1 && pageWxml.indexOf('size="{{28}}"') === -1, 'Sparkles 不得继续贴在数值右侧或保留旧 28rpx 尺寸');
-['description="{{componentStatusSummary}}"', 'v0.1.2 · 74 个组件 · 本版 +3', 'title="组件状态"'].forEach(function (fragment) {
+['description="{{componentStatusSummary}}"', 'v0.1.3 · 74 个组件 · 本版 +0', 'title="组件状态"'].forEach(function (fragment) {
   assert.ok(pageWxml.indexOf(fragment) === -1, '仪表盘不得保留旧版头文案：' + fragment);
 });
 assert.ok(pageWxml.indexOf('class="me-page__dashboard-content"') !== -1 && pageWxml.indexOf('id="me-component-status-metrics"') !== -1 && pageWxml.indexOf('wx:for="{{componentStatusMetrics}}"') !== -1, '图表上方必须使用同一卡片透明布局容器内的四列数据摘要');
@@ -120,22 +120,23 @@ assert.ok(pageWxml.indexOf('wx:if="{{!announcementPopupVisible && !licenseDialog
 assert.strictEqual((pageWxml.match(/id="me-component-status-chart-toggle"/g) || []).length, 1, '图表只允许一个真实 PUI 展开操作');
 assert.strictEqual(componentStatus.baseline, 0, '组件状态基线必须从 0 开始');
 assert.strictEqual(componentStatus.currentVersion, packageVersion, '组件状态当前版本必须来自包版本');
-assert.strictEqual(componentStatus.previousVersion, '0.1.0', '0.1.2 增量必须以公开 0.1.0 为前序版本');
+assert.strictEqual(componentStatus.previousVersion, '0.1.2', '0.1.3 增量必须以公开 0.1.2 为前序版本');
 assert.strictEqual(componentStatus.total, metadata.packageComponents.length, '组件状态总数必须来自当前发布组件集');
-assert.strictEqual(componentStatus.previousTotal, 71, '0.1.0 目录基线必须保持 71 个组件');
-assert.strictEqual(componentStatus.incrementTotal, 3, '0.1.2 必须只统计 AreaChart、BarChart 与 Waffle 三个真实新增组件');
+assert.strictEqual(componentStatus.previousTotal, 74, '0.1.2 目录基线必须保持 74 个组件');
+assert.strictEqual(componentStatus.incrementTotal, 0, '0.1.3 是治理与交付版本，不得伪造新增组件');
 assert.deepStrictEqual(componentStatus.versions(), [
   { version: '0.1.0', total: 71 },
   { version: '0.1.1', total: 74 },
-  { version: '0.1.2', total: 74 }
-], '生成型组件状态必须保留 0.1.0 / 0.1.1 / 0.1.2 三个版本里程碑');
+  { version: '0.1.2', total: 74 },
+  { version: '0.1.3', total: 74 }
+], '生成型组件状态必须保留 0.1.0 至 0.1.3 的完整版本里程碑');
 var versionStatusClone = componentStatus.versions();
 versionStatusClone[0].total = 999;
 assert.notStrictEqual(componentStatus.versions()[0].total, 999, '版本里程碑读取必须返回副本');
 assert.strictEqual(componentStatus.items().reduce(function (sum, item) { return sum + item.value; }, 0), componentStatus.total, '分类数量之和必须等于发布组件总数');
 assert.deepStrictEqual(componentStatus.items().filter(function (item) { return item.increment > 0; }).map(function (item) {
   return { key: item.key, previousValue: item.previousValue, increment: item.increment, themes: item.segments.map(function (segment) { return segment.theme; }) };
-}), [{ key: 'advanced', previousValue: 5, increment: 3, themes: ['blue', 'teal'] }], '只有高级分类获得 0.1.2 的 Blue / Teal 增量分段');
+}), [], '0.1.3 不得生成任何虚构组件增量分段');
 assert.strictEqual(componentStatus.maximum, Math.max.apply(Math, componentStatus.items().map(function (item) { return item.value; })), '生成状态仍须保留真实分类最大值');
 var componentStatusClone = componentStatus.items();
 componentStatusClone[0].value = 999;
@@ -172,9 +173,16 @@ assert.ok(pageWxml.indexOf('OpenID') === -1 && pageWxml.indexOf('onCopyOpenId') 
 });
 assert.ok(pageWxml.indexOf('value="查阅详情"') !== -1 && pageWxml.indexOf('aria-label="查阅高级版商业授权详情"') !== -1, '授权入口必须使用查阅详情语义');
 assert.ok(pageWxml.indexOf('购买高级版授权') === -1 && pageWxml.indexOf('value="尚未开放"') === -1, '授权 Cell 不得保留购买或尚未开放文案');
-assert.ok(pageWxml.indexOf('id="me-license-dialog"') !== -1 && pageWxml.indexOf('visible="{{licenseDialogVisible}}"') !== -1, '授权入口必须打开受控 PUI Dialog');
-['title="前往商业授权详情？"', 'cancel-btn="{{licenseDialogCancelBtn}}"', 'confirm-btn="{{licenseDialogConfirmBtn}}"', 'bind:confirm="onConfirmLicense"', 'bind:close="onLicenseDialogClose"'].forEach(function (fragment) {
-  assert.ok(pageWxml.indexOf(fragment) !== -1, '商业授权 Dialog 缺少真实确认链：' + fragment);
+assert.ok(pageWxml.indexOf('bind:click="onOpenLicense"') !== -1, '商业授权 Cell 必须先打开访问方式 Dialog');
+['id="me-license-dialog"', 'visible="{{licenseDialogVisible}}"', 'title="查看商业授权详情"', '桌面端浏览体验更佳', 'actions="{{licenseDialogActions}}"', 'bind:action="onLicenseDialogAction"', 'bind:close="onLicenseDialogClose"'].forEach(function (fragment) {
+  assert.ok(pageWxml.indexOf(fragment) !== -1, '商业授权访问方式 Dialog 缺少：' + fragment);
+});
+assert.ok(pageJs.indexOf("content: '复制链接'") !== -1 && pageJs.indexOf("content: '直接访问'") !== -1, 'Dialog 必须提供复制链接和直接访问两个动作');
+assert.ok(pageJs.indexOf("LICENSE_URL = 'https://poemcoder.com/poem-ui'") !== -1, '复制与 WebView 必须指向同一个固定生产地址');
+assert.ok(pageJs.indexOf('wx.setClipboardData') !== -1 && pageJs.indexOf('onCopyLicenseLink') !== -1, '复制链接必须调用真实微信剪贴板能力');
+assert.ok(pageJs.indexOf('onVisitLicenseWebView') !== -1 && pageJs.indexOf("url: LICENSE_PAGE_ROUTE") !== -1, '直接访问必须进入固定 WebView 路由');
+['licenseDialogCancelBtn', 'licenseDialogConfirmBtn', 'onConfirmLicense', 'onPurchaseLicense'].forEach(function (fragment) {
+  assert.ok(pageWxml.indexOf(fragment) === -1 && pageJs.indexOf(fragment) === -1, '不得恢复旧的取消/确认访问语义：' + fragment);
 });
 assert.ok(appJson.pages.indexOf('pages/license/index') !== -1, 'app.json 必须注册商业授权 WebView 页面');
 assert.strictEqual(licensePageJson.navigationStyle, 'default', '商业授权 WebView 必须保留微信原生返回栏');
@@ -236,7 +244,7 @@ assert.ok(!/\.me-announcement-popup__content\s*\{[^}]*height:\s*100%/.test(pageW
 assert.ok(pageWxss.indexOf('.me-announcement__category-grid') === -1 && pageWxss.indexOf('.me-announcement__stats-total') === -1, '公告统计退出可见层后必须删除失去消费者的样式');
 assert.ok(pageJs.indexOf("wx.openPrivacyContract") !== -1, '隐私协议必须调用微信真实能力');
 assert.ok(pageJs.indexOf("wx.navigateToMiniProgram") !== -1 && pageJs.indexOf("wxa1b9a4d6549c6cd1") !== -1 && pageJs.indexOf("envVersion: 'release'") !== -1, '关于诗上必须跳转指定正式版小程序');
-assert.ok(!/openid|openId|OpenID|setClipboardData/.test(pageJs), '我的页 JS 不得继续读取、展示或复制 OpenID');
+assert.ok(!/openid|openId|OpenID|onCopyOpenId/.test(pageJs), '我的页 JS 不得继续读取、展示或复制 OpenID');
 assert.ok(!/user-profile|userProfile|nickname|avatarText|restoreProfile|onNicknameChange|onSaveNickname/.test(pageJs), '页面 JS 必须彻底移除头像昵称资料状态、Store 与事件');
 assert.ok(!fs.existsSync(path.join(ROOT, 'miniprogram/common/utils/user-profile.js')), '失去消费者的 user-profile Store 必须删除');
 assert.ok(pageJs.indexOf('wx.requestPayment') === -1, '尚未交付的授权入口不得伪造支付');
@@ -244,24 +252,26 @@ assert.ok(pageJs.indexOf('wx.requestPayment') === -1, '尚未交付的授权入�
 var localAnnouncements = announcements.list();
 assert.ok(localAnnouncements.length > 0, '本地公告数据源必须至少提供一条可见公告');
 assert.strictEqual(announcements.latest().id, localAnnouncements[0].id, 'latest 必须返回列表首条公告');
-assert.strictEqual(localAnnouncements[0].id, 'pui-v0-1-2-20260729', '包内 fallback 首条必须与云端 0.1.2 公告使用同一稳定 ID');
+assert.strictEqual(localAnnouncements[0].id, 'pui-v0-1-3-20260729', '包内 fallback 首条必须与云端 0.1.3 公告使用同一稳定 ID');
 assert.ok(localAnnouncements[0].highlights.some(function (highlight) {
-  return highlight.component === '小程序'
-    && highlight.title === '状态页与首页修正'
-    && highlight.description.indexOf('BarChart 按八类展示 v0.1.0、v0.1.1、v0.1.2 增量并平滑展开') !== -1
-    && highlight.description.indexOf('无效分享配置') !== -1;
-}), '0.1.2 包内公告必须同步 Me BarChart 与首页无效分享配置修复');
+  return highlight.component === 'npm 安装'
+    && highlight.title === '组件与 Skill 同包'
+    && highlight.description.indexOf('npm 包内置完整 Skill') !== -1;
+}), '0.1.3 包内公告必须明确组件与 Skill 同包交付');
 assert.ok(localAnnouncements[0].highlights.every(function (highlight) {
   return highlight.description.indexOf('全宽 Waffle') === -1;
-}), '0.1.2 当前公告不得继续描述未采用的 Waffle 方案');
-assert.strictEqual(localAnnouncements[0].version, 'v0.1.2', '最新公告必须对应当前发布版本 0.1.2');
-assert.strictEqual(localAnnouncements[0].date, '2026-07-29', '0.1.2 公告必须提供确定日期');
-assert.strictEqual(localAnnouncements[0].componentCount, componentStatus.total, '0.1.2 公告组件总数必须来自生成型当前总数');
-assert.deepStrictEqual(localAnnouncements[0].categoryCounts, expectedCurrentCategoryCounts, '0.1.2 公告必须保留九类当前数量供图表使用');
-assert.strictEqual(localAnnouncements[1].componentCount, 74, '0.1.1 历史工作树公告必须记录当时 74 个组件');
-assert.deepStrictEqual(localAnnouncements[1].categoryCounts, expectedCurrentCategoryCounts, '0.1.1 公告九类数量必须与当时 74 个组件口径一致');
-assert.strictEqual(localAnnouncements[2].componentCount, componentStatus.previousTotal, '0.1.0 公告组件总数必须来自生成型前序总数');
-assert.deepStrictEqual(localAnnouncements[2].categoryCounts, expectedPreviousCategoryCounts, '0.1.0 公告必须记录高级 5、总计 71 的九类数量');
+}), '0.1.3 当前公告不得继续描述未采用的 Waffle 方案');
+assert.strictEqual(localAnnouncements[0].version, 'v0.1.3', '最新公告必须对应当前发布版本 0.1.3');
+assert.strictEqual(localAnnouncements[0].date, '2026-07-29', '0.1.3 公告必须提供确定日期');
+assert.strictEqual(localAnnouncements[0].componentCount, componentStatus.total, '0.1.3 公告组件总数必须来自生成型当前总数');
+assert.deepStrictEqual(localAnnouncements[0].categoryCounts, expectedCurrentCategoryCounts, '0.1.3 公告必须保留九类当前数量供图表使用');
+assert.strictEqual(localAnnouncements[1].version, 'v0.1.2', '0.1.2 历史公告必须保留');
+assert.strictEqual(localAnnouncements[1].componentCount, 74, '0.1.2 历史公告必须记录当时 74 个组件');
+assert.deepStrictEqual(localAnnouncements[1].categoryCounts, expectedCurrentCategoryCounts, '0.1.2 公告九类数量必须与当时 74 个组件口径一致');
+assert.strictEqual(localAnnouncements[2].componentCount, 74, '0.1.1 历史工作树公告必须记录当时 74 个组件');
+assert.deepStrictEqual(localAnnouncements[2].categoryCounts, expectedCurrentCategoryCounts, '0.1.1 公告九类数量必须与当时 74 个组件口径一致');
+assert.strictEqual(localAnnouncements[3].componentCount, 71, '0.1.0 公告组件总数必须保留 71 个组件历史事实');
+assert.deepStrictEqual(localAnnouncements[3].categoryCounts, expectedPreviousCategoryCounts, '0.1.0 公告必须记录高级 5、总计 71 的九类数量');
 localAnnouncements.forEach(function (announcement) {
   assert.strictEqual(announcement.schemaVersion, 2, announcement.version + ' 公告必须使用含统计字段的 Schema v2');
   assert.strictEqual(announcement.categoryCounts.length, 9, announcement.version + ' 公告必须包含全部九类');
@@ -272,11 +282,11 @@ localAnnouncements.forEach(function (announcement) {
     return category.key;
   })).size, 9, announcement.version + ' 类别 key 不得重复');
 });
-assert.deepStrictEqual(localAnnouncements[0].highlights.map(function (item) { return item.component; }), ['高级图表', '导航与表单', '展示与反馈', '浮层', '小程序'], '0.1.2 公告必须按用户任务分组并保持精简');
-assert.ok(localAnnouncements[0].highlights[4].description.indexOf('v0.1.0、v0.1.1、v0.1.2') !== -1 && localAnnouncements[0].highlights[4].description.indexOf('八类') !== -1, '小程序公告必须说明 BarChart 的逐版本与展示类别口径');
-assert.ok(localAnnouncements[0].summary.length <= 30, '0.1.2 公告摘要必须保持精简');
+assert.deepStrictEqual(localAnnouncements[0].highlights.map(function (item) { return item.component; }), ['PoemUI Skill', 'npm 安装', '组件治理', '多端发布'], '0.1.3 公告必须按治理与交付任务分组并保持精简');
+assert.ok(localAnnouncements[0].highlights[3].description.indexOf('官网、落地页、小程序安装页与更新公告') !== -1, '0.1.3 公告必须说明多端固定版本口径');
+assert.ok(localAnnouncements[0].summary.length <= 30, '0.1.3 公告摘要必须保持精简');
 localAnnouncements[0].highlights.forEach(function (item) {
-  assert.ok(item.description.length <= 60, '0.1.2 公告说明必须避免冗长：' + item.component);
+  assert.ok(item.description.length <= 60, '0.1.3 公告说明必须避免冗长：' + item.component);
 });
 assert.ok(/^v\d+\.\d+\.\d+$/.test(localAnnouncements[0].version), '公告版本必须使用可识别的语义版本');
 assert.ok(localAnnouncements[0].highlights.length >= 3, '公告必须陈列实际组件改动');
@@ -295,6 +305,8 @@ var privacyCalls = [];
 var miniProgramCalls = [];
 var licenseNavigationCalls = [];
 var licenseNavigationShouldFail = false;
+var clipboardCalls = [];
+var clipboardShouldFail = false;
 var toastCalls = [];
 var backgroundListener;
 var backgroundSetCalls = [];
@@ -322,6 +334,14 @@ vm.runInNewContext(pageJs, {
     },
     navigateToMiniProgram: function (options) {
       miniProgramCalls.push(options);
+    },
+    setClipboardData: function (options) {
+      clipboardCalls.push(options);
+      if (clipboardShouldFail) {
+        if (options.fail) options.fail({ errMsg: 'setClipboardData:fail' });
+        return;
+      }
+      if (options.success) options.success({ errMsg: 'setClipboardData:ok' });
     }
   },
   require: function (request) {
@@ -429,7 +449,7 @@ assert.deepStrictEqual(runtime.data.componentStatusMetrics.map(function (item) {
 assert.strictEqual(runtime.data.componentStatusMetrics[3].icon, 'sparkles', '新增数量右侧必须使用 sparkles PUI Icon');
 assert.strictEqual(runtime.data.componentStatusMetrics[3].iconColor, 'var(--pui-chart-accent-violet)', '新增 Icon 必须使用最新版本 Violet accent');
 assert.ok(runtime.data.componentStatusMetricsAriaLabel.indexOf(componentStatus.total + ' 个组件') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf(styleUtilitiesCatalog.items.length + ' 个样式') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf('8 个高级组件') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf('本版新增 ' + componentStatus.incrementTotal + ' 个组件') !== -1, '四列摘要必须提供完整读屏名称');
-assert.ok(runtime.data.componentStatusAriaLabel.indexOf('依次展示 v0.1.0、v0.1.1、v0.1.2') !== -1 && runtime.data.componentStatusAriaLabel.indexOf('已折叠，当前显示前 4 类') !== -1, '图表读屏名称必须解释逐版本与折叠状态');
+assert.ok(runtime.data.componentStatusAriaLabel.indexOf('依次展示 v0.1.0、v0.1.1、v0.1.2、v0.1.3') !== -1 && runtime.data.componentStatusAriaLabel.indexOf('已折叠，当前显示前 4 类') !== -1, '图表读屏名称必须解释逐版本与折叠状态');
 assert.deepStrictEqual(runtime.data.componentStatusCategoryItems.map(function (item) {
   return {
     key: item.key,
@@ -439,14 +459,14 @@ assert.deepStrictEqual(runtime.data.componentStatusCategoryItems.map(function (i
     themes: item.segments.map(function (segment) { return segment.theme; })
   };
 }), [
-  { key: 'advanced', label: '高级', values: [5, 3, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2'], themes: ['blue', 'teal', 'violet'] },
-  { key: 'foundation', label: '基础', values: [3, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2'], themes: ['blue', 'teal', 'violet'] },
-  { key: 'layout', label: '布局', values: [5, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2'], themes: ['blue', 'teal', 'violet'] },
-  { key: 'navigation', label: '导航', values: [9, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2'], themes: ['blue', 'teal', 'violet'] },
-  { key: 'form', label: '表单', values: [19, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2'], themes: ['blue', 'teal', 'violet'] },
-  { key: 'data', label: '数据展示', values: [14, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2'], themes: ['blue', 'teal', 'violet'] },
-  { key: 'feedback', label: '反馈', values: [9, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2'], themes: ['blue', 'teal', 'violet'] },
-  { key: 'overlay', label: '浮层', values: [6, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2'], themes: ['blue', 'teal', 'violet'] }
+  { key: 'advanced', label: '高级', values: [5, 3, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
+  { key: 'foundation', label: '基础', values: [3, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
+  { key: 'layout', label: '布局', values: [5, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
+  { key: 'navigation', label: '导航', values: [9, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
+  { key: 'form', label: '表单', values: [19, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
+  { key: 'data', label: '数据展示', values: [14, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
+  { key: 'feedback', label: '反馈', values: [9, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
+  { key: 'overlay', label: '浮层', values: [6, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] }
 ], 'BarChart 必须隐藏“规范”、把有新增的分类置顶，并以纯版本号展示真实逐版本增量');
 assert.deepStrictEqual(runtime.data.componentStatusVisibleCategoryItems.map(function (item) { return item.key; }), ['advanced', 'foundation', 'layout', 'navigation'], '图表初始必须优先显示有新增的分类，再按原顺序补足四类');
 assert.ok(runtime.data.componentStatusCategoryItems.every(function (item) {
@@ -466,9 +486,10 @@ assert.deepStrictEqual(runtime.data.componentStatusVersionLegendItems.map(functi
 }), [
   { label: 'v0.1.0', theme: 'blue', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true },
   { label: 'v0.1.1', theme: 'teal', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true },
-  { label: 'v0.1.2', theme: 'violet', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true }
+  { label: 'v0.1.2', theme: 'violet', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true },
+  { label: 'v0.1.3', theme: 'amber', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true }
 ], '版本图例必须以无框最小 PUI Tag 复用同色系纯色 soft Surface 与 Chart accent，且不能使用渐变');
-assert.strictEqual(runtime.data.componentStatusVersionLegendAriaLabel, '版本颜色：v0.1.0、v0.1.1、v0.1.2', '版本 Tag 组必须提供完整读屏名称');
+assert.strictEqual(runtime.data.componentStatusVersionLegendAriaLabel, '版本颜色：v0.1.0、v0.1.1、v0.1.2、v0.1.3', '版本 Tag 组必须提供完整读屏名称');
 assert.strictEqual(runtime.data.componentStatusChartExpanded, false, '图表初始必须折叠');
 assert.strictEqual(runtime.data.componentStatusChartToggleLabel, '查看更多', '折叠态操作必须表达查看更多');
 assert.strictEqual(runtime.data.componentStatusChartToggleIcon, 'chevron-down', '折叠态操作必须使用向下图标');
@@ -504,19 +525,31 @@ assert.strictEqual(privacyCalls.length, 1, '隐私合同只能调用一次');
 assert.strictEqual(runtime.onOpenShishang(), true, '支持能力时必须发起小程序跳转');
 assert.strictEqual(miniProgramCalls[0].appId, 'wxa1b9a4d6549c6cd1', '诗上科技 AppID 不得漂移');
 assert.strictEqual(miniProgramCalls[0].envVersion, 'release', '关于诗上必须进入正式版');
-assert.strictEqual(runtime.onPurchaseLicense(), true, '商业授权 Cell 必须打开确认 Dialog');
-assert.strictEqual(runtime.data.licenseDialogVisible, true, '点击授权入口后 Dialog 必须保持受控可见');
-assert.strictEqual(runtime.onConfirmLicense(), true, '确认后必须发起真实页面导航');
-assert.strictEqual(licenseNavigationCalls[0].url, '/pages/license/index', '确认后必须进入商业授权 WebView 页面');
-assert.strictEqual(runtime.data.licenseDialogVisible, false, '真实导航成功后必须关闭确认 Dialog');
+runtime.data.appearancePopupVisible = true;
+assert.strictEqual(runtime.onOpenLicense(), true, '商业授权 Cell 必须打开访问方式 Dialog');
+assert.strictEqual(runtime.data.licenseDialogVisible, true, '访问方式 Dialog 必须由页面受控显示');
+assert.strictEqual(runtime.data.appearancePopupVisible, false, '打开授权 Dialog 前必须关闭可能存在的外观 Popup');
+assert.strictEqual(licenseNavigationCalls.length, 0, '用户选择直接访问前不得擅自进入 WebView');
+assert.strictEqual(runtime.onLicenseDialogAction({ detail: { index: 0 } }), true, '复制链接动作必须调用真实剪贴板能力');
+assert.strictEqual(clipboardCalls[0].data, 'https://poemcoder.com/poem-ui', '复制内容必须是固定生产授权地址');
+assert.strictEqual(runtime.data.licenseDialogVisible, false, '复制成功后必须关闭 Dialog');
+assert.ok(toastCalls.some(function (entry) { return entry.message === '链接已复制，可在桌面端打开'; }), '复制成功必须明确反馈桌面端使用方式');
+runtime.onOpenLicense();
+clipboardShouldFail = true;
+assert.strictEqual(runtime.onLicenseDialogAction({ detail: { index: 0 } }), true, '复制失败也必须完成一次真实平台调用');
+assert.strictEqual(runtime.data.licenseDialogVisible, true, '复制失败后必须保留 Dialog 供重试或直接访问');
+assert.ok(toastCalls.some(function (entry) { return entry.message === '复制失败，请稍后重试'; }), '复制失败必须明确反馈');
+clipboardShouldFail = false;
+assert.strictEqual(runtime.onLicenseDialogAction({ detail: { index: 1 } }), true, '直接访问必须发起真实页面导航');
+assert.strictEqual(licenseNavigationCalls[0].url, '/pages/license/index', '直接访问必须进入商业授权 WebView 页面');
 assert.strictEqual(runtime.data.licenseNavigating, false, '真实导航成功后必须结束 loading');
-runtime.onPurchaseLicense();
+assert.strictEqual(runtime.data.licenseDialogVisible, false, '真实导航成功后必须关闭访问方式 Dialog');
 licenseNavigationShouldFail = true;
-assert.strictEqual(runtime.onConfirmLicense(), true, '导航失败也必须完成一次真实平台调用');
-assert.strictEqual(runtime.data.licenseDialogVisible, true, '导航失败后保留 Dialog 以便重试或取消');
-assert.strictEqual(runtime.data.licenseNavigating, false, '导航失败后必须恢复确认按钮');
-assert.strictEqual(runtime.onLicenseDialogClose(), true, '导航失败后必须允许用户取消');
-assert.strictEqual(runtime.data.licenseDialogVisible, false, '取消必须关闭受控 Dialog');
+runtime.onOpenLicense();
+assert.strictEqual(runtime.onLicenseDialogAction({ detail: { index: 1 } }), true, '导航失败也必须完成一次真实平台调用');
+assert.strictEqual(licenseNavigationCalls[1].url, '/pages/license/index', '重试仍只能进入固定商业授权 WebView 路由');
+assert.strictEqual(runtime.data.licenseNavigating, false, '导航失败后必须恢复可操作状态');
+assert.strictEqual(runtime.data.licenseDialogVisible, true, '导航失败后必须保留 Dialog 供复制链接或重试');
 runtime.onOpenOrders();
 runtime.onContactError();
 assert.ok(toastCalls.some(function (entry) { return entry.message === '暂时无法打开商业授权详情'; }), '授权详情导航失败必须明确反馈');
