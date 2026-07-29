@@ -1,17 +1,17 @@
 {
   "$schema": "../schema.json",
   "id": "PUI-FB-0488",
-  "title": "Me 仪表盘移除冗余版头并增加三列真实数据摘要",
+  "title": "Me 仪表盘使用四列真实数据摘要与单一内容间距",
   "scope": "component",
-  "components": ["miniprogram", "me-page", "area-chart", "card", "style-utilities"],
+  "components": ["miniprogram", "me-page", "bar-chart", "card", "style-utilities"],
   "type": "visual-layout",
   "severity": "medium",
   "status": "resolved",
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-28",
-  "updatedAt": "2026-07-28",
-  "userGoal": "精简 Me 页图表版头，横轴版本不显示冗余 v，在图表上方用三列展示真实数量，延长图表入场，并让服务 Cell Card 以较大标准间距紧跟仪表盘。",
+  "updatedAt": "2026-07-29",
+  "userGoal": "精简 Me 页图表版头，在图表上方用四列展示真实的组件、样式、高级与本版新增数量；在“新增”标签右侧组合较小的 PUI Icon，并确保数据块、图表、版本 Tag 与操作之间使用一致的语义间距。",
   "environment": {
     "surfaces": ["me top-level page", "component status dashboard"],
     "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
@@ -23,30 +23,31 @@
     "观察 AreaChart Card 顶部存在 v0.1.1 · 74 个组件 · 本版 +3 的 description。",
     "观察横轴为 v0.1.0 / v0.1.1，版本上下文已明确时前缀使内容显得臃肿。",
     "页面没有在图表前直接展示当前组件、Style Utilities 和高级组件三项真实总量。",
-    "三列摘要完成后，AreaChart 仍使用默认 500ms，体感过短；服务 CellGroup 的 margin-top:auto 将空白放在两个 Surface 之间，使其没有跟随仪表盘。"
+    "三列摘要完成后，AreaChart 仍使用默认 500ms，体感过短；服务 CellGroup 的 margin-top:auto 将空白放在两个 Surface 之间，使其没有跟随仪表盘。",
+    "当前 BarChart 页面仍只有组件、样式、高级三项摘要；摘要自身使用 margin-bottom 撑开图表，不能直接证明父容器只消费一次语义间距。"
   ],
-  "expected": "Card 不显示旧版头文案；图表上方同一行依次展示真实的组件、样式和高级数量；横轴显示 0.1.0 / 0.1.1；图表使用合同允许的更长入场；服务 Card 在较大的标准分区间距后紧跟仪表盘。",
-  "actual": "旧实现的 Card description、v 前缀和摘要缺口已修正，但图表仍以默认 500ms 入场，服务集合仍被 auto margin 推到底部并在两个 Surface 之间留下过多空白。",
+  "expected": "Card 不显示旧版头文案；图表上方同一行依次展示真实的组件、样式、高级和本版新增数量；“新增”标签右侧使用较小、同轴的真实 PUI Icon；摘要→图表、图表 viewport→版本 Tag、版本 Tag→展开操作统一使用 --pui-content-gap；服务 Card 在较大的标准分区间距后紧跟仪表盘。",
+  "actual": "旧三列摘要缺少独立的本版新增指标，并由摘要自身 margin-bottom 提供图表间距；关系成立但职责不够清楚，也容易在后续父级增加 gap 时形成叠加。",
   "evidence": [
     {
       "kind": "user-report",
-      "ref": "2026-07-28 当前任务截图与要求",
-      "note": "用户明确要求移除截图中的版头文案、去掉横轴 v，并增加三列实际数量。"
+      "ref": "2026-07-28 至 2026-07-29 当前任务要求",
+      "note": "用户先要求三项真实数量，后续明确要求顶部变成四个数据块、增加“新增”，并注意数据块与图表的容器间距。"
     },
     {
       "kind": "file",
       "ref": "miniprogram/pages/me/index.js",
-      "note": "页面从 component-status 与 style-utilities-catalog 生成三项指标，并向 AreaChart 传入无 v 的横轴 label。"
+      "note": "页面从 component-status 与 style-utilities-catalog 生成组件、样式、高级和新增四项指标；新增直接读取 incrementTotal。"
     },
     {
       "kind": "file",
       "ref": "miniprogram/pages/me/index.wxml",
-      "note": "唯一 Card Content 内组合透明三列摘要与一个 AreaChart，已删除 description。"
+      "note": "唯一 Card Content 组合透明四列摘要与当前 BarChart；dashboard-content 是唯一负责摘要到图表 gap 的透明布局根，第四列在“新增”标签右侧组合真实 PUI Icon。"
     },
     {
       "kind": "test",
       "ref": "scripts/test-miniprogram-me-page.js",
-      "note": "专项锁定三列顺序、生成数据源、无旧版头、无 v 横轴、1000ms 页面动效和服务集合不再使用 auto margin。"
+      "note": "专项锁定四列顺序、生成数据源、四等分 Grid、“新增”标签右侧 20rpx Violet Sparkles PUI Icon、三段 content-gap、无重复 margin、1000ms 页面动效和服务集合不再使用 auto margin。"
     },
     {
       "kind": "browser",
@@ -54,14 +55,17 @@
       "note": "AreaChart 真实运行树输出 duration=1000 与 --pui-chart-duration:1000ms；仪表盘 bottom=325px，服务集合 top=343px，二者实际间距为 18px。"
     }
   ],
-  "rootCause": "上一轮为了在没有图例时补足版本、总量和增量，把三项信息塞入 Card description，同时横轴也重复版本前缀；三列摘要完成后页面仍未覆盖 AreaChart 的默认 500ms，并沿用资料页时期为保持服务靠下而设置的 margin-top:auto，因此新的仪表盘与服务集合没有形成连续文档流。",
+  "rootCause": "最初只把组件、样式、高级定义为摘要维度，本版新增仍藏在旧 description 或图表语义中；随后又由摘要子块的 margin-bottom 承担图表间距，没有把两个直接兄弟的关系交给透明父布局。",
   "decision": {
-    "outcome": "删除 Card description 和 componentStatusSummary；在唯一 Card Content 顶部用透明三等分 Grid 展示组件、样式、高级三项，组件/高级读取 component-status，样式读取 style-utilities-catalog；AreaChart 横轴 label 改为纯版本号并在 Me 页显式传入 duration=1000；服务 CellGroup 删除 margin-top:auto，只由父级 --pui-section-gap 与仪表盘分隔。",
-    "rationale": "三列摘要回答当前规模，AreaChart 回答版本变化，信息层次更直接。统计继续来自生成型真相源，透明 Grid 不创建第二层 Surface；1000ms 是组件公开上限，能延长本页入场而不破坏全局 500ms 默认；标准 section gap 足够建立分区，又能让服务集合跟随仪表盘。",
+    "outcome": "唯一 Card Content 顶部使用透明四等分 Grid 展示组件、样式、高级、新增；组件/高级/新增读取 component-status，样式读取 style-utilities-catalog。“新增”标签右侧组合 20rpx 的 PUI Sparkles Icon，使用最新版本 Violet accent，并以 --pui-space-xxs 紧密关联。透明 dashboard-content 以一次 --pui-content-gap 分隔摘要和 BarChart；dashboard-chart 用同一个 content-gap 分隔图表 viewport、版本 Tag 与展开操作。服务 CellGroup 继续只由页面父级 --pui-section-gap 与仪表盘分隔。",
+    "rationale": "四列分别回答当前组件规模、工具样式规模、高级组件规模和当前发布增量，且全部来自生成真相源。Sparkles 能表达“新增”而不暗示财务涨跌；它属于标签语义，因此放在“新增”右侧而不是数字 3 右侧，可保持四个数值的纯数字对齐。摘要、图表、版本标识与操作属于同一信息流，统一 content-gap 可避免局部紧、局部松；布局仍保持单一透明父级，不创建第二层 Surface。",
     "alternativesRejected": [
-      "保留 description 再增加三列摘要：会重复组件总量并继续占用垂直空间。",
-      "把三个数字各包一张 Card：形成卡片套卡片和不必要阴影。",
-      "在页面硬编码 74、562、8：生成目录变化后会静默漂移。",
+      "保留 description 再增加四列摘要：会重复组件总量并继续占用垂直空间。",
+      "把四个数字各包一张 Card：形成卡片套卡片和不必要阴影。",
+      "在页面硬编码 74、562、8、3：生成目录变化后会静默漂移。",
+      "给四个数据块都加图标：会增加噪音，用户只要求增强新增项。",
+      "用趋势箭头代替 Sparkles：容易被误解为增长率或财务趋势。",
+      "继续由摘要 margin-bottom 提供间距：父级后续增加 gap 时容易叠加，布局职责也不清晰。",
       "修改 AreaChart 自动移除 v：组件必须原样呈现调用方 label，不能猜业务文本。",
       "把 AreaChart 全局默认改为 1000ms：会无理由改变全部消费者的既有节奏。",
       "给服务集合再叠加私有 margin：会与父级 section gap 重复并产生第二套间距。",
@@ -81,11 +85,14 @@
       "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
       "feedback/records/pui-fb-0488-me-dashboard-metric-strip.json"
     ],
-    "dependencies": ["miniprogram/common/data/component-status.js", "miniprogram/common/data/style-utilities-catalog.js", "PUI Card", "PUI AreaChart"]
+    "dependencies": ["miniprogram/common/data/component-status.js", "miniprogram/common/data/style-utilities-catalog.js", "PUI Card", "PUI BarChart"]
   },
   "verification": {
     "tests": ["scripts/test-miniprogram-me-page.js", "scripts/test-area-chart.js", "scripts/test-card.js"],
     "commands": [
+      "node --check miniprogram/pages/me/index.js：通过",
+      "node scripts/test-miniprogram-me-page.js：通过，锁定四列真实数据、四等分、Violet Sparkles PUI Icon 与三段 content-gap",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过",
       "node scripts/test-miniprogram-me-page.js && node scripts/test-area-chart.js && node scripts/test-card.js：通过",
       "微信 compile_wxml pages/me/index.wxml：success=true / codeLength=37963",
       "npm run feedback:generate && npm run feedback:check：通过，470 条 Ledger 记录",
@@ -96,26 +103,33 @@
       "npm run check：precheck 与本次 Me/AreaChart/Card/页面/生成链均通过，随后被本轮未修改的 H5 Search search-clear 私有原生按钮设计门禁阻断"
     ],
     "browser": [
+      "微信开发者工具 Nightly 2.02.2607282 / SDK 3.17.0 / iPhone 12/13 (Pro) / 390x844：可访问树完整显示 74 / 组件、562 / 样式、8 / 高级、3 / 新增，组 aria 为“PoemUI 当前有 74 个组件、562 个样式、8 个高级组件，本版新增 3 个组件”。",
+      "四列摘要组与 BarChart 均为 340px 宽；四个数据块各 79px，三段列间距均为 8px；摘要 bottom=161px、图表 top=169px，真实间距为 8px，对应唯一 --pui-content-gap。摘要没有 margin-bottom，不存在父子间距叠加。",
+      "最新页面级精修在微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390x844 实测：第四列为数值 3，下方“新增”标签右侧显示 20rpx Violet Sparkles；前三个标签行宽均为 26px，第四标签行为 38px（26px 文案 + 2px gap + 10px Icon），仍在 79px 列内居中。摘要→图表、图表 viewport→版本 Tag、版本 Tag→展开操作均为 8px。浅/深截图为 /tmp/poemui-me-label-icon-light-390.png、/tmp/poemui-me-label-icon-dark-390.png，并实点展开→收起后恢复浅色折叠态。清空旧页面日志后单独 reLaunch Me 并等待 4 秒为 0 error / 4 warning，只含自动热重载、既有 Dialog/Navbar selector 与 IntersectionObserver 慢路径。",
+      "浅色与深色四列、图表、版本 Tag、查看更多和服务列表均完整可读，无横向裁切；截图为 /tmp/poemui-me-four-metrics-light-390.png、/tmp/poemui-me-four-metrics-dark-390.png。验收后恢复浅色折叠态。Errors=0；Warnings=7，仍为基础库、既有安装产物、性能路径和开发者工具内部 preload。",
       "微信开发者工具 iPhone 12/13 (Pro) 390x844 浅色页真实显示 74 / 组件、562 / 样式、8 / 高级；仪表盘为 left=14/top=101/362x224，服务集合为 left=14/top=343/362x272，两个 Surface 的实际间距为 18px。AreaChart 运行树输出 duration=1000 与 --pui-chart-duration:1000ms，横轴为 0.1.0 / 0.1.1，截图 /tmp/poemui-me-duration-layout-light-390.png。",
       "深色果味下仪表盘仍为 left=14/top=101/362x224，服务集合仍为 top=343，三列、折线、坐标和五个 Cell 均完整可读，截图 /tmp/poemui-me-duration-layout-dark-fruity-390.png；验收后已恢复用户原存储 light / shadow-off / frost-on / radius-large / border-off。",
       "外观 Popup 打开后 AreaChart 查询为 no such element，三列摘要仍存在；关闭后同一个 AreaChart 锚点重新出现，Canvas 避让合同未被破坏。",
       "模拟器控制台没有本次页面 error；现有缓冲区只命中既有 pages/index/index enableShareTimeline 无效配置 warning 与一次 pages/me/index onLoad 59ms Perf warning。"
     ],
     "deviceRisks": [
-      "iOS/Android 真机的 Canvas 字体、rpx、读屏与滑动仍为 pending-device。"
+      "iOS/Android 真机的四列字体回流、rpx、读屏与滑动仍为 pending-device。"
     ]
   },
   "ai": {
-    "summary": "Me 页当前规模使用透明三列真实摘要，历史增长继续交给 AreaChart；避免重复版头、嵌套卡片和硬编码数量。",
+    "summary": "Me 页当前规模使用透明四列真实摘要，新增项组合 Violet Sparkles，摘要、图表、版本 Tag 与操作使用一致的 content-gap。",
     "rules": [
-      "组件、高级和样式数量必须读取生成型 component-status 与 style-utilities-catalog，页面不得维护第二份数字。",
+      "组件、高级、新增和样式数量必须读取生成型 component-status 与 style-utilities-catalog，页面不得维护第二份数字。",
       "当前规模摘要和历史趋势分层表达，不用 Card description 重复同一组件总量。",
-      "图表前的摘要使用同一 Surface 内透明等分 Grid，不为每个数字新建 Card、边框或阴影。",
-      "单页需要更长 AreaChart 入场时使用公开 duration，最长 1000ms，不改共享默认值。",
+      "图表前的摘要使用同一 Surface 内透明四等分 Grid，不为每个数字新建 Card、边框或阴影。",
+      "摘要与图表由唯一透明父布局消费一次 --pui-content-gap；摘要不得再叠加 margin-bottom。",
+      "第四列在“新增”标签右侧组合 20rpx PUI Sparkles Icon，使用最新版本 Violet accent，并以 --pui-space-xxs 紧密关联；不要把 Icon 放回数值右侧，也不要给其余三列增加装饰噪音。",
+      "图表 viewport→版本 Tag 与版本 Tag→展开操作继续使用 --pui-content-gap，避免同一卡片内出现两套垂直节奏。",
+      "当前 BarChart 保留 1000ms 页面覆盖，共享组件默认仍为 500ms。",
       "服务集合跟随仪表盘时使用父级 section gap，删除历史 auto margin，不叠加私有间距。",
-      "AreaChart 原样显示 item.label；业务页决定是否保留版本前缀，并在 ariaLabel 中补足完整语义。",
+      "当前 BarChart 必须在 ariaLabel 中补足基线版本、当前版本、各类总量与增量语义。",
       "Me 是小程序应用页，消费层变化不复制 H5 业务壳；只有共享组件变化才同步 preview。"
     ],
-    "tags": ["miniprogram", "me", "dashboard", "area-chart", "metric-strip", "generated-data", "390px"]
+    "tags": ["miniprogram", "me", "dashboard", "bar-chart", "metric-strip", "generated-data", "390px"]
   }
 }

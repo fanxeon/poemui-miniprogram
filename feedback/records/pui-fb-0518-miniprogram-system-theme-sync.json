@@ -1,0 +1,117 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0518",
+  "title": "小程序进入前台未同步系统深浅色与外观开关",
+  "scope": "global",
+  "components": ["miniprogram", "config-provider", "visual-config", "appearance-settings", "platform-runtime"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "用户每次进入或重新回到小程序时检测当前系统深浅色，并让全部页面与外观设置中的深色开关保持同一状态；系统切换时无需重启即可同步。",
+  "environment": {
+    "surfaces": ["miniprogram-app", "all-miniprogram-pages", "appearance-settings", "config-provider"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["system-light", "system-dark"]
+  },
+  "reproduction": [
+    "旧 miniprogram/app.js 只在 onLaunch 调用 visualConfig.restore()。",
+    "旧 app.json 未启用 darkmode，也没有 themeLocation；微信不会提供可靠 theme 字段或触发主题切换事件。",
+    "系统切换深浅色后重新进入小程序，页面仍使用旧 Store 状态，AppearanceSettings 的深色 Switch 与系统不一致。"
+  ],
+  "expected": "启动、回前台和系统主题变化三条路径都把当前合法 light/dark 写入唯一 visualConfig；每页 use-global-config Provider 和 AppearanceSettings 由同一订阅更新。系统派生状态不覆盖用户持久化记录。",
+  "actual": "App 仅恢复上次本地 Store；系统主题能力未在 app.json 启用，也没有 App 生命周期同步，页面与外观设置只能继续显示旧值。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户要求再次进入小程序时检测系统深浅色，并在外观设置中同步状态。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://developers.weixin.qq.com/miniprogram/dev/framework/ability/darkmode.html",
+      "note": "微信官方说明只有 darkmode=true 才提供系统主题并触发主题变化事件，themeLocation 的 light/dark 变量用于配置同步。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getAppBaseInfo.html",
+      "note": "当前官方拆分接口以 theme 返回 light/dark，避免恢复弃用的 getSystemInfoSync。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/app.js",
+      "note": "App 在 launch/show/themeChange 三个生命周期通过发布包 theme helper 写入唯一 visualConfig，且 persist=false。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/app.json",
+      "note": "真实工程启用 darkmode 并指向包含 light/dark 的 theme.json。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-home.js",
+      "note": "VM 合同执行 launch/show/themeChange，锁定 Store 更新顺序、合法值规整、不持久化和 app/theme JSON 配置。"
+    }
+  ],
+  "rootCause": "真实示例 App 没有启用微信 DarkMode 配置，也没有把系统主题生命周期接入已经存在的 visualConfig 单例 Store；组件层 auto 能力无法替代消费者 App 的进入前台策略。",
+  "decision": {
+    "outcome": "新增 miniprogram/theme.json；app.json 启用 darkmode/themeLocation 并让窗口文字与背景读取 light/dark 变量。App 复用发布包 theme.getSystemTheme，在 onLaunch 恢复后同步、onShow 重新检测、onThemeChange 响应事件，三者都以 persist:false 更新 visualConfig。",
+    "rationale": "App 是系统生命周期的唯一稳定入口，visualConfig 是跨页面唯一视觉事实源；每页 Provider 与共享外观设置已有订阅，无需复制页面状态或改变公共 Store 字段。",
+    "alternativesRejected": [
+      "只在 Me 或首页 onShow 检测：其他组件独立页仍会漂移，并形成多份实现。",
+      "只把 Store 设为 auto：外观 Switch 仍需要额外解析状态，且进入前台策略没有真实执行证据。",
+      "把系统状态持久化：会静默覆盖用户保存的外观偏好。",
+      "恢复 wx.getSystemInfoSync：会重新引入已修复的弃用告警。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/app.js",
+      "miniprogram/app.json",
+      "miniprogram/theme.json",
+      "docs/components/CONFIG-PROVIDER.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/WECHAT_PLATFORM_API_COMPATIBILITY.md",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "scripts/test-miniprogram-home.js"
+    ],
+    "dependencies": ["wx.getAppBaseInfo", "App.onThemeChange", "visualConfig", "ConfigProvider", "AppearanceSettings"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js", "scripts/test-platform-info.js", "scripts/test-config-provider.js"],
+    "commands": [
+      "node scripts/test-miniprogram-home.js：通过",
+      "node scripts/test-platform-info.js：通过",
+      "node scripts/test-config-provider.js：通过",
+      "node --check miniprogram/app.js：通过",
+      "npm run check：通过",
+      "npm run pack:check：通过（559 files，367.6 kB）",
+      "微信 CLI build-npm：通过（1237ms，warnings=[]）"
+    ],
+    "browser": [
+      "微信官方 miniprogram-automator 连接真实 miniprogram 工程；SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 冷启动读取 systemInfo.theme=light、wx.getAppBaseInfo().theme=light、visualConfig.theme=light。",
+      "同一运行时先将 Store 临时置 dark，再执行 App.onShow；回读系统 light 且 Store 真实回写为 light，证明再次进入前台会重新检测而不是沿用旧状态。",
+      "同一运行时执行 App.onThemeChange({theme:'dark'}) 后 Store 回写 dark；打开 Me 外观 Popup，实际 WXML 的深色模式 Switch 为 value=true / aria-checked=true。再次 onShow 同步系统 light 后该 Switch 为 aria-checked=false。",
+      "小程序自动化运行期间 exception=[]；控制台只有自动化 systemInfo 探针触发的 getSystemInfoSync 弃用提示、Lazy loading 信息与 Me onLoad 性能提示，项目主题实现本身使用 wx.getAppBaseInfo。"
+    ],
+    "deviceRisks": [
+      "开发者工具自动化已执行真实 App 生命周期和实际 AppearanceSettings 渲染，但没有操作宿主 macOS 的系统外观设置；系统设置切换到微信事件的系统级派发仍需人工或真机复核。",
+      "iOS/Android 真机在冷启动、后台恢复、系统主题切换、低基础库和窗口背景切换上的行为为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "系统主题同步属于消费者 App 生命周期，必须写入唯一 visualConfig，让 Provider 与外观设置共同订阅。",
+    "rules": [
+      "需要系统主题事件时必须先启用 app.json darkmode 并提供合法 themeLocation。",
+      "启动先 restore，再读取 getAppBaseInfo 主题；回前台重读；系统变化使用 App.onThemeChange。",
+      "系统派生主题写入 visualConfig 时使用 persist:false，不维护第二份页面或外观菜单状态。",
+      "每页根仍必须挂 use-global-config Provider；App 生命周期不能替代 WXML Token 边界。",
+      "系统主题读取继续使用 platform-info/theme helper，禁止恢复 getSystemInfoSync。"
+    ],
+    "tags": ["miniprogram", "system-theme", "darkmode", "visual-config", "config-provider", "appearance-settings"]
+  }
+}

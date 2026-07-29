@@ -37,11 +37,14 @@ assert(!renderer.includes('当前效果 · 默认值已省略'));
 assert(!renderer.includes('preview-code-document__header'));
 assert(renderer.includes('<article class="preview-code-document"'));
 assert(renderer.includes("mount.dataset.panelMode = 'code'"));
+assert(renderer.includes('sources.dataSection ? previewCodeBlockSample(sources.dataSection, detail, sources.data)'));
 
 const sectionSources = functionBlock('previewCodeSectionSources');
-for (const contract of ['makeUsageCode(detail, props)', 'previewWxmlSource(usage)', 'compactPreviewWxml', 'previewUsingComponentsCode']) {
-  assert(sectionSources.includes(contract), `visible sections must reuse the usage generator through ${contract}`);
+for (const contract of ['starterUsageByComponent[runtimeId]', 'starter?.source || makeUsageCode(detail, props)', 'starter?.wxml || previewWxmlSource(usage)', 'compactPreviewWxml', 'previewUsingComponentsCode']) {
+  assert(sectionSources.includes(contract), `visible sections must use Starter Usage with fallback through ${contract}`);
 }
+assert(sectionSources.includes("label: '页面数据'"), 'data-backed starters must expose copyable page data');
+assert(sectionSources.includes("label: '页面逻辑'"), 'imperative starters must expose copyable page logic');
 const wxmlSource = functionBlock('previewWxmlSource');
 for (const contract of ['stripPreviewUsageComments', '^\\s*<(?!\\/)[a-z][\\w-]*']) {
   assert(wxmlSource.includes(contract), `visible WXML extraction must preserve ${contract}`);
@@ -84,6 +87,11 @@ const compactedNested = compactContext.compactPreviewWxml(`<view id="scroll-area
 const compactedNestedLines = compactedNested.split('\n');
 assert(compactedNestedLines.every((line) => line.length <= 80), 'nested WXML lines must stay within the 80-character soft boundary');
 assert(compactedNestedLines.some((line) => line.includes('<view id="scroll-area-source">') && !line.includes('<pui-cell')), 'a child tag must not be appended after its parent opening tag');
+assert.strictEqual(
+  compactContext.compactPreviewWxml('<pui-popup visible="{{true}}" content="Popup 内容" />'),
+  '<pui-popup visible="{{true}}" content="Popup 内容" />',
+  'Starter Usage 的标准自闭合空格必须在官网展示与复制链保持不变',
+);
 
 const copyCode = functionBlock('makeCurrentPreviewCopyCode');
 assert(copyCode.includes('makeUsageCode(detail, props)'), 'toolbar copy must continue to reuse the canonical usage generator');

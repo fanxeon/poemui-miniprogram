@@ -14566,6 +14566,7 @@ body .app-shell[data-frost="on"][data-page-mode] .preview-stage .dialog-scrim { 
 .pui-showcase-label > button:hover { color: var(--text); background: var(--surface-soft); }
 
 .pui-scroll-area-preview {
+  --pui-scroll-area-gradient-overlay-color-context: var(--surface-solid);
   position: relative;
   box-sizing: border-box;
   width: 100%;
@@ -14579,6 +14580,10 @@ body .app-shell[data-frost="on"][data-page-mode] .preview-stage .dialog-scrim { 
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
+}
+.pui-scroll-area-preview[data-scroll-area-adaptive="true"] .pui-scroll-area-preview__viewport {
+  height: auto;
+  max-height: inherit;
 }
 
 .pui-scroll-area-preview__viewport::-webkit-scrollbar { display: none; }
@@ -17790,6 +17795,7 @@ body .app-shell[data-page-mode] .preview-stage .pui-popup-preview__surface {
   min-height: 0;
   flex: 1 1 auto;
   flex-direction: column;
+  gap: 0;
   overflow: hidden;
 }
 
@@ -18162,7 +18168,7 @@ body .app-shell[data-page-mode] .preview-stage .pui-popup-preview__header {
   grid-template-columns: var(--pui-preview-space-step-36) minmax(0, 1fr) var(--pui-preview-space-step-36);
   align-items: start;
   gap: var(--pui-preview-space-step-8);
-  padding: var(--pui-preview-space-normal) var(--pui-preview-space-normal) var(--pui-preview-space-step-8);
+  padding: var(--pui-preview-space-normal) var(--pui-preview-space-normal) 0;
 }
 body .app-shell[data-page-mode] .preview-stage .pui-popup-preview__header-side {
   display: flex;
@@ -18215,6 +18221,9 @@ body .app-shell[data-page-mode] .preview-stage .pui-popup-preview__scroll {
   overflow: auto;
   color: var(--text);
 }
+body .app-shell[data-page-mode] .preview-stage .pui-popup-preview__scroll--with-header {
+  padding-top: var(--pui-preview-content-gap);
+}
 
 body .app-shell[data-page-mode] .preview-stage .pui-popup-preview__scroll.is-static {
   overflow: hidden;
@@ -18249,6 +18258,9 @@ body .app-shell[data-page-mode] .preview-stage .overlay-box--top .pui-popup-prev
 body .app-shell[data-page-mode] .preview-stage .overlay-box--top .pui-popup-preview--custom-navbar .pui-popup-preview__scroll {
   padding-top: calc(var(--pui-preview-space-normal) + var(--pui-navbar-preview-safe-height) + var(--pui-navbar-preview-content-height) + var(--pui-preview-space-step-12));
 }
+body .app-shell[data-page-mode] .preview-stage .overlay-box--top .pui-popup-preview--custom-navbar .pui-popup-preview__scroll--with-header {
+  padding-top: var(--pui-preview-content-gap);
+}
 
 body .app-shell[data-page-mode] .preview-stage .overlay-box--top .pui-popup-preview--custom-navbar.pui-popup-preview--card .pui-popup-preview__surface {
   margin-top: calc(var(--pui-navbar-preview-safe-height) + var(--pui-navbar-preview-content-height) + var(--pui-preview-space-step-12));
@@ -18260,6 +18272,9 @@ body .app-shell[data-page-mode] .preview-stage .overlay-box--top .pui-popup-prev
 
 body .app-shell[data-page-mode] .preview-stage .overlay-box--top .pui-popup-preview--custom-navbar.pui-popup-preview--card .pui-popup-preview__scroll {
   padding-top: var(--pui-preview-space-normal);
+}
+body .app-shell[data-page-mode] .preview-stage .overlay-box--top .pui-popup-preview--custom-navbar.pui-popup-preview--card .pui-popup-preview__scroll--with-header {
+  padding-top: var(--pui-preview-content-gap);
 }
 
 body .app-shell[data-page-mode] .preview-stage .pui-popup-preview__event {
@@ -23580,16 +23595,19 @@ body .app-shell[data-spacing="equal"] .preview-stage .pui-select-menu {
   padding: var(--pui-surface-inset);
 }
 body .app-shell[data-spacing="equal"] .preview-stage .pui-popup-preview {
-  gap: var(--pui-surface-section-gap);
+  gap: 0;
 }
 body .app-shell[data-spacing="equal"] .preview-stage .pui-popup-preview__header {
   padding: var(--pui-surface-inset) var(--pui-surface-inset) 0;
 }
 body .app-shell[data-spacing="equal"] .preview-stage .pui-popup-preview__scroll {
-  padding: 0 var(--pui-surface-inset);
+  padding: var(--pui-surface-inset);
+}
+body .app-shell[data-spacing="equal"] .preview-stage .pui-popup-preview__scroll--with-header {
+  padding-top: var(--pui-surface-inset);
 }
 body .app-shell[data-spacing="equal"] .preview-stage .pui-popup-preview__footer {
-  padding: 0 var(--pui-surface-inset) var(--pui-surface-inset);
+  padding: var(--pui-surface-inset);
 }
 
 /* Final H5 component structure names differ slightly from the WXML mirror. */

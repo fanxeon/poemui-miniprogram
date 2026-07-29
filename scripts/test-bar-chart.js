@@ -80,11 +80,27 @@ assert(!/<[^>]+\bwx:else\b[^>]*\bwx:for\b|<[^>]+\bwx:for\b[^>]*\bwx:else\b/.test
 assert(wxml.includes('class="pui-bar-chart__scale"') && wxml.includes('<text>0</text>') && wxml.includes('{{scaleMax}}'), 'showGrid must expose the horizontal zero and maximum endpoints');
 assert(!wxss.includes('box-shadow:var(--pui-shadow'));
 assert(wxss.includes('background:var(--pui-chart-gradient)'));
+assert(wxss.includes('box-shadow:inset -2rpx 0 0 var(--pui-chart-accent)'), 'horizontal BarChart must pair the transparent fill with one solid terminal line');
+assert(wxss.includes('box-shadow:inset 0 2rpx 0 var(--pui-chart-accent)'), 'vertical BarChart must pair the transparent fill with one solid terminal line');
 assert(wxss.includes('var(--pui-chart-grid-line)'), 'BarChart grid must consume the dedicated low-contrast grid token');
 assert(!wxss.includes('var(--pui-chart-fade-outline) 25%'), 'BarChart grid must not reuse the stronger Waffle outline token');
 assert(!wxss.includes('color-mix('));
 assert(theme.includes('--pui-chart-gradient-violet'));
 assert(theme.includes('--pui-chart-gradient-vertical-violet'));
+[
+  ['neutral', '113, 113, 122', '161, 161, 170'],
+  ['violet', '124, 58, 237', '167, 139, 250'],
+  ['blue', '37, 99, 235', '96, 165, 250'],
+  ['teal', '13, 148, 136', '45, 212, 191'],
+  ['pink', '219, 39, 119', '244, 114, 182'],
+  ['amber', '217, 119, 6', '251, 191, 36'],
+].forEach(([name, lightRgb, darkRgb]) => {
+  assert(theme.includes(`--pui-chart-gradient-${name}: linear-gradient(90deg, rgba(${lightRgb}, 0.04) 0%, rgba(${lightRgb}, 0.42) 100%)`), `${name} light horizontal fill must mirror AreaChart transparency`);
+  assert(theme.includes(`--pui-chart-gradient-vertical-${name}: linear-gradient(0deg, rgba(${lightRgb}, 0.04) 0%, rgba(${lightRgb}, 0.42) 100%)`), `${name} light vertical fill must mirror AreaChart transparency`);
+  assert(theme.includes(`--pui-chart-gradient-${name}: linear-gradient(90deg, rgba(${darkRgb}, 0.04) 0%, rgba(${darkRgb}, 0.42) 100%)`), `${name} dark horizontal fill must mirror AreaChart transparency`);
+  assert(theme.includes(`--pui-chart-gradient-vertical-${name}: linear-gradient(0deg, rgba(${darkRgb}, 0.04) 0%, rgba(${darkRgb}, 0.42) 100%)`), `${name} dark vertical fill must mirror AreaChart transparency`);
+});
+assert(!/--pui-chart-gradient(?:-vertical)?-[^:]+:[^;]+0\.28\) 0%[^;]+0\.66\) 46%[^;]+1\) 100%/.test(theme), 'BarChart tokens must not regress to the previous opaque three-stop gradient');
 assert(theme.includes('--pui-chart-grid-line: rgba(24, 24, 27, 0.07)'), 'light theme must define the softened chart grid token');
 assert(theme.includes('--pui-chart-grid-line: rgba(250, 250, 250, 0.1)'), 'dark theme must define the softened chart grid token');
 assert(wxss.includes('background:var(--pui-chart-gradient-vertical)'));

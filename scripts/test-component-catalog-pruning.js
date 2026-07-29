@@ -112,7 +112,19 @@ assert(previewStyles.includes('.component-group__section-title'), 'sidebar secti
 assert(exampleJson.includes('poemui-miniprogram'), 'the real mini-program example must resolve its components through the npm package');
 assert(exampleJs.includes('表单组件'), 'the real mini-program example must use the current form terminology');
 assert(exampleWxml.includes('pui-form'), 'the real mini-program example must retain the real form composition');
-assert(exampleWxss.includes('pui-button-group'), 'the real mini-program example must retain its shared button-group layout');
+for (const [label, source] of [
+  ['JSON', exampleJson],
+  ['JavaScript', exampleJs],
+  ['WXML', exampleWxml],
+  ['WXSS', exampleWxss],
+]) {
+  assert(!source.includes('pui-tooltip'), `the real mini-program example ${label} must not retain the retired Tooltip component`);
+  assert(!source.includes('poemui-miniprogram/tooltip'), `the real mini-program example ${label} must not resolve the retired Tooltip package path`);
+  assert(!source.includes('pui-button-group'), `the real mini-program example ${label} must not retain the retired ButtonGroup component`);
+  assert(!source.includes('poemui-miniprogram/button-group'), `the real mini-program example ${label} must not resolve the retired ButtonGroup package path`);
+}
+assert(exampleWxml.includes('class="example-action-group'), 'the real mini-program example must compose action rows from real PUI Buttons');
+assert(exampleWxss.includes('.example-action-group'), 'the real mini-program example action row must retain a tokenized wrapping layout');
 
 assert(api.includes('## Cell\n'), 'API must expose Cell as the canonical heading');
 assert(api.includes('## Dialog\n'), 'API must expose Dialog as the canonical heading');

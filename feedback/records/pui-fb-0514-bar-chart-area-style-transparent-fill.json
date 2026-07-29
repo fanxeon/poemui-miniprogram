@@ -1,0 +1,136 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0514",
+  "title": "BarChart 使用 AreaChart 式透明填充并保留实体终点",
+  "scope": "component",
+  "components": [
+    "bar-chart",
+    "area-chart",
+    "theme-tokens"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "BarChart 不再使用高饱和实体渐变，改为参考 AreaChart 的轻透明渐变，同时仍能准确识别每条数据的终点。",
+  "environment": {
+    "surfaces": [
+      "bar-chart",
+      "miniprogram-me",
+      "component-detail-page"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools",
+      "node"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruity"
+    ]
+  },
+  "reproduction": [
+    "打开 Me 或 BarChart 独立页。",
+    "旧条形从 28% 经过 66% 到 100% 实体色，多个分段堆叠时形成厚重且抢眼的色带。",
+    "与 AreaChart 的实体线加低透明填充相比，旧 BarChart 渐变缺少同一图表家族的轻量感。"
+  ],
+  "expected": "BarChart 六种主题在浅深色和横纵方向都使用 AreaChart 式低透明填充，并用实体强调线标注真实数据端；根保持透明且 API 不变。",
+  "actual": "旧六色横纵 Token 使用 0.28→0.66→1 的高饱和三段渐变，整条数据段比 AreaChart 更重。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户明确不喜欢现有 BarChart 渐变，要求参考 AreaChart 的渐变透明风格。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "浅深六色横向与纵向 BarChart Token 统一为基线端 0.04、数据端 0.42。"
+    },
+    {
+      "kind": "file",
+      "ref": "bar-chart/bar-chart.wxss",
+      "note": "横向段使用右侧 2rpx accent inset 线，纵向段使用顶部 2rpx accent inset 线；根仍无外投影。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-bar-chart.js",
+      "note": "专项精确锁定六色浅深横纵透明度、两方向实体终点线、透明根和 12 Props/0 Events/0 Slots/replay()。"
+    }
+  ],
+  "rootCause": "第一版只把“终点可读”解释为把整个数据端拉到 100% 实体色，没有把 AreaChart 的“低透明填充 + 独立实体边界”拆成两个视觉职责。",
+  "decision": {
+    "outcome": "保留既有 --pui-chart-gradient-* Token 名与六种主题 RGB，只把 alpha 收敛为 0.04→0.42；BarChart segment 通过 inset box-shadow 使用 --pui-chart-accent 绘制实体终点线。横向/纵向分别标记右边/上边，不新增 DOM、Prop、事件或方法。",
+    "rationale": "透明填充降低视觉重量，实体终点线继续给出准确长度；复用现有 Token 和 accent 保持浅深色、显式主题与 AreaChart 家族一致，又不引入外投影或第二层 Surface。",
+    "alternativesRejected": [
+      "只把终点降到 42% 且没有实体线：长度边界在浅色或多段相邻时不够明确。",
+      "保留 100% 实体终点渐变：仍然过重，不符合用户要求。",
+      "页面私有覆盖 Me 图表颜色：会掩盖共享 BarChart 缺陷并让独立页漂移。",
+      "新增 gradientStyle Prop：属于共享默认视觉修正，不需要扩张公共 API。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/style/theme.wxss",
+      "bar-chart/bar-chart.wxss",
+      "scripts/test-bar-chart.js",
+      "docs/components/BAR-CHART.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DETAIL_PAGE_UI_CHECKLIST_2026-07-28.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md"
+    ],
+    "dependencies": [
+      "chart accent tokens",
+      "light/dark theme",
+      "BarChart horizontal/vertical layout"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-bar-chart.js"
+    ],
+    "commands": [
+      "node scripts/test-bar-chart.js：通过",
+      "node --check miniprogram/pages/me/index.js：通过",
+      "npm run miniprogram:build && npm run example:install：通过",
+      "PUI_VERIFY_DIST=1 node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过",
+      "微信 build-npm：944ms，warnings=[]"
+    ],
+    "browser": [
+      "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390x844：BarChart 独立页横向与纵向均显示低透明填充和清晰实体数据端，浅色截图 /tmp/poemui-bar-chart-area-style-light-390.png。",
+      "dark + shadow + frostedGlass + largeRadius + border-off 下六色 Token 仍保持可读，条形根无第二层 Surface，截图 /tmp/poemui-bar-chart-area-style-dark-fruity-390.png。",
+      "独立页调用父级 onToggleChartData 后 chartItems 从 10/44/44/60 真实回写为 62/16/62/48，并调用公开 replay()；Console 对 warning/error/exception/fail/deprecated 等过滤无命中。",
+      "Me 浅色折叠与深色果味折叠/展开同样显示新填充，截图 /tmp/poemui-me-bar-version-collapsed-light-390.png、/tmp/poemui-me-bar-version-collapsed-dark-fruity-390.png、/tmp/poemui-me-bar-version-expanded-dark-fruity-390.png。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机对 0.04 起点透明度、2rpx inset 抗锯齿、深色合成和弱视可读性仍为 pending-device。",
+      "H5 preview/styles.css 尚未同步六色横纵 Token 和终点线，按 0.1.2 最终汇总边界保持待同步。"
+    ]
+  },
+  "ai": {
+    "summary": "BarChart 默认视觉是 AreaChart 式低透明填充加实体数据端线，不能恢复高饱和三段渐变。",
+    "rules": [
+      "六色浅深横纵 BarChart 填充统一使用 0.04→0.42。",
+      "横向数据端使用右侧实体 accent inset 线，纵向使用顶部实体线。",
+      "终点线属于 segment 内部边界，不得变成组件根外投影或第二层 Surface。",
+      "页面不得私有覆盖共享 BarChart 渐变；API 保持 items 驱动。",
+      "最终 H5 同步必须更新 preview/styles.css 的同名 Token、终点线和 390px 测试。"
+    ],
+    "tags": [
+      "bar-chart",
+      "gradient",
+      "area-chart",
+      "transparency",
+      "theme-token"
+    ]
+  }
+}

@@ -140,6 +140,7 @@ visualConfig.setEffectsEnabled(false); // 暂停装饰效果，不删除单项�
 - `beta`：具有真实原生实现与受控发布边界，升级时仍可能出现非破坏性调整。
 
 完整名单、当前状态和 Props 以自动生成的 [组件目录](./docs/COMPONENT_CATALOG.md) 为准。
+复制后立即可见的最小注册、WXML 与页面数据/逻辑以自动生成的 [Starter Usage](./docs/COMPONENT_STARTER_USAGE.md) 为准；它与组件运行时安全默认值、小程序独立组件页演示及 H5 当前效果复制相互独立。
 
 `TopLoading`、`DynamicMessage`、`PullRefresh`、`VirtualList`、`Sticky`、`Watermark` 已完成独立原生实现与官网调参预览，分别覆盖卡片顶边请求进度、顶部非模态灵动通知、刷新状态机、固定行高窗口化渲染、WXSS 吸顶与按真实尺寸铺排的图文水印层。正式业务只应使用 `done` 和 `beta` 组件。PoemUI 参考 shadcn 的目录与组合思路，但不会承诺和 Web 实现逐项同构。
 

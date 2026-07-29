@@ -1,0 +1,147 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0510",
+  "title": "Me AreaChart 三版本方案被类别增量 BarChart 取代",
+  "scope": "component",
+  "components": [
+    "miniprogram-me",
+    "area-chart",
+    "catalog-metadata"
+  ],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "wont-fix",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "保留原来的 AreaChart，让图表本体铺满 Card Content，并逐一标注 0.1.0、0.1.1、0.1.2。",
+  "environment": {
+    "surfaces": [
+      "miniprogram-me",
+      "component-status-card"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruity"
+    ]
+  },
+  "reproduction": [
+    "打开 pages/me/index。",
+    "旧 AreaChart 只有 0.1.0 与 0.1.2 两个横轴点。",
+    "短暂试做的 Waffle 改变了用户认可的原图表类型。"
+  ],
+  "expected": "该历史方案曾要求唯一 AreaChart 全宽显示 0.1.0、0.1.1、0.1.2；最新用户决定已改为按类别和增量展示的 BarChart。",
+  "actual": "三版本 AreaChart 已实现并验收，但用户随后明确要求用公告分类数据改为 BarChart。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户明确要求图表全宽、三个版本均标注，并最终指定保留原来的方式。"
+    },
+    {
+      "kind": "file",
+      "ref": "metadata/component-release-deltas.js",
+      "note": "显式版本里程碑记录 0.1.0=71、0.1.1=74、0.1.2=74。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.js",
+      "note": "该文件曾将 versions() 映射为稳定 components 单系列；当前已由 PUI-FB-0513 的 BarChart 页面实现取代。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "该文件曾注册唯一 pui-area-chart 并在浮层可见时卸载 Canvas；当前实现不再具备此结构。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "专项锁定三版本顺序、71/74/74、稳定单系列、AreaChart API 与无 Waffle。"
+    }
+  ],
+  "rootCause": "旧消费页只把前序与当前版本映射为两个点；版本真相源没有向页面公开完整的可见里程碑序列。",
+  "decision": {
+    "outcome": "本条三版本 AreaChart 方案标记为被取代；versions() 仍保留为生成型历史数据，但当前 Me 图表合同转由 PUI-FB-0513 的类别增量 BarChart 承接。",
+    "rationale": "用户最新目标从版本累计趋势改为类别与增量，并明确指定 BarChart；旧方案已经完成的证据继续保留，但不得当作当前页面合同恢复。",
+    "alternativesRejected": [
+      "继续 Waffle：用户明确要求原来的方式。",
+      "仅保留 0.1.0 与 0.1.2：缺少用户要求的 0.1.1 标签。",
+      "新增 AreaChart fullWidth Prop：共享根已 width:100%，属于重复 API。",
+      "在页面手写 SVG/Canvas：绕过真实 PUI AreaChart。",
+      "把 0.1.1 描述为 npm 发布：没有 Registry 证据，它只作为仓库历史工作树里程碑。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "metadata/component-release-deltas.js",
+      "scripts/generate-catalog.js",
+      "miniprogram/common/data/component-status.js",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.json",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/common/services/update-announcements.js",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md"
+    ],
+    "dependencies": [
+      "PUI AreaChart",
+      "PUI Card",
+      "component release milestones"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-area-chart.js",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-tabbar-pages.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node scripts/test-area-chart.js：通过",
+      "node scripts/test-waffle.js：通过，确认未新增 fluid API",
+      "node scripts/test-miniprogram-home.js：通过",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过"
+    ],
+    "browser": [
+      "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390x844：页面运行态回读 labels=0.1.0/0.1.1/0.1.2、values=71/74/74、series 全为 components、max=74、duration=1000。",
+      "浅色 AreaChart 根为 left=25/top=169/340x145，宽度等于 Card Content；三个横轴标签完整可见，截图 /tmp/poemui-me-area-chart-three-versions-light-390.png。",
+      "dark + shadow + frostedGlass + largeRadius + border-off 下图表、摘要和服务列表完整可读，截图 /tmp/poemui-me-area-chart-three-versions-dark-fruity-390.png；验收后恢复 light/shadow-on/frost-off/radius-large/border-off。",
+      "公告 Popup、商业授权 Dialog 与外观 Popup 分别打开时 #me-component-status-chart 均返回 no such element；各浮层关闭后恢复 340x145，Canvas 未穿透。",
+      "运行态从 cloud 回读稳定公告 pui-v0-1-2-20260729 的小程序说明为全宽 AreaChart 三版本；控制台过滤 invalid page.json、enableShareTimeline、warning、error、exception、fail 无命中。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 Canvas 清晰度、触摸滚动、读屏和系统低动效仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "三点 AreaChart 是已被最新用户决定取代的历史方案；当前 Me 图表只看 PUI-FB-0513。",
+    "rules": [
+      "不得把本条历史 AreaChart 恢复成当前 Me 图表；最新合同见 PUI-FB-0513。",
+      "版本名称与总量必须来自 metadata release milestones 经生成器输出的 versions() 副本。",
+      "AreaChart 根已全宽，页面不得新增 fullWidth Prop 或穿透样式。",
+      "三个点必须共享稳定 components 系列并显示 XAxis 与 Dots。",
+      "0.1.1 可作为仓库历史工作树里程碑显示，但不得叙述为独立 npm Registry 发布证据。",
+      "Canvas 浮层卸载只适用于本条历史 AreaChart，不得套用到当前 View/WXSS BarChart。"
+    ],
+    "tags": [
+      "area-chart",
+      "full-width",
+      "miniprogram-me",
+      "version-labels",
+      "generated-data"
+    ]
+  }
+}

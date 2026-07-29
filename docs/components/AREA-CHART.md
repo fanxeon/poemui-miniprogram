@@ -66,7 +66,7 @@ AreaChart 为 `display-leaf`：`shadow=none / frostedGlass=false / largeRadius=f
 
 ## 7. H5 与小程序边界
 
-- 小程序必须使用 `<canvas type="2d">`、真实 DPR 和继承后的 Chart Token 色值；Canvas 不能写死为只支持浅色。
+- 小程序必须使用 `<canvas type="2d">`、真实 DPR 和继承后的 Chart Token 色值；DPR 只能通过 `common/utils/platform-info#getWindowInfo()` 读取，读取失败回落为 `1`，不得恢复 `wx.getSystemInfoSync()` fallback。Canvas 不能写死为只支持浅色。
 - H5 使用真实 SVG path、linearGradient、grid、x-axis 与 legend，不加载 Recharts，也不把 Canvas 截图塞进概览。
 - 两端共享 `items/max/curve/stacked/size/show* / animated/duration/reduceMotion` 语义，使用同名 Token。
 - 横轴原样显示调用方传入的 `item.label`，组件不自动追加 `v`、单位或其他业务前缀；消费页可以在版本上下文明确时使用 `0.1.0`，同时在 `ariaLabel` 中保留“版本 0.1.0”的完整语义。
@@ -75,7 +75,7 @@ AreaChart 为 `display-leaf`：`shadow=none / frostedGlass=false / largeRadius=f
 
 ## 8. 验收与禁止
 
-专项测试必须覆盖：单/多系列、缺失系列、非法/零值、显式/自动 max、叠加/堆叠、三种曲线、共享零基线、三种尺寸、Grid/XAxis/Legend/Dots、浅深色 Token、默认 500ms、关闭动画、1ms 低动效、`replay()`、零 Events/Slots、H5 SVG 和小程序 Canvas 2D、透明 Surface 资格、发布产物一致性。
+专项测试必须覆盖：单/多系列、缺失系列、非法/零值、显式/自动 max、叠加/堆叠、三种曲线、共享零基线、三种尺寸、Grid/XAxis/Legend/Dots、浅深色 Token、默认 500ms、关闭动画、1ms 低动效、`replay()`、零 Events/Slots、H5 SVG 和小程序 Canvas 2D、共享平台读取器、禁止弃用系统信息 API、透明 Surface 资格、发布产物一致性。
 
 明确禁止逐点独立放大、用 Card 包进组件根、把 Tooltip/请求/版本统计塞入组件、使用静态图片冒充、仅切换根 `data-*` 而不验证真实渐变和描边。
 

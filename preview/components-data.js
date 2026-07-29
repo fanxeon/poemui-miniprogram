@@ -3579,8 +3579,8 @@ window.POEMUI_COMPONENT_DATA = {
       "受控/非受控、12 向定位、主题、箭头、外部点击、slot、低动效"
     ],
     "scroll-area": [
-      "轻量封装原生 scroll-view，在固定高度内定位、滚动并按真实边缘提示可继续阅读。",
-      "高度、目标定位、边缘渐隐、默认 slot"
+      "轻量封装原生 scroll-view，在固定高度或有界自适应高度内定位、滚动并按真实边缘提示可继续阅读。",
+      "固定/自适应高度、目标定位、边缘渐隐、默认 slot"
     ],
     "select": [
       "由 PUI Button Trigger、PUI Popup 与 PUI Button 选项组成的简单单选器，支持严格原始值、受控值、空选项、取消与只读语义。",
@@ -3956,6 +3956,7 @@ window.POEMUI_COMPONENT_DATA = {
     ],
     "scroll-area": [
       "height",
+      "maxHeight",
       "scrollTop",
       "scrollIntoView",
       "gradientOverlay",
@@ -8437,6 +8438,879 @@ window.POEMUI_COMPONENT_DATA = {
         "description": "读取当前真实渲染值，不触发事件。"
       }
     ]
+  },
+  "starterUsage": {
+    "config-provider": {
+      "wxml": "<pui-config-provider>\n  <view>页面内容</view>\n</pui-config-provider>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-config-provider\": \"poemui-miniprogram/config-provider/config-provider\"\n  }\n}\n\n<pui-config-provider>\n  <view>页面内容</view>\n</pui-config-provider>"
+    },
+    "direction": {
+      "wxml": "<pui-direction content=\"PoemUI Direction 内容\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-direction\": \"poemui-miniprogram/direction/direction\"\n  }\n}\n\n<pui-direction content=\"PoemUI Direction 内容\" />"
+    },
+    "icon": {
+      "wxml": "<pui-icon name=\"spark\" size=\"40\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-icon\": \"poemui-miniprogram/icon/icon\"\n  }\n}\n\n<pui-icon name=\"spark\" size=\"40\" />"
+    },
+    "button": {
+      "wxml": "<pui-button theme=\"primary\">按钮</pui-button>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-button\": \"poemui-miniprogram/button/button\"\n  }\n}\n\n<pui-button theme=\"primary\">按钮</pui-button>"
+    },
+    "divider": {
+      "wxml": "<pui-divider content=\"分区标题\" show-content />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-divider\": \"poemui-miniprogram/divider/divider\"\n  }\n}\n\n<pui-divider content=\"分区标题\" show-content />"
+    },
+    "navbar": {
+      "wxml": "<pui-navbar title=\"页面标题\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-navbar\": \"poemui-miniprogram/navbar/navbar\"\n  }\n}\n\n<pui-navbar title=\"页面标题\" />"
+    },
+    "navigation-menu": {
+      "data": {
+        "navigationItems": [
+          {
+            "label": "组件",
+            "value": "components",
+            "icon": "component"
+          },
+          {
+            "label": "指南",
+            "value": "guides",
+            "icon": "file-text"
+          },
+          {
+            "label": "关于",
+            "value": "about",
+            "icon": "info"
+          }
+        ]
+      },
+      "wxml": "<pui-navigation-menu items=\"{{navigationItems}}\" default-value=\"components\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-navigation-menu\": \"poemui-miniprogram/navigation-menu/navigation-menu\"\n  }\n}\n\n<pui-navigation-menu items=\"{{navigationItems}}\" default-value=\"components\" />\n\n// page.js\nPage({\n  data: {\n  \"navigationItems\": [\n    {\n      \"label\": \"组件\",\n      \"value\": \"components\",\n      \"icon\": \"component\"\n    },\n    {\n      \"label\": \"指南\",\n      \"value\": \"guides\",\n      \"icon\": \"file-text\"\n    },\n    {\n      \"label\": \"关于\",\n      \"value\": \"about\",\n      \"icon\": \"info\"\n    }\n  ]\n}\n})"
+    },
+    "tabs": {
+      "data": {
+        "tabItems": [
+          {
+            "label": "概览",
+            "value": "overview"
+          },
+          {
+            "label": "API",
+            "value": "api"
+          },
+          {
+            "label": "属性",
+            "value": "props"
+          }
+        ]
+      },
+      "wxml": "<pui-tabs items=\"{{tabItems}}\" default-value=\"overview\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-tabs\": \"poemui-miniprogram/tabs/tabs\"\n  }\n}\n\n<pui-tabs items=\"{{tabItems}}\" default-value=\"overview\" />\n\n// page.js\nPage({\n  data: {\n  \"tabItems\": [\n    {\n      \"label\": \"概览\",\n      \"value\": \"overview\"\n    },\n    {\n      \"label\": \"API\",\n      \"value\": \"api\"\n    },\n    {\n      \"label\": \"属性\",\n      \"value\": \"props\"\n    }\n  ]\n}\n})"
+    },
+    "breadcrumb": {
+      "data": {
+        "breadcrumbItems": [
+          {
+            "label": "首页",
+            "value": "home",
+            "icon": "home"
+          },
+          {
+            "label": "组件",
+            "value": "components"
+          },
+          {
+            "label": "面包屑",
+            "value": "breadcrumb"
+          }
+        ]
+      },
+      "wxml": "<pui-breadcrumb items=\"{{breadcrumbItems}}\" default-value=\"breadcrumb\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-breadcrumb\": \"poemui-miniprogram/breadcrumb/breadcrumb\"\n  }\n}\n\n<pui-breadcrumb items=\"{{breadcrumbItems}}\" default-value=\"breadcrumb\" />\n\n// page.js\nPage({\n  data: {\n  \"breadcrumbItems\": [\n    {\n      \"label\": \"首页\",\n      \"value\": \"home\",\n      \"icon\": \"home\"\n    },\n    {\n      \"label\": \"组件\",\n      \"value\": \"components\"\n    },\n    {\n      \"label\": \"面包屑\",\n      \"value\": \"breadcrumb\"\n    }\n  ]\n}\n})"
+    },
+    "tabbar": {
+      "data": {
+        "tabbarItems": [
+          {
+            "label": "首页",
+            "value": "home",
+            "icon": "home"
+          },
+          {
+            "label": "安装",
+            "value": "install",
+            "icon": "code"
+          },
+          {
+            "label": "我的",
+            "value": "me",
+            "icon": "profile"
+          }
+        ]
+      },
+      "wxml": "<pui-tabbar items=\"{{tabbarItems}}\" default-value=\"home\" fixed=\"{{false}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-tabbar\": \"poemui-miniprogram/tabbar/tabbar\"\n  }\n}\n\n<pui-tabbar items=\"{{tabbarItems}}\" default-value=\"home\" fixed=\"{{false}}\" />\n\n// page.js\nPage({\n  data: {\n  \"tabbarItems\": [\n    {\n      \"label\": \"首页\",\n      \"value\": \"home\",\n      \"icon\": \"home\"\n    },\n    {\n      \"label\": \"安装\",\n      \"value\": \"install\",\n      \"icon\": \"code\"\n    },\n    {\n      \"label\": \"我的\",\n      \"value\": \"me\",\n      \"icon\": \"profile\"\n    }\n  ]\n}\n})"
+    },
+    "steps": {
+      "data": {
+        "stepItems": [
+          {
+            "title": "创建项目",
+            "value": "create"
+          },
+          {
+            "title": "安装组件",
+            "value": "install"
+          },
+          {
+            "title": "开始使用",
+            "value": "ready"
+          }
+        ]
+      },
+      "wxml": "<pui-steps items=\"{{stepItems}}\" current=\"{{1}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-steps\": \"poemui-miniprogram/steps/steps\"\n  }\n}\n\n<pui-steps items=\"{{stepItems}}\" current=\"{{1}}\" />\n\n// page.js\nPage({\n  data: {\n  \"stepItems\": [\n    {\n      \"title\": \"创建项目\",\n      \"value\": \"create\"\n    },\n    {\n      \"title\": \"安装组件\",\n      \"value\": \"install\"\n    },\n    {\n      \"title\": \"开始使用\",\n      \"value\": \"ready\"\n    }\n  ]\n}\n})"
+    },
+    "back-top": {
+      "wxml": "<pui-back-top fixed=\"{{false}}\" scroll-top=\"{{320}}\" text=\"返回顶部\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-back-top\": \"poemui-miniprogram/back-top/back-top\"\n  }\n}\n\n<pui-back-top fixed=\"{{false}}\" scroll-top=\"{{320}}\" text=\"返回顶部\" />"
+    },
+    "indexes": {
+      "data": {
+        "contactGroups": [
+          {
+            "index": "A",
+            "items": [
+              {
+                "title": "Alice",
+                "value": "alice"
+              }
+            ]
+          },
+          {
+            "index": "B",
+            "items": [
+              {
+                "title": "Bob",
+                "value": "bob"
+              }
+            ]
+          },
+          {
+            "index": "C",
+            "items": [
+              {
+                "title": "Carol",
+                "value": "carol"
+              }
+            ]
+          }
+        ]
+      },
+      "wxml": "<pui-indexes items=\"{{contactGroups}}\" height=\"720rpx\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-indexes\": \"poemui-miniprogram/indexes/indexes\"\n  }\n}\n\n<pui-indexes items=\"{{contactGroups}}\" height=\"720rpx\" />\n\n// page.js\nPage({\n  data: {\n  \"contactGroups\": [\n    {\n      \"index\": \"A\",\n      \"items\": [\n        {\n          \"title\": \"Alice\",\n          \"value\": \"alice\"\n        }\n      ]\n    },\n    {\n      \"index\": \"B\",\n      \"items\": [\n        {\n          \"title\": \"Bob\",\n          \"value\": \"bob\"\n        }\n      ]\n    },\n    {\n      \"index\": \"C\",\n      \"items\": [\n        {\n          \"title\": \"Carol\",\n          \"value\": \"carol\"\n        }\n      ]\n    }\n  ]\n}\n})"
+    },
+    "sidebar": {
+      "data": {
+        "sidebarItems": [
+          {
+            "label": "基础组件",
+            "value": "basic",
+            "icon": "component"
+          },
+          {
+            "label": "表单组件",
+            "value": "form",
+            "icon": "edit"
+          },
+          {
+            "label": "反馈组件",
+            "value": "feedback",
+            "icon": "bell"
+          },
+          {
+            "label": "高级组件",
+            "value": "advanced",
+            "icon": "premium"
+          }
+        ]
+      },
+      "wxml": "<pui-sidebar items=\"{{sidebarItems}}\" default-value=\"basic\" height=\"560rpx\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-sidebar\": \"poemui-miniprogram/sidebar/sidebar\"\n  }\n}\n\n<pui-sidebar items=\"{{sidebarItems}}\" default-value=\"basic\" height=\"560rpx\" />\n\n// page.js\nPage({\n  data: {\n  \"sidebarItems\": [\n    {\n      \"label\": \"基础组件\",\n      \"value\": \"basic\",\n      \"icon\": \"component\"\n    },\n    {\n      \"label\": \"表单组件\",\n      \"value\": \"form\",\n      \"icon\": \"edit\"\n    },\n    {\n      \"label\": \"反馈组件\",\n      \"value\": \"feedback\",\n      \"icon\": \"bell\"\n    },\n    {\n      \"label\": \"高级组件\",\n      \"value\": \"advanced\",\n      \"icon\": \"premium\"\n    }\n  ]\n}\n})"
+    },
+    "input": {
+      "wxml": "<pui-input placeholder=\"请输入内容\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-input\": \"poemui-miniprogram/input/input\"\n  }\n}\n\n<pui-input placeholder=\"请输入内容\" />"
+    },
+    "field": {
+      "components": {
+        "pui-input": "poemui-miniprogram/input/input"
+      },
+      "wxml": "<pui-field label=\"组件名称\" required>\n  <pui-input placeholder=\"请输入组件名称\" />\n</pui-field>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-field\": \"poemui-miniprogram/field/field\",\n    \"pui-input\": \"poemui-miniprogram/input/input\"\n  }\n}\n\n<pui-field label=\"组件名称\" required>\n  <pui-input placeholder=\"请输入组件名称\" />\n</pui-field>"
+    },
+    "label": {
+      "wxml": "<pui-label content=\"字段名称\" required />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-label\": \"poemui-miniprogram/label/label\"\n  }\n}\n\n<pui-label content=\"字段名称\" required />"
+    },
+    "input-otp": {
+      "wxml": "<pui-input-otp length=\"{{6}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-input-otp\": \"poemui-miniprogram/input-otp/input-otp\"\n  }\n}\n\n<pui-input-otp length=\"{{6}}\" />"
+    },
+    "textarea": {
+      "wxml": "<pui-textarea placeholder=\"请输入详细说明\" maxlength=\"{{200}}\" indicator />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-textarea\": \"poemui-miniprogram/textarea/textarea\"\n  }\n}\n\n<pui-textarea placeholder=\"请输入详细说明\" maxlength=\"{{200}}\" indicator />"
+    },
+    "switch": {
+      "wxml": "<pui-switch default-value=\"{{true}}\" aria-label=\"启用功能\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-switch\": \"poemui-miniprogram/switch/switch\"\n  }\n}\n\n<pui-switch default-value=\"{{true}}\" aria-label=\"启用功能\" />"
+    },
+    "checkbox": {
+      "wxml": "<pui-checkbox content=\"同意服务协议\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-checkbox\": \"poemui-miniprogram/checkbox/checkbox\"\n  }\n}\n\n<pui-checkbox content=\"同意服务协议\" />"
+    },
+    "radio": {
+      "wxml": "<pui-radio content=\"选择此项\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-radio\": \"poemui-miniprogram/radio/radio\"\n  }\n}\n\n<pui-radio content=\"选择此项\" />"
+    },
+    "form": {
+      "components": {
+        "pui-field": "poemui-miniprogram/field/field",
+        "pui-input": "poemui-miniprogram/input/input",
+        "pui-button": "poemui-miniprogram/button/button"
+      },
+      "data": {
+        "formData": {
+          "name": ""
+        },
+        "formRules": {
+          "name": [
+            {
+              "required": true,
+              "message": "请输入组件名称"
+            }
+          ]
+        }
+      },
+      "wxml": "<pui-form data=\"{{formData}}\" rules=\"{{formRules}}\">\n  <pui-field name=\"name\" label=\"组件名称\">\n    <pui-input name=\"name\" value=\"{{formData.name}}\" placeholder=\"请输入组件名称\" />\n  </pui-field>\n  <pui-button theme=\"primary\" form-type=\"submit\" block>提交</pui-button>\n</pui-form>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-form\": \"poemui-miniprogram/form/form\",\n    \"pui-field\": \"poemui-miniprogram/field/field\",\n    \"pui-input\": \"poemui-miniprogram/input/input\",\n    \"pui-button\": \"poemui-miniprogram/button/button\"\n  }\n}\n\n<pui-form data=\"{{formData}}\" rules=\"{{formRules}}\">\n  <pui-field name=\"name\" label=\"组件名称\">\n    <pui-input name=\"name\" value=\"{{formData.name}}\" placeholder=\"请输入组件名称\" />\n  </pui-field>\n  <pui-button theme=\"primary\" form-type=\"submit\" block>提交</pui-button>\n</pui-form>\n\n// page.js\nPage({\n  data: {\n  \"formData\": {\n    \"name\": \"\"\n  },\n  \"formRules\": {\n    \"name\": [\n      {\n        \"required\": true,\n        \"message\": \"请输入组件名称\"\n      }\n    ]\n  }\n}\n})"
+    },
+    "picker": {
+      "data": {
+        "pickerColumns": [
+          {
+            "label": "选项一",
+            "value": "one"
+          },
+          {
+            "label": "选项二",
+            "value": "two"
+          },
+          {
+            "label": "选项三",
+            "value": "three"
+          },
+          {
+            "label": "选项四",
+            "value": "four"
+          }
+        ]
+      },
+      "wxml": "<pui-picker columns=\"{{pickerColumns}}\" visible=\"{{true}}\" title=\"请选择\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-picker\": \"poemui-miniprogram/picker/picker\"\n  }\n}\n\n<pui-picker columns=\"{{pickerColumns}}\" visible=\"{{true}}\" title=\"请选择\" />\n\n// page.js\nPage({\n  data: {\n  \"pickerColumns\": [\n    {\n      \"label\": \"选项一\",\n      \"value\": \"one\"\n    },\n    {\n      \"label\": \"选项二\",\n      \"value\": \"two\"\n    },\n    {\n      \"label\": \"选项三\",\n      \"value\": \"three\"\n    },\n    {\n      \"label\": \"选项四\",\n      \"value\": \"four\"\n    }\n  ]\n}\n})"
+    },
+    "select": {
+      "data": {
+        "selectOptions": [
+          {
+            "label": "选项一",
+            "value": "one"
+          },
+          {
+            "label": "选项二",
+            "value": "two"
+          },
+          {
+            "label": "选项三",
+            "value": "three"
+          },
+          {
+            "label": "选项四",
+            "value": "four"
+          }
+        ]
+      },
+      "wxml": "<pui-select options=\"{{selectOptions}}\" placeholder=\"请选择\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-select\": \"poemui-miniprogram/select/select\"\n  }\n}\n\n<pui-select options=\"{{selectOptions}}\" placeholder=\"请选择\" />\n\n// page.js\nPage({\n  data: {\n  \"selectOptions\": [\n    {\n      \"label\": \"选项一\",\n      \"value\": \"one\"\n    },\n    {\n      \"label\": \"选项二\",\n      \"value\": \"two\"\n    },\n    {\n      \"label\": \"选项三\",\n      \"value\": \"three\"\n    },\n    {\n      \"label\": \"选项四\",\n      \"value\": \"four\"\n    }\n  ]\n}\n})"
+    },
+    "combobox": {
+      "data": {
+        "comboboxOptions": [
+          {
+            "label": "Button 按钮",
+            "value": "button",
+            "icon": "command"
+          },
+          {
+            "label": "Popup 弹出层",
+            "value": "popup",
+            "icon": "layers"
+          },
+          {
+            "label": "Tabs 选项卡",
+            "value": "tabs",
+            "icon": "component"
+          },
+          {
+            "label": "Input 输入框",
+            "value": "input",
+            "icon": "edit"
+          }
+        ]
+      },
+      "wxml": "<pui-combobox options=\"{{comboboxOptions}}\" placeholder=\"搜索组件\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-combobox\": \"poemui-miniprogram/combobox/combobox\"\n  }\n}\n\n<pui-combobox options=\"{{comboboxOptions}}\" placeholder=\"搜索组件\" />\n\n// page.js\nPage({\n  data: {\n  \"comboboxOptions\": [\n    {\n      \"label\": \"Button 按钮\",\n      \"value\": \"button\",\n      \"icon\": \"command\"\n    },\n    {\n      \"label\": \"Popup 弹出层\",\n      \"value\": \"popup\",\n      \"icon\": \"layers\"\n    },\n    {\n      \"label\": \"Tabs 选项卡\",\n      \"value\": \"tabs\",\n      \"icon\": \"component\"\n    },\n    {\n      \"label\": \"Input 输入框\",\n      \"value\": \"input\",\n      \"icon\": \"edit\"\n    }\n  ]\n}\n})"
+    },
+    "date-time-picker": {
+      "wxml": "<pui-date-time-picker visible=\"{{true}}\" title=\"选择日期\" mode=\"date\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-date-time-picker\": \"poemui-miniprogram/date-time-picker/date-time-picker\"\n  }\n}\n\n<pui-date-time-picker visible=\"{{true}}\" title=\"选择日期\" mode=\"date\" />"
+    },
+    "search": {
+      "wxml": "<pui-search placeholder=\"搜索组件\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-search\": \"poemui-miniprogram/search/search\"\n  }\n}\n\n<pui-search placeholder=\"搜索组件\" />"
+    },
+    "stepper": {
+      "wxml": "<pui-stepper default-value=\"{{1}}\" min=\"{{0}}\" max=\"{{10}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-stepper\": \"poemui-miniprogram/stepper/stepper\"\n  }\n}\n\n<pui-stepper default-value=\"{{1}}\" min=\"{{0}}\" max=\"{{10}}\" />"
+    },
+    "slider": {
+      "wxml": "<pui-slider default-value=\"{{40}}\" show-value />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-slider\": \"poemui-miniprogram/slider/slider\"\n  }\n}\n\n<pui-slider default-value=\"{{40}}\" show-value />"
+    },
+    "rate": {
+      "wxml": "<pui-rate default-value=\"{{4}}\" show-text />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-rate\": \"poemui-miniprogram/rate/rate\"\n  }\n}\n\n<pui-rate default-value=\"{{4}}\" show-text />"
+    },
+    "upload": {
+      "wxml": "<pui-upload add-content=\"选择文件\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-upload\": \"poemui-miniprogram/upload/upload\"\n  }\n}\n\n<pui-upload add-content=\"选择文件\" />"
+    },
+    "cell": {
+      "wxml": "<pui-cell title=\"组件标题\" value=\"说明\" arrow />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-cell\": \"poemui-miniprogram/cell/cell\"\n  }\n}\n\n<pui-cell title=\"组件标题\" value=\"说明\" arrow />"
+    },
+    "card": {
+      "wxml": "<pui-card title=\"卡片标题\" description=\"用于组织相关内容\" show-header>\n  <view>卡片内容</view>\n</pui-card>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-card\": \"poemui-miniprogram/card/card\"\n  }\n}\n\n<pui-card title=\"卡片标题\" description=\"用于组织相关内容\" show-header>\n  <view>卡片内容</view>\n</pui-card>"
+    },
+    "grid": {
+      "data": {
+        "gridItems": [
+          {
+            "label": "组件",
+            "value": "components",
+            "icon": "component"
+          },
+          {
+            "label": "指南",
+            "value": "guides",
+            "icon": "file-text"
+          },
+          {
+            "label": "安装",
+            "value": "install",
+            "icon": "code"
+          },
+          {
+            "label": "设置",
+            "value": "settings",
+            "icon": "settings"
+          }
+        ]
+      },
+      "wxml": "<pui-grid items=\"{{gridItems}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-grid\": \"poemui-miniprogram/grid/grid\"\n  }\n}\n\n<pui-grid items=\"{{gridItems}}\" />\n\n// page.js\nPage({\n  data: {\n  \"gridItems\": [\n    {\n      \"label\": \"组件\",\n      \"value\": \"components\",\n      \"icon\": \"component\"\n    },\n    {\n      \"label\": \"指南\",\n      \"value\": \"guides\",\n      \"icon\": \"file-text\"\n    },\n    {\n      \"label\": \"安装\",\n      \"value\": \"install\",\n      \"icon\": \"code\"\n    },\n    {\n      \"label\": \"设置\",\n      \"value\": \"settings\",\n      \"icon\": \"settings\"\n    }\n  ]\n}\n})"
+    },
+    "list": {
+      "data": {
+        "listItems": [
+          {
+            "title": "Button 按钮",
+            "description": "触发用户操作",
+            "leftIcon": "command"
+          },
+          {
+            "title": "Input 输入框",
+            "description": "输入文字内容",
+            "leftIcon": "edit"
+          },
+          {
+            "title": "Popup 弹出层",
+            "description": "承载临时内容",
+            "leftIcon": "layers"
+          },
+          {
+            "title": "Tabs 选项卡",
+            "description": "切换内容分类",
+            "leftIcon": "component"
+          }
+        ]
+      },
+      "wxml": "<pui-list items=\"{{listItems}}\" show-icon show-description />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-list\": \"poemui-miniprogram/list/list\"\n  }\n}\n\n<pui-list items=\"{{listItems}}\" show-icon show-description />\n\n// page.js\nPage({\n  data: {\n  \"listItems\": [\n    {\n      \"title\": \"Button 按钮\",\n      \"description\": \"触发用户操作\",\n      \"leftIcon\": \"command\"\n    },\n    {\n      \"title\": \"Input 输入框\",\n      \"description\": \"输入文字内容\",\n      \"leftIcon\": \"edit\"\n    },\n    {\n      \"title\": \"Popup 弹出层\",\n      \"description\": \"承载临时内容\",\n      \"leftIcon\": \"layers\"\n    },\n    {\n      \"title\": \"Tabs 选项卡\",\n      \"description\": \"切换内容分类\",\n      \"leftIcon\": \"component\"\n    }\n  ]\n}\n})"
+    },
+    "tag": {
+      "wxml": "<pui-tag theme=\"primary\">标签</pui-tag>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-tag\": \"poemui-miniprogram/tag/tag\"\n  }\n}\n\n<pui-tag theme=\"primary\">标签</pui-tag>"
+    },
+    "badge": {
+      "components": {
+        "pui-icon": "poemui-miniprogram/icon/icon"
+      },
+      "wxml": "<pui-badge count=\"{{3}}\">\n  <pui-icon name=\"bell\" size=\"44\" />\n</pui-badge>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-badge\": \"poemui-miniprogram/badge/badge\",\n    \"pui-icon\": \"poemui-miniprogram/icon/icon\"\n  }\n}\n\n<pui-badge count=\"{{3}}\">\n  <pui-icon name=\"bell\" size=\"44\" />\n</pui-badge>"
+    },
+    "avatar": {
+      "wxml": "<pui-avatar text=\"PUI\" aria-label=\"PoemUI 头像\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-avatar\": \"poemui-miniprogram/avatar/avatar\"\n  }\n}\n\n<pui-avatar text=\"PUI\" aria-label=\"PoemUI 头像\" />"
+    },
+    "image": {
+      "wxml": "<pui-image width=\"200rpx\" height=\"200rpx\" text=\"暂无图片\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-image\": \"poemui-miniprogram/image/image\"\n  }\n}\n\n<pui-image width=\"200rpx\" height=\"200rpx\" text=\"暂无图片\" />"
+    },
+    "bubble": {
+      "wxml": "<pui-bubble content=\"这是一条 PoemUI 消息。\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-bubble\": \"poemui-miniprogram/bubble/bubble\"\n  }\n}\n\n<pui-bubble content=\"这是一条 PoemUI 消息。\" />"
+    },
+    "collapse": {
+      "data": {
+        "collapseItems": [
+          {
+            "label": "什么是 PoemUI？",
+            "value": "about",
+            "description": "面向微信小程序的原生组件库。"
+          },
+          {
+            "label": "如何安装？",
+            "value": "install",
+            "description": "通过 npm 安装后在开发者工具中构建 npm。"
+          }
+        ]
+      },
+      "wxml": "<pui-collapse items=\"{{collapseItems}}\" default-value=\"{{['about']}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-collapse\": \"poemui-miniprogram/collapse/collapse\"\n  }\n}\n\n<pui-collapse items=\"{{collapseItems}}\" default-value=\"{{['about']}}\" />\n\n// page.js\nPage({\n  data: {\n  \"collapseItems\": [\n    {\n      \"label\": \"什么是 PoemUI？\",\n      \"value\": \"about\",\n      \"description\": \"面向微信小程序的原生组件库。\"\n    },\n    {\n      \"label\": \"如何安装？\",\n      \"value\": \"install\",\n      \"description\": \"通过 npm 安装后在开发者工具中构建 npm。\"\n    }\n  ]\n}\n})"
+    },
+    "collapsible": {
+      "wxml": "<pui-collapsible label=\"查看详情\" content=\"这里是可展开的内容。\" default-open />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-collapsible\": \"poemui-miniprogram/collapsible/collapsible\"\n  }\n}\n\n<pui-collapsible label=\"查看详情\" content=\"这里是可展开的内容。\" default-open />"
+    },
+    "swipe-cell": {
+      "components": {
+        "pui-cell": "poemui-miniprogram/cell/cell"
+      },
+      "data": {
+        "swipeActions": [
+          {
+            "text": "收藏",
+            "value": "favorite",
+            "icon": "star"
+          },
+          {
+            "text": "删除",
+            "value": "delete",
+            "theme": "danger",
+            "icon": "delete"
+          }
+        ]
+      },
+      "wxml": "<pui-swipe-cell right=\"{{swipeActions}}\">\n  <pui-cell title=\"向左滑动\" description=\"显示可用操作\" />\n</pui-swipe-cell>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-swipe-cell\": \"poemui-miniprogram/swipe-cell/swipe-cell\",\n    \"pui-cell\": \"poemui-miniprogram/cell/cell\"\n  }\n}\n\n<pui-swipe-cell right=\"{{swipeActions}}\">\n  <pui-cell title=\"向左滑动\" description=\"显示可用操作\" />\n</pui-swipe-cell>\n\n// page.js\nPage({\n  data: {\n  \"swipeActions\": [\n    {\n      \"text\": \"收藏\",\n      \"value\": \"favorite\",\n      \"icon\": \"star\"\n    },\n    {\n      \"text\": \"删除\",\n      \"value\": \"delete\",\n      \"theme\": \"danger\",\n      \"icon\": \"delete\"\n    }\n  ]\n}\n})"
+    },
+    "count-down": {
+      "wxml": "<pui-count-down time=\"{{3661000}}\" split-with-unit />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-count-down\": \"poemui-miniprogram/count-down/count-down\"\n  }\n}\n\n<pui-count-down time=\"{{3661000}}\" split-with-unit />"
+    },
+    "table": {
+      "data": {
+        "tableColumns": [
+          {
+            "key": "name",
+            "title": "组件"
+          },
+          {
+            "key": "category",
+            "title": "分类"
+          },
+          {
+            "key": "status",
+            "title": "状态"
+          }
+        ],
+        "tableData": [
+          {
+            "id": 1,
+            "name": "Button",
+            "category": "基础",
+            "status": "稳定"
+          },
+          {
+            "id": 2,
+            "name": "Popup",
+            "category": "浮层",
+            "status": "稳定"
+          },
+          {
+            "id": 3,
+            "name": "Tabs",
+            "category": "导航",
+            "status": "稳定"
+          }
+        ]
+      },
+      "wxml": "<pui-table columns=\"{{tableColumns}}\" data=\"{{tableData}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-table\": \"poemui-miniprogram/table/table\"\n  }\n}\n\n<pui-table columns=\"{{tableColumns}}\" data=\"{{tableData}}\" />\n\n// page.js\nPage({\n  data: {\n  \"tableColumns\": [\n    {\n      \"key\": \"name\",\n      \"title\": \"组件\"\n    },\n    {\n      \"key\": \"category\",\n      \"title\": \"分类\"\n    },\n    {\n      \"key\": \"status\",\n      \"title\": \"状态\"\n    }\n  ],\n  \"tableData\": [\n    {\n      \"id\": 1,\n      \"name\": \"Button\",\n      \"category\": \"基础\",\n      \"status\": \"稳定\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Popup\",\n      \"category\": \"浮层\",\n      \"status\": \"稳定\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Tabs\",\n      \"category\": \"导航\",\n      \"status\": \"稳定\"\n    }\n  ]\n}\n})"
+    },
+    "swiper": {
+      "data": {
+        "swiperItems": [
+          {
+            "value": "one",
+            "title": "第一张",
+            "description": "组件预览"
+          },
+          {
+            "value": "two",
+            "title": "第二张",
+            "description": "交互状态"
+          },
+          {
+            "value": "three",
+            "title": "第三张",
+            "description": "主题外观"
+          }
+        ]
+      },
+      "wxml": "<pui-swiper items=\"{{swiperItems}}\" height=\"{{320}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-swiper\": \"poemui-miniprogram/swiper/swiper\"\n  }\n}\n\n<pui-swiper items=\"{{swiperItems}}\" height=\"{{320}}\" />\n\n// page.js\nPage({\n  data: {\n  \"swiperItems\": [\n    {\n      \"value\": \"one\",\n      \"title\": \"第一张\",\n      \"description\": \"组件预览\"\n    },\n    {\n      \"value\": \"two\",\n      \"title\": \"第二张\",\n      \"description\": \"交互状态\"\n    },\n    {\n      \"value\": \"three\",\n      \"title\": \"第三张\",\n      \"description\": \"主题外观\"\n    }\n  ]\n}\n})"
+    },
+    "scroll-area": {
+      "components": {
+        "pui-cell": "poemui-miniprogram/cell/cell"
+      },
+      "wxml": "<pui-scroll-area height=\"400rpx\">\n  <pui-cell title=\"第一项\" description=\"滚动区域内容\" />\n  <pui-cell title=\"第二项\" description=\"继续向下滚动\" />\n  <pui-cell title=\"第三项\" description=\"观察边缘提示\" />\n  <pui-cell title=\"第四项\" description=\"滚动区域底部\" />\n</pui-scroll-area>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-scroll-area\": \"poemui-miniprogram/scroll-area/scroll-area\",\n    \"pui-cell\": \"poemui-miniprogram/cell/cell\"\n  }\n}\n\n<pui-scroll-area height=\"400rpx\">\n  <pui-cell title=\"第一项\" description=\"滚动区域内容\" />\n  <pui-cell title=\"第二项\" description=\"继续向下滚动\" />\n  <pui-cell title=\"第三项\" description=\"观察边缘提示\" />\n  <pui-cell title=\"第四项\" description=\"滚动区域底部\" />\n</pui-scroll-area>"
+    },
+    "calendar": {
+      "wxml": "<pui-calendar visible=\"{{true}}\" title=\"选择日期\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-calendar\": \"poemui-miniprogram/calendar/calendar\"\n  }\n}\n\n<pui-calendar visible=\"{{true}}\" title=\"选择日期\" />"
+    },
+    "aspect-ratio": {
+      "wxml": "<pui-aspect-ratio ratio=\"16 / 9\" background=\"var(--pui-bg-muted)\">\n  <view>16:9 内容</view>\n</pui-aspect-ratio>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-aspect-ratio\": \"poemui-miniprogram/aspect-ratio/aspect-ratio\"\n  }\n}\n\n<pui-aspect-ratio ratio=\"16 / 9\" background=\"var(--pui-bg-muted)\">\n  <view>16:9 内容</view>\n</pui-aspect-ratio>"
+    },
+    "alert": {
+      "wxml": "<pui-alert theme=\"primary\" title=\"提示\" description=\"这里是需要关注的信息。\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-alert\": \"poemui-miniprogram/alert/alert\"\n  }\n}\n\n<pui-alert theme=\"primary\" title=\"提示\" description=\"这里是需要关注的信息。\" />"
+    },
+    "loading": {
+      "wxml": "<pui-loading text=\"加载中\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-loading\": \"poemui-miniprogram/loading/loading\"\n  }\n}\n\n<pui-loading text=\"加载中\" />"
+    },
+    "toast": {
+      "pageJs": "Page({\n  onReady() {\n    this.selectComponent('#starter-toast').show({ message: '操作完成' })\n  }\n})",
+      "wxml": "<pui-toast id=\"starter-toast\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-toast\": \"poemui-miniprogram/toast/toast\"\n  }\n}\n\n<pui-toast id=\"starter-toast\" />\n\n// page.js\nPage({\n  onReady() {\n    this.selectComponent('#starter-toast').show({ message: '操作完成' })\n  }\n})"
+    },
+    "dialog": {
+      "wxml": "<pui-dialog visible=\"{{true}}\" title=\"确认操作\" content=\"请确认是否继续。\" show-footer />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-dialog\": \"poemui-miniprogram/dialog/dialog\"\n  }\n}\n\n<pui-dialog visible=\"{{true}}\" title=\"确认操作\" content=\"请确认是否继续。\" show-footer />"
+    },
+    "progress": {
+      "wxml": "<pui-progress percentage=\"{{64}}\" label status=\"active\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-progress\": \"poemui-miniprogram/progress/progress\"\n  }\n}\n\n<pui-progress percentage=\"{{64}}\" label status=\"active\" />"
+    },
+    "skeleton": {
+      "wxml": "<pui-skeleton loading />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-skeleton\": \"poemui-miniprogram/skeleton/skeleton\"\n  }\n}\n\n<pui-skeleton loading />"
+    },
+    "empty": {
+      "wxml": "<pui-empty icon=\"inbox\" description=\"暂无内容\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-empty\": \"poemui-miniprogram/empty/empty\"\n  }\n}\n\n<pui-empty icon=\"inbox\" description=\"暂无内容\" />"
+    },
+    "notice-bar": {
+      "wxml": "<pui-notice-bar theme=\"warning\" content=\"这是一条重要通知。\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-notice-bar\": \"poemui-miniprogram/notice-bar/notice-bar\"\n  }\n}\n\n<pui-notice-bar theme=\"warning\" content=\"这是一条重要通知。\" />"
+    },
+    "result": {
+      "wxml": "<pui-result theme=\"success\" title=\"操作完成\" description=\"结果已经保存。\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-result\": \"poemui-miniprogram/result/result\"\n  }\n}\n\n<pui-result theme=\"success\" title=\"操作完成\" description=\"结果已经保存。\" />"
+    },
+    "popup": {
+      "wxml": "<pui-popup visible=\"{{true}}\" content=\"Popup 内容\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-popup\": \"poemui-miniprogram/popup/popup\"\n  }\n}\n\n<pui-popup visible=\"{{true}}\" content=\"Popup 内容\" />"
+    },
+    "popover": {
+      "components": {
+        "pui-button": "poemui-miniprogram/button/button"
+      },
+      "wxml": "<pui-popover default-visible content=\"Popover 内容\">\n  <pui-button variant=\"outline\">打开 Popover</pui-button>\n</pui-popover>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-popover\": \"poemui-miniprogram/popover/popover\",\n    \"pui-button\": \"poemui-miniprogram/button/button\"\n  }\n}\n\n<pui-popover default-visible content=\"Popover 内容\">\n  <pui-button variant=\"outline\">打开 Popover</pui-button>\n</pui-popover>"
+    },
+    "sheet": {
+      "wxml": "<pui-sheet visible=\"{{true}}\" title=\"Sheet 标题\" content=\"Sheet 内容\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-sheet\": \"poemui-miniprogram/sheet/sheet\"\n  }\n}\n\n<pui-sheet visible=\"{{true}}\" title=\"Sheet 标题\" content=\"Sheet 内容\" />"
+    },
+    "action-sheet": {
+      "data": {
+        "actionItems": [
+          {
+            "label": "编辑",
+            "value": "edit",
+            "icon": "edit"
+          },
+          {
+            "label": "分享",
+            "value": "share",
+            "icon": "share"
+          },
+          {
+            "label": "删除",
+            "value": "delete",
+            "icon": "delete",
+            "theme": "danger"
+          }
+        ]
+      },
+      "wxml": "<pui-action-sheet items=\"{{actionItems}}\" visible=\"{{true}}\" description=\"请选择操作\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-action-sheet\": \"poemui-miniprogram/action-sheet/action-sheet\"\n  }\n}\n\n<pui-action-sheet items=\"{{actionItems}}\" visible=\"{{true}}\" description=\"请选择操作\" />\n\n// page.js\nPage({\n  data: {\n  \"actionItems\": [\n    {\n      \"label\": \"编辑\",\n      \"value\": \"edit\",\n      \"icon\": \"edit\"\n    },\n    {\n      \"label\": \"分享\",\n      \"value\": \"share\",\n      \"icon\": \"share\"\n    },\n    {\n      \"label\": \"删除\",\n      \"value\": \"delete\",\n      \"icon\": \"delete\",\n      \"theme\": \"danger\"\n    }\n  ]\n}\n})"
+    },
+    "dropdown-menu": {
+      "data": {
+        "dropdownItems": [
+          {
+            "label": "排序",
+            "value": "sort",
+            "options": [
+              {
+                "label": "默认排序",
+                "value": "default"
+              },
+              {
+                "label": "最新发布",
+                "value": "latest"
+              }
+            ]
+          }
+        ]
+      },
+      "wxml": "<pui-dropdown-menu items=\"{{dropdownItems}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-dropdown-menu\": \"poemui-miniprogram/dropdown-menu/dropdown-menu\"\n  }\n}\n\n<pui-dropdown-menu items=\"{{dropdownItems}}\" />\n\n// page.js\nPage({\n  data: {\n  \"dropdownItems\": [\n    {\n      \"label\": \"排序\",\n      \"value\": \"sort\",\n      \"options\": [\n        {\n          \"label\": \"默认排序\",\n          \"value\": \"default\"\n        },\n        {\n          \"label\": \"最新发布\",\n          \"value\": \"latest\"\n        }\n      ]\n    }\n  ]\n}\n})"
+    },
+    "overlay": {
+      "wxml": "<pui-overlay visible=\"{{true}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-overlay\": \"poemui-miniprogram/overlay/overlay\"\n  }\n}\n\n<pui-overlay visible=\"{{true}}\" />"
+    },
+    "area-chart": {
+      "data": {
+        "areaItems": [
+          {
+            "label": "1 月",
+            "value": 12
+          },
+          {
+            "label": "2 月",
+            "value": 18
+          },
+          {
+            "label": "3 月",
+            "value": 15
+          },
+          {
+            "label": "4 月",
+            "value": 26
+          }
+        ]
+      },
+      "wxml": "<pui-area-chart items=\"{{areaItems}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-area-chart\": \"poemui-miniprogram/area-chart/area-chart\"\n  }\n}\n\n<pui-area-chart items=\"{{areaItems}}\" />\n\n// page.js\nPage({\n  data: {\n  \"areaItems\": [\n    {\n      \"label\": \"1 月\",\n      \"value\": 12\n    },\n    {\n      \"label\": \"2 月\",\n      \"value\": 18\n    },\n    {\n      \"label\": \"3 月\",\n      \"value\": 15\n    },\n    {\n      \"label\": \"4 月\",\n      \"value\": 26\n    }\n  ]\n}\n})"
+    },
+    "bar-chart": {
+      "data": {
+        "barItems": [
+          {
+            "label": "基础",
+            "value": 18
+          },
+          {
+            "label": "表单",
+            "value": 20
+          },
+          {
+            "label": "反馈",
+            "value": 12
+          },
+          {
+            "label": "高级",
+            "value": 8
+          }
+        ]
+      },
+      "wxml": "<pui-bar-chart items=\"{{barItems}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-bar-chart\": \"poemui-miniprogram/bar-chart/bar-chart\"\n  }\n}\n\n<pui-bar-chart items=\"{{barItems}}\" />\n\n// page.js\nPage({\n  data: {\n  \"barItems\": [\n    {\n      \"label\": \"基础\",\n      \"value\": 18\n    },\n    {\n      \"label\": \"表单\",\n      \"value\": 20\n    },\n    {\n      \"label\": \"反馈\",\n      \"value\": 12\n    },\n    {\n      \"label\": \"高级\",\n      \"value\": 8\n    }\n  ]\n}\n})"
+    },
+    "waffle": {
+      "data": {
+        "waffleItems": [
+          {
+            "label": "稳定组件",
+            "value": 58,
+            "theme": "primary"
+          },
+          {
+            "label": "新增组件",
+            "value": 16,
+            "theme": "success"
+          }
+        ]
+      },
+      "wxml": "<pui-waffle items=\"{{waffleItems}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-waffle\": \"poemui-miniprogram/waffle/waffle\"\n  }\n}\n\n<pui-waffle items=\"{{waffleItems}}\" />\n\n// page.js\nPage({\n  data: {\n  \"waffleItems\": [\n    {\n      \"label\": \"稳定组件\",\n      \"value\": 58,\n      \"theme\": \"primary\"\n    },\n    {\n      \"label\": \"新增组件\",\n      \"value\": 16,\n      \"theme\": \"success\"\n    }\n  ]\n}\n})"
+    },
+    "top-loading": {
+      "wxml": "<pui-top-loading state=\"loading\" progress=\"{{64}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-top-loading\": \"poemui-miniprogram/top-loading/top-loading\"\n  }\n}\n\n<pui-top-loading state=\"loading\" progress=\"{{64}}\" />"
+    },
+    "dynamic-message": {
+      "pageJs": "Page({\n  onReady() {\n    this.selectComponent('#starter-message').show({\n      theme: 'info',\n      title: '更新提示',\n      message: '组件数据已刷新。'\n    })\n  }\n})",
+      "wxml": "<pui-dynamic-message id=\"starter-message\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-dynamic-message\": \"poemui-miniprogram/dynamic-message/dynamic-message\"\n  }\n}\n\n<pui-dynamic-message id=\"starter-message\" />\n\n// page.js\nPage({\n  onReady() {\n    this.selectComponent('#starter-message').show({\n      theme: 'info',\n      title: '更新提示',\n      message: '组件数据已刷新。'\n    })\n  }\n})"
+    },
+    "pull-refresh": {
+      "components": {
+        "pui-cell": "poemui-miniprogram/cell/cell"
+      },
+      "wxml": "<pui-pull-refresh>\n  <pui-cell title=\"下拉刷新\" description=\"刷新结果由父级真实回写\" />\n  <pui-cell title=\"组件目录\" value=\"74 个组件\" />\n</pui-pull-refresh>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-pull-refresh\": \"poemui-miniprogram/pull-refresh/pull-refresh\",\n    \"pui-cell\": \"poemui-miniprogram/cell/cell\"\n  }\n}\n\n<pui-pull-refresh>\n  <pui-cell title=\"下拉刷新\" description=\"刷新结果由父级真实回写\" />\n  <pui-cell title=\"组件目录\" value=\"74 个组件\" />\n</pui-pull-refresh>"
+    },
+    "virtual-list": {
+      "data": {
+        "virtualItems": [
+          {
+            "value": "component-1",
+            "title": "组件 1",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-2",
+            "title": "组件 2",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-3",
+            "title": "组件 3",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-4",
+            "title": "组件 4",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-5",
+            "title": "组件 5",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-6",
+            "title": "组件 6",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-7",
+            "title": "组件 7",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-8",
+            "title": "组件 8",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-9",
+            "title": "组件 9",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-10",
+            "title": "组件 10",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-11",
+            "title": "组件 11",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-12",
+            "title": "组件 12",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-13",
+            "title": "组件 13",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-14",
+            "title": "组件 14",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-15",
+            "title": "组件 15",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-16",
+            "title": "组件 16",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-17",
+            "title": "组件 17",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-18",
+            "title": "组件 18",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-19",
+            "title": "组件 19",
+            "description": "可滚动的虚拟列表条目"
+          },
+          {
+            "value": "component-20",
+            "title": "组件 20",
+            "description": "可滚动的虚拟列表条目"
+          }
+        ]
+      },
+      "wxml": "<pui-virtual-list items=\"{{virtualItems}}\" height=\"{{560}}\" item-height=\"{{112}}\" />",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-virtual-list\": \"poemui-miniprogram/virtual-list/virtual-list\"\n  }\n}\n\n<pui-virtual-list items=\"{{virtualItems}}\" height=\"{{560}}\" item-height=\"{{112}}\" />\n\n// page.js\nPage({\n  data: {\n  \"virtualItems\": [\n    {\n      \"value\": \"component-1\",\n      \"title\": \"组件 1\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-2\",\n      \"title\": \"组件 2\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-3\",\n      \"title\": \"组件 3\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-4\",\n      \"title\": \"组件 4\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-5\",\n      \"title\": \"组件 5\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-6\",\n      \"title\": \"组件 6\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-7\",\n      \"title\": \"组件 7\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-8\",\n      \"title\": \"组件 8\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-9\",\n      \"title\": \"组件 9\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-10\",\n      \"title\": \"组件 10\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-11\",\n      \"title\": \"组件 11\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-12\",\n      \"title\": \"组件 12\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-13\",\n      \"title\": \"组件 13\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-14\",\n      \"title\": \"组件 14\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-15\",\n      \"title\": \"组件 15\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-16\",\n      \"title\": \"组件 16\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-17\",\n      \"title\": \"组件 17\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-18\",\n      \"title\": \"组件 18\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-19\",\n      \"title\": \"组件 19\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    },\n    {\n      \"value\": \"component-20\",\n      \"title\": \"组件 20\",\n      \"description\": \"可滚动的虚拟列表条目\"\n    }\n  ]\n}\n})"
+    },
+    "sticky": {
+      "components": {
+        "pui-cell": "poemui-miniprogram/cell/cell"
+      },
+      "wxml": "<pui-sticky offset-top=\"{{0}}\">\n  <pui-cell title=\"吸顶标题\" description=\"随页面滚动保持可见\" />\n</pui-sticky>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-sticky\": \"poemui-miniprogram/sticky/sticky\",\n    \"pui-cell\": \"poemui-miniprogram/cell/cell\"\n  }\n}\n\n<pui-sticky offset-top=\"{{0}}\">\n  <pui-cell title=\"吸顶标题\" description=\"随页面滚动保持可见\" />\n</pui-sticky>"
+    },
+    "watermark": {
+      "wxml": "<pui-watermark content=\"PoemUI\">\n  <view>受水印保护的页面内容</view>\n</pui-watermark>",
+      "source": "{\n  \"usingComponents\": {\n    \"pui-watermark\": \"poemui-miniprogram/watermark/watermark\"\n  }\n}\n\n<pui-watermark content=\"PoemUI\">\n  <view>受水印保护的页面内容</view>\n</pui-watermark>"
+    }
   },
   "packageComponents": [
     "config-provider",

@@ -516,7 +516,7 @@ pui-upload {
   margin-top: 20rpx;
 }
 
-.section-card pui-button-group + pui-cell {
+.section-card .example-action-group + pui-cell {
   display: block;
   margin-top: 20rpx;
 }
@@ -612,22 +612,11 @@ pui-upload {
   gap: var(--pui-space-sm);
 }
 
-.tooltip-example-stage {
+.example-action-group {
   display: flex;
-  min-height: 176rpx;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  margin-bottom: var(--pui-space-sm);
-  padding: var(--pui-space-lg);
-  background: var(--pui-bg-muted);
-  border-radius: var(--pui-radius-medium);
-}
-
-.tooltip-example-content {
-  display: flex;
-  align-items: center;
-  gap: var(--pui-space-xs);
-  max-width: 420rpx;
+  gap: var(--pui-space-sm);
 }
 
 .action-sheet-example-header,

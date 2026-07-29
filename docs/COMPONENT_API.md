@@ -796,11 +796,12 @@ H5 与原生都保留 content/loading/error/empty 四层，以 500ms opacity/tra
 
 ## ScrollArea
 
-`pui-scroll-area` 对齐 TDesign `ScrollView`，是固定高度的原生纵向 `scroll-view` 薄封装。默认 slot 是唯一内容入口；父级可通过 `scrollTop` 受控定位，或给 slot 内节点设置 `id` 后通过 `scrollIntoView` 真实定位。组件固定启用增强滚动、隐藏滚动条并以平台原生动画平滑完成受控定位；该行为不额外公开动画开关或时长。可选的顶底渐变是透明、无交互的固定视觉层；透明内容轨默认提供 `10vh` 尾部安全区，保证最后内容可完整滚入可视区域。
+`pui-scroll-area` 对齐 TDesign `ScrollView`，是固定高度或有界自适应高度的原生纵向 `scroll-view` 薄封装。默认 slot 是唯一内容入口；父级可通过 `scrollTop` 受控定位，或给 slot 内节点设置 `id` 后通过 `scrollIntoView` 真实定位。组件固定启用增强滚动、隐藏滚动条并以平台原生动画平滑完成受控定位；该行为不额外公开动画开关或时长。可选的顶底渐变是透明、无交互的固定视觉层；透明内容轨默认提供 `10vh` 尾部安全区，保证最后内容可完整滚入可视区域。
 
 | 参数 | 类型 | 演示初值 | 可选值 | 说明 |
 | --- | --- | --- | --- | --- |
-| `height` | `String` | `'320rpx'` | 正数、`rpx`、`px`、`vh` | 滚动区域高度。裸正数按 rpx 处理，正 `vh` 用于 Popup 等有界视口组合；`0`、负数、空值或非数字均回退 `'320rpx'`。 |
+| `height` | `String` | `'320rpx'` | 正数、`rpx`、`px`、`vh`、`'auto'` | 滚动区域高度。裸正数按 rpx 处理；`'auto'` 时内容自然增高到 `maxHeight` 后才滚动；`0`、负数、空值或非数字均回退 `'320rpx'`。 |
+| `maxHeight` | `String` | `'320rpx'` | 正数、`rpx`、`px`、`vh` | 仅 `height='auto'` 时生效的高度上限。裸正数按 rpx 处理；空值、`'auto'`、`0`、负数或非法值回退 `'320rpx'`。 |
 | `scrollTop` | `Number` | `0` | `≥ 0` | 受控纵向位置。用户滚动时通过 `scroll` 回写真值；父级写入 `0` 可让 BackTop 组合以平台原生动画真实回到局部滚动区顶部。 |
 | `scrollIntoView` | `String` | `''` | slot 内节点的 `id` | 父级传入目标节点 id 后，由原生 `scroll-view` 定位；空字符串不请求定位。 |
 | `gradientOverlay` | `Boolean` | `true` | `true`、`false` | 是否在真实滚动边缘显示渐变遮罩。顶部仅底层、底部仅顶层、中段两层、无溢出零层；不改变滚动、事件或定位。 |
@@ -842,7 +843,7 @@ H5 与原生都保留 content/loading/error/empty 四层，以 500ms opacity/tra
 </pui-scroll-area>
 ```
 
-`scrollIntoView="build-log"` 只在需要目标节点定位时由父级传入，非空时按原生规则优先于 `scrollTop`。`content-padding-bottom` 默认 `10vh`，普通页面不需要重复传入；浮层页面可在展开期间显式提高。`gradient-overlay` 默认为 `true`、`gradient-overlay-size` 默认为 `md`，因此基础 WXML 不需要重复传入；遮罩只在真实可滚动边缘显示：顶部仅底层、底部仅顶层、中段两层、无溢出零层。
+`scrollIntoView="build-log"` 只在需要目标节点定位时由父级传入，非空时按原生规则优先于 `scrollTop`。需要短内容不被固定高度撑开、长内容局部滚动时，使用 `<pui-scroll-area height="auto" max-height="60vh">`；固定高度模式不会消费 `maxHeight`。`content-padding-bottom` 默认 `10vh`，普通页面不需要重复传入；浮层页面可在展开期间显式提高。`gradient-overlay` 默认为 `true`、`gradient-overlay-size` 默认为 `md`，因此基础 WXML 不需要重复传入；遮罩只在真实可滚动边缘显示：顶部仅底层、底部仅顶层、中段两层、无溢出零层。
 
 Events：
 
@@ -3034,10 +3035,10 @@ Slider 不公开 Slot 或实例方法。基础用法保持最小 WXML 且零 `bi
 | `visible-change` | `{ visible: false, trigger: 'close-btn' \| 'overlay' }`。默认关闭按钮或允许关闭的遮罩请求关闭时触发；Popup 没有 `open/close/submit/retry` 方法或事件。 |
 
 ```xml
-<pui-popup />
+<pui-popup visible="{{true}}" content="Popup 内容" />
 ```
 
-基础用法不展示 `bind:*`。结构化调用可以这样组合，Footer 动作由父级处理：
+这是复制后立即可见的 Starter Usage，不改变 Popup 默认关闭的运行时安全值，也不展示 `bind:*`。结构化调用可以这样组合，Footer 动作由父级处理：
 
 ```xml
 <pui-popup show-header title="分配执行动作" subtitle="动作和状态由父级管理" show-footer visible="{{popupVisible}}" bind:visible-change="onPopupVisibleChange">
@@ -3053,7 +3054,7 @@ Slider 不公开 Slot 或实例方法。基础用法保持最小 WXML 且零 `bi
 <pui-popup card="{{false}}" blur-overlay />
 ```
 
-Popup 关闭时保留节点至 `opacity + transform` 退场结束；H5 以同一节点镜像，`prefers-reduced-motion` 与 `reduceMotion` 都压缩 Popup 自己的 Mask 与 Surface 为 `1ms`，不穿透覆盖 Slot 内 PUI 子组件的动效合同。遮罩只安全镜像 `overlayProps.backgroundColor`，并在 `blur-overlay=true` 时使用 `--pui-popup-overlay-blur`；Blur 在 Layer 挂载时与 Popup Surface 同步参与合成，不能等待色遮 opacity 结束才开始。`preventScrollThrough=true` 时阻止遮罩上的 wheel/touchmove，小程序端以 `catchtouchmove` 实现。Footer 内 Button 的动作结果、是否关闭以及失败恢复均由父级真实处理；Footer 提供满宽承载轨并拉伸直接 PUI Button 宿主，满宽 Footer Button 仍由调用方显式传入 `block`。顶部 `using-custom-navbar` Popup 会消费页面测得的 Navbar 高度并从视口顶部覆盖，左右 Popup 固定为 `70vh × 68vw`；顶部 `card=true + using-custom-navbar=true` 时外层承载层透明、无边框、无阴影和无毛玻璃且 `overflow:visible`，内层 Surface 从测得 Navbar 底部加一个 Token 间距开始并展示 `--pui-glass-shadow`，Header/Content 不重复补偿。
+Popup 关闭时保留节点至 `opacity + transform` 退场结束；H5 以同一节点镜像，`prefers-reduced-motion` 与 `reduceMotion` 都压缩 Popup 自己的 Mask 与 Surface 为 `1ms`，不穿透覆盖 Slot 内 PUI 子组件的动效合同。遮罩只安全镜像 `overlayProps.backgroundColor`，并在 `blur-overlay=true` 时使用 `--pui-popup-overlay-blur`；Blur 在 Layer 挂载时与 Popup Surface 同步参与合成，不能等待色遮 opacity 结束才开始。`preventScrollThrough=true` 时阻止遮罩上的 wheel/touchmove，小程序端以 `catchtouchmove` 实现。Header→Content 只消费一次 `--pui-content-gap`，不再叠加 Surface section gap 与 Content 顶部 panel padding；无 Header 时 Content 仍保留完整 panel padding。Footer 内 Button 的动作结果、是否关闭以及失败恢复均由父级真实处理；Footer 提供满宽承载轨并拉伸直接 PUI Button 宿主，满宽 Footer Button 仍由调用方显式传入 `block`。顶部 `using-custom-navbar` Popup 会消费页面测得的 Navbar 高度并从视口顶部覆盖，左右 Popup 固定为 `70vh × 68vw`；顶部 `card=true + using-custom-navbar=true` 时外层承载层透明、无边框、无阴影和无毛玻璃且 `overflow:visible`，内层 Surface 从测得 Navbar 底部加一个 Token 间距开始并展示 `--pui-glass-shadow`，Header/Content 不重复补偿。
 
 Popup 保持基础浮层职责，不公开拖拽手柄、拖拽阈值或拖拽关闭事件；若需要完整的拖拽事件、状态优先级和底部面板语义，应使用 Sheet。
 

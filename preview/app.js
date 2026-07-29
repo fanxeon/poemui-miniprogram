@@ -11,6 +11,7 @@ if (!styleUtilitiesData || !Array.isArray(styleUtilitiesData.items) || styleUtil
 const groups = componentData.groups;
 const packageComponents = componentData.packageComponents;
 const componentSummaries = componentData.componentSummaries || {};
+const starterUsageByComponent = componentData.starterUsage || {};
 const colorTokenData = componentData.colorTokens || { light: {}, dark: {} };
 const CURATED_UTILITY_HUES = ['red', 'orange', 'amber', 'emerald', 'teal', 'blue', 'violet', 'pink'];
 const CURATED_UTILITY_TEXT_CLASSES = CURATED_UTILITY_HUES.map((hue) => `pui-text-${hue}`);
@@ -725,7 +726,7 @@ const componentPropDefaults = {
   'notice-bar': { content: '组件目录、API 文档与发布产物已经同步，请继续完成微信端交互复核。', direction: 'horizontal', interval: 2000, marquee: { speed: 50, loop: -1, delay: 400 }, operation: '查看详情', prefixIcon: true, suffixIcon: 'close', theme: 'primary', visible: null, defaultVisible: true, ariaLabel: '组件目录更新通知', reduceMotion: false },
   result: { description: '组件源码、预览和 npm 包已完成同步。', icon: true, image: '', theme: 'success', title: '发布检查通过', ariaLabel: '组件发布结果', reduceMotion: false },
   popover: { visible: null, defaultVisible: false, content: '这是相对触发元素显示的轻量说明。', placement: 'top', showArrow: true, theme: 'dark', closeOnClickOutside: true, fixed: false, ariaLabel: '组件说明气泡层', reduceMotion: false },
-  'scroll-area': { height: '320rpx', scrollTop: 0, scrollIntoView: '', gradientOverlay: true, gradientOverlayColor: '', gradientOverlaySize: 'md', contentPaddingBottom: '10vh', ariaLabel: '组件滚动内容' },
+  'scroll-area': { height: '320rpx', maxHeight: '320rpx', scrollTop: 0, scrollIntoView: '', gradientOverlay: true, gradientOverlayColor: '', gradientOverlaySize: 'md', contentPaddingBottom: '10vh', ariaLabel: '组件滚动内容' },
   select: { options: [{ label: 'Button', value: 'button' }, { label: 'Card', value: 'card' }, { label: 'Select', value: 'select' }, { label: 'Popover', value: 'popover', disabled: true }], value: 'button', defaultValue: '', placeholder: '请选择组件', disabled: false, readonly: false },
   picker: { columns: [{ label: '稳定版', value: 'stable' }, { label: '候选版', value: 'candidate' }, { label: '测试版', value: 'beta' }, { label: '开发版', value: 'canary' }], value: null, defaultValue: ['stable'], visible: null, defaultVisible: false, title: '发布通道', type: 'default', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, closeOnOverlayClick: true, autoClose: true, keys: {}, visibleItemCount: 5, itemHeight: 80, disabled: false, readonly: false, loading: false, loadingText: '选项加载中', error: false, errorText: '选项加载失败', retryText: '重试', emptyText: '暂无可选项', ariaLabel: '发布通道滚轮选择器', reduceMotion: false },
   'date-time-picker': { value: null, defaultValue: '2026-07-15 09:30', visible: null, defaultVisible: false, mode: ['date', 'minute'], start: '2026-01-01 00:00', end: '2026-12-31 23:59', format: 'YYYY-MM-DD HH:mm', steps: { minute: 15 }, showWeek: true, title: '选择发布时间', type: 'default', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, autoClose: true, closeOnOverlayClick: true, disabled: false, readonly: false, ariaLabel: '发布时间选择器', reduceMotion: false },
@@ -901,7 +902,7 @@ const releasePropDefinitions = {
     border: { type: 'boolean', value: true }, align: { type: 'select', value: 'center', options: ['center', 'left'] }, disabled: { type: 'boolean', value: false }, loading: { type: 'boolean', value: false }, error: { type: 'boolean', value: false }, loadingText: { type: 'text', value: '加载中' }, errorText: { type: 'text', value: '加载失败' }, emptyText: { type: 'text', value: '暂无入口' }, retryText: { type: 'text', value: '重试' }, ariaLabel: { type: 'text', value: '功能入口' }, reduceMotion: { type: 'boolean', value: false },
   },
   'scroll-area': {
-    height: { type: 'text', value: '320rpx' }, scrollTop: { type: 'range', value: 0, min: 0, max: 1000, step: 10 }, scrollIntoView: { type: 'select', value: '', options: ['', 'scroll-area-source', 'scroll-area-build', 'scroll-area-publish'] }, gradientOverlay: { type: 'boolean', value: true }, gradientOverlayColor: { type: 'text', value: '' }, gradientOverlaySize: { type: 'select', value: 'md', options: ['sm', 'md', 'lg'] }, contentPaddingBottom: { type: 'text', value: '10vh' }, ariaLabel: { type: 'text', value: '组件滚动内容' },
+    height: { type: 'text', value: '320rpx' }, maxHeight: { type: 'text', value: '320rpx' }, scrollTop: { type: 'range', value: 0, min: 0, max: 1000, step: 10 }, scrollIntoView: { type: 'select', value: '', options: ['', 'scroll-area-source', 'scroll-area-build', 'scroll-area-publish'] }, gradientOverlay: { type: 'boolean', value: true }, gradientOverlayColor: { type: 'text', value: '' }, gradientOverlaySize: { type: 'select', value: 'md', options: ['sm', 'md', 'lg'] }, contentPaddingBottom: { type: 'text', value: '10vh' }, ariaLabel: { type: 'text', value: '组件滚动内容' },
   },
   tabbar: {
     items: { type: 'json', value: [{ label: '首页', value: 'home', icon: 'home', activeIcon: 'app' }, { label: '组件', value: 'components', icon: 'component', badge: 3 }, { label: '通知', value: 'notifications', icon: 'bell', badgeDot: true }, { label: '我的', value: 'profile', icon: 'profile', badge: 0 }] },
@@ -2971,7 +2972,9 @@ function compactPreviewWxml(source, maxLineLength = 80, maxAttributesPerLine = 3
     }
     const openingTag = joined.slice(0, endIndex + 1);
     const suffix = joined.slice(endIndex + 1);
-    const closing = openingTag.endsWith('/>') ? '/>' : '>';
+    const selfClosing = openingTag.endsWith('/>');
+    const closing = selfClosing ? '/>' : '>';
+    const renderedClosing = selfClosing ? ' />' : '>';
     const tokens = previewWxmlAttributeTokens(openingTag.slice(0, -closing.length).trim());
     if (!tokens.length) {
       result.push(`${indent}${openingTag}${suffix}`);
@@ -2982,7 +2985,7 @@ function compactPreviewWxml(source, maxLineLength = 80, maxAttributesPerLine = 3
     tokens.forEach((token) => {
       const candidate = `${packed[packed.length - 1]} ${token}`;
       const currentLine = packed.length - 1;
-      if (candidate.length <= maxLineLength && attributeCounts[currentLine] < maxAttributesPerLine) {
+      if (candidate.length <= maxLineLength - renderedClosing.length && attributeCounts[currentLine] < maxAttributesPerLine) {
         packed[currentLine] = candidate;
         attributeCounts[currentLine] += 1;
       } else {
@@ -2991,14 +2994,14 @@ function compactPreviewWxml(source, maxLineLength = 80, maxAttributesPerLine = 3
       }
     });
     if (suffix.trim().startsWith('<')) {
-      packed[packed.length - 1] += closing;
+      packed[packed.length - 1] += renderedClosing;
       result.push(...packed);
       const nestedLines = compactPreviewWxml(suffix.trim(), maxLineLength, maxAttributesPerLine)
         .split('\n')
         .map((nestedLine) => `${indent}${nestedLine}`);
       result.push(...nestedLines);
     } else {
-      packed[packed.length - 1] += `${closing}${suffix}`;
+      packed[packed.length - 1] += `${renderedClosing}${suffix}`;
       result.push(...packed);
     }
   }
@@ -3097,29 +3100,30 @@ function tabbarPreviewCodeExamples() {
 }
 
 function previewCodeSectionSources(detail, props) {
-  const usage = makeUsageCode(detail, props);
-  const basicSource = previewIdFor(detail.id) === 'cell'
-    ? '<pui-cell title="单行标题" />'
-    : previewWxmlSource(usage);
+  const runtimeId = previewIdFor(detail.id);
+  const starter = starterUsageByComponent[runtimeId];
+  const usage = starter?.source || makeUsageCode(detail, props);
+  const basicSource = starter?.wxml || previewWxmlSource(usage);
   const sources = {
     basic: compactPreviewWxml(basicSource),
     reference: previewUsingComponentsCode(usage),
     examples: [],
   };
+  if (starter?.data) {
+    sources.data = `Page({\n  data: ${JSON.stringify(starter.data, null, 2)}\n})`;
+    sources.dataSection = { value: 'data', label: '页面数据', ariaLabel: '页面数据 JS' };
+  } else if (starter?.pageJs) {
+    sources.data = starter.pageJs;
+    sources.dataSection = { value: 'data', label: '页面逻辑', ariaLabel: '页面逻辑 JS' };
+  }
   if (previewIdFor(detail.id) === 'image') {
     const imageExamples = imagePreviewCodeExamples(detail);
     Object.assign(sources, imageExamples.sources);
     sources.examples = imageExamples.sections;
-    sources.reference = previewUsingComponentsCode(makeUsageCode(detail, {
-      ...componentPropDefaults.image,
-      showSlot: true,
-    }));
   }
   if (previewIdFor(detail.id) === 'tabbar') {
     const tabbarExamples = tabbarPreviewCodeExamples();
     Object.assign(sources, tabbarExamples.sources);
-    sources.basic = compactPreviewWxml(tabbarExamples.basic);
-    sources.basicSection = tabbarExamples.basicSection;
     sources.examples = tabbarExamples.sections;
   }
   return sources;
@@ -3157,6 +3161,7 @@ function renderPreviewCodeDocument(mount, detail, props) {
     <div class="preview-code-document__body">
       ${previewCodeBlockSample({ value: 'reference', label: '组件引用', ariaLabel: 'usingComponents 引用' }, detail, sources.reference)}
       ${previewCodeBlockSample(sources.basicSection || { value: 'basic', label: '基础用法', ariaLabel: '基础 WXML' }, detail, sources.basic)}
+      ${sources.dataSection ? previewCodeBlockSample(sources.dataSection, detail, sources.data) : ''}
       ${(sources.examples || []).map((section) => previewCodeBlockSample(section, detail, sources[section.value])).join('')}
     </div>
   </article>`;
@@ -5688,7 +5693,8 @@ function replayChartEntrancePreviewRuntime(props) {
 function apiPropDescription(id, key) {
   if (previewIdFor(id) === 'scroll-area') {
     const descriptions = {
-      height: '滚动区域高度。裸正数按 rpx 处理；接受正数、rpx、px 或 vh，非法值回退 320rpx。',
+      height: '滚动区域高度。裸正数按 rpx 处理；接受正数、rpx、px、vh 或 auto。auto 会自然增长到 maxHeight 后再滚动；非法值回退 320rpx。',
+      maxHeight: 'height=auto 时的高度上限。接受正数、rpx、px 或 vh；默认和非法值均回退 320rpx，固定 height 时不参与布局。',
       scrollTop: '受控纵向位置，规整为非负数；与真实 scroll 事件配合可驱动局部 BackTop 回顶。',
       scrollIntoView: '父级传入 default Slot 内目标节点的 id 后，由原生 scroll-view 定位；空字符串不请求定位。',
       gradientOverlay: '是否在真实滚动视口的顶部与底部固定渲染渐变遮罩；默认 true，仅改变阅读过渡，不改变滚动、事件或定位。',
@@ -17307,11 +17313,12 @@ function popupSample(props, demo) {
       ariaLabel: '弹出层内容',
       content: `${cellSample({ title: '执行成员', description: '选择本项目成员后由父级写回真实值。', value: '未选择', icon: 'user' })}${cellSample({ title: '关联文件', description: '可组合真实 File、Cell 或 Form 内容。', value: '未关联', icon: 'link' })}`,
     });
-  const header = props.showHeader === false ? '' : `<div class="pui-popup-preview__header">
+  const hasHeader = props.showHeader !== false;
+  const header = hasHeader ? `<div class="pui-popup-preview__header">
       <div class="pui-popup-preview__header-side pui-popup-preview__header-side--left">${buttonSample({ theme: 'primary', variant: 'base', shape: 'circle', size: 'small', icon: 'user-add', content: '', ariaLabel: '选择执行成员', demoAction: 'popup-header-left' })}</div>
       <div class="pui-popup-preview__title-area"><strong>${escapeHtml(props.title || '')}</strong>${props.subtitle ? `<span class="pui-text-cut">${escapeHtml(props.subtitle)}</span>` : ''}</div>
       <div class="pui-popup-preview__header-side pui-popup-preview__header-side--right">${props.closeBtn ? buttonSample({ theme: 'default', variant: 'base', shape: 'circle', size: 'small', icon: 'close', iconOnly: true, content: '', ariaLabel: '关闭弹出层', demoAction: 'popup-close' }) : ''}</div>
-    </div>`;
+    </div>` : '';
   const footer = props.showFooter === false ? '' : `<div class="pui-popup-preview__footer">${buttonSample({ theme: 'primary', block: true, content: '分配执行动作', ariaLabel: '请求分配执行动作', demoAction: 'popup-footer-action' })}</div>`;
   const surfaceTop = `<div class="pui-popup-preview__surface-top" data-popup-surface-top aria-hidden="true">${topLoadingPreviewMarkup({ state: 'idle', ariaLabel: '弹出层顶部加载' })}</div>`;
   return `<section class="demo-section pui-popup-showcase pui-popup-showcase--open" style="--pui-popup-preview-duration:${current.duration}ms;--pui-popup-preview-z-index:${zIndex}">
@@ -17322,7 +17329,7 @@ function popupSample(props, demo) {
         <div class="pui-popup-preview__surface">
         ${surfaceTop}
         ${header}
-        <div class="pui-popup-preview__scroll ${props.contentScrollable === false ? 'is-static' : ''}">${content}</div>
+        <div class="pui-popup-preview__scroll ${hasHeader ? 'pui-popup-preview__scroll--with-header' : ''} ${props.contentScrollable === false ? 'is-static' : ''}">${content}</div>
         ${footer}
         </div>
       </div>
@@ -20186,6 +20193,7 @@ function breadcrumbShowcase(props, demo) {
 
 function scrollAreaPreviewHeight(value) {
   const raw = String(value === undefined || value === null ? '' : value).trim();
+  if (raw.toLowerCase() === 'auto') return 'auto';
   const unitless = raw.match(/^(\d+(?:\.\d+)?)$/);
   if (unitless && Number(unitless[1]) > 0) return `${Math.max(1, Math.round(Number(unitless[1]) / 2))}px`;
   const rpx = raw.match(/^(\d+(?:\.\d+)?)rpx$/);
@@ -20195,6 +20203,11 @@ function scrollAreaPreviewHeight(value) {
   const vh = raw.match(/^(\d+(?:\.\d+)?)vh$/);
   if (vh && Number(vh[1]) > 0) return `${Number(vh[1])}vh`;
   return '160px';
+}
+
+function scrollAreaPreviewMaxHeight(value) {
+  const normalized = scrollAreaPreviewHeight(value);
+  return normalized === 'auto' ? '160px' : normalized;
 }
 
 const scrollAreaPreviewEntries = [
@@ -20225,7 +20238,7 @@ function scrollAreaPreviewUsageWxml() {
 }
 
 function scrollAreaPreviewOverlayColor(value) {
-  return safePreviewColor(value, 'var(--surface-solid)');
+  return safePreviewColor(value, 'var(--pui-scroll-area-gradient-overlay-color-context)');
 }
 
 function scrollAreaPreviewOverlaySize(value) {
@@ -20264,8 +20277,12 @@ function scrollAreaShowcase(props) {
     ? `<div class="pui-scroll-area-preview__gradient pui-scroll-area-preview__gradient--top" data-scroll-area-gradient-overlay="top" aria-hidden="true"></div>
       <div class="pui-scroll-area-preview__gradient pui-scroll-area-preview__gradient--bottom" data-scroll-area-gradient-overlay="bottom" aria-hidden="true"></div>`
     : '';
+  const resolvedHeight = scrollAreaPreviewHeight(props.height);
+  const sizeStyle = resolvedHeight === 'auto'
+    ? `height:auto;max-height:${scrollAreaPreviewMaxHeight(props.maxHeight)}`
+    : `height:${resolvedHeight}`;
   return `<section class="demo-section pui-scroll-area-showcase">
-    <div class="pui-scroll-area-preview" data-scroll-area-root style="height:${scrollAreaPreviewHeight(props.height)};--pui-scroll-area-gradient-overlay-color:${escapeHtml(scrollAreaPreviewOverlayColor(props.gradientOverlayColor))};--pui-scroll-area-gradient-overlay-size:${scrollAreaPreviewOverlaySize(props.gradientOverlaySize)}">
+    <div class="pui-scroll-area-preview" data-scroll-area-root data-scroll-area-adaptive="${resolvedHeight === 'auto'}" style="${sizeStyle};--pui-scroll-area-gradient-overlay-color:${escapeHtml(scrollAreaPreviewOverlayColor(props.gradientOverlayColor))};--pui-scroll-area-gradient-overlay-size:${scrollAreaPreviewOverlaySize(props.gradientOverlaySize)}">
       <div class="pui-scroll-area-preview__viewport" data-scroll-area-preview tabindex="0" role="region" aria-label="${escapeHtml(props.ariaLabel || '滚动内容')}">
         <div class="pui-scroll-area-preview__content" style="padding-bottom:${escapeHtml(scrollAreaPreviewContentPaddingBottom(props.contentPaddingBottom))}">
           ${content}

@@ -24,13 +24,13 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 - Header 左右按钮顶部对齐，使用相同的上间距与左右轨道间距；常规左侧主要执行按钮使用 `primary/base`，右侧常驻关闭按钮使用 `default/base + circle + iconOnly` 的 muted 弱填充，直接消费 Button 的 icon-only 居中轨道，不以 `custom-style` 覆盖原生 Button 根。Picker 的 `type=default` 是受控例外：它以 `primary/base + circle + check + iconOnly` 确认操作占用左侧 `header-left`，以 `default/base + circle + close + iconOnly` 取消操作替换右侧 `close-btn`，两侧均保留固定轨道、图标居中和三列 Header 几何。标题和描述使用紧凑间距，不额外撑高 Header。Popup 不渲染拖拽手柄，也不接管拖拽关闭。
 - `subtitle` 是 Header 标题区的单行辅助说明；宽度不足时使用省略号截断，不允许换行撑高 Header。描述内容需要完整读取时，应放入 Content Slot。
 - `surface-top` 只承接贴合 Surface 顶边的非布局反馈，推荐组合 `pui-top-loading`。Popup Surface 必须提供 `position:relative + overflow:hidden`，让轨道从边框最上沿开始并被当前圆角裁切；不得把它放进 Content 后再用页面定位补偿。
-- Content 是唯一可滚动区；Footer 仅在 `showFooter=true` 时渲染 `footer` Slot，主要动作由 Slot 内真实 PUI Button 承担。Footer 为 Slot Button 宿主提供 `flex:1 1 100%` 的满宽轨道；调用方为 Button 显式传入 `block` 后，Button 根也会写入满宽 Flex 几何，不能因微信 Slot 宿主收缩。
+- Header 存在时，Surface 不再在 Header/Content 之间叠加 section gap；Content 顶部只消费一次 `--pui-content-gap`，左右与底部仍保留 panel padding。Header 不存在时 Content 恢复完整四向 panel padding。Content 是唯一可滚动区；Footer 仅在 `showFooter=true` 时渲染 `footer` Slot，主要动作由 Slot 内真实 PUI Button 承担。Footer 为 Slot Button 宿主提供 `flex:1 1 100%` 的满宽轨道；调用方为 Button 显式传入 `block` 后，Button 根也会写入满宽 Flex 几何，不能因微信 Slot 宿主收缩。
 
 ## 3. PUI 组合与依赖
 
 - 默认关闭控件必须复用 `pui-button` 的圆形图标按钮合同，并有“关闭弹出层”可访问名称。
 - Header 左侧动作和 Footer 主要动作由消费者组合 `pui-button`；官网镜像必须调用共享 `buttonSample`，不能在 Popup 内重新实现按钮、Icon 或 padding。
-- Popup 的 Surface 使用 `--pui-panel-padding`，Header/Content/Footer 内部关联关系使用 `--pui-content-gap`；Slot 子组件保留自己的间距，Popup 只负责分区排列。
+- Popup 的 Surface 四周使用 `--pui-panel-padding`，Header/Content/Footer 内部关联关系使用 `--pui-content-gap`；Header→Content 只允许其中一个紧凑 gap，不同时叠加 Surface section gap。Slot 子组件保留自己的间距，Popup 只负责分区排列。
 - 遮罩、Surface、内容滚动区是 Popup 的基础平台根，可使用原生 `view` / `scroll-view`；不得用原生 Button 伪造关闭操作。
 - Loading、Empty、Result、Cell、Form 和业务 Button 属于消费者内容；Popup 本身不得内建或推断其业务状态。TopLoading 可由消费者投影到 `surface-top`，状态仍完全由消费者控制。
 
@@ -39,6 +39,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 - 内容 Surface 读取现有 PUI Surface、Border、Radius、Shadow、Frost 和排版 Token；不自定义第二套蓝灰浮层主题。
 - Popup WXSS 不得导入 `common/style/theme.wxss`：该全局文件含 `page` 默认 Token，会触发微信组件 WXSS 的标签选择器编译错误。Token 由消费者 `app.wxss` 的 npm 主题入口和外层 `pui-config-provider` 继承；H5 保持同名 Token 镜像，不建立第二条主题链。
 - `card=true` 时五向 Surface 均保留至少 `--pui-space-step-12` 的视口安全距离；`card=false` 时 Surface 贴合其弹出边缘，贴边的角为 0，远离边缘的角继续读取 `--pui-radius-xlarge`。`scroll-view` 只在内容自然超过最大高度时滚动。
+- Popup 不设置业务固定高度；默认随 Header、Content、Footer 自然增长并受视口 `max-height` 约束。调用方需要长内容时，应关闭 Popup Content 自身滚动并组合一个 `height="auto" + maxHeight` 的 PUI ScrollArea，不能同时固定 Popup 近全屏高度与内部 `vh` 高度。
 - 动效由 `duration` 控制，默认 500ms，正常范围为 0–1000ms；`reduceMotion=true` 固定为 1ms。低动效只缩短 Popup 自己的 Mask 与 Surface；Slot 内 PUI 子组件各自遵循自己的低动效合同。`blurOverlay=true` 时 Blur 在 Layer 挂载时立即参与背景合成，不能等待色遮 opacity 完成后才出现；禁止给 `height:auto` 或 `display` 添加 transition。
 
 ## 5. 内容、Slot 与组合边界
@@ -77,7 +78,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 - 五向入口区域还必须提供一个由两项 PUI Cell 组成的配置 `CellGroup`：卡片 Switch 真实回写 `card`，毛玻璃遮罩 Switch 真实回写 `blurOverlay`。Popup 默认内容中的执行成员与关联文件也组成独立内容 `CellGroup`；两组不能合并，因为一组属于弹窗内容，另一组属于弹窗外的演示配置，不新增 Popup 公共 API；打开后仍可通过 Surface 的边缘 inset 与遮罩 `backdrop-filter` 观察实际结果。
 - H5 使用同一个已挂载 Overlay 与 Surface 节点模拟进入、离开和滚动保护；进入阶段只切换 `is-active`，离开阶段先切回初始 opacity/transform，等待完整 `duration` 后才允许重建关闭入口。`top/bottom/left/right` 分别沿对应边缘位移，`center` 固定在几何中心并仅缩放/淡入，不能伪装成从底部上升。`left/right` 的 Content 必须在固定侧栏高度内 flex 滚动，Footer 始终贴住侧栏底部。禁止在阶段切换时调用整段 Stage 重建，否则 CSS transition 会因节点身份丢失而瞬移。`card` 必须真实改变五向 Surface 的视口 inset，`blurOverlay` 必须真实改变遮罩的 `backdrop-filter` 计算样式；不能只更新事件提示。H5 的低动效同样只缩短 Popup Mask 与 Surface，Slot 内 PUI 子组件沿用自身合同。
 - 元素选择模式中，选择 Popup 的任一五向打开入口时，右侧上下文 Inspector 必须显示 `card / placement / showOverlay / blurOverlay` 等由父组件公开、会影响该操作结果的呈现 Props；选择遮罩时必须显示 `blurOverlay`。它们与完整属性页复用同一回写路径，不能因当前选中的是触发器或遮罩而被过滤。
-- 基础示例保持最小安装调用且不写 `bind:*`；完整 `visible-change` 回写放入事件专项示例和 API。
+- 基础示例固定为 `<pui-popup visible="{{true}}" content="Popup 内容" />`，保证复制后立即看到真实 Popup，且不写 `bind:*`；这两个值是 Starter Usage，不改变 `visible=null / defaultVisible=false / content=''` 的安全运行时默认。完整 `visible-change` 回写放入事件专项示例和 API。
 - 浏览器不伪造微信 `catchtouchmove`、安全区或系统读屏成功；这些保留真机风险。
 
 ## 10. 响应式、主题与视觉配置
@@ -85,7 +86,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 - 390px 下 Surface、关闭轨道和 Slot 内容不得造成页面级横向溢出；内容过长只能在 Popup 内容区局部滚动。
 - light/dark、边框、阴影、毛玻璃、大圆角和渐变均通过已有视觉 Token 作用于真实 Surface；关闭边框只透明化中性边线，不得改变浮层尺寸或状态边界。`blurOverlay` 是 Popup 显式遮罩效果，独立于全局毛玻璃开关，但仍必须在深浅色下使用同一中性 Token。
 - Popup 本体不通过外观开关新增或移除业务控件；其几何在各外观下保持稳定。
-- Popup 是等距与阴影治理的 reference Surface：默认消费 `--pui-surface-inset`、`--pui-surface-stack-gap`、`--pui-surface-section-gap`；`pui-spacing--equal` 只让 Popup 四向 inset 与 Header/Content/Footer 结构分区 gap 相等，不改变内容 Slot 内连续 Cell 行的微间距。
+- Popup 是等距与阴影治理的 reference Surface：默认消费 `--pui-surface-inset` 与 `--pui-surface-stack-gap`；Surface 自身不再给 Header/Content/Footer 添加 section gap。`pui-spacing--equal` 把 Header→Content 的唯一紧凑 gap、Footer 顶部间距与四向 inset 统一为 `--pui-surface-inset`，不改变内容 Slot 内连续 Cell 行的微间距。
 - Popup 的外投影必须按 `placement` 选择 `--pui-shadow-edge-top/bottom/left/right`；`center` 使用 `--pui-shadow-floating`。H5 与小程序不得继续把所有方向复用正向底部阴影。
 
 ## 11. 明确禁止
@@ -102,7 +103,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 - 同步审计 `popup` 的 JS/JSON/WXML/WXSS、`metadata/components.js`、`preview/app.js`、`preview/styles.css`、`COMPONENT_API.md`、`H5_PREVIEW_COMPATIBILITY.md`、`_example`、`miniprogram_dist` 与 `index.js` 导出。
 - 更新 `scripts/test-popup.js`、TDesign 对照清单、进度记录和 Feedback Ledger；然后运行 `site:build`、`check`、`pack:check`、`example:install`、反馈生成与检查。
 - 必须浏览器实测显隐、遮罩、五向位置、受控/非受控、`false/0/空字符串/null` 边界、滚动保护、动效中间帧/低动效、390px、主题与六项外观。微信真机仍需合法 AppID 验证 fixed 遮罩、触摸穿透、rpx、安全区、Slot、样式隔离和读屏。
-- 联网对照固定为 [TDesign Miniprogram Popup 文档](https://tdesign.tencent.com/miniprogram/components/popup)、[TDesign Popup 源码](https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/popup) 和 `tdesign-miniprogram@1.15.3` 包内 `miniprogram_dist/popup/{props.js,type.d.ts,popup.wxml,popup.js}`；在线页面用于产品信息，固定包用于可复现 API，不照搬其内部实现。
+- 2026-07-29 联网对照固定为 [TDesign Miniprogram Popup 文档](https://tdesign.tencent.com/miniprogram/components/popup)、[TDesign Popup 源码](https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/popup) 和 `tdesign-miniprogram@1.15.3` 包内 `miniprogram_dist/popup/{props.js,type.d.ts,popup.wxml,popup.js,popup.wxss}`；在线页面用于产品信息，固定包用于可复现 API。TDesign 基础 Popup 没有 PoemUI 的 Header/Content/Footer 扩展，因此只参考其视口最大高度与弹出层边界，不照搬内部结构。
 
 ## 13. 2026-07-27 Footer 与全局毛玻璃
 

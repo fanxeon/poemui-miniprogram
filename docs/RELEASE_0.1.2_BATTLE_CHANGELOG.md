@@ -4,6 +4,26 @@
 
 每条记录必须包含：用户问题、行为变化、源码文件、专项验证、待同步面和真机风险。已同步但未验证的事项不能标记完成。
 
+## 2026-07-29：全平台发布门禁补齐真实安装示例
+
+- 发布前 `node skills/poemui-miniprogram/scripts/verify-install.mjs _example` 真实阻断：`_example/miniprogram/pages/components/` 仍注册并调用 0.1.2 已退役的 Tooltip 与 ButtonGroup，npm 安装后对应组件路径不存在。
+- 示例已彻底删除两个退役组件的注册、演示、状态和样式；其余并列操作改用透明、Token 化的 `example-action-group` 布局承载真实 PUI Button，不恢复私有按钮或第二层 Surface。
+- `scripts/test-component-catalog-pruning.js` 现同时扫描示例 JSON / JavaScript / WXML / WXSS，禁止退役组件名和 npm 路径重新出现。Ledger 新增 `PUI-FB-0519`（resolved / pending-user）。
+- 本条只记录发布阻塞修复；npm Registry、GitHub 与远端 H5 的真实发布结果将在全部门禁完成后回写，不能以本地测试替代。
+
+## 2026-07-29：发布后工作树修正（体验版已重传，源码未提交）
+
+- 更新公告：Schema v2 的 `componentCount` 与九项 `categoryCounts` 继续保留在三条公告、共享云、缓存与包内 fallback 中，Service 继续强制校验九类合计等于总数；最新用户决定是不在 Popup 中直接展示总数或九类统计，这些字段只驱动 Me 图表。此前统计 Grid 的 390px 截图只保留为历史证据。
+- Me Tab：真实 PUI BarChart 按公告日期为 `v0.1.0 / v0.1.1 / v0.1.2` 分别建立 Blue/Teal/Violet segment，不再把中间版本合并掉；`规范` 只在图表展示层过滤，公告九类 Schema 与总数校验不变。全宽水平堆叠 small 保持 `max=19`、1000ms 与 Value；页面关闭 Grid/Legend，并在图表下用最小圆角 PUI Tag 消费同色 Chart Token，只显示版本号。当前高级为 `5 + 3 + 0 = 8` 并稳定置顶，折叠态显示高级/基础/布局/导航；PUI 透明 Button 以实测高度和 normal/standard Token 平滑展开/收起全部八类，收起动画结束后才卸载后四类。0.1.2 零增量不伪造宽度；没有新增 BarChart 或 Tag 公共 API，也不复制 H5 Me 业务页。
+- BarChart 视觉：共享小程序六色横纵渐变从原高饱和 `0.28 → 0.66 → 1` 改为 AreaChart 式 `0.04 → 0.42` 透明填充，并以数据端 `2rpx` 实体 accent inset 线保留长度边界；根仍透明、无外投影。H5 `preview/styles.css` 的同名 Token 与 segment 终点线、390px 浅深验收留待全部小程序 Battle 后统一同步。
+- Me 页面级精简：BarChart 继续使用共享组件与逐版本色彩，页面保持默认 `showGrid=false` 并显式传 `showLegend=false`，移除顶部 `0 / 19` 与底部默认圆点标识；改用三个真实 `size=small / shape=round` PUI Tag，以共享 Chart accent 文字和对应 `--pui-color-*-soft` 纯色背景显示 `v0.1.0 / v0.1.1 / v0.1.2`，显式去除默认 inset 框，不使用渐变或附加“已有 / 新增”。八类按是否存在基线后正增量稳定分组，有新增的类别置顶，同组保持公告顺序；当前折叠态为“高级 / 基础 / 布局 / 导航”。本项不修改 BarChart/Tag 共享源码、默认值或公共 API。
+- Me 顶部数据与间距：Card 顶部从组件/样式/高级三列扩为组件/样式/高级/新增四列，“新增”直接读取生成型 `componentStatus.incrementTotal`，当前为 `3`；“新增”标签右侧组合 `20rpx`、Violet accent 的真实 PUI `sparkles` Icon，并以 `--pui-space-xxs` 紧密关联。四列 Grid 保持透明等分；唯一透明 `dashboard-content` 父布局以一次 `--pui-content-gap` 分隔数据摘要与 BarChart，图表 viewport→Tag 与 Tag→展开操作也各使用一次同名间距，不建立第二层 Surface 或重复 margin。
+- 首页：删除当前微信开发者工具明确判为无效的 `pages/index/index.json#enableShareTimeline`，保留 `onShareAppMessage` 与 `onShareTimeline` 的同源品牌载荷。专项测试锁定 JSON 无无效键和两个 Page 生命周期。
+- 平台兼容：移除 AreaChart DPR、DynamicMessage 顶部安全区与快速样式页 rpx 换算中残留的 `wx.getSystemInfoSync` fallback，统一复用 `common/utils/platform-info#getWindowInfo()`；公共组件 API 不变。平台兼容门禁改为自动遍历全部发布组件、共享运行时和真实小程序源码，AreaChart、DynamicMessage 与样式页专项测试补齐组件/页面级断言，Ledger 更新 `PUI-FB-0298`。
+- DevTools 边界：Nightly 2.02.2607282 / 基础库 3.17.0 清空 Console 后确认 `__dev__/WAAutoService.js` 与 `WAServiceMainContext.js` 的未使用 preload 警告由微信 appservice 内部注入；项目无对应 preload，运行时 console 也无命中。本项不牺牲自动热重载或 requiredComponents 懒加载来伪造零警告，Ledger 新增 `PUI-FB-0512`（wont-fix / not-required）。
+- 事实源：`docs/components/BAR-CHART.md`、`docs/MINIPROGRAM_ME_PAGE.md`、`docs/MINIPROGRAM_HOME.md`、`docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md`、`scripts/test-bar-chart.js`、`scripts/test-miniprogram-me-page.js`、`scripts/test-miniprogram-home.js`、Ledger `PUI-FB-0507/0508/0510/0511/0513/0514/0515`。
+- 当前验证：BarChart、Me、advanced pages、Tabbar、首页与 Feedback 497 条专项通过；`miniprogram:build`、本地 tar 安装、`PUI_VERIFY_DIST=1` 和两仓 diff 门禁通过，微信 `build-npm=944ms / warnings=[]`。此前 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 测得 Me 折叠图表 `340×210px`、展开 `340×378px`，受控慢速合成在 `210→378px` 之间抓到 `341.875px` 中间高度。最新页面级精简在同设备再次实点展开→收起：折叠顺序为高级/基础/布局/导航，浅色和深色均无顶部 `0 / 19`、默认圆点图例、Tag 渐变或 inset 框；顶部显示 `74 / 562 / 8 / 3 / 新增 + 20rpx sparkles`，摘要→图表、图表 viewport→Tag、Tag→操作均实测 `8px`。浅/深截图见 `/tmp/poemui-me-label-icon-light-390.png`、`/tmp/poemui-me-label-icon-dark-390.png`。清空旧页面日志后单独 `reLaunch` Me 并等待 4 秒为 `0 error / 4 warning`，仅自动热重载、既有 Dialog/Navbar selector 与 IntersectionObserver 慢路径。本轮页面精修未执行远端写入、体验版重传、Git 提交、npm 发布或 H5 部署。生产共享云 0.1.2 公告仍是旧“九类/两段”说明，本地 fallback 已更新；iOS/Android 真机仍为 `pending-device`。
+
 ## 0.1.2 统一同步与发布状态
 
 ### 2026-07-29：组件源码、H5、共享云公告与微信体验版完成同步

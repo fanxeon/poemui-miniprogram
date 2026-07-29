@@ -8,21 +8,21 @@
 
 ## 1. 组件定位
 
-- ScrollArea 是固定高度的原生纵向 `scroll-view` 薄封装，用于在默认 Slot 内滚动已有内容、受控回写纵向位置并按目标节点 id 定位；`gradientOverlay` 是 PoemUI 明确提供的固定阅读过渡层，`contentPaddingBottom` 为所有滚动内容提供统一尾部安全区。
+- ScrollArea 是固定高度或有界自适应高度的原生纵向 `scroll-view` 薄封装，用于在默认 Slot 内滚动已有内容、受控回写纵向位置并按目标节点 id 定位；`gradientOverlay` 是 PoemUI 明确提供的固定阅读过渡层，`contentPaddingBottom` 为所有滚动内容提供统一尾部安全区。
 - 它对齐 TDesign `ScrollView`，不把浏览器或微信原生 `scroll-view` 的全部参数再复制成一套 PoemUI API；`gradientOverlay/gradientOverlayColor/gradientOverlaySize` 是本组件的最小视觉扩展，不映射为平台滚动参数、事件或方法。
 - 2026-07-20 已联网核对 [TDesign ScrollView 源码目录](https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/scroll-view)、[当前 WXML](https://github.com/Tencent/tdesign-miniprogram/blob/develop/packages/components/scroll-view/scroll-view.wxml) 与固定包 `tdesign-miniprogram@1.15.3` 的 `miniprogram_dist/scroll-view/{scroll-view.d.ts,scroll-view.js,scroll-view.wxml,scroll-view.wxss,scroll-view.json}`。固定包只声明 `scrollIntoView`，并固定 `scroll-y/enhanced/show-scrollbar=false`。
 
 ## 2. 固定结构与区域
 
 ```text
-透明定位根（固定高度，无 Surface）
+透明定位根（固定高度，或自然增高到 maxHeight；无 Surface）
 ├── 原生 scroll-view（纵向、enhanced、隐藏滚动条、role=region）
 │   └── 内容轨（default Slot + 尾部安全区 + 边缘探针）
 ├── 顶部渐变层（仅 gradientOverlay=true 且内容已滚离顶部；容器色 → transparent）
 └── 底部渐变层（仅 gradientOverlay=true 且仍可继续向下滚动；transparent → 容器色）
 ```
 
-- 透明定位根只提供固定高度和绝对定位上下文；不得拥有背景、内距、边框、圆角、阴影、毛玻璃或裁切。
+- 透明定位根只提供固定/有界自适应高度和绝对定位上下文；不得拥有背景、内距、边框、圆角、阴影、毛玻璃或裁切。
 - 原生 `scroll-view` 是唯一滚动上下文；`scrollTop` 与 `scrollIntoView` 只传递给它。`scrollTop` 规整为非负数；`scrollIntoView` 非空时按微信原生优先级覆盖数值定位。组件内部固定开启原生 `scroll-with-animation`，因此父级受控定位默认平滑完成，但不会把该平台开关重新提升为公共 Prop。
 - 顶底渐变层是与原生滚动视口同级的固定层，不能放进 Slot 或滚动内容中；底部保留一个透明、不可交互的内部边缘探针以判断是否仍有后续内容。二者始终 `pointer-events:none` 且 `aria-hidden=true`。
 - Slot 内内容、id、焦点和业务交互全部归调用方所有；内容轨只增加尾部安全区，不重排 Slot 子项或创建 Surface。
@@ -36,10 +36,10 @@
 ## 4. Token、间距与排版
 
 - 透明定位根仅有定位、盒模型、宽度和由 `height` 得到的高度，不拥有背景、边框、圆角、阴影、毛玻璃、内距或私有动画。
-- 高度由 `height` 使用正数、rpx、px 或 vh 表达；`0`、负数、空值与非数字统一回退默认 `320rpx`，H5 按 `1px≈2rpx` 镜像裸数/rpx、原样保留 px/vh，并对应回退 `160px`。`vh` 用于 Popup 等有界视口组合，不改变 ScrollArea 必须拥有明确高度的合同。
+- `height` 使用正数、rpx、px、vh 或 `auto` 表达；`0`、负数、空值与非数字统一回退默认 `320rpx`，H5 按 `1px≈2rpx` 镜像裸数/rpx、原样保留 px/vh，并对应回退 `160px`。`height="auto"` 时根和唯一原生视口随 Slot 自然增高，达到 `maxHeight` 后才产生局部滚动；`maxHeight` 默认 `320rpx`，只接受同一组正数尺寸，`auto` 与非法值回退默认上限。固定 `height` 时忽略 `maxHeight`，避免两套边界竞争。
 - `gradientOverlaySize` 只允许 `sm`、`md`、`lg`：`sm` 使用 `--pui-scroll-area-gradient-overlay-size-sm`（`40rpx / 20px`），`md` 使用 `--pui-scroll-area-gradient-overlay-size-md`（`64rpx / 32px`，既有默认），`lg` 使用 `--pui-scroll-area-gradient-overlay-size-lg`（`88rpx / 44px`）。非法值统一回退 `md`；顶/底不额外消耗 Slot 空间、padding 或 margin。
 - `contentPaddingBottom` 默认 `10vh`，统一保证最后一项能够继续滚到遮罩与屏幕底部之上；接受非负裸数（按 rpx）、`rpx`、`px` 或 `vh`，`0` 可显式关闭，负数、CSS 表达式和非法值回退 `10vh`。该 padding 只落在透明内容轨，不能让根或视口产生第二层 Surface。
-- `gradientOverlayColor` 只接受 `#hex`、`rgb()`、`rgba()` 或 `var(--token)`。空值与非法值回退 `--pui-scroll-area-gradient-overlay-color-context`；默认值为 `--pui-bg-container`，页面壳可显式继承自己的画布 Token，避免与无边 Navbar 形成色层割裂。合法自定义颜色同时作用于两个渐变方向。
+- `gradientOverlayColor` 只接受 `#hex`、`rgb()`、`rgba()` 或 `var(--token)`。空值与非法值回退 `--pui-scroll-area-gradient-overlay-color-context`；默认值为 `--pui-bg-container`，页面壳可显式继承自己的画布 Token，避免与无边 Navbar 形成色层割裂。该上下文别名必须在 `.pui-theme--dark` 内、深色 `--pui-bg-container` 声明之后重新绑定，不能只从浅色 `page` 根继承已经计算为白色的值。合法自定义颜色同时作用于两个渐变方向。
 - 内容间距、分隔和 Surface 由 Slot 内真实 PUI 组件或调用方页面 Token 管理。
 
 ## 5. 内容、Slot 与组合边界
@@ -77,17 +77,17 @@
 
 - H5 必须使用真实 `overflow-y:auto` 容器，固定隐藏浏览器滚动条；不能用静态列表、位置提示或动画伪造滚动。
 - H5 父级 Props 改写与当前位置不同的 `scrollTop` 后通过真实 `scrollTo({ behavior:'smooth' })` 更新同一 `overflow-y:auto` 容器的位置；与原生当前值相同（允许 1px 浮点误差）的回写是用户手势回声，必须跳过，不能重启浏览器惯性。`scrollIntoView` 非空时在同一滚动容器内找到同名 `data-scroll-area-anchor` 并按原生优先级平滑定位。系统 `prefers-reduced-motion` 时改为 `auto`，不伪造中间位置或完成事件。
-- H5 使用同样的透明定位根、唯一 `overflow-y:auto` 视口、透明内容轨和两层 fixed sibling overlay；内容轨按同一规则消费默认 `10vh` 的 `contentPaddingBottom`。以真实 `scrollTop/clientHeight/scrollHeight` 同步“顶部仅底层、底部仅顶层、中段两层、无溢出零层”。`gradientOverlay=false` 必须移除 DOM 遮罩，颜色校验、`sm/md/lg` 尺寸映射、上下文色回退、`pointer-events:none` 与 `aria-hidden` 必须与小程序一致。
+- H5 使用同样的透明定位根、唯一 `overflow-y:auto` 视口、透明内容轨和两层 fixed sibling overlay；固定高度直接映射，`height="auto"` 时视口继承根的 `maxHeight` 并在超过上限后真实滚动。内容轨按同一规则消费默认 `10vh` 的 `contentPaddingBottom`。以真实 `scrollTop/clientHeight/scrollHeight` 同步“顶部仅底层、底部仅顶层、中段两层、无溢出零层”。`gradientOverlay=false` 必须移除 DOM 遮罩，颜色校验、`sm/md/lg` 尺寸映射、上下文色回退、`pointer-events:none` 与 `aria-hidden` 必须与小程序一致；H5 必须在 ScrollArea 根按当前 `--surface-solid` 解析同名上下文 Token，并以深色计算样式确认不是浅色白条。
 - H5 与小程序端必须共同拒绝零或负高度，不能将 `0` 算成可见但不可用的 `1px/1rpx` 滚动区。
 - 官网概览为避免 622px PreviewDevice 中只出现一个 160px 小窗，明确以 `height="1128rpx"`（H5 `564px`）和 18 项真实 PUI Cell Slot 内容填满 `shadow-safe` 的可用预览高度并演示滚动。该值会出现在当前效果 WXML 中，且不改变组件公开默认值 `320rpx`。重置恢复该演示值，属性/API 仍显示真实默认值。
 - 小程序独立页继续由被测 ScrollArea 承担唯一滚动上下文；Slot 顶部组合 PUI Cell + Switch 控制 `gradientOverlay`，并用两个等分 PUI Button 在 `sm / md / lg` 三档间调整 `gradientOverlaySize`。这些控件只改公开视觉 Props，不创建第二滚动区、不改变当前位置，也不扩张组件事件或方法。
-- Popup 等父组件若默认拥有同方向滚动，必须先通过父组件公开能力关闭父级滚动，再让一个 ScrollArea 成为唯一滚动所有者。更新公告是 reference consumer：Popup `contentScrollable=false`，内部 ScrollArea `height=78vh`，固定 Footer 不进入滚动区。
+- Popup 等父组件若默认拥有同方向滚动，必须先通过父组件公开能力关闭父级滚动，再让一个 ScrollArea 成为唯一滚动所有者。更新公告是 reference consumer：Popup `contentScrollable=false`，内部 ScrollArea 使用 `height="auto" + maxHeight="60vh"`，短内容自然收紧，长内容超过上限后才滚动，固定 Footer 不进入滚动区。
 - ScrollArea 使用 `shadow-safe` PreviewDevice 父布局；根透明，PUI Cell 的 Surface 留给真实 Slot 子组件，不得通过页面私有 margin 修复阴影裁切。
 
 ## 10. 响应式、主题与视觉配置
 
 - 390px 下滚动容器宽度始终不超过可用视口，Slot 内容必须 `min-width:0` 且页面不产生横向溢出。
-- light/dark、边框、阴影、毛玻璃、大圆角和全局渐变只作用于 Slot 内真实 PUI 组件或 PreviewDevice，不得令透明 ScrollArea 根产生第二层 Surface。默认遮罩色仅跟随当前上下文容器色；页面壳可以将 `--pui-scroll-area-gradient-overlay-color-context` 指向画布 Token，使无边 Navbar 与滚动视口连续。遮罩高度仅由 `gradientOverlaySize` 的三档 Token 决定，不使用全局页面渐变，也不继承阴影、毛玻璃或圆角。
+- light/dark、边框、阴影、毛玻璃、大圆角和全局渐变只作用于 Slot 内真实 PUI 组件或 PreviewDevice，不得令透明 ScrollArea 根产生第二层 Surface。默认遮罩色仅跟随当前上下文容器色；页面壳可以将 `--pui-scroll-area-gradient-overlay-color-context` 指向画布 Token，使无边 Navbar 与滚动视口连续。主题切换时上下文色必须重新解析：浅色容器为 `#fff`，深色容器为 `#18181b`，不得继承切换前的已计算色。遮罩高度仅由 `gradientOverlaySize` 的三档 Token 决定，不使用全局页面渐变，也不继承阴影、毛玻璃或圆角。
 - ScrollArea 不声明 CSS 进退场动画；受控位置变化使用平台原生平滑滚动。H5 在系统低动效下立即定位；小程序端使用微信 `scroll-with-animation` 的平台行为，不公开第二套时长或 easing。
 
 ## 11. 明确禁止

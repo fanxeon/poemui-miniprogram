@@ -1,0 +1,156 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0513",
+  "title": "Me 使用公告分类数据展示逐版本增量 BarChart",
+  "scope": "component",
+  "components": [
+    "miniprogram-me",
+    "bar-chart",
+    "update-announcement",
+    "catalog-metadata"
+  ],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "更新公告不展示组件总数；Me 的 BarChart 按业务类别和每一个公告版本分别着色表达增量，不展示“规范”类别；版本 Tag 保持无框、小尺寸，并使用与图表对应的纯色同色系背景而非渐变。",
+  "environment": {
+    "surfaces": [
+      "miniprogram-me",
+      "component-status-card",
+      "update-announcement-popup"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools",
+      "node"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruity"
+    ]
+  },
+  "reproduction": [
+    "进入 pages/me/index，前一版 BarChart 只比较最早 v0.1.0 与最新 v0.1.2，把中间 v0.1.1 合并掉。",
+    "图例只有“已有/新增”两色，不能逐一看出 0.1.0、0.1.1、0.1.2 各自的贡献。",
+    "公告 Schema 的 getting-started / 规范也被当成业务组件类别画入图表，增加无效行。",
+    "逐版本方案首次落地后，Me 页面仍显式开启 show-grid，顶部出现 0 / 19；图例追加“已有 / 新增”，且唯一有增量的高级分类排在折叠区之外。"
+  ],
+  "expected": "公告 Popup 只展示版本和组件改动；Me 唯一图表使用 PUI BarChart，过滤“规范”，按公告日期为每个有效版本建立独立颜色分段，关闭顶部刻度与默认圆点图例，改用无框、同色 soft 纯色底的最小 PUI Tag 只显示版本号，并把存在正增量的分类稳定置顶。",
+  "actual": "旧两段 BarChart 只保留最早基线和最新差值，丢失中间版本颜色；九类 Schema 原样进入展示层；后续逐版本页面又保留了顶部 0 / 19、冗余“已有 / 新增”与未按增量优先的分类顺序。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户明确要求每个版本都有颜色，并进一步要求“规范”类型不展示。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.js",
+      "note": "dashboardCategoryChart 按公告日期排序，为每个版本生成稳定 key/theme/value；label 只保留版本号，消费层过滤 getting-started 并稳定提升有增量分类。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "唯一 pui-bar-chart 使用逐版本 items、horizontal/stacked/small、Value 与 1000ms；页面保持默认 showGrid=false 并显式传 showLegend=false，图表下用无框最小圆角 PUI Tag 组合 Chart accent 文字与同色 soft 纯色底，公告内容不渲染统计字段。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "专项锁定八个业务类别、三个无框纯色 soft 版本 Tag、Blue/Teal/Violet、高级置顶与 5+3+0、无顶部刻度和默认图例、0 值不造假、云端刷新和 Popup 无统计块。"
+    }
+  ],
+  "rootCause": "第一版类别 BarChart 仍把版本模型压缩成最早/最新两点，导致中间公告版本失去独立视觉身份；同时把数据校验用的“规范”分类误当成业务图表维度。逐版本修正后又沿用组件演示型 Grid 和工程说明式图例，并直接使用公告分类顺序，导致页面首屏没有优先展示真正发生增长的类别。",
+  "decision": {
+    "outcome": "保留公告 Schema v2 的全部九类和总数校验；Me 只在可见消费层过滤 getting-started，按日期从旧到新为每个有效公告版本建立 segment，稳定主题序列为 blue/teal/violet/amber/pink/neutral。当前三版本分别是 Blue/Teal/Violet；segment label 只使用版本号。页面保持默认 showGrid=false，并显式传 showLegend=false；在图表 viewport 外组合真实 size=small、shape=round PUI Tag，文字使用对应 Chart accent，背景使用对应 --pui-color-*-soft 纯色 Token，并以 box-shadow:none 去除默认 inset 框。分类按基线后是否存在正增量稳定分组，有新增的置顶，同组保持公告原顺序。后续版本增量按前一累计值求非负差，并以当前分类总数封顶。",
+    "rationale": "版本是图例中的一等语义，不能把中间版本合并进“最新增量”；默认圆点加文字的图例样式不符合当前页面，最小无框 Tag 能以克制形状承载版本身份。同色 soft 纯色背景仍保留 Blue/Teal/Violet 对应关系，但比 Chart 渐变更安静，也不会与图表实体竞争。顶部 0 / max 对当前紧凑分类比较没有额外决策价值；把真实增长类别置顶可让折叠首屏直接回答变化发生在哪里。展示过滤和排序不能反向破坏公告 Schema，现有 BarChart 与 Tag API 已完整表达需求。",
+    "alternativesRejected": [
+      "继续最早/最新两段：会丢失中间版本的独立颜色和贡献。",
+      "从公告 Schema 删除规范：会破坏九类总数校验和历史数据合同。",
+      "给 0 增量版本最小可见宽度：会制造不存在的增长。",
+      "完全删除底部版本标识：会失去三版本与颜色分段的对应关系。",
+      "继续使用 BarChart 默认圆点/色块 Legend：用户明确要求改为最小尺寸上色 Tag。",
+      "继续把 Chart gradient 用作 Tag 背景：用户明确要求 Tag 不使用渐变，同色 soft Token 已能保留版本对应关系。",
+      "修改共享 Tag 默认边框/阴影：无框是 Me 页面层级决定，不能影响其他 Tag 消费者。",
+      "按增量数值绝对量重排全部类别：用户只要求有新增者优先，同组继续保持既有信息架构更稳定。",
+      "修改 BarChart 的 showGrid 默认值或 Legend 结构：这是 Me 页面信息层级，不应影响其他消费者；页面可直接关闭并组合 PUI Tag。",
+      "页面手写版本或类别数量：会与共享云和生成目录漂移。",
+      "新增 BarChart 业务 Prop：现有 items/segments/orientation/mode API 已完整表达需求。",
+      "复制 Me 页面到 H5：它是小程序业务目的地，H5 只维护 BarChart 公共镜像。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.wxss",
+      "miniprogram/common/services/update-announcements.js",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md"
+    ],
+    "dependencies": [
+      "PUI BarChart",
+      "PUI Card",
+      "update announcement Schema v2",
+      "miniprogram/common/data/component-status.js"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-bar-chart.js",
+      "scripts/test-miniprogram-tabbar-pages.js",
+      "scripts/test-miniprogram-home.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过，锁定八类、三版本、过滤规范和折叠状态链",
+      "node scripts/test-bar-chart.js：通过，确认公共 API 未改变",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过",
+      "node scripts/test-miniprogram-home.js：通过",
+      "微信 build-npm：944ms，warnings=[]"
+    ],
+    "browser": [
+      "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390x844：全量 items 只有基础、布局、导航、表单、数据展示、反馈、浮层、高级八类；getting-started / 规范不存在于图表，但三条公告的九类 Schema 与 source=cloud 保持。",
+      "折叠态图例完整显示 v0.1.0 Blue、v0.1.1 Teal、v0.1.2 Violet；高级完整数据为 5+3+0，0.1.2 零增量只保留版本图例而不伪造条宽。截图 /tmp/poemui-me-bar-version-collapsed-light-390.png。",
+      "页面级精简后在微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390x844 重新验收：浅色与深色折叠态均无顶部 0 / 19 刻度和默认圆点图例，图表下只保留 v0.1.0 / v0.1.1 / v0.1.2 三个 size=small、shape=round 的真实 PUI Tag；高级位于折叠首行，其后为基础、布局、导航。截图为 /tmp/poemui-me-version-tags-light-collapsed-390.png、/tmp/poemui-me-version-tags-dark-collapsed-390.png。",
+      "最新 Tag 精修在同一 390x844 环境复验：三个版本 Tag 分别为 Blue/Teal/Violet 同色 soft 纯色底、accent 文字、无 inset 框，不含 Chart 渐变；浅/深截图为 /tmp/poemui-me-tag-soft-no-frame-icon-light-390.png、/tmp/poemui-me-tag-soft-no-frame-icon-dark-390.png。实点展开→收起后版本 Tag 与折叠顺序保持，最终恢复浅色折叠态。清空旧页面日志后单独 reLaunch Me 并等待 4 秒为 0 error / 4 warning，只含自动热重载、既有 Dialog/Navbar selector 与 IntersectionObserver 慢路径。",
+      "实点“查看更多”后可访问树显示高级、基础、布局、导航、表单、数据展示、反馈、浮层八类；实点“收起”后恢复前四类，版本 Tag 在两个状态下都保持。展开截图为 /tmp/poemui-me-version-tags-light-expanded-390.png。",
+      "本轮 Console 为 0 error / 7 warning；warning 分别来自基础库提示、页面 onLoad 性能提示、安装产物中既有 Dialog/Navbar 选择器、既有 IntersectionObserver 慢路径和微信开发者工具 __dev__ preload，不含本轮 Me 页面脚本异常、wx.getSystemInfoSync 或 invalid page.json。",
+      "生产共享云 0.1.2 公告说明仍是旧九类两段文案；本地 fallback 已更新为八类三版本，本轮按逐组件规则未远端写入，最终发布批次必须原位同步并写后回读。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的字体回流、触摸滚动、读屏与系统低动效仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "Me 当前图表过滤“规范”，按公告日期为每个版本建立独立颜色的全宽 PUI BarChart。",
+    "rules": [
+      "公告 componentCount/categoryCounts 保留为数据合同，不在 Popup 可见层重复展示。",
+      "Me BarChart 必须按日期遍历全部有效公告版本；云公告加载后要重算 items/max/aria。",
+      "版本主题使用稳定序列，负差值钳制为 0，累计分段不得超过当前分类总数；0 增量不得伪造宽度。",
+      "getting-started / 规范只在 Me 图表展示层过滤，不得删除或篡改公告九类 Schema。",
+      "当前图表使用 horizontal/stacked/small、showValue 与 1000ms；页面保持默认 showGrid=false 并显式传 showLegend=false，不新增重复 BarChart API。",
+      "Me 版本标识使用无框最小圆角 PUI Tag，文字复用分段 Chart accent、背景使用同色 --pui-color-*-soft 纯色 Token，不使用渐变；label 只保留版本号。",
+      "存在基线后正增量的分类稳定置顶，同组保持公告原顺序。",
+      "BarChart 是透明 View/WXSS 展示叶子，不使用旧 AreaChart 的浮层 wx:if 卸载分支。",
+      "H5 只同步 BarChart 公共组件合同，不复制 Me 业务页面。"
+    ],
+    "tags": [
+      "miniprogram-me",
+      "bar-chart",
+      "category-increment",
+      "announcement",
+      "generated-data"
+    ]
+  }
+}

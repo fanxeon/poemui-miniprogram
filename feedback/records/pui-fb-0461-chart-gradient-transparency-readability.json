@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-28",
-  "updatedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
   "userGoal": "AreaChart、BarChart 和 Waffle 使用更优雅、圆润且渐变到透明的统一图表视觉。",
   "environment": {
     "surfaces": ["wechat-miniprogram", "h5-preview", "gradient-page-background"],
@@ -23,19 +23,20 @@
     "如果 Waffle 最低透明单元没有轮廓，在浅色、深色或全局渐变背景上会看似缺格。",
     "如果新增分段只改变颜色而没有图例和文字，色觉差异用户无法理解增量。"
   ],
-  "expected": "AreaChart 使用实体描边与竖向渐隐填充；BarChart 从低透明度渐变到实体终点；Waffle 每个分段使用圆润单元渐变、目标透明度不低于 28% 并保留内轮廓；所有含义同时由文字表达。",
+  "expected": "AreaChart 使用实体描边与竖向渐隐填充；BarChart 使用同义透明填充并保留实体数据端边界；Waffle 每个分段使用圆润单元渐变、目标透明度不低于 28% 并保留内轮廓；所有含义同时由文字表达。",
   "actual": "修复前没有图表 Token 或组件，透明渐变的方向、最低值、轮廓和跨主题语义均未定义。",
   "evidence": [
     {"kind": "file", "ref": "common/style/theme.wxss", "note": "新增 light/dark Chart accent、gradient、track、outline 和 cell radius Token。"},
     {"kind": "file", "ref": "area-chart/area-chart.js", "note": "Canvas 读取继承后的 Chart Token，绘制实体描边与竖向渐隐填充。"},
-    {"kind": "file", "ref": "bar-chart/bar-chart.wxss", "note": "条形使用语义渐变并在终点保持实体强调色。"},
+    {"kind": "file", "ref": "bar-chart/bar-chart.wxss", "note": "2026-07-29 进一步改为 AreaChart 式透明填充，并用实体 accent inset 线标明数据终点。"},
     {"kind": "file", "ref": "waffle/waffle.js", "note": "每个 segment 独立从 1 衰减到 0.28。"},
     {"kind": "file", "ref": "waffle/waffle.wxss", "note": "最低透明单元保留 inset outline；rounded/circle/square 形状边界分离。"},
-    {"kind": "test", "ref": "scripts/test-waffle.js", "note": "锁定 1→0.28 与新 segment 重启到 1。"}
+    {"kind": "test", "ref": "scripts/test-waffle.js", "note": "锁定 1→0.28 与新 segment 重启到 1。"},
+    {"kind": "test", "ref": "scripts/test-bar-chart.js", "note": "锁定六色浅深主题的横纵 0.04→0.42 填充、实体数据端线和零公共 API 变化。"}
   ],
   "rootCause": "“渐变到透明”是视觉方向而不是完整可读性合同；未明确渐变方向、最低透明度、轮廓和文字冗余时，容易把轻盈效果做成信息缺失。",
   "decision": {
-    "outcome": "AreaChart 使用实体强调色描边与 0.42→0.04 竖向填充；BarChart 基线端 28%、中段 66%、数值端 100%；Waffle 每格使用实体到半透明单元渐变，目标 opacity 每段从 1 到 0.28 且保留语义轮廓。H5 与小程序使用同名 Token。",
+    "outcome": "AreaChart 使用实体强调色描边与 0.42→0.04 竖向填充；BarChart 后续按 PUI-FB-0514 收敛为基线端 0.04、数据端 0.42 的透明填充，并以实体 accent inset 线锁定数据终点；Waffle 每格从 1 衰减到 0.28 且保留语义轮廓。H5 最终仍需同步同名 Token。",
     "rationale": "既保留用户要求的透明渐变和圆润感，又让条形长度、点阵格数和新增含义在两种主题及渐变背景上可读。",
     "alternativesRejected": [
       "在数值终点变透明：弱化最重要的长度边界。",
@@ -49,19 +50,19 @@
   },
   "verification": {
     "tests": ["scripts/test-bar-chart.js", "scripts/test-waffle.js"],
-    "commands": ["node scripts/test-bar-chart.js", "node scripts/test-waffle.js", "npm run site:build", "npm run check"],
+    "commands": ["node scripts/test-bar-chart.js：2026-07-29 新透明填充专项通过", "node scripts/test-waffle.js", "历史 npm run site:build", "历史 npm run check"],
     "browser": [
       "390×844 浅色与深色组合中，Waffle 真实单元计算 opacity 范围为 1→0.28，低透明单元保留 1px inset outline。",
       "大圆角开启后 rounded 单元计算 border-radius 为 6px；根仍透明且无 Surface 效果。",
       "关闭 showValue 后逐项数值退出，但超限场景仍显示“1 格 = 7”，aria-label 同时保留“每格代表 7”。",
-      "BarChart 浅色/深色预览均保持共享零基线、文字图例和无横向溢出。"
+      "旧 BarChart 浅色/深色预览证据只证明共享零基线、文字图例和无横向溢出；2026-07-29 新透明填充的小程序运行态由 PUI-FB-0514 重新验收。"
     ],
     "deviceRisks": ["不同 iPhone/Android 屏幕的最低透明度、弱视可读性和大字体标签换行仍需真机复核。"]
   },
   "ai": {
     "summary": "渐变透明不能让数据终点或点阵单元消失；图形语义必须有文字冗余。",
     "rules": [
-      "BarChart 的实体端必须位于数值终点，不得把终点渐变为透明。",
+      "BarChart 使用 AreaChart 式低透明填充，但必须以实体 accent 终点线标明真实长度；不得让整条高饱和，也不得让数据端边界消失。",
       "Waffle 的最低 opacity 不低于 0.28，并保留 chart fade outline。",
       "每个 segment 独立重启透明度梯度；新增量同时显示 label/legend/value。",
       "不得给图表根添加阴影、毛玻璃、边框或等距 Surface。"

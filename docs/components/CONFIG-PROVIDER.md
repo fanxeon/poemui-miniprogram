@@ -11,7 +11,7 @@ Props、事件、Store 方法的完整清单以 `docs/COMPONENT_API.md` 为准�
 - ConfigProvider 是页面或局部组件树的视觉 Token 边界，负责主题、中性边框、阴影、毛玻璃、语义圆角和独立 Surface 的等距模式。
 - 单页局部配置直接传 Props；跨页面统一配置使用 npm 入口的 `visualConfig` Store，并在每个页面根挂载一次 `use-global-config` Provider。
 - `visualConfig` 的首次和重置默认值为 light、阴影开启、大圆角开启、边框关闭、毛玻璃关闭、等距关闭；已有本地存储是用户偏好，恢复时不得被新的默认值静默覆盖。
-- 小程序没有覆盖全部 Page 的 App 级 WXML 根，`App.onLaunch` 只能恢复 Store，不能替代每页 Provider。
+- 小程序没有覆盖全部 Page 的 App 级 WXML 根；`App.onLaunch` 可以恢复 Store，并由消费者按产品决定同步系统主题，但仍不能替代每页 Provider。
 - 渐变属于页面画布，不进入 ConfigProvider、Store 或组件 Surface。
 
 ## 2. 固定结构与区域
@@ -59,6 +59,7 @@ view.pui-config-provider + theme/effect classes
 - `themechange` 仅在解析后的实际主题于 `light/dark` 之间变化时触发；只切换阴影、毛玻璃、圆角或边框不得重复触发。
 - 事件 detail 固定包含 `theme/source/frostedGlass/shadow/largeRadius/bordered/equalSpacing/effectsEnabled/global`。
 - `theme=auto` 监听 `wx.onThemeChange`，detached 时必须取消系统监听和 Store 订阅。
+- 需要“每次进入都跟随系统”的消费者必须在 `app.json` 启用 `darkmode` 并提供 `themeLocation`，在 `App.onLaunch`、`App.onShow` 与 `App.onThemeChange` 读取 `common/utils/theme#getSystemTheme()` 或事件中的合法 `light/dark`，再写入唯一 `visualConfig` Store。系统派生写入应使用 `persist:false`，避免把运行时系统状态静默覆盖为用户持久偏好；所有外观菜单只订阅同一个 Store，禁止维护第二份深浅色状态。PoemUI 示例小程序以 `miniprogram/app.js` 为参考实现。
 
 ## 8. 可访问性
 
@@ -99,7 +100,7 @@ view.pui-config-provider + theme/effect classes
 1. 同步审计 `config-provider/`、`common/utils/visual-config.js`、主题 Token、metadata、H5、API、README、示例、dist、安装产物和 Ledger。
 2. 更新 `scripts/test-config-provider.js`，运行 `npm run site:build`、`npm run check` 与 `npm run pack:check`。
 3. 浏览器验证 local/global 优先级、事件说明、基础复制代码、390px、深浅色和六项视觉边界。
-4. 真机继续验证多 Page 同时订阅、storage 异常、auto 系统主题回调和 WXSS 样式隔离。
+4. 真机继续验证多 Page 同时订阅、storage 异常、启动/回前台/系统切换三条主题同步链、auto 系统主题回调和 WXSS 样式隔离。
 
 任何不能满足本文的实现必须在 Feedback Ledger 中说明原因，不得静默绕过。
 

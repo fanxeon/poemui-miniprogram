@@ -14,6 +14,7 @@ var appJson = JSON.parse(read('miniprogram/app.json'));
 var navigation = require(path.join(root, 'miniprogram/common/utils/tabbar-navigation'));
 var catalog = require(path.join(root, 'miniprogram/common/data/style-utilities-catalog'));
 var visualConfig = { restore: function () {}, reset: function () {} };
+var platformInfo = { getWindowInfo: function () { return { windowWidth: 375, windowHeight: 844 }; } };
 var backgroundPreference = { get: function () { return false; }, restore: function () {}, set: function () {}, subscribe: function () { return function () {}; } };
 var utilities = read('common/style/utilities.wxss');
 var names = Array.from(new Set((utilities.match(/\.pui-[a-z0-9_-]+/g) || []).map(function (token) { return token.slice(1); }))).sort();
@@ -92,6 +93,8 @@ assert.ok(previewResetButton && previewResetButton[0].indexOf('theme="default"')
 });
 assert.ok(wxss.indexOf('--pui-style-utilities-directory-bottom-clearance') !== -1 && wxss.indexOf('padding-bottom: var(--pui-style-utilities-directory-bottom-clearance);') !== -1, '目录末行必须预留渐变遮罩和面板底部共同需要的安全空间');
 assert.ok(js.indexOf('measurePreviewLayout') !== -1 && js.indexOf('utilityScrollHeight') !== -1 && js.indexOf('PREVIEW_MAX_HEIGHT_RPX = 120') !== -1 && js.indexOf('PREVIEW_GAP_RPX = 8') !== -1 && js.indexOf('UTILITY_MIN_VIEWPORT_RPX = 520') !== -1, '预览必须收敛到120rpx当前效果条，以8rpx关联间距衔接目录并保留520rpx目录预算');
+assert.ok(js.indexOf("require('poemui-miniprogram/common/utils/platform-info')") !== -1, '快速样式页 rpx 换算必须复用发布包平台读取器');
+assert.ok(js.indexOf('getSystemInfoSync') === -1, '快速样式页不得恢复已弃用的聚合系统信息 API');
 assert.ok(js.indexOf('onResetPreview') !== -1 && js.indexOf("var prefix = groupKey + ':';") !== -1, '恢复动作必须只清空当前分类，不能重置其他分类');
 assert.ok(js.indexOf("query.select('#styles-preview-layer')") === -1, '固定语义预览不得再依赖预览 DOM 回测制造布局抖动');
 assert.ok(js.indexOf('activeGroupMeta') === -1 && js.indexOf('selectedUtility') === -1, '移除标题区后不得保留无消费的分类元数据或已选 class 状态');
@@ -130,6 +133,7 @@ vm.runInNewContext(js, {
     if (request === '../../common/utils/tabbar-navigation') return navigation;
     if (request === '../../common/data/style-utilities-catalog') return catalog;
     if (request === 'poemui-miniprogram/common/utils/visual-config') return visualConfig;
+    if (request === 'poemui-miniprogram/common/utils/platform-info') return platformInfo;
     if (request === '../../common/utils/page-background-preference') return backgroundPreference;
     throw new Error('unexpected require ' + request);
   }

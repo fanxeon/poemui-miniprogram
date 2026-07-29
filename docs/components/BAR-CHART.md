@@ -34,7 +34,7 @@ BarChart 用共享零基线比较分类数值与分段增量。它是透明的�
 - 横向、纵向和所有分类共享同一零基线与最大值，禁止逐项独立放大。
 - `stacked` 的上限按分类总和推导；`grouped` 按单段最大值推导。
 - `showGrid=true` 时，横向布局在同一比例轨下方显示 `0` 与共享上限两个端点；`0` 必须是真实比例起点，不能以页面文案或私有坐标轴伪造。纵向布局继续以同一底边零基线和水平参考线表达比例，不额外挤压分类标签。
-- 条形沿数值方向从 28% 透明度向实体色过渡，数值终点保持实体色；横向与纵向使用同义的 90deg/0deg Token。
+- 条形沿数值方向使用与 AreaChart 填充同义的低透明渐变：零基线端为 `0.04`，数据端为 `0.42`；数据端再用 `2rpx` 实体 `--pui-chart-accent` 内描边锁定真实长度。横向与纵向分别使用 90deg/0deg Token 和右侧/顶部终点线，不能靠高饱和实体渐变制造重量。
 - 单序列默认统一 Blue；多段数据才使用 Blue、Teal、Violet。浅深色都读取既有 Chart Token，不新增页面私有色值。多段增量的首段默认 Blue、第二段默认 Teal，调用方仍可通过合法 `theme` 覆盖。
 - `showGrid` 的参考线必须读取专用 `--pui-chart-grid-line`，其对比度低于 Waffle 单元格使用的 `--pui-chart-fade-outline`；弱化网格不能联动削弱 Waffle 描边。
 - `small/medium/large` 为 16/24/32rpx；形状保持胶囊。
@@ -51,13 +51,15 @@ BarChart 为 `display-leaf`：`shadow=none / frostedGlass=false / largeRadius=fa
 
 H5 使用同名 Props、单序列 Blue / 多段 Blue-Teal-Violet 默认分配、共享零基线、可见 `0 → max` 端点、同名 `--pui-chart-grid-line`、默认级联入场、`replay()` 与同一 500ms/1ms 动效语义，并进入标准 PreviewDevice `shadow-safe` 布局。概览不得使用静态图片或 Canvas 假图。API/属性/WXML 由 metadata 同源生成。
 
+0.1.2 小程序逐组件阶段已经在 `common/style/theme.wxss` 与 `bar-chart/bar-chart.wxss` 落地 `0.04 → 0.42 + 实体终点线`。H5 最终汇总必须同步 `preview/styles.css` 中 light/dark 六组横向/纵向 `--pui-chart-gradient-*`，并给 `.pui-bar-chart-preview__segment` 增加同义方向的 inset 终点线；`preview/app.js` 的主题映射、横纵实例与显式版本色不应改变。同步测试必须锁定六色、两方向、浅深色、透明根、无外投影、390px 图例和值可读；在完成前不得把 H5 标为已同步。
+
 小程序的 `grouped` 分支必须使用不生成实体节点的 `<block wx:else>` 包住 segment 循环；禁止把 `wx:else` 与 `wx:for` 放在同一个节点上。该约束只收紧微信 WXML 编译兼容性，不增加布局节点，也不改变 H5 的 DOM 几何与视觉结果。
 
 独立页与 H5 概览必须以页面拥有的两组数据演示更新：初始态和高波动态保持相同分类/segment key，但至少包含一组从短条变长条和一组从长条变短条。父级写回 `items` 后调用真实 `replay()`；旧的“高级 +1”不具备可辨识幅度，禁止恢复。数据切换不是公开 Prop，不进入复制 WXML。
 
 ## 7. 验收
 
-专项测试必须覆盖：非法/零值、重复 key、显式主题优先、单序列统一 Blue、多段 Blue/Teal/Violet、专用低对比网格 Token、显式/自动 max、stacked/grouped、横纵方向、`showGrid` 的真实 `0 → max` 端点、尺寸、空数据、图例、可访问摘要、默认动画/关闭/`replay()`/500ms/1ms、零 Events/Slots、透明 Surface 资格、WXML 条件循环兼容门禁、小程序/H5/发布产物一致性。微信真机未实测时保持 `pending-device`。
+专项测试必须覆盖：非法/零值、重复 key、显式主题优先、单序列统一 Blue、多段 Blue/Teal/Violet、六色浅深主题的 `0.04 → 0.42` 横纵渐变与实体终点线、专用低对比网格 Token、显式/自动 max、stacked/grouped、横纵方向、`showGrid` 的真实 `0 → max` 端点、尺寸、空数据、图例、可访问摘要、默认动画/关闭/`replay()`/500ms/1ms、零 Events/Slots、透明 Surface 资格、WXML 条件循环兼容门禁、小程序/H5/发布产物一致性。微信真机未实测时保持 `pending-device`。
 
 ## 8. 明确禁止
 
@@ -69,6 +71,6 @@ H5 使用同名 Props、单序列 Blue / 多段 Blue-Teal-Violet 默认分配、
 
 ## 9. 修改闭环
 
-修改前运行 `npm run feedback:list -- --component bar-chart` 并阅读原始记录；实现后同步小程序、H5、metadata、合同、Ledger、专项测试、`miniprogram_dist` 与示例安装，依次运行 `npm run feedback:generate`、`npm run feedback:check`、`npm run site:build`、`npm run check`、`npm run pack:check` 和 `npm run example:install`。真机未验不得标记为真机通过。
+修改前运行 `npm run feedback:list -- --component bar-chart` 并阅读原始记录。0.1.2 逐组件阶段先同步小程序共享源码、消费者页面、合同、Ledger 与专项测试，并记录 H5 精确待同步位置；`preview/app.js`、`preview/styles.css`、完整 H5/全库/打包/发布门禁在全部小程序 Battle 后统一执行。真机未验不得标记为真机通过。
 
 `replay()` 必须先提交 `entered=false`，再跨帧提交 `entered=true`；连续点击需要清理旧 Timer / RAF。H5 额外使用无 transition 的 `is-replay-reset` 提交真实零基线帧，不能被同一渲染批次或反向过渡吞掉。

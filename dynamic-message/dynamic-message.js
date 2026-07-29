@@ -1,4 +1,5 @@
 var themeBehavior = require('../common/behaviors/theme');
+var platformInfo = require('../common/utils/platform-info');
 
 var THEMES = ['loading', 'info', 'success', 'warning', 'error'];
 var THEME_ICONS = {
@@ -136,7 +137,7 @@ Component({
       var top = 12;
       if (this.data.safeArea && typeof wx !== 'undefined') {
         try {
-          var windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+          var windowInfo = platformInfo.getWindowInfo();
           top = Number(windowInfo.statusBarHeight) || top;
           if (wx.getMenuButtonBoundingClientRect) {
             var menu = wx.getMenuButtonBoundingClientRect();

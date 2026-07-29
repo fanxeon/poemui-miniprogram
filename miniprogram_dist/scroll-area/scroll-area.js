@@ -2,11 +2,17 @@ var themeBehavior = require('../common/behaviors/theme');
 
 function normalizeHeight(value) {
   var raw = String(value === undefined || value === null ? '' : value).trim();
+  if (raw.toLowerCase() === 'auto') return 'auto';
   var unitless = raw.match(/^(\d+(?:\.\d+)?)$/);
   if (unitless && Number(unitless[1]) > 0) return Math.max(1, Math.round(Number(unitless[1]))) + 'rpx';
   var dimension = raw.match(/^(\d+(?:\.\d+)?)(rpx|px|vh)$/);
   if (dimension && Number(dimension[1]) > 0) return raw;
   return '320rpx';
+}
+
+function normalizeMaxHeight(value) {
+  var normalized = normalizeHeight(value);
+  return normalized === 'auto' ? '320rpx' : normalized;
 }
 
 function normalizeTarget(value) {
@@ -45,6 +51,7 @@ Component({
   options: { multipleSlots: true, styleIsolation: 'shared' },
   properties: {
     height: { type: String, value: '320rpx' },
+    maxHeight: { type: String, value: '320rpx' },
     scrollTop: { type: Number, value: 0 },
     scrollIntoView: { type: String, value: '' },
     gradientOverlay: { type: Boolean, value: true },
@@ -67,7 +74,7 @@ Component({
     gradientOverlayStyle: ''
   },
   observers: {
-    'height,scrollIntoView,gradientOverlay,gradientOverlayColor,gradientOverlaySize,contentPaddingBottom,ariaLabel,colorScheme': function syncScrollArea() { this.syncState(); },
+    'height,maxHeight,scrollIntoView,gradientOverlay,gradientOverlayColor,gradientOverlaySize,contentPaddingBottom,ariaLabel,colorScheme': function syncScrollArea() { this.syncState(); },
     scrollTop: function syncControlledScrollTop() { this.syncControlledScrollTop(); }
   },
   lifetimes: {
@@ -78,10 +85,14 @@ Component({
   methods: {
     syncState: function syncState() {
       var enabled = this.data.gradientOverlay !== false;
+      var normalizedHeight = normalizeHeight(this.data.height);
+      var adaptive = normalizedHeight === 'auto';
       this.setData({
         rootClass: ['pui-scroll-area', this.getColorSchemeClass()].filter(Boolean).join(' '),
-        rootStyle: 'height:' + normalizeHeight(this.data.height) + ';',
-        viewportStyle: 'height:100%;',
+        rootStyle: adaptive
+          ? 'height:auto;max-height:' + normalizeMaxHeight(this.data.maxHeight) + ';'
+          : 'height:' + normalizedHeight + ';',
+        viewportStyle: adaptive ? 'height:auto;max-height:inherit;' : 'height:100%;',
         contentStyle: 'padding-bottom:' + normalizeContentPaddingBottom(this.data.contentPaddingBottom) + ';',
         semanticLabel: (this.data.ariaLabel || '滚动内容').trim() || '滚动内容',
         targetScrollTop: normalizeScrollTop(this.data.scrollTop),

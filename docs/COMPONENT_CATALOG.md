@@ -13,7 +13,7 @@
 | Aspect Ratio | done | `poemui-miniprogram/aspect-ratio/aspect-ratio` | `ratio`、`bordered`、`radius`、`background`、`overflow`、`duration`、`easing`、`reduceMotion` |
 | Direction 方向容器 | done | `poemui-miniprogram/direction/direction` | `direction`、`language`、`fallbackDirection`、`textAlign`、`display`、`content`、`useSlot`、`selectable`、`ariaLabel`、`duration`、`easing`、`reduceMotion`、`customClass`、`customStyle` |
 | Grid 宫格 | done | `poemui-miniprogram/grid/grid` | `items`、`column`、`gutter`、`border`、`align`、`disabled`、`loading`、`error`、`loadingText`、`errorText`、`emptyText`、`retryText`、`ariaLabel`、`reduceMotion` |
-| Scroll Area | done | `poemui-miniprogram/scroll-area/scroll-area` | `height`、`scrollTop`、`scrollIntoView`、`gradientOverlay`、`gradientOverlayColor`、`gradientOverlaySize`、`contentPaddingBottom`、`ariaLabel` |
+| Scroll Area | done | `poemui-miniprogram/scroll-area/scroll-area` | `height`、`maxHeight`、`scrollTop`、`scrollIntoView`、`gradientOverlay`、`gradientOverlayColor`、`gradientOverlaySize`、`contentPaddingBottom`、`ariaLabel` |
 | Sticky 粘性布局 | done | `poemui-miniprogram/sticky/sticky` | `container`、`disabled`、`offsetTop`、`zIndex` |
 | BackTop 回到顶部 | done | `poemui-miniprogram/back-top/back-top` | `fixed`、`icon`、`scrollTop`、`text`、`theme`、`visibilityHeight`、`ariaLabel`、`reduceMotion` |
 | Breadcrumb | done | `poemui-miniprogram/breadcrumb/breadcrumb` | `items`、`value`、`defaultValue`、`current`、`separator`、`separatorIcon`、`showIcon`、`size`、`wrap`、`maxLabelLength`、`currentClickable`、`customPrefix`、`customSuffix`、`disabled`、`loading`、`loadingText`、`error`、`errorText`、`retryText`、`emptyText`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
