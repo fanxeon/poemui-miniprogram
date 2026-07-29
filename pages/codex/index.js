@@ -2,10 +2,8 @@ var tabbarNavigation = require('../../common/utils/tabbar-navigation');
 var backgroundPreference = require('../../common/utils/page-background-preference');
 var codexPage = require('../../common/services/codex-page');
 var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
-
-function getWindowHeight() {
-  return wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
-}
+var tabbarPageLayout = require('poemui-miniprogram/common/utils/tabbar-page-layout');
+var INITIAL_TABBAR_PAGE_LAYOUT = tabbarPageLayout.getLayout();
 
 Page({
   data: {
@@ -24,8 +22,8 @@ Page({
     },
     appearancePopupVisible: false,
     backgroundGradientEnabled: backgroundPreference.get(),
-    contentHeight: '1px',
-    layoutReady: false
+    contentHeight: INITIAL_TABBAR_PAGE_LAYOUT.contentHeightStyle,
+    layoutReady: true
   },
 
   onLoad: function onLoad() {
@@ -40,44 +38,27 @@ Page({
   },
 
   onShow: function onShow() {
-    this.scheduleMeasureLayout();
-  },
-
-  onReady: function onReady() {
-    this.scheduleMeasureLayout();
+    this.syncPageLayout();
   },
 
   onUnload: function onUnload() {
     this._codePageRequestId = (this._codePageRequestId || 0) + 1;
-    clearTimeout(this._measureTimer);
     if (this._unsubscribeBackgroundPreference) this._unsubscribeBackgroundPreference();
     if (wx.offWindowResize && this._windowResizeHandler) wx.offWindowResize(this._windowResizeHandler);
   },
 
   onWindowResize: function onWindowResize() {
-    this.scheduleMeasureLayout();
+    this.syncPageLayout();
   },
 
-  scheduleMeasureLayout: function scheduleMeasureLayout() {
-    clearTimeout(this._measureTimer);
-    this._measureTimer = setTimeout(this.measureLayout.bind(this), 0);
-  },
-
-  measureLayout: function measureLayout() {
-    var windowHeight = getWindowHeight();
-    if (!windowHeight || !this.createSelectorQuery) return;
-    var query = this.createSelectorQuery();
-    query.select('#codex-navbar').boundingClientRect();
-    query.select('#codex-tabbar').boundingClientRect();
-    query.exec(function onMeasured(rects) {
-      var navbarHeight = rects && rects[0] ? Number(rects[0].height) : 0;
-      var tabbarHeight = rects && rects[1] ? Number(rects[1].height) : 0;
-      if (!navbarHeight || !tabbarHeight) return;
-      this.setData({
-        contentHeight: Math.max(1, Math.floor(windowHeight - navbarHeight - tabbarHeight)) + 'px',
-        layoutReady: true
-      });
-    }.bind(this));
+  syncPageLayout: function syncPageLayout() {
+    var contentHeight = tabbarPageLayout.getContentHeight();
+    if (this.data.contentHeight === contentHeight && this.data.layoutReady) return false;
+    this.setData({
+      contentHeight: contentHeight,
+      layoutReady: true
+    });
+    return true;
   },
 
   onTabChange: function onTabChange(event) {

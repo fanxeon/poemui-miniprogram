@@ -6,3 +6,11 @@ page {
   overflow: hidden;
   background: var(--pui-bg-page);
 }
+
+/* ConfigProvider 挂载前先与微信原生 DarkMode 窗口保持同色，避免真机冷启动
+   或 redirectTo 新建页面时由默认 light Token 覆盖 theme.json 的深色首帧。 */
+@media (prefers-color-scheme: dark) {
+  page {
+    background: #09090b;
+  }
+}

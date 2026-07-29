@@ -124,7 +124,7 @@
     </pui-popup>
 
     <view id="styles-tabbar" class="styles-page__tabbar">
-      <pui-tabbar items="{{tabbarItems}}" value="{{activeTab}}" theme="normal" shape="normal" split="{{true}}" fixed="{{false}}" safe-area-inset-bottom="{{true}}" bind:change="onTabChange" />
+      <pui-tabbar items="{{tabbarItems}}" value="{{activeTab}}" theme="normal" shape="normal" split="{{true}}" fixed="{{true}}" placeholder="{{false}}" safe-area-inset-bottom="{{true}}" bind:change="onTabChange" />
     </view>
 
     <pui-back-top fixed="{{true}}" scroll-top="{{scrollTop}}" visibility-height="{{200}}" custom-style="--pui-back-top-bottom-offset:calc(var(--pui-tabbar-content-height) + env(safe-area-inset-bottom) + var(--pui-space-normal));" aria-label="回到顶部" bind:to-top="onBackToTop" />

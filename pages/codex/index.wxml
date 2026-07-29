@@ -181,7 +181,8 @@
         theme="normal"
         shape="normal"
         split="{{true}}"
-        fixed="{{false}}"
+        fixed="{{true}}"
+        placeholder="{{false}}"
         safe-area-inset-bottom="{{true}}"
         bind:change="onTabChange"
       />

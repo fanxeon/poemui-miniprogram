@@ -3,8 +3,10 @@
 var tabbarNavigation = require('../../common/utils/tabbar-navigation');
 var catalog = require('../../common/data/style-utilities-catalog');
 var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
+var tabbarPageLayout = require('poemui-miniprogram/common/utils/tabbar-page-layout');
 var platformInfo = require('poemui-miniprogram/common/utils/platform-info');
 var backgroundPreference = require('../../common/utils/page-background-preference');
+var INITIAL_TABBAR_PAGE_LAYOUT = tabbarPageLayout.getLayout();
 
 var DEFAULT_GROUP = 'layout';
 var SEARCH_OVERLAY_DURATION = 500;
@@ -141,11 +143,11 @@ Page({
     searchResults: filterItems(catalog.items, ''),
     appearancePopupVisible: false,
     backgroundGradientEnabled: backgroundPreference.get(),
-    scrollAreaHeight: '1px',
+    scrollAreaHeight: INITIAL_TABBAR_PAGE_LAYOUT.contentHeightStyle,
     previewHeight: 1,
     utilityScrollTop: 1,
     utilityScrollHeight: '1px',
-    layoutReady: false,
+    layoutReady: true,
     scrollTop: 0
   },
 
@@ -161,47 +163,31 @@ Page({
   },
 
   onShow: function () {
-    this.scheduleMeasureLayout();
-  },
-
-  onReady: function () {
-    this.scheduleMeasureLayout();
+    this.syncPageLayout();
   },
 
   onUnload: function () {
-    clearTimeout(this._measureTimer);
     clearTimeout(this._searchFocusTimer);
     if (this._unsubscribeBackgroundPreference) this._unsubscribeBackgroundPreference();
     if (wx.offWindowResize && this._windowResizeHandler) wx.offWindowResize(this._windowResizeHandler);
   },
 
   onWindowResize: function () {
-    this.scheduleMeasureLayout();
+    this.syncPageLayout();
   },
 
-  scheduleMeasureLayout: function () {
-    clearTimeout(this._measureTimer);
-    this._measureTimer = setTimeout(this.measureLayout.bind(this), 0);
-  },
-
-  measureLayout: function () {
-    var windowHeight = wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
-    if (!windowHeight || !this.createSelectorQuery) return;
-    var query = this.createSelectorQuery();
-    query.select('#styles-navbar').boundingClientRect();
-    query.select('#styles-tabbar').boundingClientRect();
-    query.exec(function (rects) {
-      var navbarHeight = rects && rects[0] ? Number(rects[0].height) : 0;
-      var tabbarHeight = rects && rects[1] ? Number(rects[1].height) : 0;
-      if (!navbarHeight || !tabbarHeight) return;
-      this.setData({
-        scrollAreaHeight: Math.max(1, Math.floor(windowHeight - navbarHeight - tabbarHeight)) + 'px',
-        layoutReady: true
-      }, function () {
-        this._workspaceHeight = Math.max(1, Math.floor(windowHeight - navbarHeight - tabbarHeight));
-        this.measurePreviewLayout();
-      }.bind(this));
-    }.bind(this));
+  syncPageLayout: function () {
+    var scrollAreaHeight = tabbarPageLayout.getContentHeight();
+    this._workspaceHeight = Math.max(1, Math.floor(parseFloat(scrollAreaHeight) || 0));
+    if (this.data.scrollAreaHeight === scrollAreaHeight && this.data.layoutReady) {
+      this.measurePreviewLayout();
+      return false;
+    }
+    this.setData({
+      scrollAreaHeight: scrollAreaHeight,
+      layoutReady: true
+    }, this.measurePreviewLayout.bind(this));
+    return true;
   },
 
   scheduleMeasurePreview: function () {

@@ -148,8 +148,10 @@ var HOME_BRAND_MARK_DARK_URL = '/assets/poemui-moon-lines-mark-dark.png';
 var HOME_BRAND_MARK_LIGHT_URL = '/assets/poemui-moon-lines-mark-light.png';
 var poemuiVersion = require('poemui-miniprogram/version');
 var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
+var tabbarPageLayout = require('poemui-miniprogram/common/utils/tabbar-page-layout');
 var backgroundPreference = require('../../common/utils/page-background-preference');
 var tabbarNavigation = require('../../common/utils/tabbar-navigation');
+var INITIAL_TABBAR_PAGE_LAYOUT = tabbarPageLayout.getLayout();
 
 function currentVisualConfig() {
   return visualConfig.get();
@@ -219,10 +221,6 @@ function randomSearchOptions() {
   return candidates;
 }
 
-function getWindowHeight() {
-  return wx.getWindowInfo ? wx.getWindowInfo().windowHeight : 0;
-}
-
 function getWindowWidth() {
   return wx.getWindowInfo ? wx.getWindowInfo().windowWidth : 0;
 }
@@ -277,8 +275,8 @@ Page({
     fruitFlavorEnabled: isFruitFlavor(currentVisualConfig(), backgroundPreference.get()),
     activeTab: 'home',
     tabbarItems: tabbarNavigation.getItems(),
-    scrollAreaHeight: '1px',
-    layoutReady: false
+    scrollAreaHeight: INITIAL_TABBAR_PAGE_LAYOUT.contentHeightStyle,
+    layoutReady: true
   },
 
   onLoad: function () {
@@ -315,12 +313,8 @@ Page({
         this.scheduleCatalogSectionScroll(restoredCatalogSection);
       }
     }
-    this.scheduleMeasureLayout();
+    this.syncPageLayout();
     this.scheduleOverlayAutoExpand();
-  },
-
-  onReady: function () {
-    this.scheduleMeasureLayout();
   },
 
   onHide: function () {
@@ -334,7 +328,6 @@ Page({
   },
 
   onUnload: function () {
-    clearTimeout(this._measureTimer);
     clearTimeout(this._searchExpandTimer);
     clearTimeout(this._overlayAutoExpandTimer);
     clearTimeout(this._catalogSectionScrollTimer);
@@ -344,12 +337,7 @@ Page({
   },
 
   onWindowResize: function () {
-    this.scheduleMeasureLayout();
-  },
-
-  scheduleMeasureLayout: function () {
-    clearTimeout(this._measureTimer);
-    this._measureTimer = setTimeout(this.measureLayout.bind(this), 0);
+    this.syncPageLayout();
   },
 
   scheduleOverlayAutoExpand: function () {
@@ -390,21 +378,14 @@ Page({
     }.bind(this), Math.max(0, Number(delay) || 0));
   },
 
-  measureLayout: function () {
-    var windowHeight = Number(getWindowHeight());
-    if (!windowHeight || !this.createSelectorQuery) return;
-    var query = this.createSelectorQuery();
-    query.select('#home-navbar').boundingClientRect();
-    query.select('#home-tabbar').boundingClientRect();
-    query.exec(function (rects) {
-      var navbarHeight = rects && rects[0] ? Number(rects[0].height) : 0;
-      var tabbarHeight = rects && rects[1] ? Number(rects[1].height) : 0;
-      if (!navbarHeight || !tabbarHeight) return;
-      this.setData({
-        scrollAreaHeight: Math.max(1, Math.floor(windowHeight - navbarHeight - tabbarHeight)) + 'px',
-        layoutReady: true
-      });
-    }.bind(this));
+  syncPageLayout: function () {
+    var scrollAreaHeight = tabbarPageLayout.getContentHeight();
+    if (this.data.scrollAreaHeight === scrollAreaHeight && this.data.layoutReady) return false;
+    this.setData({
+      scrollAreaHeight: scrollAreaHeight,
+      layoutReady: true
+    });
+    return true;
   },
 
   onOpenSearch: function () {

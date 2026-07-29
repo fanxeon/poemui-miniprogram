@@ -4,6 +4,8 @@ var updateAnnouncements = require('../../common/services/update-announcements');
 var componentStatus = require('../../common/data/component-status');
 var styleUtilitiesCatalog = require('../../common/data/style-utilities-catalog');
 var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
+var tabbarPageLayout = require('poemui-miniprogram/common/utils/tabbar-page-layout');
+var INITIAL_TABBAR_PAGE_LAYOUT = tabbarPageLayout.getLayout();
 
 var SHISHANG_APP_ID = 'wxa1b9a4d6549c6cd1';
 var LICENSE_PAGE_ROUTE = '/pages/license/index';
@@ -221,10 +223,6 @@ function dashboardMetrics() {
   ];
 }
 
-function getWindowHeight() {
-  return wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
-}
-
 var INITIAL_CATEGORY_CHART = dashboardCategoryChart(ANNOUNCEMENTS);
 var INITIAL_VISIBLE_CATEGORY_CHART = visibleCategoryChart(INITIAL_CATEGORY_CHART, false);
 
@@ -257,7 +255,7 @@ Page({
     appearancePopupVisible: false,
     announcementScrollTop: 0,
     announcementScrollTarget: 'me-announcement-top-a',
-    announcementPopupStyle: '',
+    announcementPopupStyle: 'max-height:calc(100vh - ' + INITIAL_TABBAR_PAGE_LAYOUT.navbarHeight + 'px - 24rpx);',
     licenseDialogVisible: false,
     licenseNavigating: false,
     licenseDialogActions: [
@@ -273,8 +271,8 @@ Page({
       }
     ],
     backgroundGradientEnabled: backgroundPreference.get(),
-    contentHeight: '1px',
-    layoutReady: false
+    contentHeight: INITIAL_TABBAR_PAGE_LAYOUT.contentHeightStyle,
+    layoutReady: true
   },
 
   onLoad: function onLoad() {
@@ -290,16 +288,14 @@ Page({
   },
 
   onShow: function onShow() {
-    this.scheduleMeasureLayout();
+    this.syncPageLayout();
   },
 
   onReady: function onReady() {
-    this.scheduleMeasureLayout();
     this.scheduleMeasureComponentStatusChart();
   },
 
   onUnload: function onUnload() {
-    clearTimeout(this._measureTimer);
     clearTimeout(this._componentStatusChartMeasureTimer);
     if (this._unsubscribeBackgroundPreference) this._unsubscribeBackgroundPreference();
     if (wx.offWindowResize && this._windowResizeHandler) wx.offWindowResize(this._windowResizeHandler);
@@ -533,7 +529,7 @@ Page({
   },
 
   onWindowResize: function onWindowResize() {
-    this.scheduleMeasureLayout();
+    this.syncPageLayout();
     this.scheduleMeasureComponentStatusChart();
   },
 
@@ -647,29 +643,23 @@ Page({
     });
   },
 
-  scheduleMeasureLayout: function scheduleMeasureLayout() {
-    clearTimeout(this._measureTimer);
-    this._measureTimer = setTimeout(this.measureLayout.bind(this), 0);
-  },
-
-  measureLayout: function measureLayout() {
-    var windowHeight = getWindowHeight();
-    if (!windowHeight || !this.createSelectorQuery) return;
-    var query = this.createSelectorQuery();
-    query.select('#me-navbar').boundingClientRect();
-    query.select('#me-tabbar').boundingClientRect();
-    query.exec(function onMeasured(rects) {
-      var navbarHeight = rects && rects[0] ? Number(rects[0].height) : 0;
-      var tabbarHeight = rects && rects[1] ? Number(rects[1].height) : 0;
-      if (!navbarHeight || !tabbarHeight) return;
-      this.setData({
-        contentHeight: Math.max(1, Math.floor(windowHeight - navbarHeight - tabbarHeight)) + 'px',
-        announcementPopupStyle: 'max-height:calc(100vh - ' + navbarHeight + 'px - 24rpx);',
-        layoutReady: true
-      }, function layoutCommitted() {
-        this.scheduleMeasureComponentStatusChart();
-      });
-    }.bind(this));
+  syncPageLayout: function syncPageLayout() {
+    var layout = tabbarPageLayout.getLayout();
+    var contentHeight = layout.contentHeightStyle;
+    var announcementPopupStyle = 'max-height:calc(100vh - ' + layout.navbarHeight + 'px - 24rpx);';
+    if (
+      this.data.contentHeight === contentHeight &&
+      this.data.announcementPopupStyle === announcementPopupStyle &&
+      this.data.layoutReady
+    ) {
+      return false;
+    }
+    this.setData({
+      contentHeight: contentHeight,
+      announcementPopupStyle: announcementPopupStyle,
+      layoutReady: true
+    });
+    return true;
   },
 
   onTabChange: function onTabChange(event) {
