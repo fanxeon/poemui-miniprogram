@@ -5,7 +5,9 @@
 - **版本事实**：包版本升级为 `0.1.3`，组件总数仍为 74；`metadata/component-release-deltas.js` 将 `0.1.2=74 → 0.1.3=74` 记录为 0 组件增量，避免把治理与交付工作伪装成新增组件。
 - **Skill 同包**：npm `files` 新增 `skills/poemui-miniprogram`，同时把 Skill 的完整引用、检查脚本和结构纳入包检查与发布门禁。官网快速开始、README、小程序共享云安装页和 GitHub 固定版本目录统一指向 `0.1.3`。
 - **公告与仪表盘**：包内 fallback 新增稳定公告 `pui-v0-1-3-20260729`；Me BarChart 在同日公告下增加语义版本次排序，按 `0.1.0 / 0.1.1 / 0.1.2 / 0.1.3` 展示 Blue/Teal/Violet/Amber 四个里程碑，0.1.3 分段为 0。
-- **验证边界**：本节只在 npm Registry、GitHub Tag、共享云写后回读、H5/落地页生产回读和微信构建各自完成后记录发布证据；构建成功不得替代这些外部验证，iOS/Android 真机仍单列。
+- **npm / GitHub 证据**：`poemui-miniprogram@0.1.3` 已公开发布，Registry shasum 为 `3af715daca26d645cca647436467f65d64708ee0`；干净安装回读 74 个组件、15 个 Skill 文件且无 Tooltip。公共分支 `codex/public-beta-0.1.3` 与 `v0.1.3` 均固定到发布提交，GitHub Release 已发布。
+- **H5 / 落地页证据**：生产 H5 已切换到 `poemui-h5:20260729-0.1.3-001`，落地页已切换到 `poemcoder-web-v2:20260729-poemui-0.1.3-r8`；旧生产容器保留为直接回滚点。公网 H5、健康端点和落地页返回 200，显式 390px 下无横向溢出、console error/warning 为空。
+- **共享云与微信证据**：完整云文档恢复后，运行态安装页为 `ready / installCode=...@0.1.3 / skillVersions=[0.1.3]`，Me 为 `source=cloud / latest=v0.1.3 / 74 个组件 / 4 条重点`；同日公告新增语义版本次排序。独立小程序仓 `main=88a3422`，iOS/Android 真机仍为 `pending-device`。
 
 ## 2026-07-29 · 0.1.2 npm / GitHub / H5 全平台发布
 
