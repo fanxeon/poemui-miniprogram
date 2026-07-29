@@ -90,6 +90,19 @@ docker buildx build \
 在切换前后保持不变。以后发布不得复用这个状态描述代替当次远端只读审计、Canary、
 健康检查和浏览器交互；npm Registry 是否发布必须独立回读，不能由 H5 版本推断。
 
+### 0.1.3 小程序与共享云回读
+
+真实小程序仓库 `main` 已推进到 `88a3422`。本次没有反复重启微信开发者工具：
+使用现有运行实例完成热重载与云数据回读。共享云 `pui_updatelog` 的
+`pui-v0-1-3-20260729` 为完整 `published` Schema v2 文档；`pui-codepage`
+只保留 `0.1.3` Skill 为 published、旧 `0.1.0` 为 archived，安装页仍保留 page
+元数据和完整 Content。运行态 `pages/codex/index` 回读
+`codePageLoadState=ready / installCode=...@0.1.3 / skillVersions=[0.1.3]`；
+`pages/me/index` 回读
+`announcementSource=cloud / latestAnnouncementVersion=v0.1.3 / componentCount=74 / highlights=4`。
+同日公告必须按日期再按语义版本倒序，
+不能只以数据库写成功或静态文档代替页面运行态。iOS/Android 真机仍需独立验收。
+
 ## 发布后验收
 
 1. 在一个干净目录执行 `npm pack`，检查 tarball 中存在 `miniprogram_dist/`，其内包含组件目录、`common/`、`theme/` 和 `assets/`，且不包含 `preview/`、`docs/`、`_example/` 与源码目录。
