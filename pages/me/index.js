@@ -7,6 +7,7 @@ var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
 
 var SHISHANG_APP_ID = 'wxa1b9a4d6549c6cd1';
 var LICENSE_PAGE_ROUTE = '/pages/license/index';
+var LICENSE_URL = 'https://poemcoder.com/poem-ui';
 var CHART_VERSION_THEMES = ['blue', 'teal', 'violet', 'amber', 'pink', 'neutral'];
 var COLLAPSED_CATEGORY_COUNT = 4;
 var HIDDEN_CHART_CATEGORIES = {
@@ -24,6 +25,17 @@ function categoryCountMap(announcement) {
     result[category.key] = Math.max(0, Number(category.count) || 0);
   });
   return result;
+}
+
+function compareVersionLabels(left, right) {
+  var leftParts = String(left || '').replace(/^v/, '').split('.');
+  var rightParts = String(right || '').replace(/^v/, '').split('.');
+  var length = Math.max(leftParts.length, rightParts.length);
+  for (var index = 0; index < length; index += 1) {
+    var difference = (Number(leftParts[index]) || 0) - (Number(rightParts[index]) || 0);
+    if (difference) return difference;
+  }
+  return 0;
 }
 
 function chartItemSummary(item) {
@@ -102,7 +114,8 @@ function dashboardCategoryChart(announcements) {
       && Array.isArray(announcement.categoryCounts)
       && announcement.categoryCounts.length;
   }).slice().sort(function oldestFirst(left, right) {
-    return String(left.date || '').localeCompare(String(right.date || ''));
+    var dateOrder = String(left.date || '').localeCompare(String(right.date || ''));
+    return dateOrder || compareVersionLabels(left.version, right.version);
   });
   var current = versions[versions.length - 1];
   var baseline = versions[0];
@@ -247,15 +260,18 @@ Page({
     announcementPopupStyle: '',
     licenseDialogVisible: false,
     licenseNavigating: false,
-    licenseDialogCancelBtn: {
-      content: '取消',
-      ariaLabel: '取消打开商业授权详情'
-    },
-    licenseDialogConfirmBtn: {
-      content: '前往查看',
-      theme: 'primary',
-      ariaLabel: '前往 PoemUI 商业授权详情'
-    },
+    licenseDialogActions: [
+      {
+        content: '复制链接',
+        variant: 'outline',
+        ariaLabel: '复制 PoemUI 商业授权链接'
+      },
+      {
+        content: '直接访问',
+        theme: 'primary',
+        ariaLabel: '通过小程序 WebView 访问商业授权页面'
+      }
+    ],
     backgroundGradientEnabled: backgroundPreference.get(),
     contentHeight: '1px',
     layoutReady: false
@@ -289,9 +305,10 @@ Page({
     if (wx.offWindowResize && this._windowResizeHandler) wx.offWindowResize(this._windowResizeHandler);
   },
 
-  onPurchaseLicense: function onPurchaseLicense() {
+  onOpenLicense: function onOpenLicense() {
     this.setData({
       appearancePopupVisible: false,
+      announcementPopupVisible: false,
       licenseDialogVisible: true
     });
     return true;
@@ -306,17 +323,52 @@ Page({
   setLicenseNavigating: function setLicenseNavigating(navigating) {
     this.setData({
       licenseNavigating: Boolean(navigating),
-      licenseDialogConfirmBtn: {
-        content: navigating ? '正在打开' : '前往查看',
-        theme: 'primary',
-        loading: Boolean(navigating),
-        disabled: Boolean(navigating),
-        ariaLabel: '前往 PoemUI 商业授权详情'
-      }
+      licenseDialogActions: [
+        {
+          content: '复制链接',
+          variant: 'outline',
+          disabled: Boolean(navigating),
+          ariaLabel: '复制 PoemUI 商业授权链接'
+        },
+        {
+          content: navigating ? '正在打开' : '直接访问',
+          theme: 'primary',
+          loading: Boolean(navigating),
+          disabled: Boolean(navigating),
+          ariaLabel: '通过小程序 WebView 访问商业授权页面'
+        }
+      ]
     });
   },
 
-  onConfirmLicense: function onConfirmLicense() {
+  onLicenseDialogAction: function onLicenseDialogAction(event) {
+    var index = Number(event && event.detail ? event.detail.index : -1);
+    if (index === 0) return this.onCopyLicenseLink();
+    if (index === 1) return this.onVisitLicenseWebView();
+    return false;
+  },
+
+  onCopyLicenseLink: function onCopyLicenseLink() {
+    var self = this;
+    if (this.data.licenseNavigating) return false;
+    if (typeof wx.setClipboardData !== 'function') {
+      this.showToast('当前微信版本无法复制链接', 'error');
+      return false;
+    }
+    wx.setClipboardData({
+      data: LICENSE_URL,
+      success: function success() {
+        self.setData({ licenseDialogVisible: false });
+        self.showToast('链接已复制，可在桌面端打开', 'success');
+      },
+      fail: function fail() {
+        self.showToast('复制失败，请稍后重试', 'error');
+      }
+    });
+    return true;
+  },
+
+  onVisitLicenseWebView: function onVisitLicenseWebView() {
     var self = this;
     if (this.data.licenseNavigating) return false;
     if (typeof wx.navigateTo !== 'function') {

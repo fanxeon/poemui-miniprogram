@@ -15,9 +15,58 @@ function categoryCounts(usePreviousValue) {
 }
 
 var CURRENT_CATEGORY_COUNTS = categoryCounts(false);
-var PREVIOUS_CATEGORY_COUNTS = categoryCounts(true);
+var V0_1_0_CATEGORY_COUNTS = CURRENT_CATEGORY_COUNTS.map(function mapBaseline(item) {
+  return {
+    key: item.key,
+    label: item.label,
+    count: item.key === 'advanced' ? 5 : item.count
+  };
+});
+function versionTotal(version) {
+  var milestone = componentStatus.versions().filter(function findVersion(item) {
+    return item.version === version;
+  })[0];
+  return milestone ? milestone.total : 0;
+}
 
 var FALLBACK_ANNOUNCEMENTS = [
+  {
+    id: 'pui-v0-1-3-20260729',
+    version: 'v0.1.3',
+    date: '2026-07-29',
+    title: 'PoemUI v0.1.3 更新',
+    summary: '组件与 AI Skill 同包交付，多端版本口径完成统一。',
+    componentCount: componentStatus.total,
+    categoryCounts: CURRENT_CATEGORY_COUNTS,
+    highlights: [
+      {
+        component: 'PoemUI Skill',
+        icon: 'codex',
+        title: '设计语言与质量门禁',
+        description: '沉淀中性画布、语义留白、API 准入、默认态和职责资格。'
+      },
+      {
+        component: 'npm 安装',
+        icon: 'code',
+        title: '组件与 Skill 同包',
+        description: 'npm 包内置完整 Skill，安装版本与 AI 使用合同保持一致。'
+      },
+      {
+        component: '组件治理',
+        icon: 'dashboard',
+        title: '唯一所有权与删除闭环',
+        description: '补齐 Surface、滚动、焦点所有权、状态资格和彻底删除约束。'
+      },
+      {
+        component: '多端发布',
+        icon: 'cloud',
+        title: '0.1.3 口径统一',
+        description: '官网、落地页、小程序安装页与更新公告使用同一固定版本。'
+      }
+    ],
+    status: 'published',
+    schemaVersion: 2
+  },
   {
     id: 'pui-v0-1-2-20260729',
     version: 'v0.1.2',
@@ -67,9 +116,7 @@ var FALLBACK_ANNOUNCEMENTS = [
     date: '2026-07-28',
     title: 'PoemUI v0.1.1 更新',
     summary: '新增高级图表，集中优化组件交互与小程序体验。',
-    componentCount: componentStatus.versions().filter(function findVersion(item) {
-      return item.version === '0.1.1';
-    })[0].total,
+    componentCount: versionTotal('0.1.1'),
     categoryCounts: CURRENT_CATEGORY_COUNTS,
     highlights: [
       {
@@ -112,8 +159,8 @@ var FALLBACK_ANNOUNCEMENTS = [
     date: '2026-07-27',
     title: 'PoemUI v0.1.0 更新',
     summary: '小程序入口、组件体验与快速样式完成一轮系统更新。',
-    componentCount: componentStatus.previousTotal,
-    categoryCounts: PREVIOUS_CATEGORY_COUNTS,
+    componentCount: versionTotal('0.1.0'),
+    categoryCounts: V0_1_0_CATEGORY_COUNTS,
     highlights: [
       {
         component: '我的',

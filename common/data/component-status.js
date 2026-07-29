@@ -2,11 +2,11 @@
 
 var STATUS = {
   "baseline": 0,
-  "currentVersion": "0.1.2",
-  "previousVersion": "0.1.0",
+  "currentVersion": "0.1.3",
+  "previousVersion": "0.1.2",
   "total": 74,
-  "previousTotal": 71,
-  "incrementTotal": 3,
+  "previousTotal": 74,
+  "incrementTotal": 0,
   "maximum": 19,
   "versions": [
     {
@@ -20,6 +20,10 @@ var STATUS = {
     {
       "version": "0.1.2",
       "total": 74
+    },
+    {
+      "version": "0.1.3",
+      "total": 74
     }
   ],
   "items": [
@@ -32,7 +36,7 @@ var STATUS = {
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
+          "label": "v0.1.2 已有",
           "value": 1,
           "theme": "blue"
         }
@@ -47,7 +51,7 @@ var STATUS = {
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
+          "label": "v0.1.2 已有",
           "value": 3,
           "theme": "blue"
         }
@@ -62,7 +66,7 @@ var STATUS = {
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
+          "label": "v0.1.2 已有",
           "value": 5,
           "theme": "blue"
         }
@@ -77,7 +81,7 @@ var STATUS = {
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
+          "label": "v0.1.2 已有",
           "value": 9,
           "theme": "blue"
         }
@@ -92,7 +96,7 @@ var STATUS = {
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
+          "label": "v0.1.2 已有",
           "value": 19,
           "theme": "blue"
         }
@@ -107,7 +111,7 @@ var STATUS = {
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
+          "label": "v0.1.2 已有",
           "value": 14,
           "theme": "blue"
         }
@@ -122,7 +126,7 @@ var STATUS = {
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
+          "label": "v0.1.2 已有",
           "value": 9,
           "theme": "blue"
         }
@@ -137,7 +141,7 @@ var STATUS = {
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
+          "label": "v0.1.2 已有",
           "value": 6,
           "theme": "blue"
         }
@@ -147,20 +151,14 @@ var STATUS = {
       "key": "advanced",
       "label": "高级",
       "value": 8,
-      "previousValue": 5,
-      "increment": 3,
+      "previousValue": 8,
+      "increment": 0,
       "segments": [
         {
           "key": "previous",
-          "label": "v0.1.0 已有",
-          "value": 5,
+          "label": "v0.1.2 已有",
+          "value": 8,
           "theme": "blue"
-        },
-        {
-          "key": "increment",
-          "label": "v0.1.2 新增",
-          "value": 3,
-          "theme": "teal"
         }
       ]
     }

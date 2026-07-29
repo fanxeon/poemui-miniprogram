@@ -148,7 +148,7 @@
                 clickable
                 arrow
                 aria-label="查阅高级版商业授权详情"
-                bind:click="onPurchaseLicense"
+                bind:click="onOpenLicense"
               />
               <pui-cell
                 title="我的订单"
@@ -198,15 +198,14 @@
     <pui-dialog
       id="me-license-dialog"
       visible="{{licenseDialogVisible}}"
-      title="前往商业授权详情？"
-      content="即将打开 PoemUI 官网，查看高级版授权范围、版本权益与最新说明。"
+      title="查看商业授权详情"
+      content="桌面端浏览体验更佳。你可以复制链接在电脑浏览器打开，或直接进入小程序 WebView 查看。"
       close-btn="{{true}}"
       close-on-overlay-click="{{!licenseNavigating}}"
-      cancel-btn="{{licenseDialogCancelBtn}}"
-      confirm-btn="{{licenseDialogConfirmBtn}}"
+      actions="{{licenseDialogActions}}"
       using-custom-navbar
-      aria-label="确认前往 PoemUI 商业授权详情"
-      bind:confirm="onConfirmLicense"
+      aria-label="选择商业授权详情的访问方式"
+      bind:action="onLicenseDialogAction"
       bind:close="onLicenseDialogClose"
     />
 
