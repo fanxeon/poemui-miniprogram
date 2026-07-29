@@ -63,3 +63,19 @@
 1. 同步审计 JS/JSON/WXML/WXSS、H5、API、示例、metadata 与 `miniprogram_dist`。
 2. 运行 `node scripts/test-bubble.js`、`npm run feedback:generate`、`npm run feedback:check`、构建门禁，并实测 390px/主题/外观。
 3. 更新 Feedback Ledger；合法 AppID 真机仍须验证长按、selector query测量、rpx、Slot、读屏和系统低动效。
+
+## 13. 2026-07-28 展开操作锚点
+
+折叠/展开按钮固定在 Bubble Surface 的右下方：操作轨占满可用宽度，并复用 PUI Button 的 `block` 能力；Text Button 内容必须显式右对齐。小程序自定义组件宿主本身可能占满操作轨，不能只给 Button 内部根设置 `margin-left:auto` 或尝试收缩宿主。不得因内容宽度、主题或毛玻璃回到左侧或中间。
+
+## 14. 2026-07-29 展开高度稳定性
+
+- 默认文本在首次挂载后分别测量完整正文和 `nowrap` 单行探针，以“真实单行高度 × `maxLines`”计算收起端点；不得依赖隐藏 `line-clamp` 节点在微信渲染层返回稳定高度。只要正文、行数、变体和内容模式没有变化，受控或非受控展开都必须复用这组已提交几何，不能回退到 `2400rpx` 估算值后再次测量。
+- 正文、`maxLines`、variant、`collapsible` 或 customContent 模式变化时，旧测量失效；异步返回的旧 key 测量不得覆盖新内容。
+- 非受控展开只允许一次同步状态提交，禁止先单独写 `expandedState`、再执行完整 `syncState` 形成两次渲染。
+- 用户可见的正文裁剪节点必须始终保持同一个 `display:block` 节点，展开与收起只能直接写入已经实测的像素 `max-height`；小程序不得再通过依赖 CSS 自定义属性间接传递当前高度，也不得在点击时同时切换 `display:-webkit-box`、`-webkit-line-clamp` 和高度，否则平台会先按新的行裁剪模型重排，再播放高度动画，形成“先缩起来再展开”。
+- 小程序 Bubble 的隐藏测量节点也不得使用 `-webkit-line-clamp`；完整高度与单行高度必须分别测量。H5 使用真实计算行高和 `scrollHeight` 得出同义端点。
+- `showToggle` 是测量几何的派生结果。几何 key 未变化时，受控父级回写 `expanded` 必须保留已经测得的 toggle 可见性；禁止先重置为 `false` 又因缓存命中跳过测量，造成展开后“收起”入口消失。
+- H5 首次真实测量后必须将 collapsed/expanded 像素值保存到 Bubble runtime；后续展开/收起重渲染直接使用已测值，不得重新从字符数量估算。
+- H5 重建展开态 DOM 时，正文必须先以内联 `max-height` 固定在上一个已提交端点，下一帧再过渡到目标端点；禁止先绘制展开结果、再追加 `from collapsed` 的 keyframe，避免出现“先收起再展开”。
+- 过渡结束后只清理临时内联高度和运动 class；最终收起态仍由精确 `max-height` 接管，不能把可见正文重新交给 line-clamp。

@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0468",
+  "title": "Breadcrumb 默认换行与错误态 Retry 轨道不符合路径阅读",
+  "scope": "component",
+  "components": ["breadcrumb"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "路径默认尽量在一行完整阅读，加载失败时重新加载按钮固定在消息右侧且不与文案错位。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "使用默认 Breadcrumb 渲染较长路径，旧 wrap=true 会优先换行。",
+    "切换 error=true，错误图标、消息和 Retry 共用普通对齐，按钮位置随文案长度漂移。"
+  ],
+  "expected": "默认 wrap=false，在组件内部单行横滚；显式 wrap 才换行。错误态使用图标、消息、Retry 三轨。",
+  "actual": "默认允许换行，错误态没有独立剩余宽度消息轨。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户要求路径尽量单行并修正重新加载按钮位置。"},
+    {"kind": "file", "ref": "breadcrumb/breadcrumb.js", "note": "wrap 默认值改为 false。"},
+    {"kind": "file", "ref": "breadcrumb/breadcrumb.wxml", "note": "状态消息获得独立语义 class。"},
+    {"kind": "file", "ref": "breadcrumb/breadcrumb.wxss", "note": "错误态显式 display:grid 并使用 auto/minmax/auto 三轨；DevTools 实测发现仅声明 grid-template 时旧 flex 规则不会生效。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/breadcrumb/index.js", "note": "独立页收到 retry 后真实控制 error → loading → content，不让正在重新加载永久停留。"},
+    {"kind": "test", "ref": "scripts/test-breadcrumb.js", "note": "专项覆盖默认单行与错误态跨端布局。"}
+  ],
+  "rootCause": "旧默认值把可选的多行模式当成主路径，同时错误态复用一般状态 Flex；首次修缮只声明 grid-template-columns 却未覆盖 display:flex，导致小程序端三轨仍不生效。",
+  "decision": {
+    "outcome": "wrap 默认 false；错误态采用三轨 Grid，消息允许内部换行，Retry 固定在尾轨。",
+    "rationale": "路径阅读优先保持连续，恢复操作则应稳定可见。",
+    "alternativesRejected": ["只缩小路径字号会降低可读性。", "把 Retry 移到页面下方会破坏组件错误恢复闭环。"]
+  },
+  "impact": {
+    "files": ["breadcrumb/breadcrumb.js", "breadcrumb/breadcrumb.wxml", "breadcrumb/breadcrumb.wxss", "miniprogram/pages/components/breadcrumb/index.js", "miniprogram/pages/components/breadcrumb/index.wxml", "preview/app.js", "preview/styles.css", "scripts/test-breadcrumb.js", "scripts/test-miniprogram-navigation-pages.js", "docs/components/BREADCRUMB.md", "feedback/records/pui-fb-0468-breadcrumb-single-line-retry-layout.json"],
+    "dependencies": ["PUI Button", "PUI Icon", "ScrollView"]
+  },
+  "verification": {
+    "tests": ["scripts/test-breadcrumb.js", "scripts/test-miniprogram-navigation-pages.js"],
+    "commands": ["node scripts/test-breadcrumb.js：通过", "node scripts/test-miniprogram-navigation-pages.js：通过", "npm run example:install：通过", "微信 DevTools CLI build-npm：cost=1146ms，warnings=[]"],
+    "browser": [
+      "H5 390px：默认与长路径均为 is-nowrap，长路径只在内部滚动且 document 375/375；error 三轨计算为 20px 148px 63px，Retry 位于尾轨，点击后只发布 retry、不由组件伪造成功，console=[]。",
+      "微信开发者工具 iPhone 12/13 Pro 390x844：默认路径保持单行，错误态 display:grid 后“路径加载失败 / 重新加载路径”左右分轨；真实点击后页面依次输出 error → 路径加载中 → 路径已重新加载，最终 error=false、loading=false。"
+    ],
+    "deviceRisks": ["微信真机字体回流、内部横滚手势与读屏顺序仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Breadcrumb 默认单行，错误态把 Retry 放入稳定尾轨。",
+    "rules": ["wrap 是显式多行能力，不应作为默认。", "状态消息和 Retry 必须分轨，不靠文字长度定位。"],
+    "tags": ["breadcrumb", "nowrap", "retry", "layout", "h5-parity"]
+  }
+}

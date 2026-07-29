@@ -6,7 +6,7 @@
   aria-expanded="{{currentPosition ? true : false}}"
   aria-disabled="{{disabled}}"
 >
-  <view class="pui-swipe-cell__actions pui-swipe-cell__actions--left" aria-hidden="{{currentPosition !== 'left'}}">
+  <view class="pui-swipe-cell__actions pui-swipe-cell__actions--left {{actionPosition === 'left' ? 'pui-swipe-cell__actions--visible' : ''}}" aria-hidden="{{actionPosition !== 'left'}}">
     <slot name="left"></slot>
     <view wx:for="{{leftItems}}" wx:key="_key" class="pui-swipe-cell__action-wrap {{item.themeClass}} {{item.className}}" style="width:{{item.width}}rpx;{{item.style}}">
       <pui-button
@@ -26,7 +26,7 @@
       />
     </view>
   </view>
-  <view class="pui-swipe-cell__actions pui-swipe-cell__actions--right" aria-hidden="{{currentPosition !== 'right'}}">
+  <view class="pui-swipe-cell__actions pui-swipe-cell__actions--right {{actionPosition === 'right' ? 'pui-swipe-cell__actions--visible' : ''}}" aria-hidden="{{actionPosition !== 'right'}}">
     <slot name="right"></slot>
     <view wx:for="{{rightItems}}" wx:key="_key" class="pui-swipe-cell__action-wrap {{item.themeClass}} {{item.className}}" style="width:{{item.width}}rpx;{{item.style}}">
       <pui-button

@@ -1,0 +1,95 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0486",
+  "title": "首页手动打开目录分区后标题没有进入顶部阅读位置",
+  "scope": "component",
+  "components": ["miniprogram-home", "collapsible", "scroll-area"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "点击首页任一目录分区时，让页面在展开后滚动，使该分区标题处于 Navbar 下方相对靠上的阅读位置。",
+  "environment": {
+    "surfaces": ["miniprogram home"],
+    "platforms": ["wechat-miniprogram"],
+    "viewports": ["390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入小程序首页。",
+    "点击任一目录分区标题。",
+    "旧实现只更新互斥展开状态，ScrollArea 不会主动定位到该分区标题。"
+  ],
+  "expected": "打开任一合法目录分区后，首页复用唯一 ScrollArea 和稳定分区 id，将该分区标题平滑定位到内容视口相对靠上的位置，并在上方保留 48rpx 阅读留白；定位必须等待同一开合动效时长完成，关闭和返回栈恢复不能被锚点抢占。",
+  "actual": "onCatalogSectionChange 只持久化并更新 activeCatalogSection，没有调用已有的 scheduleCatalogSectionScroll。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.js",
+      "note": "手动打开分区后等待显式的同源 500ms 动效，实测视口与锚点矩形，按真实窗口宽度换算 48rpx 顶部留白并回写受控 scrollTop；关闭时取消并清空定位。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.wxml",
+      "note": "唯一 pui-scroll-area 消费 homeScrollIntoView，每个分区在 Slot 内的普通 view 上保留稳定 home-section-* id。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-home.js",
+      "note": "锁定打开后的锚点写入、关闭取消和返回栈 scrollTop 优先级。"
+    },
+    {
+      "kind": "browser",
+      "ref": "微信开发者工具 Nightly 2.02.2607272 / AppID wx23aa017375535746",
+      "note": "真实点击证明跨组件 Slot scrollIntoView 与页面 after-open 方案均未完成定位，因此最终改为同源 500ms 后实测矩形并回写 scrollTop。"
+    }
+  ],
+  "rootCause": "首页手动 Collapsible change 没有接入已有定位函数；同时稳定 id 只挂在 pui-collapsible 自定义组件宿主上，内部原生 scroll-view 无法可靠解析该目标。",
+  "decision": {
+    "outcome": "页面受控写回打开分区后等待显式传给 Collapsible 的同一 500ms 动效时长；把稳定 id 移到普通 view，实测视口和目标矩形后，按真实窗口宽度将 PUI space-step-24 的 48rpx 换算为 px，再回写 ScrollArea scrollTop；关闭时取消未执行任务并清空目标。",
+    "rationale": "ScrollArea 内部原生 scroll-view 无法可靠跨自定义组件 Slot 解析 scrollIntoView，Collapsible after-open 在当前页面组合中也未稳定回传；标题机械贴顶又缺少阅读呼吸空间，因此改用公开 scrollTop、真实节点测量、同源明确时长和 48rpx Token 化顶部留白，不增加第二滚动上下文，也不影响返回栈阅读位置。",
+    "alternativesRejected": [
+      "通过页面滚动或原生 scroll-view 新建第二滚动上下文。",
+      "用硬编码 scrollTop 猜测 Navbar、版头和各分区高度。",
+      "继续依赖微信运行态已经证明无效的跨组件 Slot scrollIntoView。",
+      "修改 Collapsible 公共 API 承担首页私有导航策略。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/index/index.js",
+      "scripts/test-miniprogram-home.js",
+      "docs/MINIPROGRAM_HOME.md",
+      "feedback/records/pui-fb-0486-home-section-open-scroll-anchor.json"
+    ],
+    "dependencies": ["PUI Collapsible", "PUI ScrollArea"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-home.js"],
+    "commands": [
+      "node scripts/test-miniprogram-home.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram"
+    ],
+    "browser": [
+      "现有微信开发者工具会话完成热重载编译；最终实现复核时模拟器被连续切换到 Dialog 与我的页，未形成稳定的首页定位截图。"
+    ],
+    "deviceRisks": [
+      "微信 iOS/Android 真机的 scroll-into-view 平滑时序、快速连续切换和 Collapsible 动画期间的位置合成仍需复核。"
+    ]
+  },
+  "ai": {
+    "summary": "首页目录打开定位属于页面编排，应复用唯一 ScrollArea 的稳定锚点。",
+    "rules": [
+      "手动打开目录分区后等待与 Collapsible 显式相同的动效时长，再用视口与普通 view 锚点的实测矩形计算受控 scrollTop，并在标题上方保留按真实窗口换算的 48rpx 阅读留白。",
+      "跨自定义组件 Slot 的 scrollIntoView 若在微信运行态无效，应使用同一 ScrollArea 的公开 scrollTop，不得创建第二滚动区。",
+      "关闭分区必须取消未执行定位并清空目标。",
+      "返回已有首页实例时继续以真实 scrollTop 为最高优先级。"
+    ],
+    "tags": ["home", "catalog", "collapsible", "scroll-area", "scroll-into-view"]
+  }
+}

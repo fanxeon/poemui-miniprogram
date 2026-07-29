@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0494",
+  "title": "Indexes 左轨与完整索引没有共享安全几何",
+  "scope": "component",
+  "components": ["indexes", "button", "cell"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Indexes 在左侧轨和完整索引模式下，标题、条目、徽标与索引都应完整显示，不互相覆盖。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "设置 indexPosition=left，观察 sticky 分组标题。",
+    "设置 showFullIndex=true 并使用两到四个字符的索引。",
+    "旧实现只给 entries 使用固定 56rpx 预留，heading 不避让，Button 仍固定 42rpx，完整索引会覆盖或裁切。"
+  ],
+  "expected": "轨道宽度由最长可见索引生成；heading 和 entries 在同一侧共同避让 rail-width + normal gap，隐藏轨时恢复正常宽度。",
+  "actual": "修复前左右避让只覆盖条目且写死单字符宽度，sticky 标题和完整索引没有统一几何真相源。",
+  "evidence": [
+    {"kind": "file", "ref": "indexes/indexes.js", "note": "根据 showFullIndex 与最长索引计算 buttonWidth/railWidth。"},
+    {"kind": "file", "ref": "indexes/indexes.wxss", "note": "左右 heading 与 entries 共同消费 --pui-indexes-rail-width。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "覆盖华北/华东地区完整索引、left class 和 heading 左侧避让。"}
+  ],
+  "rootCause": "旧样式把侧栏当成固定单字符装饰轨，只为条目写死安全距，没有把 showFullIndex 和 indexPosition 纳入同一个布局计算。",
+  "decision": {
+    "outcome": "由 JS 生成动态 button/rail width CSS 变量，WXML、标题、条目和放大提示共同消费；左右位置只镜像同一几何。",
+    "rationale": "单一 rail width 可避免不同结构分别维护魔法数，并让完整索引、标题和 Cell 状态同步。",
+    "alternativesRejected": [
+      "给 heading 单独增加固定 padding 会在 showFullIndex 时再次漂移。",
+      "只扩大 Button 不扩大内容避让会覆盖 Badge 和标题。",
+      "页面为左轨补私有 padding 不会修复共享组件。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.js", "indexes/indexes.wxml", "indexes/indexes.wxss", "preview/app.js", "preview/styles.css", "scripts/test-indexes.js", "docs/components/INDEXES.md"],
+    "dependencies": ["PUI Button", "PUI Cell", "CSS custom properties"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["node scripts/test-indexes.js：通过"],
+    "browser": [
+      "微信开发者工具 390x844 已确认默认右轨与 heading/entries 的共享安全区；left + showFullIndex 的华北/华东地区组合由专项测试锁定，尚无真机或独立页运行态证据。",
+      "H5 Chrome 390px：动态轨道为 28x90px、索引项为 21x18px，活动字母通过 flex 居中；按住 A 120ms 出现 A 放大提示，拖到 C 时 active/提示/正文同步为 C，释放后 current=C 且提示关闭，document scrollWidth=clientWidth。"
+    ],
+    "deviceRisks": ["超长索引、系统字体放大、rpx 取整和 sticky 标题组合仍需真机复核。"]
+  },
+  "ai": {
+    "summary": "Indexes 的轨道宽度、Button、标题和条目避让必须来自同一个动态变量。",
+    "rules": [
+      "showFullIndex 不能继续锁死单字符 42rpx Button。",
+      "left/right 必须同时作用于 heading 和 entries。",
+      "隐藏轨时清除条目避让，但标题保留正常内容 padding。"
+    ],
+    "tags": ["indexes", "show-full-index", "left", "rail-width", "heading", "layout"]
+  }
+}

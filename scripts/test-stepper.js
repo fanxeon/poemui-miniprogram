@@ -144,15 +144,17 @@ const exampleWxml = fs.readFileSync(path.join(root, '_example/miniprogram/pages/
 assert.strictEqual(json.usingComponents['pui-input'], '../input/input');
 assert.strictEqual(json.usingComponents['pui-button'], '../button/button');
 assert(wxml.includes('bind:change="onInputChange"'));
-assert(wxml.includes('custom-style="position:absolute;top:50%;left:{{buttonTrackSize}}rpx;width:{{normalizedInputWidth}}rpx;transform:translateY(-50%);"'), 'Stepper must constrain the PUI Input root to the fixed middle track');
+assert(wxml.includes('<view class="pui-stepper__input-track">'), 'Stepper constrains PUI Input with a physical middle track instead of a projected custom-component host');
 assert(wxml.includes('bind:enter="onEnter"'));
 assert(!wxml.includes('bind:input='));
 assert(!wxml.includes('<slot'));
 assert(wxml.includes('disabled="{{locked}}"'), 'boundary buttons stay clickable while the whole Stepper can lock');
 assert(!wxss.includes('!important'));
-assert(wxml.includes('custom-style="position:absolute;top:0;right:0;"') && wxml.includes('custom-style="position:absolute;top:0;left:0;"'), 'Stepper must compensate WeChat custom-component host projection with explicit edge coordinates');
-assert(source.includes('buttonTrackSize: buttonTrackSize'), 'Stepper must expose its normalized button track to the Input coordinate');
+assert.strictEqual((wxml.match(/class="pui-stepper__button-track"/g) || []).length, 2, 'Stepper has exactly two visible physical Button tracks');
+assert(wxml.indexOf('icon="minus"') < wxml.indexOf('class="pui-stepper__input-track"') && wxml.indexOf('class="pui-stepper__input-track"') < wxml.indexOf('icon="add"'), 'Stepper visual order is minus, value, plus');
+assert(!wxml.includes('position:absolute'), 'Stepper no longer depends on custom-component host absolute projection');
 assert(source.includes('--pui-stepper-control-width:'), 'Stepper root width must derive from the two standard Button tracks and inputWidth');
+assert(wxss.includes('display: inline-grid;') && wxss.includes('grid-template-columns: var(--pui-stepper-button-track-size) minmax(0, var(--pui-stepper-input-width)) var(--pui-stepper-button-track-size);'), 'native Stepper owns a bounded three-track grid');
 assert(!/\.pui-stepper__button\s*\{[^}]*\b(?:width|height|padding)\s*:/.test(wxss), 'Stepper does not override the internal Button geometry');
 assert(!/\.pui-stepper__input \.pui-input__field[^}]*\b(?:height|min-height|padding)\s*:/.test(wxss), 'Stepper does not override Input geometry');
 assert.strictEqual(metadata.apiProps.stepper.length, 14);
@@ -164,6 +166,7 @@ assert.deepStrictEqual(metadata.apiEvents.stepper.map((event) => event.name), ['
 ['基础用法', '主题与尺寸', '步长与边界', '状态与输入'].forEach((title) => assert(preview.includes(`<strong>${title}</strong>`), `Stepper overview includes ${title}`));
 assert(preview.includes('function stepperPreviewSnapshot('));
 assert(preview.includes('function stepperPreviewMarkup('));
+assert(preview.includes('<span class="pui-stepper__button-track">${minus}</span><span class="pui-stepper__input-track">${input}</span><span class="pui-stepper__button-track">${plus}</span>'), 'H5 mirrors the same physical three-track structure');
 assert(preview.includes('function bindStepperPreviewRuntime('));
 assert(preview.includes("source === 'blur') demo.stepperEventSequences[key] = sequence.concat('change', 'blur')"));
 assert(!preview.includes('Stepper states'));

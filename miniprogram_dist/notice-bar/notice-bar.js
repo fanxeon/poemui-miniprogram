@@ -1,9 +1,11 @@
 var themeBehavior = require('../common/behaviors/theme');
 
 var THEME_ICONS = {
+  primary: 'info-circle',
   info: 'info-circle',
   success: 'success-circle',
   warning: 'warning-triangle',
+  danger: 'error-circle',
   error: 'error-circle',
 };
 
@@ -14,7 +16,9 @@ function clamp(value, min, max, fallback) {
   return Math.max(min, Math.min(max, number));
 }
 function normalizeTheme(value) {
-  return THEME_ICONS[value] ? value : 'info';
+  if (value === 'info') return 'primary';
+  if (value === 'error') return 'danger';
+  return ['primary', 'success', 'warning', 'danger'].indexOf(value) > -1 ? value : 'primary';
 }
 function normalizeInterval(value) {
   var interval = Math.round(Number(value));
@@ -62,7 +66,7 @@ Component({
     operation: { type: String, value: '' },
     prefixIcon: { type: null, value: true },
     suffixIcon: { type: null, value: null },
-    theme: { type: String, value: 'info' },
+    theme: { type: String, value: 'primary' },
     visible: { type: null, value: null },
     defaultVisible: { type: Boolean, value: true },
     ariaLabel: { type: String, value: '' },
@@ -139,8 +143,8 @@ Component({
           this.data.innerVisible ? 'pui-notice-bar--active' : 'pui-notice-bar--inactive',
         ].filter(Boolean).join(' '),
         rootStyle: '--pui-notice-duration:' + duration + 'ms;',
-        rootRole: theme === 'error' ? 'alert' : 'status',
-        ariaLive: theme === 'error' ? 'assertive' : 'polite',
+        rootRole: theme === 'danger' ? 'alert' : 'status',
+        ariaLive: theme === 'danger' ? 'assertive' : 'polite',
         semanticLabel: label,
         isVertical: isVertical,
         swiperInterval: normalizeInterval(this.data.interval),

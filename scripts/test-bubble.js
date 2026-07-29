@@ -133,13 +133,33 @@ measured.instance.createSelectorQuery = function createSelectorQuery() {
   return {
     select() { return this; },
     boundingClientRect() { return this; },
-    exec(callback) { callback([{ height: 120 }, { height: 40 }]); },
+    exec(callback) { callback([{ height: 120 }, { height: 20 }]); },
   };
 };
 measured.instance.measureContent();
 assert.strictEqual(measured.instance.data.showToggle, true);
-assert(measured.instance.data.measureStyle.includes('--pui-bubble-collapsed-height:40px'));
-assert(measured.instance.data.measureStyle.includes('--pui-bubble-expanded-height:121px'));
+assert.strictEqual(measured.instance._bubbleCollapsedHeight, '40px', 'collapsed endpoint comes from the measured single-line height multiplied by maxLines');
+assert.strictEqual(measured.instance._bubbleExpandedHeight, '121px');
+assert.strictEqual(measured.instance.data.clipStyle, 'max-height:40px;', 'collapsed Bubble writes the measured endpoint directly on the visible node');
+measured.instance.data.expanded = true;
+measured.instance.syncState(false);
+assert.strictEqual(measured.instance.data.clipStyle, 'max-height:121px;', 'controlled expansion moves directly to the measured expanded endpoint');
+assert.strictEqual(measured.instance.data.showToggle, true, 'controlled parent writeback preserves the measured expand/collapse action');
+assert.strictEqual(measured.instance._bubbleMeasuredKey, measured.instance._bubbleMeasureKey, 'expansion does not invalidate unchanged content geometry');
+measured.instance.data.content = '内容已经变化，需要重新测量';
+measured.instance.syncState(false);
+assert.strictEqual(measured.instance._bubbleMeasuredKey, '', 'content changes invalidate the previous geometry');
+assert.strictEqual(measured.instance.data.clipStyle, 'max-height:2400rpx;', 'expanded geometry changes use the safe natural-height fallback until remeasured');
+
+const setDataPatches = [];
+const singleCommit = create({ content: '非受控展开只提交一次', collapsible: true });
+singleCommit.instance.setData = function setData(patch) {
+  setDataPatches.push(patch);
+  Object.assign(this.data, patch);
+};
+singleCommit.instance.onToggleTap();
+assert.strictEqual(setDataPatches.length, 1, 'uncontrolled expansion commits one synchronized state patch');
+assert.strictEqual(setDataPatches[0].expandedState, true);
 
 const motion = create({ content: '显隐', duration: 0 });
 motion.instance.data.visible = false;
@@ -162,6 +182,7 @@ const previewCss = fs.readFileSync(path.join(root, 'preview/styles.css'), 'utf8'
 assert(!/<button\b/.test(wxml), 'Bubble composes the internal Button instead of raw button markup');
 assert(!/<image\b/.test(wxml), 'Bubble does not need a raw image');
 assert(wxml.includes('<pui-button'), 'Bubble composes PoemUI Button for reactions and expansion');
+assert(wxml.includes('<pui-button\n          block'), 'Bubble uses the PUI Button block contract for the full-width action track');
 assert(wxml.includes('<slot wx:if="{{customContent}}"></slot>'), 'Bubble publishes the content slot');
 assert(wxml.includes('name="reactions"'), 'Bubble publishes the reactions slot');
 assert(wxml.includes('bindtap="onContentTap"'), 'Bubble publishes a real click boundary');
@@ -170,11 +191,28 @@ assert.strictEqual(json.usingComponents['pui-button'], '../button/button');
 assert(!/display\s*:\s*none/.test(wxss), 'Bubble visibility and collapse do not jump through display:none');
 assert(wxss.includes('transition: max-height'), 'Bubble collapse uses a max-height motion contract');
 assert(wxss.includes('var(--pui-bubble-duration'), 'Bubble motion uses a shared duration token');
-assert(wxss.includes('-webkit-line-clamp'), 'Bubble text collapse has a Mini Program compatible line clamp');
+assert(wxml.includes('class="pui-bubble__clip" style="{{clipStyle}}"'), 'Bubble binds the visible retained node to one explicit height endpoint');
+assert(wxss.includes('max-height: 2400rpx'), 'Bubble keeps a safe natural-height CSS fallback');
+assert(wxml.includes('pui-bubble__measure--line'), 'Mini Program measures one real line instead of querying a hidden line-clamp layout');
+assert(/\.pui-bubble__measure--line\s*\{[^}]*white-space:\s*nowrap/.test(wxss), 'the hidden single-line probe exposes a stable line-height');
+assert(!wxss.includes('-webkit-line-clamp'), 'Mini Program no longer depends on line-clamp for hidden or visible height measurement');
+assert(!/\.pui-bubble--collapsible\.pui-bubble--collapsed \.pui-bubble__clip\s*\{[^}]*-webkit-line-clamp/.test(wxss), 'visible Bubble content never switches line-clamp during expansion');
+assert(source.includes("clipStyle: 'max-height:' +"), 'Mini Program writes max-height directly instead of routing it through a dependent CSS custom property');
+assert(wxss.includes('justify-content: flex-end !important;'), 'Bubble aligns the full-width PUI Button content at the bottom-right');
 assert(previewJs.includes("clip.style.maxHeight = 'none'"), 'H5 measures the unclamped live content height');
-assert(previewJs.includes("clip.style.webkitLineClamp = 'unset'"), 'H5 temporarily removes line clamp before measuring');
+assert(!previewJs.includes("clip.style.webkitLineClamp = 'unset'"), 'H5 never mutates line-clamp on the visible animation node');
 assert(previewJs.includes("clip.setAttribute('style', previousInlineStyle)"), 'H5 restores the live node style before painting');
 assert(previewCss.includes('.pui-bubble-preview__surface {'), 'H5 publishes a scoped Bubble surface');
+assert(previewJs.includes('pui-bubble-preview__toggle-row') && previewCss.includes('.pui-bubble-preview__toggle-row {'), 'H5 mirrors the dedicated full-width bottom-right action track');
+assert(previewJs.includes('block: true,') && previewCss.includes('justify-content: flex-end !important;'), 'H5 uses the PUI Button block contract and aligns its content right');
+assert(previewJs.includes('demo.bubbleMeasuredCollapsed = Math.ceil(collapsed);'), 'H5 caches the committed collapsed geometry');
+assert(previewJs.includes('Number.isFinite(demo.bubbleMeasuredExpanded)'), 'H5 reuses measured geometry during expand/collapse rerenders');
+assert(previewJs.includes('initialClipHeight = expansionDirection === \'expanding\''), 'H5 rebuilt DOM starts expansion from the committed collapsed endpoint');
+assert(previewJs.includes('clip.style.maxHeight = `${startHeight}px`;'), 'H5 commits the stable start endpoint before motion');
+assert(previewJs.includes('requestAnimationFrame(() => {') && previewJs.includes('clip.style.maxHeight = `${targetHeight}px`;'), 'H5 changes to the target endpoint on the next frame');
+assert(previewJs.includes("event.propertyName === 'max-height'") && previewJs.includes('· transitionend`'), 'H5 completes expansion from the max-height transition');
+assert(!/\.pui-bubble-preview\.is-collapsible\.is-collapsed \.pui-bubble-preview__clip\s*\{[^}]*-webkit-line-clamp/.test(previewCss), 'H5 visible content mirrors the max-height-only motion contract');
+assert(!previewCss.includes('@keyframes pui-bubble-preview-expand'), 'H5 does not apply a late keyframe after rendering the expanded DOM');
 assert(previewCss.includes('color: var(--page);'), 'H5 default and dark surfaces use an inverse foreground token');
 assert(previewJs.includes('duration: previewMotionDuration(props.duration, props.reduceMotion),'), 'Bubble owns its H5 duration normalization through the shared motion helper');
 assert(previewJs.includes('easing: dialogMotionEasing(props),'), 'Bubble uses the independent shared easing mapping');

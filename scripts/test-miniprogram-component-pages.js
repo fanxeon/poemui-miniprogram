@@ -126,6 +126,18 @@ var routes = {
     title: 'DynamicMessage',
     headings: ['生成任务通知', '页面仍可操作']
   },
+  'area-chart': {
+    title: 'AreaChart',
+    headings: ['连续趋势']
+  },
+  'bar-chart': {
+    title: 'BarChart',
+    headings: ['组件分类增量', '纵向比较']
+  },
+  waffle: {
+    title: 'Waffle',
+    headings: ['组件数量点阵', '大数据缩放']
+  },
   'pull-refresh': {
     title: 'PullRefresh',
     headings: []
@@ -149,7 +161,7 @@ var routes = {
   collapsible: { title: 'Collapsible', headings: ['基础用法', '状态边界'] },
   bubble: { title: 'Bubble', headings: ['基础用法', '业务边界'] },
   'swipe-cell': { title: 'SwipeCell', headings: ['基础用法', '禁用边界'] },
-  'count-down': { title: 'CountDown', headings: ['基础用法', '控制边界'] },
+  'count-down': { title: 'CountDown', headings: ['基础用法', '控制边界'], miniprogramHeadings: ['数字滚动倒计时', '控制计时与风格'] },
   swiper: { title: 'Swiper', headings: ['基础用法', '状态边界'] },
   table: { title: 'Table', headings: ['基础用法', '选择与排序'] },
   'config-provider': { title: 'ConfigProvider', headings: ['全局配置', '局部覆盖'] },
@@ -220,7 +232,7 @@ var taskFocusedPages = [
   'form', 'field', 'label', 'input', 'input-otp', 'textarea', 'search', 'checkbox', 'radio', 'switch', 'select', 'picker', 'combobox', 'slider', 'stepper', 'rate', 'calendar', 'date-time-picker', 'upload',
   'collapse', 'avatar', 'badge', 'bubble', 'card', 'cell', 'collapsible', 'count-down', 'image', 'list', 'swipe-cell', 'swiper', 'table', 'tag',
   'alert', 'dialog', 'empty', 'loading', 'notice-bar', 'progress', 'result', 'skeleton', 'toast',
-  'top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'
+  'area-chart', 'bar-chart', 'waffle', 'top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'
 ];
 
 assert.ok(appStyle.indexOf('height: 100vh') !== -1 && appStyle.indexOf('overflow: hidden') !== -1, '小程序 App 根必须提供全屏且不滚动的页面基础');

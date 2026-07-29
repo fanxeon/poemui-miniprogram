@@ -8,12 +8,14 @@
 
 - 所有交互进入、离开、状态切换和位移动效默认 `500ms`，调用方可在 `0–1000ms` 内调整，公开时长上限 `1000ms`。无效数值回退到 `500ms`，超出范围必须在运行时收敛，不能只依赖属性面板限制。
 - `--pui-duration-fast` 与 `--pui-duration-normal` 当前都以 `500ms` 为统一基线；组件公开的 `duration` / `motionDuration` 默认值、H5 镜像 fallback、WXML/WXSS 和 API 文档必须同源。
+- DynamicMessage 使用中性反色黑底而不是 `primary` Surface，浅色模式也保持独立高对比浮层。状态色装饰固定为小程序 `6rpx` / H5 `3px` 的顶部与右侧 L 形轨道，内部只能有一束对角渐变光束；它在 `expanding` 开始时以独立 transient class 连续移动一次 `1500ms`，允许跨入 `visible` 但计时结束必须清零。不得用整段上/右边框依次换色冒充流动。这是不可配置、不阻塞交互的单组件装饰例外，不改变全局公开交互动效 `1000ms` 上限。流光与状态 Icon 必须共用语义色：loading 中性灰、info 信息蓝、success 成功绿、warning 警告橙、error 危险红，禁止固定为单一颜色或用状态色整块染色 Surface。装饰层只允许改变自身 opacity/background-position，不能改写根 Surface 的背景、毛玻璃和阴影；不得恢复满高竖向 accent、形成常驻彩边或循环呼吸。装饰层必须 `aria-hidden`、不参与点击和布局，低动效完全取消。组件私有 `shadow/frostedGlass` 使用 `Boolean|null`：`null` 继承 ConfigProvider，`true/false` 只覆盖当前通知而不写入全局视觉 Store。
 - `reduceMotion=true` 或系统启用低动效时，低动效统一压缩为 `1ms`；循环动画必须停止或进入稳定完成态，不能只缩短单次时长后继续闪烁。
 - 小程序 WXSS 不得使用 `*`、`> *` 或 `*::before/after` 通配选择器。父组件只能通过自身已声明的时长 Token 控制自身动效；Slot 和 PUI 子组件各自处理低动效，布局需要明确的内部容器，不能穿透消费者内容。
 - 小程序组件 WXSS 只能携带组件自身可用的 class 规则，禁止导入含 `page`、标签、ID 或属性选择器的全局样式。`common/style/theme.wxss` 含 `page` 默认 Token，必须仅经消费者 `app.wxss` 的 `poemui-miniprogram/theme/utilities.wxss` 或 `theme/theme.wxss` 入口加载；组件从 `pui-config-provider` 与全局级联继承 Token。H5 继续使用同名 Token 镜像，不复制 WXSS 导入链。
 - 退场节点保留到真实离场完成；只过渡 `opacity`、`transform`、颜色等可插值属性，禁止对 `height:auto` 做无效 transition，也禁止用 `display:none` 制造瞬移。
 - 功能计时不属于动效时长：Toast 的停留或自动关闭时间、Loading 延迟、Swiper 自动轮播间隔、CountDown 刷新周期、Watermark 位移间隔继续使用各自业务合同，不得被机械改成 `500ms` 或限制为 `1000ms`。
 - 小程序组件独立页是组件的真实消费者，不是第二套实现：必须复用共享 Navbar、`use-global-config`、唯一 ScrollArea 与 PUI 组件本体；页面只能回写组件公开的父级状态或执行真实页面导航。反馈类页面不得把 Alert/NoticeBar 的关闭、Empty action、Loading/Skeleton 的显隐、Progress 的 100% 或 Toast 自动关闭描述成业务成功、请求完成或组件私有事件。
+- 小程序组件详情页的反馈固定按 `none / inline / Toast / DynamicMessage` 分级：组件视觉已经明确的展开、关闭、选中、开关和当前值不增加重复反馈；字段错误、上传失败和持续限制留在控件附近；单次轻反馈使用 PUI Toast；只有重要恢复、异步任务、同 key 持续更新及需要 Action 的错误使用 DynamicMessage。需要 DynamicMessage 时必须复用 ScrollArea 外的 `component-page-feedback` 和 `createComponentPage` 真实返回值，不得逐页复制状态机、对高频事件排队或保留第二个同义 `aria-live`。完整合同见 `docs/MINIPROGRAM_PAGE_FEEDBACK.md`。
 - 小程序组件独立页中同时出现两个并列操作时，必须使用共享 `component-page__row--actions` 两列 Grid，并让两个 PUI Button 以 `block` 填满各自轨道；两轨之间必须显式消费 `--pui-content-gap`（默认 `16rpx`），禁止按钮贴合。通用 `component-page__row` 继续承载 Switch、Label、Icon 与文案等内容组合，禁止为实现双按钮等分而把所有内容行改成 Grid。滚动所有者页面与 Navigation 页面双操作工具栏遵守同一两列与间距语义。
 - Style Utilities 的预览基础设施不是 utility 消费目标。全部发布类必须由同一生成 Schema 声明 `previewKind / previewTarget / previewSafety / previewTheme / previewScaffold`，并同步生成小程序目录、H5 数据与 scoped utility CSS；页面、Navbar、Tabs、ScrollArea、目录和当前效果容器不得挂载被预览的 class。小程序固定使用 `120rpx`、H5 固定使用 `64px` 的单一当前效果预览，选中类只命中适格语义目标；右侧恢复使用 `default / text / small / circle / icon-only` 的 PUI Refresh IconButton，只清空当前分类并恢复默认预览，不影响其他分类。恢复是低存在感的次要回退动作，不使用 primary 实底或常驻文案。切换小程序分类 Tab 时，页面必须在替换目录数据的同一次状态更新中把唯一 ScrollArea 的受控 `scrollTop` 写为 `0`，复用原生平滑定位显示新分类首项；不得重建 ScrollArea、创建第二滚动区或扩张 Tabs API。禁止恢复 baseline/result 双栏或比较箭头。viewport、fixed、hidden、safe-area 等风险类必须在有界沙箱中裁切或保留 trace，不能改变页面几何。H5 仅有 data 属性或 class 字符串、没有真实计算样式变化时不算同步完成；H5 当前的独立五类示例区不伪造小程序单目录回顶。
 - Style Utilities 的直接色相只能来自 `theme.wxss` 的精选强调色 Token；每个色相固定提供文字/边框、实色背景和柔和背景三层取值，小程序与 H5 使用同一生成源。实色背景不自动决定前景色，普通正文 Surface 优先使用柔和背景；red/orange/amber/emerald/teal/blue/violet/pink 只表达装饰与轻量强调，不能替代 success/warning/danger/info 业务语义。
@@ -37,11 +39,13 @@
 - Form 的字段在原生 WXML 中组合 PUI Input，H5 必须逐项调用 `inputControlSample` 并保留 name、required、invalid、输入模式、真实回写与焦点；Field/Label 的 Slot 示例也必须组合同一个 Input helper。Form、Field、Label 父级只承担标签、反馈、方向与 gap，不得手写原生输入框、嵌套 HTML label，或用全局 Surface 名单把透明布局根重新变成 Input 外的第二层面板。别名路由的事件判断统一使用 `previewIdFor(state.current)`。
 - Search、Stepper、Combobox 等原生已组合 PUI Input 的复合组件，H5 输入主体必须调用 `inputControlSample`，由 helper 承接 prefix Icon、clear Button、maxlength、min/max/step、align、bordered、focus 与事件数据，组件函数内不得再次手写 `<input>`。复合结构只允许一个可见 Surface：Search/Combobox 的 Input field 可直接消费全局圆角、阴影和毛玻璃；Stepper 由外壳消费外观，嵌入式 Input field 保持透明、无 border/radius/shadow/blur。父级可按原生 WXSS 管理列宽和排列，但不得让外壳与 Input 同时形成两层面板。所有适配路由的 input/confirm/clear 分支统一使用 `previewIdFor(state.current)`。
 - Input 的 `suffix="slot"` 是公开的右侧尾部操作位：可以承载后置短文本，也可以组合一个紧凑 PUI Button/IconButton。Field 内部固定为“可收缩原生 input + trailing 轨”，trailing 依次承载 Clear、Loading、suffix 与 suffix-icon 并贴齐最右边界；页面不得在 Input 下方再放一个同义保存按钮，也不得新增与 suffix 重叠的 right/action Prop。Slot 子组件保留自己的尺寸、禁用、ARIA 和点击事件，Input 只管理排列与控件内部 gap。
+- Input 的 Clear 默认采用 `clearTrigger=focus`：只有非空、可交互且真实聚焦时显示；显式 `always` 只用于需要常驻清空入口的公开组件策略。H5 以 `:focus-within` 镜像，小程序以原生 focus/blur 状态镜像；两端隐藏 Clear 时不得卸载 suffix 或改变 Trailing 几何。Input Field 阴影始终读取 Provider/App Shell 的语义 Shadow Token，页面不得写死投影或用页面 class 模拟开关。
 - 复合组件的原生 WXML 已组合 PUI Cell/Badge/Button/Icon/Loading 时，H5 必须沿同一组件树调用共享镜像助手；组件自身的交互根可以保留平台原生节点，禁止再套一层 PUI Button 改变事件、ARIA 或布局边界。
 - H5 原生 `button/input/select/textarea` 的合法边界只有三类：共享 PUI helper 的平台根、组件自身交互根、浏览器能力桥接。`preview/index.html`、页面、演示和复合层只保留 Mount/编排，不得复制 PUI DOM。`scripts/test-preview-native-control-boundaries.js` 必须精确锁定所有合法 owner 与数量；只有核对原生 WXML 后才能更新清单，不能把新增页面控件直接列为例外。
 - Cell、Radio 等组件可以保留自己的交互根，但根内的 Badge、Loading、Icon 等子组件仍必须调用 `badgeSample`、`loadingComponent`、`iconComponent` 等共享镜像；不得以“组件根特殊”为由手写私有徽标或 Spinner。
 - Select 的小程序可见层固定组合 PUI Button Trigger、PUI Popup 与 PUI Button Option；系统 picker 不是 Select 的最终 UI。H5 Trigger/Option 同样调用共享 Button 镜像，浏览器原生 select 只能作为不可见事件桥接。Picker 独占滚轮、多列、草稿与确认式选择。
 - Picker / DateTimePicker 必须真实消费 Popup 的三分区：标题进入 Header，滚轮进入唯一滚动 Content，取消/确认进入两列 Footer。不得向 Popup 不存在的具名 Slot 投递操作区，也不得在 Popup Surface 内再建立第二个私有面板。
+- Select、Picker 这类 Header 标题直接标注下方选择内容的弹层，Header→Options/Wheel 只允许一个 `--pui-surface-inset`：普通模式由 Popup Content padding 提供，等距模式由 section gap 提供，二者不得同时叠加；子级 Options 也不得重复增加 panel padding。Picker 的可见项数、行高和中心选中几何不用于补偿结构间距。
 - Table 选择列必须调用共享 `checkboxSample` 镜像 PUI Checkbox，Swiper 加载态必须调用 `loadingComponent`；禁止为父组件再画私有 Checkbox Mark 或 Spinner。Table 表头、Swiper 指示器等组件自有交互根保留自身语义，不为了静态消除原生节点机械套普通 Button。
 - Checkbox/Radio 未选 Mark 属于输入控件的必要轮廓，不是可移除的 Surface 边框；小程序和 H5 都必须使用 `--pui-control-outline-color`，全局 `bordered=false` 不得将其透明化。
 - 复合组件的默认 loading/error/empty 状态必须继续调用共享 `loadingComponent` / `emptySample`，不能在父组件里重新拼 Icon、标题或 Spinner。嵌入式 Empty 保留 PUI Empty 的内容、字号、间距、语义和图形组合；它本身没有内置 Action，父级若需操作必须以同级 PUI Button 或 `action` Slot 内容组合。Surface 职责仍归父状态容器：嵌入 Empty 必须透明、无边框、无阴影、无毛玻璃、无圆角，避免面板套面板；消费者提供的 custom empty Slot 不得被强行替换。
@@ -49,6 +53,7 @@
 - Upload 单文件失败态必须收敛为中性文件 Surface 内的一处失败原因和右侧可见 Retry：不重复叠加失败 Tag、整卡危险色边界与 `0%` Progress。Retry 是恢复请求，不是危险操作，也不能自动清除消费者提供的 `error`。
 - 所有 CSS `var(--*)` 必须引用已定义 Token。阴影开关开启后至少验证一个普通 Surface 与一个浮层 Surface 的计算 `box-shadow` 非 `none`；禁止只切换 `data-shadow` 却让组件引用不存在的私有变量。
 - 阴影的资格由语义而不是全局开关决定：Card、浮层、集合根等独立 Surface 可以消费外阴影；Cell、Field、Empty、Result、Grid、Steps 等连续条目或透明布局根，以及 Avatar、Tag、Badge、Icon、Progress、Skeleton 等展示叶子必须保持无外投影。selected/focus 的 inset outline 与 Cell/Grid 分隔线不属于 elevation，必须保持可见。
+- Collapsible 默认仍是无外投影的连续内容集合根；只有调用方显式传入 `shadow=true` 且处于 open 状态时，根才提升为可消费 `--pui-shadow-card` 的 Surface。关闭态始终扁平，毛玻璃和阴影分别读取 ConfigProvider 的有效 Token；页面不得在外层重复添加背景或阴影。
 
 ## 2. 全局间距层级
 
@@ -115,11 +120,11 @@ Dialog Surface
 ```
 
 - Header 使用三列 Grid：`72rpx | minmax(0, 1fr) | 72rpx`，H5 为 `36px | minmax(0, 1fr) | 36px`。
-- 左列是保留的平衡轨道，不公开 `header-left` Slot；无论 Close 是否开启，都保持与右列相同的宽度。
+- 左列公开可选 `header-left` Slot，只允许一个紧凑 PUI 图标按钮；无内容时保留平衡轨道，并始终与右侧默认 Close 保持同宽。
 - Dialog 不公开 `loading/error/empty/retry` 状态；请求状态由消费者在 `content` Slot 中组合 PUI Loading、Empty 与 Action，不能以 Dialog 私有状态回写。
 - 中列承载 `title` Slot 或标题文本，长文本允许换行且始终位于 Dialog 几何中心。
 - 右列承载 `PUI Button + PUI Icon` Close；Close 属于 Header，禁止放到 Header 外绝对定位。
-- Header↔Content、Content↔Footer 使用 `--pui-dialog-section-spacing: var(--pui-section-gap)`，默认 `36rpx / 18px`。
+- Dialog 作为 Popup 的唯一 Surface 时必须清除 Popup Content 的重复 padding；Header、Content、Footer 直接消费 Dialog 自身 inset，禁止双层内距。
 - Dialog 表面安全内距和 Footer 内按钮间距使用 `--pui-dialog-action-spacing: var(--pui-panel-padding)`，默认 `28rpx / 14px`。
 - Content 直接子元素使用 `--pui-dialog-content-gap: var(--pui-content-gap)`，默认 `16rpx / 8px`。
 - Close 尺寸使用 `--pui-dialog-close-size`，默认 `72rpx / 36px`；图标必须双轴居中，圆形不能被大圆角模式改成圆角方块。
@@ -155,7 +160,8 @@ Dialog Surface
 - 只有 `.preview-device__viewport` 可以纵向滚动；外框不随内容、浮层或交互增长。组件预览根必须填满对应内部 viewport，不能只让首个内容块占据顶部后留下无职责空白。该共享 Preview ScrollArea 默认复用 ScrollArea 的 `md / 32px` 顶底主题渐隐层：两层必须是 viewport 的透明同级、`pointer-events:none`、`aria-hidden=true`，只在真实 overflow 时出现；位于顶部仅显示底层、位于底部仅显示顶层，中段两层同时出现。不得创建第二个滚动上下文、遮罩 Surface 或用静态 class 假装滚动状态。滚动条默认透明隐藏，真实滚动时以 `.is-scrolling` 显示，停止后自动恢复隐藏；PreviewDevice 用 `scrollbar-gutter: stable both-edges` 保持所有组件预览的左右可用宽度和安全边距对称。常规模式下，PreviewDevice 及其内部每一个真实溢出滚动口都必须支持鼠标左键按住后纵向拖动，并兼容主触点和触控笔；最内层滚动口优先接管，超过 6px 才进入拖动并抑制 click，输入、Picker、Slider、Swiper、SwipeCell、PullRefresh、Sheet 与 Rate 的专属手势不得被劫持。
 - 原生滚动组件若提供固定顶/底渐变遮罩，只能以同一滚动视口的透明、无交互 sibling layer 实现：遮罩必须 `pointer-events:none`、`aria-hidden`，并由真实边缘状态决定——顶部仅底层、底部仅顶层、中段两层、无溢出零层；颜色走组件语义 Token 或已校验的公开色值。无边 Navbar 与相邻 ScrollArea 连续排布时，Navbar 用 `border-bottom:0` 不保留透明边框，页面壳将 ScrollArea 的上下文色指向同一画布 Token；若公开尺寸，只能使用组件合同中定义的离散语义档位与跨端 Token，默认档不得改变既有布局。不得放进可滚动 Slot、增加第二个 viewport、阻断内容或把透明根变成 Surface。
 - 微信小程序使用 `navigationStyle: "custom"` 时，右上原生胶囊仍由系统绘制和响应；页面级 Navbar 必须读取 `wx.getMenuButtonBoundingClientRect()` 的 `left/right/top/bottom/width/height` 与 `wx.getWindowInfo()` 的 `windowWidth/statusBarHeight`。左右轨道以 `windowWidth - left` 对称保护标题；左操作以 `windowWidth - right` 为外边距，在真实胶囊宽度的镜像区域内居中；导航内容高度按胶囊相对状态栏的上下等距计算。右侧不得再放置业务操作。H5 仅可用不可交互、`aria-hidden` 的 Token 化视觉镜像对齐同一空间，不能复制为假菜单、假关闭或假成功。任何组件若允许退出该模式，必须以显式非默认 Prop 声明，并在组件合同、API、H5 与真机验收中同步说明。
-- 组件目录中的每个标准组件概览必须进入同一个 `PreviewDevice`，并在其唯一 `.preview-device__viewport[data-preview-scroll-contract="component-preview"]` 内运行；不得为某个组件恢复页面级滚动、第二个预览滚动根或私有设备壳。文档页、尚未发布的 Chart 说明与 Icon 资源库是明确例外，不能冒充手机组件概览。
+- 自定义导航栏需要两个标准图标操作时优先使用 Navbar `leftBtn/rightBtn`；若其中一项必须保留 PUI Button 的 `open-type` 等平台属性，则两个操作共同进入唯一 `left` Slot，并组合两个 `extra-small / text / transparent / circle / icon-only` PUI Button。Slot 分组只使用共享 Flex 与紧密间距 utility，不增加页面私有偏移、Surface 或字符图标；每个操作独立提供可访问名称和真实事件闭环。
+- 组件目录中的每个标准组件概览必须进入同一个 `PreviewDevice`，并在其唯一 `.preview-device__viewport[data-preview-scroll-contract="component-preview"]` 内运行；不得为某个组件恢复页面级滚动、第二个预览滚动根或私有设备壳。文档页与 Icon 资源库是明确例外，不能冒充手机组件概览。AreaChart、BarChart、Waffle 已是标准组件，必须遵守同一设备合同。
 - 浮层隐藏时显示真实触发入口，不能保留空黑底或空遮罩舞台；浮层本身已是 Surface 时，不再在统一设备边界内部套装饰性 Card。
 - 复合组件的状态容器是唯一 Surface；嵌入其中的 PUI Empty 使用 `small` 尺寸和 `28rpx 20rpx / 14px 10px` 原生内距镜像，但不得再创建第二层底色、边框、阴影或毛玻璃。外观开关只改变宿主 Surface，不改变嵌入 Empty 的透明边界。
 - 复合组件中的 PUI Icon、Loading 必须通过共享 helper 的尺寸参数传递原生几何；父组件只管理排列、颜色和位置，不得穿透修改子组件的 `width/height/padding/border-radius`，更不得用 `!important` 抢占组件合同。
@@ -186,7 +192,20 @@ Dialog Surface
 - 窄于 `1180px` 时，常规模式代码正文必须退出绝对定位并进入 PreviewDevice 下方正常文档流；不得覆盖设备、浮层或拦截设备内交互。`240px` 只限制代码正文自身高度，不得缩短或遮住固定 `622px` 的 PreviewDevice。
 - 元素选择后的上下文 Inspector 只显示当前元素可由父组件公开 Props 控制的字段，并与完整属性页复用相同 PUI Input、Select、Switch、Slider、Textarea helper、校验与回写路径。字段按交互方式拆分：左侧只放可自由输入的 `text/json/nullable-number` 内容值，右侧放 Boolean、枚举、范围及其余设置；任一侧没有字段时显示真实 PUI Empty。组合子组件没有父级公开映射时显示说明，不得创建假 Prop 或穿透修改子组件私有状态。
 - 上下文 Inspector 只是概览内按需双侧浮层，不是常驻第三列：桌面分别浮在 PreviewDevice 左右两侧，两张卡片共享宽、高、内距和 Surface Token，必须等高等宽且各自内部滚动；窄于 `1180px` 时变为预览底部的等宽双栏覆盖。它不得改变固定设备尺寸、Stage 布局或组件几何。首次选中使用左右相反的展开动效，关闭反向收回，切换元素只做轻量过渡；动效统一使用 normal duration/standard easing 并支持系统低动效，连续输入回写不得重播入场。关闭、退出模式、切换组件或进入 API/属性必须清除选择；完整属性仍只存在于属性视图。
-- `概览` 的演示根必须标记 `data-preview-contract="component-only"`。组件本体的 Header/Content/Footer、真实输入/选择/开合结果可以保留；组件名重复标签、方法按钮排、事件链、受控/非受控标签、runtime/platform/meta 卡片和直接诊断 Cell 必须在进入实时 DOM 前删除。Chart、Typography 等文档型能力继续走独立正文，不纳入手机设备合同。
+- `概览` 的演示根必须标记 `data-preview-contract="component-only"`。组件本体的 Header/Content/Footer、真实输入/选择/开合结果可以保留；组件名重复标签、方法按钮排、事件链、受控/非受控标签、runtime/platform/meta 卡片和直接诊断 Cell 必须在进入实时 DOM 前删除。Typography 等文档型能力继续走独立正文，不纳入手机设备合同；AreaChart、BarChart、Waffle 不得使用该例外。
+
+### 数据图形展示叶子
+
+- `AreaChart`、`BarChart` 与 `Waffle` 是透明、只读的 `display-leaf`，以结构化数据和共享零基线表达趋势或数量，不自带 Card、Surface、请求状态、Tooltip 或点击选择。
+- AreaChart 小程序端允许并要求使用原生 Canvas 2D，H5 使用同数据合同的真实 SVG；BarChart/Waffle 使用 WXML View、Flex/Grid。三者均禁止图片快照、静态写死图形和运行时图表插件，H5 不得以截图替代。
+- `neutral/violet/blue/teal/pink/amber` 只是视觉编码，必须同时提供标签、数值、图例或可访问摘要，不能只靠颜色传达意义。
+- BarChart 省略合法主题时，单序列分类统一使用 `blue`，同一分类的多段数据才按 `blue → teal → violet` 分配；显式主题仍优先。`showGrid=true` 的横向布局必须显示真实 `0 → 共享上限` 端点，并使用比 Waffle 描边更弱的专用 `--pui-chart-grid-line`，页面不得通过私有文案、绝对定位或第二套坐标轴伪造零基线。
+- BarChart 的强调段沿数值方向从低透明度渐变至实体终点，横向与纵向必须分别使用同义方向 Token；Waffle 的每个 segment 独立从 `1` 衰减至 `0.28`，低透明格保留 inset outline。渐变不得建立根 Surface。
+- AreaChart 的实体强调色描边与竖向渐变填充必须使用 `--pui-chart-accent-*` 和 `--pui-chart-area-fill-start/end`；填充回到共享零基线或前一堆叠系列。natural/linear/step、叠加/堆叠和横轴/图例在小程序 Canvas 与 H5 SVG 保持同义。
+- 三类图表统一公开 `animated=true`、`duration=500` 和 `replay()`。入场只表达图形出现：Area 淡入/描边展开、Bar 从零基线伸展、Waffle 顺序缩放淡入；不得表达请求或业务成功。关闭动画直接显示完成态，低动效为 1ms 且移除级联延迟。
+- 应用页用 BarChart 比较分类、用 AreaChart 表达连续版本趋势；不能只因已有旧实现就混用图表语义。版本数量必须由目录真相源和显式版本差集生成，不能按日期、文件数量或页面文案猜测。AreaChart 只允许绘制有证据的版本点；无监控源时不得补月份、健康度、使用量或未来版本制造更丰富曲线。单系列可以隐藏冗余 Legend，但横轴、圆点、关联数据摘要和读屏名称必须完整表达数值变化。图表上方需要并列摘要时，使用同一消费者 Surface 内的透明等分 Grid，不为每个数字再建 Card/边框/阴影；数值必须引用真实生成源。横轴上下文已明确为版本时，视觉标签可省略冗余 `v`，但读屏名称仍需使用“版本”语义。
+- Waffle 超过 `maxCells` 时必须提高有效单位并始终显示“1 格 = N”，即使 `showValue=false` 也不能隐藏缩放事实；`groupColumns` 仅增加组边界节奏，不改变列数、数据值或单元数量。
+- 所有发布 WXML 都禁止在同一个节点上组合 `wx:else` 与 `wx:for`；需要循环的 else 分支必须使用紧邻前序 `wx:if` 的 `<block wx:else>` 包裹循环节点，或改为两条完整互斥 `wx:if`。`block` 不得被替换成仅用于规避编译器的实体布局节点。
 - `概览` 透明工具栏右侧显示机型选择，并同时提供刷新与重置两个 PUI 图标按钮。刷新保留当前 Props，只重建演示运行态并恢复预览滚动起点；重置为组件默认 Props 与默认运行态，同时清除失效的元素选中态。两个图标按钮必须有不同且明确的 `aria-label`，并保持 PUI Button 的 Icon/Content Slot 结构，状态同步不得用 `innerHTML` 重写组件内部节点。
 - `API` 只承载 API Reference，并完整展示组件真实存在的 Props、Events、Slots 与 Methods；某类不存在时不伪造空能力。参数表固定为“参数、类型、演示初值、可选值、说明”五列，正文使用 `--pui-font-size-body-medium`；可选值位于演示初值右侧，枚举与布尔值用逗号分隔，范围显示上下界和步长，无约束显示 `—`。表头、参数、类型、初值、可选值、事件 detail、Slot、Method 返回值和说明都必须完整展示：桌面允许行高自然增长，窄屏改为带字段标签的纵向行；禁止省略号、单行截断、行数钳制或固定高度隐藏 API 文字。
 - `API` 不显示机型选择、刷新或重置等与当前阅读任务无关的概览工具；Tabs 位置由 Header 单行结构固定，不依赖内容工具栏占位。

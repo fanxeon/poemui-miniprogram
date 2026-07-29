@@ -38,6 +38,8 @@ Component({
     closable: { type: Boolean, value: true },
     duration: { type: Number, value: 3000 },
     safeArea: { type: Boolean, value: true },
+    shadow: { type: null, value: null },
+    frostedGlass: { type: null, value: null },
     ariaLabel: { type: String, value: '' },
     reduceMotion: { type: Boolean, value: false }
   },
@@ -45,6 +47,7 @@ Component({
     rendered: false,
     active: false,
     phase: 'hidden',
+    edgeFlowActive: false,
     currentKey: '',
     currentTheme: 'info',
     currentTitle: '',
@@ -57,12 +60,12 @@ Component({
     isLoading: false,
     topStyle: 'top:24px;',
     rootClass: 'pui-dynamic-message',
-    rootStyle: '--pui-dynamic-message-duration:500ms;--pui-dynamic-message-compact-duration:180ms;--pui-dynamic-message-panel-duration:320ms;',
+    rootStyle: '--pui-dynamic-message-duration:500ms;--pui-dynamic-message-compact-duration:180ms;--pui-dynamic-message-panel-duration:320ms;--pui-dynamic-message-edge-flow-duration:1500ms;',
     semanticLabel: '通知',
     ariaLive: 'polite'
   },
   observers: {
-    'theme,title,message,icon,actionText,closable,duration,safeArea,ariaLabel,reduceMotion,colorScheme': function syncDefaults() {
+    'theme,title,message,icon,actionText,closable,duration,safeArea,shadow,frostedGlass,ariaLabel,reduceMotion,colorScheme': function syncDefaults() {
       this.syncPresentation();
       this.syncTopOffset();
     }
@@ -91,12 +94,38 @@ Component({
     panelMotionDuration: function panelMotionDuration() {
       return this.data.reduceMotion ? 1 : 320;
     },
+    edgeFlowDuration: function edgeFlowDuration() {
+      return this.data.reduceMotion ? 1 : 1500;
+    },
+    clearEdgeFlowTimer: function clearEdgeFlowTimer() {
+      clearTimeout(this._edgeFlowTimer);
+      this._edgeFlowTimer = null;
+    },
+    startEdgeFlow: function startEdgeFlow() {
+      var self = this;
+      this.clearEdgeFlowTimer();
+      if (this.data.reduceMotion) {
+        if (this.data.edgeFlowActive) this.setData({ edgeFlowActive: false });
+        return;
+      }
+      this.setData({ edgeFlowActive: true });
+      this._edgeFlowTimer = setTimeout(function finishEdgeFlow() {
+        self._edgeFlowTimer = null;
+        if (!self._ready || !self.data.rendered) return;
+        self.setData({ edgeFlowActive: false });
+      }, this.edgeFlowDuration());
+    },
+    stopEdgeFlow: function stopEdgeFlow() {
+      this.clearEdgeFlowTimer();
+      if (this.data.edgeFlowActive) this.setData({ edgeFlowActive: false });
+    },
     clearTimers: function clearTimers() {
       clearTimeout(this._frameTimer);
       clearTimeout(this._stageTimer);
       clearTimeout(this._completeTimer);
       clearTimeout(this._autoTimer);
       clearTimeout(this._leaveTimer);
+      this.clearEdgeFlowTimer();
       this._frameTimer = null;
       this._stageTimer = null;
       this._completeTimer = null;
@@ -161,16 +190,30 @@ Component({
       var duration = this.motionDuration();
       var compactDuration = this.compactMotionDuration();
       var panelDuration = this.panelMotionDuration();
+      var edgeFlowDuration = this.edgeFlowDuration();
+      if (this.data.reduceMotion) this.clearEdgeFlowTimer();
       this.setData({
         rootClass: [
           'pui-dynamic-message',
           this.getColorSchemeClass(),
+          this.data.shadow === true
+            ? 'pui-dynamic-message--shadow-on'
+            : this.data.shadow === false
+              ? 'pui-dynamic-message--shadow-off'
+              : 'pui-dynamic-message--shadow-inherit',
+          this.data.frostedGlass === true
+            ? 'pui-dynamic-message--frosted-on'
+            : this.data.frostedGlass === false
+              ? 'pui-dynamic-message--frosted-off'
+              : 'pui-dynamic-message--frosted-inherit',
           this.data.reduceMotion ? 'pui-dynamic-message--reduced-motion' : ''
         ].filter(Boolean).join(' '),
+        edgeFlowActive: this.data.reduceMotion ? false : this.data.edgeFlowActive,
         rootStyle: [
           '--pui-dynamic-message-duration:' + duration + 'ms',
           '--pui-dynamic-message-compact-duration:' + compactDuration + 'ms',
-          '--pui-dynamic-message-panel-duration:' + panelDuration + 'ms'
+          '--pui-dynamic-message-panel-duration:' + panelDuration + 'ms',
+          '--pui-dynamic-message-edge-flow-duration:' + edgeFlowDuration + 'ms'
         ].join(';') + ';'
       });
     },
@@ -233,13 +276,15 @@ Component({
         if (self.data.phase === 'collapsing' || self.data.phase === 'leave-compact') {
           clearTimeout(self._stageTimer);
           clearTimeout(self._completeTimer);
-          self.setData({ active: true, phase: 'expanding' });
-          self._completeTimer = setTimeout(function finishReopen() {
-            self._completeTimer = null;
-            if (!self._ready || !self.data.rendered) return;
-            self.setData({ active: true, phase: 'visible' });
-            self.scheduleAutoHide();
-          }, self.data.reduceMotion ? 1 : self.panelMotionDuration());
+          self.setData({ active: true, phase: 'expanding', edgeFlowActive: false }, function afterReopenPhase() {
+            self.startEdgeFlow();
+            self._completeTimer = setTimeout(function finishReopen() {
+              self._completeTimer = null;
+              if (!self._ready || !self.data.rendered) return;
+              self.setData({ active: true, phase: 'visible' });
+              self.scheduleAutoHide();
+            }, self.data.reduceMotion ? 1 : self.panelMotionDuration());
+          });
           return;
         }
         if (self.data.phase === 'compact' || self.data.phase === 'expanding' || self.data.phase === 'entering') return;
@@ -252,7 +297,7 @@ Component({
       if (!this._ready || this.data.rendered || !this._queue.length) return;
       var request = this._queue.shift();
       this.applyRequest(request, function afterRequest() {
-        self.setData({ rendered: true, active: false, phase: 'entering' }, function afterMount() {
+        self.setData({ rendered: true, active: false, phase: 'entering', edgeFlowActive: false }, function afterMount() {
           self._frameTimer = setTimeout(function enterFrame() {
             self._frameTimer = null;
             if (!self._ready || !self.data.rendered) return;
@@ -265,13 +310,15 @@ Component({
             self._stageTimer = setTimeout(function expandPanel() {
               self._stageTimer = null;
               if (!self._ready || !self.data.rendered) return;
-              self.setData({ active: true, phase: 'expanding' });
-              self._completeTimer = setTimeout(function finishExpand() {
-                self._completeTimer = null;
-                if (!self._ready || !self.data.rendered) return;
-                self.setData({ active: true, phase: 'visible' });
-                self.scheduleAutoHide();
-              }, self.panelMotionDuration());
+              self.setData({ active: true, phase: 'expanding' }, function afterExpandPhase() {
+                self.startEdgeFlow();
+                self._completeTimer = setTimeout(function finishExpand() {
+                  self._completeTimer = null;
+                  if (!self._ready || !self.data.rendered) return;
+                  self.setData({ active: true, phase: 'visible' });
+                  self.scheduleAutoHide();
+                }, self.panelMotionDuration());
+              });
             }, self.compactMotionDuration());
           }, 16);
         });
@@ -294,6 +341,7 @@ Component({
       clearTimeout(this._stageTimer);
       clearTimeout(this._completeTimer);
       clearTimeout(this._autoTimer);
+      this.clearEdgeFlowTimer();
       this._frameTimer = null;
       this._stageTimer = null;
       this._completeTimer = null;
@@ -306,6 +354,7 @@ Component({
           rendered: false,
           active: false,
           phase: 'hidden',
+          edgeFlowActive: false,
           currentKey: ''
         }, function afterHide() {
           self.triggerEvent('close', closed);
@@ -313,11 +362,11 @@ Component({
         });
       };
       if (this.data.reduceMotion) {
-        this.setData({ active: false, phase: 'leave-compact' });
+        this.setData({ active: false, phase: 'leave-compact', edgeFlowActive: false });
         this._leaveTimer = setTimeout(finishHide, 1);
         return;
       }
-      this.setData({ active: true, phase: 'collapsing' });
+      this.setData({ active: true, phase: 'collapsing', edgeFlowActive: false });
       this._stageTimer = setTimeout(function leaveCompact() {
         self._stageTimer = null;
         if (!self._ready || !self.data.rendered) return;

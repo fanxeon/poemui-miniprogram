@@ -1,0 +1,18 @@
+<view class="{{rootClass}} {{entered ? 'pui-waffle--entered' : ''}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="img" aria-label="{{semanticLabel}}">
+  <view wx:if="{{empty}}" class="pui-waffle__empty">暂无数据</view>
+  <view wx:else class="pui-waffle__plot">
+    <view wx:for="{{chartItems}}" wx:key="key" class="pui-waffle__item">
+      <view class="pui-waffle__heading">
+        <text class="pui-waffle__label">{{item.label}}</text>
+        <text wx:if="{{showValue}}" class="pui-waffle__value">{{item.valueText}}</text>
+      </view>
+      <view class="pui-waffle__grid">
+        <view wx:for="{{item.cells}}" wx:for-item="cell" wx:key="key" class="pui-waffle__cell pui-chart-theme--{{cell.theme}} {{cell.groupStart ? 'pui-waffle__cell--group-start' : ''}}" style="{{cell.style}}" aria-hidden="true"></view>
+      </view>
+    </view>
+  </view>
+  <text wx:if="{{scaled}}" class="pui-waffle__unit">1 格 = {{effectiveUnit}}</text>
+  <view wx:if="{{showLegend && legend.length}}" class="pui-chart-legend" aria-hidden="true">
+    <view wx:for="{{legend}}" wx:key="key" class="pui-chart-legend__item"><view class="pui-chart-legend__swatch pui-chart-theme--{{item.theme}}"></view><text>{{item.label}}</text></view>
+  </view>
+</view>

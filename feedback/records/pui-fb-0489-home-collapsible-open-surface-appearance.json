@@ -1,0 +1,130 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0489",
+  "title": "首页展开目录分区未作为可配置外观 Surface",
+  "scope": "component",
+  "components": ["collapsible", "config-provider", "miniprogram-home", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "首页目录分区被选中并展开后，容器应跟随统一外观设置的毛玻璃与阴影；关闭态不额外抬高视觉层级。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram home", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser"],
+    "viewports": ["390x844", "390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入小程序首页，展开任一目录分区。",
+    "切换统一外观设置中的阴影与毛玻璃。",
+    "旧合同把 Collapsible 固定为无阴影集合根，页面也没有公共 API 可以只提升展开态；H5 镜像反而曾无条件带阴影，形成双端语义漂移。"
+  ],
+  "expected": "Collapsible 默认保持扁平；消费者显式传入 shadow 后，仅 open 状态消费 ConfigProvider 的有效 card 阴影。毛玻璃继续由同一 Surface 的共享 Token 控制。首页和独立页使用公共 API，H5 镜像保持相同门控。",
+  "actual": "Collapsible 新增默认 false 的 shadow Prop；原生与 H5 都只在 shadow && open 时绘制 card 阴影，closed 始终为 none。首页和 Collapsible 独立页显式启用 shadow，阴影、毛玻璃、主题和圆角继续由 ConfigProvider/预览外观 Store 统一提供。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "collapsible/collapsible.js",
+      "note": "公开 shadow Boolean Prop 并投射稳定的 pui-collapsible--shadow 状态类。"
+    },
+    {
+      "kind": "file",
+      "ref": "collapsible/collapsible.wxss",
+      "note": "只有 shadow + open 组合消费 --pui-shadow-card；背景和 backdrop-filter 继续读取共享玻璃 Token。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.wxml",
+      "note": "首页目录循环直接向真实 PUI Collapsible 传入 shadow，没有建立页面私有 Surface。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 镜像把相同 Prop 投射为 has-shadow，并与 is-open 共同门控。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-collapsible.js",
+      "note": "锁定 25 项 Props、默认扁平、显式展开阴影与双端选择器。"
+    },
+    {
+      "kind": "browser",
+      "ref": "2026-07-28 H5 390px",
+      "note": "light/dark 实际开合与外观切换：open + effects on 得到 card shadow 和 blur(14px)；closed 或 shadow/frost off 均为 none；document clientWidth/scrollWidth=375/375，控制台 warning/error=0。"
+    },
+    {
+      "kind": "browser",
+      "ref": "微信开发者工具 iPhone 12/13 Pro 390x844",
+      "note": "首页真实受控 change 链关闭后 shadow=none，重新打开后恢复；外观 shadow/frost off 时为 none + solid，on 时为 rgba shadow + rgba surface + blur(13px)，宽度 364px，无横向溢出。"
+    }
+  ],
+  "rootCause": "Collapsible 的旧外观资格被固定为无阴影集合根，缺少由消费者声明“展开后成为独立 Surface”的公共能力；H5 样式又保留了无条件阴影，导致页面不能表达目标且跨端不一致。",
+  "decision": {
+    "outcome": "新增默认 false 的组件级 shadow Prop，并将阴影条件收敛为 shadow && open；首页和独立页显式开启。毛玻璃不新增第二个 Prop，继续消费 ConfigProvider 的有效共享 Token。",
+    "rationale": "显式 Prop 避免所有 Collapsible 被全局阴影自动抬高；open 门控避免关闭标题行仍像独立卡片；复用现有玻璃 Token 能让主题、效果总闸门和持久化设置保持同源。",
+    "alternativesRejected": [
+      "在首页 home-components 外包一层私有带阴影/毛玻璃容器，会形成第二套 Surface 并绕过组件合同。",
+      "让所有 Collapsible 无条件跟随全局阴影，会破坏默认扁平集合语义。",
+      "只修改小程序首页或只修 H5 class，不足以建立可复用 API 和跨端一致状态。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "collapsible/collapsible.js",
+      "collapsible/collapsible.wxss",
+      "miniprogram/pages/index/index.wxml",
+      "miniprogram/pages/components/collapsible/index.wxml",
+      "metadata/components.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/appearance-contract-matrix.js",
+      "scripts/test-collapsible.js",
+      "scripts/test-appearance-contract-matrix.js",
+      "scripts/test-miniprogram-home.js",
+      "docs/components/COLLAPSIBLE.md",
+      "docs/APPEARANCE_CONTRACT_MATRIX.md"
+    ],
+    "dependencies": ["visualConfig", "pui-config-provider", "PUI appearance tokens"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-collapsible.js",
+      "scripts/test-appearance-contract-matrix.js",
+      "scripts/test-miniprogram-home.js"
+    ],
+    "commands": [
+      "node scripts/test-collapsible.js",
+      "node scripts/test-appearance-contract-matrix.js",
+      "node scripts/test-miniprogram-home.js",
+      "npm run site:build",
+      "npm run example:install",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run pack:check",
+      "git diff --check"
+    ],
+    "browser": [
+      "H5 390px：实际点击 open/closed，切换 shadow/frost、light/dark，读取计算样式和溢出，控制台无 warning/error。",
+      "微信开发者工具 390x844：实际调用组件 Trigger 同源方法触发 change 与页面受控回写；通过组件 SelectorQuery 读取 open/closed 与外观 on/off 计算样式；恢复原始浅色、阴影开、毛玻璃关设置。"
+    ],
+    "deviceRisks": [
+      "自动化工具不能穿透自定义组件宿主完成物理指针点按，组件内部 Trigger 的真实触摸命中仍需真机补验。",
+      "iOS/Android 真机的 WXSS 阴影合成、backdrop-filter 性能和滚动期间视觉仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "可展开集合只有在消费者显式声明且处于 open 时，才能提升为跟随外观的独立 Surface。",
+    "rules": [
+      "不要在页面外包私有容器模拟 Collapsible 的组件级 Surface。",
+      "Collapsible shadow 默认 false；只有 shadow && open 才能消费 card 阴影。",
+      "closed 状态必须保持 box-shadow:none，即使全局阴影打开。",
+      "毛玻璃继续通过同一 ConfigProvider Token 边界生效，禁止增加页面私有模糊值。",
+      "H5 必须验证计算样式，不能只断言 has-shadow/is-open class 存在。"
+    ],
+    "tags": ["home", "collapsible", "appearance", "shadow", "frosted-glass", "cross-platform"]
+  }
+}

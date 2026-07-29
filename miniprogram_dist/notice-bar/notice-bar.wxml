@@ -9,7 +9,7 @@
 >
   <view wx:if="{{prefixIconName}}" class="pui-notice-bar__icon pui-notice-bar__icon--prefix" data-trigger="prefix-icon" catchtap="onClick">
     <slot name="prefix-icon"></slot>
-    <pui-button icon="{{prefixIconName}}" variant="text" size="small" shape="square" aria-label="通知前置图标" />
+    <pui-button custom-class="pui-notice-bar__prefix-button" icon="{{prefixIconName}}" icon-only theme="default" variant="transparent" size="small" shape="square" aria-label="通知前置图标" />
   </view>
 
   <view wx:if="{{isVertical}}" class="pui-notice-bar__viewport pui-notice-bar__viewport--vertical" data-trigger="content" catchtap="onClick">
@@ -31,6 +31,6 @@
 
   <view wx:if="{{suffixIconName}}" class="pui-notice-bar__icon pui-notice-bar__icon--suffix" data-trigger="suffix-icon" catchtap="onClick">
     <slot name="suffix-icon"></slot>
-    <pui-button icon="{{suffixIconName}}" variant="text" size="small" shape="square" aria-label="通知尾部图标" />
+    <pui-button custom-class="pui-notice-bar__suffix-button" icon="{{suffixIconName}}" icon-only variant="transparent" size="small" shape="circle" aria-label="{{suffixIconName === 'close' ? '关闭通知' : '通知尾部操作'}}" />
   </view>
 </view>

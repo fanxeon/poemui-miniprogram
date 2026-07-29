@@ -59,8 +59,8 @@ loading.onToggleLoading();
 assert.strictEqual(loading.data.loadingVisible, false, 'Loading 必须允许页面控制可见性');
 
 var noticeBar = loadPage('notice-bar');
-noticeBar.onNoticeClick({ detail: { trigger: 'operation' } });
-assert.strictEqual(noticeBar.data.noticeVisible, false, 'NoticeBar operation 必须由页面处理');
+noticeBar.onNoticeClick({ detail: { trigger: 'suffix-icon' } });
+assert.strictEqual(noticeBar.data.noticeVisible, false, 'NoticeBar suffix Close 必须由页面处理');
 noticeBar.onReopenNotice();
 assert.strictEqual(noticeBar.data.noticeVisible, true, 'NoticeBar 必须有页面恢复入口');
 assert.deepStrictEqual(Array.from(noticeBar.data.verticalNotices), ['新增 12 个表单组件示例', '深色模式对比度已优化'], 'NoticeBar 垂直内容必须来自页面数据');
@@ -75,6 +75,8 @@ var skeleton = loadPage('skeleton');
 skeleton.onToggleSkeleton();
 assert.strictEqual(skeleton.data.skeletonLoading, false, 'Skeleton 必须由页面控制占位与内容切换');
 assert.ok(Array.isArray(skeleton.data.skeletonRows) && skeleton.data.skeletonRows.length > 0, 'Skeleton 行配置必须来自页面数据而非 WXML 字面量');
+assert.strictEqual(skeleton.data.skeletonAvatarRows[0].type, 'circle', 'Skeleton 头像示例必须通过 rowCol circle 使用共享组件能力');
+assert.strictEqual(skeleton.data.skeletonAvatarRows[0].size, '72rpx', 'Skeleton 头像示例必须用 size 同源约束宽高，不得用页面 CSS 补圆');
 
 var toast = loadPage('toast');
 var shown;

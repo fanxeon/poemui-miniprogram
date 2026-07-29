@@ -1,0 +1,105 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0480",
+  "title": "Bubble 展开操作未稳定右下对齐",
+  "scope": "component",
+  "components": [
+    "bubble",
+    "button"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
+  "userGoal": "Bubble 展开/收起操作始终位于右下方。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开小程序 Bubble 独立页，查看收起态的“展开”操作。",
+    "此前操作轨已经 width=100% 且 justify-content:flex-end，但 PUI Button 自定义组件宿主仍占满操作轨，文字右侧保留明显空白。"
+  ],
+  "expected": "toggle 轨占满 Surface，PUI Text Button 的图标与文案贴齐右下。",
+  "actual": "此前只给 Button 内部根增加 auto margin，无法改变自定义组件宿主的满宽占位，展开文案仍停在气泡中部偏右。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "bubble/bubble.wxss",
+      "note": "toggle 为满宽操作轨，block PUI Button 的内容显式右对齐。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 使用同义 toggle-row 承载右下对齐。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 Bubble battle",
+      "note": "用户复核后指出展开文案仍未真正右下对齐。"
+    }
+  ],
+  "rootCause": "首次修复只约束了满宽操作轨和 Button 内部根，没有处理 pui-button 自定义组件宿主继续占满操作轨的事实；auto margin 与宿主收缩尝试均不能稳定改变内部内容起点。",
+  "decision": {
+    "outcome": "操作轨占满宽度，直接复用 PUI Button 的 block 合同，并把 Text Button 内容对齐到右侧；H5 使用同义 toggle-row 与 block Button。",
+    "rationale": "接受小程序自定义组件宿主的满宽布局事实，在真实 PUI Button 内完成稳定的视觉右对齐，避免绝对定位、float 或不可靠的宿主收缩。",
+    "alternativesRejected": [
+      "绝对定位会与展开高度和 reactions 冲突。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "bubble/bubble.wxml",
+      "bubble/bubble.wxss",
+      "preview/app.js",
+      "preview/styles.css"
+    ],
+    "dependencies": [
+      "PUI Button"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-bubble.js"
+    ],
+    "commands": [
+      "node scripts/test-bubble.js"
+    ],
+    "browser": [
+      "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 Pro：收起态“展开”位于 Bubble 右下，真实点击后按钮变为“收起”且页面回写“长消息已展开”，再次点击可恢复收起态。",
+      "H5 390px 深色果味与浅色果味：操作轨和 block Button 均为 191.359px，Button 计算样式 justify-content=flex-end，文案距 Surface 右侧 18px、操作轨距 Surface 底部 9px，PreviewDevice 横向 overflow=0。",
+      "H5 真实点击展开与收起后 aria-expanded 分别为 true/false，文案继续保持右下锚定；两种主题下控制台 warning/error 均为 0。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的字体回流、长文本与自定义 Slot 测量仍待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "Bubble toggle 使用流式满宽轨道和 block PUI Text Button，按钮内容右下对齐。",
+    "rules": [
+      "禁止用 absolute 固定展开按钮。",
+      "组合组件对齐 PUI 子组件时必须检查自定义组件宿主几何；宿主固定满宽时应使用子组件公开的 block 合同并显式对齐内容。"
+    ],
+    "tags": [
+      "bubble",
+      "alignment",
+      "expand"
+    ]
+  }
+}

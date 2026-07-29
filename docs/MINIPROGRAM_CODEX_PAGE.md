@@ -13,7 +13,7 @@
 1. **快速开始**：`content.quickStart` 提供标题、说明和 `snippets[]`；每个片段通过共享 `code-snippet` 真实复制当前云端代码。
 2. **让你的 AI 懂得用它**：`content.skillSection` 提供标题、说明和空状态文案；同集合的已发布 `kind=skill` 文档按 `sortOrder` 展示。
 
-Navbar 中只出现一次“安装”标题。内部路由与云端 `pageKey` 仍使用稳定的 `codex`，页面内容由唯一 PUI ScrollArea 承载，底部继续使用受控 PUI Tabbar。
+Navbar 中只出现一次“安装”标题。左侧唯一 `left` Slot 以两个紧凑 PUI IconButton 展示 Info 与菜单：Info 打开受控 PUI Dialog 说明云端发布边界，菜单打开与首页同源的外观 Popup。内部路由与云端 `pageKey` 仍使用稳定的 `codex`，页面内容由唯一 PUI ScrollArea 承载，底部继续使用受控 PUI Tabbar。
 
 ## 云端数据合同
 
@@ -65,6 +65,9 @@ Navbar 中只出现一次“安装”标题。内部路由与云端 `pageKey` �
 
 - 页面根：`pui-config-provider use-global-config`
 - 页面结构：PUI Navbar、ScrollArea、Tabbar 与共享 `component-page-section`
+- Navbar 左 Slot：两个 `extra-small / text / transparent / circle / icon-only` PUI Button，使用共享 Flex 与紧密间距 utility；`info-circle` 打开 PUI Dialog，`menu` 打开外观 Popup，不手写字符图标、原生按钮或页面私有定位。
+- Info：受控 PUI Dialog 的 Header 使用默认 Close，Content 说明“安装示例与 Skill 均从共享云端读取，仅展示已发布内容”，单个“知道了”Confirm 由 Dialog 默认全宽 Footer 承载；Close、遮罩与 Confirm 都只真实回写 `visible=false`。
+- 外观：Bottom Card PUI Popup 复用首页的 Header/Overlay/间距合同，左侧 primary 圆形 Refresh 调用共享 `visualConfig.reset()` 并关闭渐变，正文只组合共享 `appearance-settings`。
 - 代码区：共享 `miniprogram/components/code-snippet` 组合 PUI Card、Button、Icon；横向代码阅读 viewport 使用 `--pui-bg-muted`、`--pui-radius-small` 与 `--pui-content-gap`，浅色为淡灰底、深色自动跟随主题。
 - 数据状态：PUI TopLoading、Loading、Empty 与全宽 PUI Button，分别处理同步中、请求失败、未发布 Page 和未发布 Skill
 - Skill：PUI Card + Icon + Tag；Skill 安装代码只有云端真实提供时才组合共享 `code-snippet`
@@ -83,11 +86,12 @@ Navbar 中只出现一次“安装”标题。内部路由与云端 `pageKey` �
 
 ## H5 边界
 
-该页是示例小程序的信息架构，不复制成官网组件页面。此次未改变任何共享 PUI 组件、Icon 字体或 H5 组件镜像；官网代码区继续使用既有 `previewCodeBlockSample`。这避免为应用页面伪造一套 H5 Tabbar 或未授权的云端入口。
+该页是示例小程序的信息架构，不复制成官网组件页面。本轮 Navbar 双 Slot、Info Dialog 与外观 Popup 只组合 Navbar/Button/Dialog/Popup/AppearanceSettings 已有共享能力，没有改变共享组件 API、Icon 字体或 H5 组件镜像；官网代码区继续使用既有 `previewCodeBlockSample`。这避免为应用页面伪造一套 H5 Tabbar、微信胶囊或未授权的云端入口。
 
 ## 验收
 
 - 第三 Tab 的目的地 value 仍为 `codex`，图标使用通用 `code` glyph，选中态仍由 Tabbar 短横承担。
+- Navbar 左侧只显示 Info 与菜单两个圆形 PUI IconButton；Info Dialog、外观 Popup、遮罩关闭、默认 Close、恢复默认和二者互斥均须真实回写。
 - 页面只展示云端 `published` Page 与 Skill；草稿、归档、网络失败和空集合不能被包装成内容已同步。
 - 云端 snippets 可以横向阅读、选择文本并分别复制准确内容；复制成功与失败均有真实状态反馈。
 - 未发布 Skill 时使用云端 `emptyDescription`，没有可点击假入口。

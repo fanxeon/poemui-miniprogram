@@ -9,6 +9,7 @@
     show-footer="{{showClassicFooter}}"
     close-btn="{{false}}"
     close-on-overlay-click="{{closeOnOverlayClick}}"
+    custom-style="--pui-popup-section-gap:var(--pui-picker-title-options-gap);"
     aria-label="{{semanticLabel}}"
     duration="{{reduceMotion ? 1 : 500}}"
     reduce-motion="{{reduceMotion}}"

@@ -50,7 +50,7 @@ function closeConfig(value) {
 
 function normalizeActions(actions) {
   if (!Array.isArray(actions)) return [];
-  return actions.map(function normalizeAction(item, index) {
+  return actions.slice(0, 2).map(function normalizeAction(item, index) {
     var config = buttonConfig(item, index === actions.length - 1 ? 'primary' : 'default') || buttonConfig('操作 ' + (index + 1), index === actions.length - 1 ? 'primary' : 'default');
     config.key = 'dialog-action-' + index;
     config.index = index;
@@ -66,7 +66,7 @@ Component({
     actions: { type: Array, value: [] },
     buttonLayout: { type: String, value: 'horizontal' },
     cancelBtn: { type: null, value: null },
-    closeBtn: { type: null, value: false },
+    closeBtn: { type: null, value: true },
     closeOnOverlayClick: { type: Boolean, value: false },
     confirmBtn: { type: null, value: null },
     content: { type: String, value: '' },
@@ -78,6 +78,7 @@ Component({
     zIndex: { type: Number, value: 11500 },
     ariaLabel: { type: String, value: '' },
     reduceMotion: { type: Boolean, value: false },
+    showFooter: { type: Boolean, value: false },
   },
   data: {
     rootClass: 'pui-dialog',
@@ -88,11 +89,12 @@ Component({
     normalizedCloseBtn: null,
     footerColumnCount: 1,
     hasHeader: false,
+    hasFooter: false,
     semanticLabel: '对话框',
     resolvedZIndex: 11500,
   },
   observers: {
-    'actions,buttonLayout,cancelBtn,closeBtn,confirmBtn,title,content,zIndex,ariaLabel,reduceMotion,colorScheme': function observeState() {
+    'actions,buttonLayout,cancelBtn,closeBtn,confirmBtn,title,content,zIndex,ariaLabel,reduceMotion,showFooter,colorScheme': function observeState() {
       this.syncState();
     },
   },
@@ -116,6 +118,7 @@ Component({
         normalizedCloseBtn: closeBtn,
         footerColumnCount: Math.min(2, Math.max(1, actionCount)),
         hasHeader: Boolean(this.data.title || closeBtn),
+        hasFooter: Boolean(actionCount || this.data.showFooter),
         semanticLabel: textOf(this.data.ariaLabel || this.data.title || '对话框').trim() || '对话框',
         resolvedZIndex: Math.round(clamp(this.data.zIndex, 1, 12000, 11500)),
       });

@@ -1,0 +1,150 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0476",
+  "title": "Avatar 资源加载态不应由页面外部控制",
+  "scope": "component",
+  "components": [
+    "avatar",
+    "loading"
+  ],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
+  "userGoal": "Avatar 自己管理图片懒加载与资源等待，并提供稳定持续加载示例；页面不得在外部拼装重复 Spinner。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "wechat-component-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "打开小程序 Avatar 独立页，页面通过 avatarLoading 和“结束加载”按钮控制组件覆盖层。",
+    "打开 H5 Avatar 页面并传入有效 src；镜像虽然生成 Loading，但没有注册真实 img load/error runtime，图片可能保持透明。",
+    "审计原生 WXML，image 未映射 lazy-load，Avatar 也无法聚焦开启懒加载。"
+  ],
+  "expected": "非空 src 由 Avatar 内部进入 Loading，真实 load/error 自动结束；lazy 只控制请求时机；loading=true 可持续保持同一个内部 Loading，页面不在外部拼 Spinner。",
+  "actual": "当前实现把公开 loading 与内部资源状态混合，独立页可手动宣布加载完成；H5 又缺少真实资源事件绑定。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "avatar/avatar.js",
+      "note": "公开 lazy 与 loading；内部根据强制态或 src/load/error 维护 showLoading，并隔离旧 src 事件。"
+    },
+    {
+      "kind": "file",
+      "ref": "avatar/avatar.wxml",
+      "note": "内部组合 PUI Loading，并把 lazy 映射到 image lazy-load。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 注册真实 img load/error、缓存完成检查与 lazy/eager 镜像。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/avatar/index.wxml",
+      "note": "独立页展示用户指定的真实 COS 头像、loading=true 持续内部等待和真实失败回退；没有外部 pui-loading。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-avatar.js",
+      "note": "锁定 13 Props、自动与强制内部 Loading、lazy、旧事件隔离和 H5 真实运行时。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://tdesign.tencent.com/miniprogram/components/avatar",
+      "note": "2026-07-29 联网核对 TDesign Avatar 用法，并交叉读取官方仓库与 tdesign-miniprogram@1.15.3 的 miniprogram_dist/avatar/props.js、type.d.ts、avatar.js、avatar.wxml、avatar.wxss；其 imageProps.lazy 证明懒加载应进入内部图片能力。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/avatar",
+      "note": "H5 真实 COS 头像 naturalWidth=200 且 loaded；持续态 aria-busy=true、内部 Loading 可见；缺失资源进入 error 回退。"
+    },
+    {
+      "kind": "browser",
+      "ref": "pages/components/avatar/index",
+      "note": "微信开发者工具合法 AppID 运行态确认真实 COS 头像 imageLoaded=true、持续态 loading/showLoading=true、缺失资源 imageFailed=true。"
+    }
+  ],
+  "rootCause": "上一轮把业务请求 loading 模式机械套到图片展示叶子，导致页面与组件重复持有同一资源状态；H5 同步时又只渲染初始 DOM，没有接上真实事件。",
+  "decision": {
+    "outcome": "新增 lazy Boolean，并保留 loading Boolean 作为 Avatar 内部 Loading 的强制态；非空 src 的自动等待、成功淡入、错误回退和地址切换全部由 Avatar 内部完成。",
+    "rationale": "图片 load/error 是组件可直接观测的资源事实，不需要父级再回写；loading 只为稳定持续等待场景强制同一内部视觉；聚焦 lazy 比全量 imageProps 透传更符合 PoemUI API 收敛。",
+    "alternativesRejected": [
+      "让页面在 Avatar 外部拼 pui-loading 会制造重复视觉与语义；loading 必须只控制组件内部覆盖层。",
+      "复制 TDesign imageProps 全量透传会把 Image 的大部分 API泄漏进 Avatar。",
+      "只在独立页叠加 Spinner 无法服务 npm 消费者。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "avatar/avatar.js",
+      "avatar/avatar.wxml",
+      "avatar/avatar.wxss",
+      "preview/app.js",
+      "metadata/components.js",
+      "miniprogram/pages/components/avatar/index.js",
+      "miniprogram/pages/components/avatar/index.wxml"
+    ],
+    "dependencies": [
+      "PUI Loading",
+      "image load/error"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-avatar.js",
+      "scripts/test-miniprogram-data-pages.js"
+    ],
+    "commands": [
+      "node scripts/test-avatar.js",
+      "node scripts/test-miniprogram-data-pages.js",
+      "npm run feedback:generate && npm run feedback:check",
+      "npm run site:build",
+      "npm run example:install",
+      "npm run pack:check",
+      "npm run check（Avatar precheck 通过；随后被未修改的 scripts/test-miniprogram-home.js:316 阻断）",
+      "wechatide -c codex-avatar build_npm --project \"/Users/fanx/Documents/poemUI 小程序组件库/miniprogram\" --compile-type miniprogram"
+    ],
+    "browser": [
+      "H5：真实 COS 头像 complete=true、naturalWidth=200、aria-busy=false；持续 loading 示例 aria-busy=true 且内部 Spinner 保持可见；失败图 naturalWidth=0 并显示回退。",
+      "H5 390px：document clientWidth/scrollWidth=375/375；API 含 13 Props，所有单元格 clipped=0、ellipsis=0。",
+      "微信模拟器：真实 COS 头像 imageLoaded=true；持续态 showLoading=true/loading=true；失败回退 imageFailed=true；页面截图为 /tmp/poemui-avatar-loading-real-profile.png。",
+      "微信 npm 构建 cost=1094ms、warnings=[]。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机图片缓存、COS 域名策略与 Loading 叠层待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "Avatar 的图片资源 Loading 属于组件内部状态，业务等待才属于外层宿主。",
+    "rules": [
+      "非空 src 自动显示内部 PUI Loading，并由真实 load/error 结束自动等待；loading=true 可持续保持同一个内部 Loading。",
+      "lazy 只控制何时请求，不能由页面用按钮模拟加载完成。",
+      "主题、形状和边线变化不得重置已加载图片，旧 src 事件不得覆盖新资源。",
+      "宿主业务 loading 继续放在外层 Button、Cell 或页面状态中，不要塞回 Avatar。"
+    ],
+    "tags": [
+      "avatar",
+      "loading",
+      "h5-parity"
+    ]
+  }
+}

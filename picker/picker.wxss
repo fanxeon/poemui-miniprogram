@@ -1,4 +1,5 @@
-.pui-picker { display: block; color: var(--pui-text-primary); }
+.pui-picker { --pui-picker-title-options-gap: 0; display: block; color: var(--pui-text-primary); }
+.pui-picker.pui-spacing--equal { --pui-picker-title-options-gap: var(--pui-surface-inset); }
 .pui-picker--inline { overflow: hidden; background: var(--pui-bg-container); border: 2rpx solid var(--pui-border-color); border-radius: var(--pui-radius-xlarge); }
 .pui-picker--disabled { opacity: .56; }
 .pui-picker__surface { overflow: hidden; background: inherit; border-radius: inherit; }

@@ -1,0 +1,159 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0498",
+  "title": "DynamicMessage 状态装饰需要一束连续且不破坏 Surface 的流光",
+  "scope": "component",
+  "components": ["dynamic-message", "preview-site", "miniprogram-advanced-page"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
+  "userGoal": "删除与胶囊圆角不一致的左侧直条和整段边框换色，用一束对应主题色的流光连续经过顶部与右侧；动画结束后保持完成态干净，且不能遮挡或破坏主容器毛玻璃。",
+  "environment": {
+    "surfaces": ["miniprogram-source", "npm-dist", "h5-preview", "miniprogram-advanced-page"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "desktop"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "显示 success DynamicMessage 并等待面板进入 visible。",
+    "观察左侧存在从上到下的绿色直条；它没有沿胶囊或展开面板的圆角轮廓转折。",
+    "直条在完成态持续存在，与同色 success Icon 重复表达状态。"
+  ],
+  "expected": "expanding 开始时，顶部与右侧 6rpx/3px 轨道内只有一束主题色对角渐变，以 1500ms 从顶部经过右上角并继续向右侧移动；面板仍在 320ms 后进入 visible，光束不中断、不重启，完成后自动清零。光束只能改变自身 opacity/background-position，根 Surface 的背景、毛玻璃和阴影在动画前中后保持不变。",
+  "actual": "第一版是长期可见的满高竖向 accent；随后版本虽然改成圆角边缘，但用整条上边与右边的 border-color 分段变化模拟流动，用户仍无法感知一束连续移动的流光，也担心装饰层结束时覆盖主容器毛玻璃。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前组件 battle 对话",
+      "note": "用户指出绿色直条是垂直的，与组件圆角边框语言不一致，并确认改为展开期半圈主题流光。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前组件 battle 复看",
+      "note": "用户确认小程序装饰描边直接提升到 6rpx，并要求流光比首版更显眼；同时询问浅色黑底是否等同 primary。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前组件 battle 复看",
+      "note": "用户确认 6rpx 强度后指出 320ms 流光仍太快，明确要求流光动画时间改为 1500ms。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前组件 battle 颜色复看",
+      "note": "用户进一步明确流光必须有颜色，并跟随 success、fail 等通知状态。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前组件 battle 单束流光复看",
+      "note": "用户否定整段边框换色方案，确认使用单束连续流光，并明确要求动画结束后不能遮挡或毁坏主容器毛玻璃。"
+    },
+    {
+      "kind": "file",
+      "ref": "dynamic-message/dynamic-message.wxml",
+      "note": "装饰节点改为 aria-hidden 的 edge-flow，不再渲染旧 accent。"
+    },
+    {
+      "kind": "file",
+      "ref": "dynamic-message/dynamic-message.wxss",
+      "note": "edge-flow 继承当前 Surface 圆角，由独立 edgeFlowActive transient 状态控制 1500ms，不再绑定 320ms panel phase。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 镜像使用同一阶段、主题色、圆角与低动效边界。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dynamic-message.js",
+      "note": "锁定旧竖条删除、1500ms 独立计时、visible 不中断也不重启、完成或关闭清理，以及 reduceMotion 无动画。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/dynamic-message",
+      "note": "H5 从空状态实点 success 与 error；success 在 visible 中保留 is-success is-edge-flowing 和 1500ms 根变量，error 在约 923ms 时仍为 visible + is-error + is-edge-flowing，约 2044ms 时 transient class 已清理。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/dynamic-message/index.wxml",
+      "note": "独立页提供稳定的真实 PUI Button 入口；微信开发者工具 390x844 截图 /tmp/poemui-dynamic-message-edge-flow-miniprogram.png 确认完成态无旧竖向 accent。"
+    }
+  ],
+  "rootCause": "旧 accent 没有沿 Surface 外轮廓运动；后续仅改变整段 border-color 的实现虽然消除了竖条，却仍没有独立的可移动光束。装饰态若直接挂在根背景或滤镜上，还会把瞬时动画生命周期与持久 Surface 效果耦合。",
+  "decision": {
+    "outcome": "双端 edge-flow 改为 L 形裁切轨道与唯一 edge-beam 子节点。轨道只暴露顶部和右侧 6rpx/3px 区域，光束使用一张对角 linear-gradient 背景从 0 0 连续移动到 100% 100%，固定 1500ms 从顶部经右上角走向右侧。根 Surface 独立持有 background、backdrop-filter 与 box-shadow；装饰状态只切换光束 opacity/background-position，结束、关闭或低动效只清理 transient class。",
+    "rationale": "单束渐变具有明确的空间位置和连续位移，用户能感知流动而不是整段边框换色。把 beam 作为 Surface 内部的装饰兄弟层并把内容提升到其上方，可同时保留圆角裁切、主题色、点击与毛玻璃合成；1500ms 计时继续独立于 500ms 组件进场。",
+    "alternativesRejected": [
+      "保留竖条并加圆角仍是永久重复状态，而且不能服从完整 Surface 外轮廓。",
+      "让整条上边、右边依次变色只是状态切换，不是一束光移动。",
+      "把整个边框长期染成 success/error 会让通知变成大面积状态色 Surface。",
+      "完整一圈循环或呼吸会造成持续动画噪声，并削弱内容可读性。",
+      "Canvas、mask 或 conic-gradient 会扩大平台兼容和性能风险，没有必要。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "dynamic-message/dynamic-message.wxml",
+      "dynamic-message/dynamic-message.wxss",
+      "miniprogram_dist/dynamic-message/dynamic-message.wxml",
+      "miniprogram_dist/dynamic-message/dynamic-message.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/DYNAMIC-MESSAGE.md",
+      "scripts/test-dynamic-message.js",
+      "scripts/test-miniprogram-advanced-pages.js",
+      "miniprogram/pages/components/dynamic-message/index.wxml",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md"
+    ],
+    "dependencies": ["PUI semantic colors", "PUI radius tokens", "DynamicMessage staged motion"]
+  },
+  "verification": {
+    "tests": ["scripts/test-dynamic-message.js", "scripts/test-miniprogram-advanced-pages.js"],
+    "commands": [
+      "node scripts/test-dynamic-message.js",
+      "node scripts/test-miniprogram-advanced-pages.js",
+      "npm run site:build",
+      "npm run example:install",
+      "npm run pack:check：通过，0.1.1 dry-run 为 559 files / 366.7 kB / shasum 33ba47f6c2a9f061b399faf923d4e34eb0d45952",
+      "npm run check：precheck 与 DynamicMessage 相关专项通过，完整 check 在既有首页 pageJson.enableShareTimeline 缺失断言停止",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --port 25928 --project /Users/fanx/Documents/poemUI 小程序组件库/miniprogram：1176ms / warnings=[]",
+      "微信 compile_wxml / compile_wxss：通过",
+      "DynamicMessage 源码、dist、示例安装、真实 node_modules、miniprogram_npm 五路 JS/JSON/WXML/WXSS SHA-256 一致：a0a795ac / dacf45e8 / 76f41c0a / 29666c92"
+    ],
+    "browser": [
+      "H5 desktop：实点开始生成后，expanding 中间帧回读唯一 beam 的 animationName=pui-dynamic-message-edge-flow、duration=1.5s、background-position 从 0 0 连续向 100% 100% 移动；进入 visible 后仍保持同一动画，结束后 animationName=none、flowOpacity=0。",
+      "H5 Surface 连续性：流光前/中/后根节点 background 均为 rgba(9,9,11,.78)、backdrop-filter 均为 blur(14px) saturate(1.2)、box-shadow 均为 0 18px 44px rgba(0,0,0,.34)；动画结束没有重建或覆盖主容器毛玻璃。",
+      "H5 语义色：双端 CSS 和专项测试固定 loading=#d4d4d8、info=信息色、success=成功色、warning=警告色、error=危险色；流光与 Icon 共用 --pui-dynamic-message-accent，Surface 保持中性反色黑底。",
+      "H5 reduceMotion=true：12ms 后 visible，edge animationName=none，全部阶段时长为 1ms；light/dark 下通知 Surface 与文字保持高对比。",
+      "H5 390px：document clientWidth/scrollWidth=375/375，PreviewDevice=351px，通知展开宽度约 319.39px，无页面级横向溢出。",
+      "微信 DevTools 390x844：加粗前真实 click 事件触发开始；同 key 更新回读 30%、phase=visible；success 回读 theme=success/duration=3000；reduceMotion 回读 visible 与 1ms 三段时长；控制台无 warning/error。最终 6rpx 已通过 1727ms/warnings=[] build-npm 与五路 hash，但自动化桥接返回 Bad Request，实际强度保留模拟器/真机复看。"
+    ],
+    "deviceRisks": [
+      "最终 6rpx 单束渐变在微信模拟器与 iOS/Android 真机仍需复看实际强度，并确认 clip-path L 形轨道、background-position 合成帧率与圆角裁切。",
+      "VoiceOver/TalkBack 不应感知 aria-hidden 装饰层，仍需目标设备确认。",
+      "低端 Android 在毛玻璃、外阴影和边框流光同时合成时的帧率仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "DynamicMessage 使用中性反色黑底而不是 primary；6rpx/3px 顶部与右侧轨道内只有一束状态色渐变，从 expanding 开始独立移动 1500ms。流光结束只清理装饰 class，不改写根 Surface 的背景、毛玻璃或阴影。",
+    "rules": [
+      "不得恢复满高竖向 accent 或在 visible 完成态保留主题色边框。",
+      "不得用整段上边、右边的 border-color 变化冒充流光；edge-flow 必须包含唯一 edge-beam，并只动画它的 background-position/opacity。",
+      "edge-flow 必须继承 Surface 圆角，从 expanding 开始以独立 transient 状态播放一次 1500ms；不得绑定 320ms panel phase。",
+      "面板进入 visible 时不得中断或重启尚未完成的流光；1500ms 到期、关闭、卸载或低动效必须清理 transient 状态。",
+      "edge-flow 固定为小程序 6rpx、H5 3px；不得因视觉弱化退回难以识别的细线。",
+      "edge-flow 必须与状态 Icon 共用当前 PUI 语义色：loading 中性灰、info 信息蓝、success 成功绿、warning 警告橙、error 危险红；不得固定为单一颜色。",
+      "浅色模式的黑底属于中性反色 Surface，不得误写成 primary 或随 primary 色板改变。",
+      "compact、collapsing、leave-compact 以及 1500ms transient 结束后的 visible 必须保持中性边框。",
+      "流光只表达通知展开和主题，不得表达业务成功或替代状态 Icon。",
+      "edge-flow 必须 aria-hidden、pointer-events:none，不能改变布局或命中区。",
+      "根 Surface 必须独立持有 background/backdrop-filter/box-shadow；流光开始、结束和关闭都不能改写或卸载这些效果。",
+      "reduceMotion 和系统低动效必须完全取消流光，不得压缩成闪烁。"
+    ],
+    "tags": ["dynamic-message", "edge-flow", "rounded-border", "staged-motion", "reduce-motion", "h5-parity", "no-fake-success"]
+  }
+}

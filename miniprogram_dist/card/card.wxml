@@ -1,1 +1,30 @@
-<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{rootStyle}}" role="{{clickable ? 'button' : 'region'}}" aria-label="{{ariaLabel}}" aria-disabled="{{disabled}}" hover-class="{{clickable && !disabled ? 'pui-card--hover' : 'none'}}" bindtap="onTap"><view wx:if="{{showHeader || title || description}}" class="pui-card__header"><view wx:if="{{title}}" class="pui-card__title">{{title}}</view><view wx:if="{{description}}" class="pui-card__description">{{description}}</view><slot name="header"></slot></view><view class="pui-card__content"><slot></slot></view><view wx:if="{{showFooter}}" class="pui-card__footer" catchtap="onFooterTap"><slot name="footer"></slot></view></view>
+<view class="{{rootClass}} {{customClass}}" style="{{customStyle}};{{rootStyle}}" role="{{clickable ? 'button' : 'region'}}" aria-label="{{ariaLabel}}" aria-disabled="{{disabled}}" hover-class="{{clickable && !disabled ? 'pui-card--hover' : 'none'}}" bindtap="onTap">
+  <view wx:if="{{showHeader || title || description || normalizedMenuItems.length}}" class="pui-card__header">
+    <view class="pui-card__header-main">
+      <view wx:if="{{title}}" class="pui-card__title">{{title}}</view>
+      <view wx:if="{{description}}" class="pui-card__description">{{description}}</view>
+      <slot name="header"></slot>
+    </view>
+    <view class="pui-card__header-right" catchtap="onFooterTap">
+      <slot name="header-right"></slot>
+      <pui-popover
+        wx:if="{{normalizedMenuItems.length}}"
+        visible="{{innerMenuVisible}}"
+        placement="bottom-end"
+        theme="light"
+        show-arrow="{{false}}"
+        fixed="{{true}}"
+        aria-label="卡片操作菜单"
+        reduce-motion="{{reduceMotion}}"
+        bind:visible-change="onMenuVisibleChange"
+      >
+        <pui-button icon="{{menuIcon || 'more-horizontal'}}" icon-only theme="default" variant="base" size="small" shape="circle" aria-label="更多操作" disabled="{{disabled}}" bind:click="onMenuTrigger" />
+        <view slot="content" class="pui-card__menu">
+          <pui-button wx:for="{{normalizedMenuItems}}" wx:key="_key" block content="{{item.label}}" icon="{{item.icon}}" theme="{{item.theme}}" variant="text" size="small" disabled="{{item.disabled}}" data-index="{{index}}" bind:click="onMenuSelect" />
+        </view>
+      </pui-popover>
+    </view>
+  </view>
+  <view class="pui-card__content"><slot></slot></view>
+  <view wx:if="{{showFooter}}" class="pui-card__footer" catchtap="onFooterTap"><slot name="footer"></slot></view>
+</view>

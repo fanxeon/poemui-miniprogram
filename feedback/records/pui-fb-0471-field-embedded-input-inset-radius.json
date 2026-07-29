@@ -1,0 +1,54 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0471",
+  "title": "Field 透明嵌入 Input 错误移除了输入内距与圆角",
+  "scope": "component",
+  "components": ["field", "input"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Field 内的真实输入文字保留左右呼吸空间，并随组件圆角保持焦点几何一致。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": ["打开 Field 独立页输入内容，旧透明变体把 Input field padding 与 radius 都归零，文字贴边且焦点轮廓变直角。"],
+  "expected": "Field 保持唯一 Surface；嵌入 Input 仅透明化背景、边框、阴影和毛玻璃，保留左右 space-sm 与 radius-medium。",
+  "actual": "旧样式把透明误等同于无内部几何，padding/radius 均为 0。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户明确指出 Field 输入框没有左右间距和圆角。"},
+    {"kind": "file", "ref": "field/field.wxss", "note": "嵌入 Input field 恢复 space-sm 内距与 radius-medium。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 fieldPreviewMarkup 同步相同内距与圆角，并在全局毛玻璃后置规则之后保持透明单 Surface。"},
+    {"kind": "test", "ref": "scripts/test-field.js", "note": "专项覆盖透明单 Surface 与跨端内部几何。"}
+  ],
+  "rootCause": "旧单 Surface 修复过度清零了 Input 的内容和焦点几何，把视觉 Surface 与控件内部命中结构混为一谈。",
+  "decision": {
+    "outcome": "保留 Field 唯一 Surface，同时恢复嵌入 Input 的 space-sm 内距和 medium 圆角；H5 用组件级后置选择器阻止全局 frosted Input 规则给嵌入控件加回第二层底色。",
+    "rationale": "透明嵌入不等于无可读内距，焦点边界仍属于真实 Input。",
+    "alternativesRejected": ["给页面输入值外包一层 padding 会制造第二个私有控件。", "恢复 Input 背景会回到双 Surface。"]
+  },
+  "impact": {
+    "files": ["field/field.wxss", "preview/styles.css", "scripts/test-field.js", "docs/components/FIELD.md", "feedback/records/pui-fb-0471-field-embedded-input-inset-radius.json"],
+    "dependencies": ["PUI Input", "PUI radius and spacing tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-field.js"],
+    "commands": ["node scripts/test-field.js：通过", "npm run example:install：通过", "微信 DevTools CLI build-npm：cost=1146ms，warnings=[]"],
+    "browser": [
+      "H5 390px 深色与果味实际计算：Field 内 Input padding-left/right=6px、border-radius=9px，背景 transparent、box-shadow=none、backdrop-filter=none，document 375/375；输入 PoemUI Field 保持同一 Surface。",
+      "微信开发者工具 iPhone 12/13 Pro 390x844：Field 核心示例和错误示例的 Input 均显示左右内距与跟随圆角；真实输入 Tabs 后页面回写“名称长度合适”；通过真实外观设置完成浅色→深色→恢复浅色，深色下输入内距、圆角与错误态保持清晰。"
+    ],
+    "deviceRisks": ["微信真机键盘、焦点轮廓与大圆角外观仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Field 的单 Surface 只透明化 Input 材质，不删除 Input 内容内距和焦点圆角。",
+    "rules": ["透明嵌入 Input 仍保留内部 padding/radius。", "不得以页面 wrapper 补组件输入几何。"],
+    "tags": ["field", "input", "padding", "radius", "single-surface", "h5-parity"]
+  }
+}

@@ -45,7 +45,7 @@ Navbar host
 - 默认返回与 `leftBtn/rightBtn` 均使用 Navbar 内部的 PUI Button + PUI Icon；标题加载使用 PUI Loading。
 - H5 必须调用共享 `iconButtonSample`、`buttonSample` 和 `loadingComponent`，不得手写原生 Button、图标字符或 Spinner。
 - 原生胶囊属于微信平台根，不是 PUI 子组件；H5 只用 `aria-hidden`、`pointer-events:none` 的 CSS 几何镜像，不赋予点击、菜单、关闭或成功结果。
-- `left/title/right` Slot 由消费者组合 PUI Tag、Badge、Button 等；Slot 内事件属于消费者。需要两个可监听图标入口时使用 `leftBtn/rightBtn`，不要依赖 Slot 事件跨组件边界。
+- `left/title/right` Slot 由消费者组合 PUI Tag、Badge、Button 等；Slot 内事件属于消费者。需要两个标准可监听图标入口时使用 `leftBtn/rightBtn`，不要依赖 Slot 事件跨组件边界。若其中一项必须保留 PUI Button 的 `open-type` 等平台属性，消费者可以在唯一 `left` Slot 内组合两个紧凑 PUI IconButton，并分别绑定真实平台/业务事件；Navbar 仍只负责胶囊镜像几何。
 
 ## 4. Token、间距、字号、圆角与布局
 
@@ -61,6 +61,7 @@ Navbar host
 - `title` Slot 与文字 `title` 是追加关系；消费者使用自定义标题时应省略 `title`，不增加 `customTitle` 开关。
 - `leftBtn/rightBtn` 是同一组内建左侧图标操作配置，形状固定为 `{ icon, ariaLabel }`。它们任一存在时替代默认返回与 `left` Slot，分别触发 `leftBtn` / `rightBtn`，使消费者能直接写 `bind:leftBtn` / `bind:rightBtn`。
 - 未配置 `leftBtn/rightBtn` 时，`left` Slot 位于默认返回之后；需要完全自定义左侧时关闭 `leftArrow`。Slot 仍适用于非标准组合，但其业务事件不由 Navbar 转发。
+- 双操作 `left` Slot 使用两个 `extra-small / text / transparent / circle / icon-only` PUI Button 与共享紧密 gap，保持在真实胶囊宽度镜像轨内。消费者不得为此穿透 Navbar、增加私有 left/top 偏移，或把平台 `open-type` 操作降级为普通 `leftBtn` 事件。
 - 默认 `capsule=true` 时 `right` Slot 不渲染；这是避免右上业务内容与原生胶囊重叠的硬边界。
 - 仅 `capsule=false` 时可使用 `right` Slot，且仍不提供 `rightIcon/rightText/rightLoading/rightDisabled/right-click` 平行 API。
 

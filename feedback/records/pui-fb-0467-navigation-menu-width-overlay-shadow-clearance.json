@@ -1,0 +1,89 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0467",
+  "title": "NavigationMenu 根轨、双栏尾轨、Panel 与 Header 几何漂移",
+  "scope": "component",
+  "components": ["navigation-menu"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "水平根入口保持横向排列：放得下时等宽铺满，低于可读最小宽度时允许局部横向滑动；父容器必须正确裁切滚动边界，不能用遮罩盖住内容或把预期可见的 Button 裁成半块。双栏左侧 Badge/Indicator 必须右对齐，右侧 Panel 完成态与 rail 保持完整阴影安全距，Header Close 必须右对齐且上/右间距相等。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "打开 NavigationMenu 独立页的开始使用示例，观察少量根入口仍按内容宽度触发横向滚动。",
+    "展开水平菜单，旧 H5 通过负 top/bottom 范围拼接遮罩，出现错位半透明带。",
+    "切换纵向双栏，Panel 从左向右展开时紧贴 Root rail，左侧外投影被覆盖。",
+    "2026-07-28 再次查看小程序独立页：先关闭横滚并把五项全部压缩，会让标题失去可读性；只给旧内容宽度轨增加裁切时，右侧“显示通知”又会只剩半个 Button。",
+    "用户进一步确认最终规则：适配时等宽，超过可读最小宽度时横向滑动；滑动内容必须被父 Trigger viewport 裁切，Panel/Overlay 不得被该边界遮挡。",
+    "双栏运行态量测：rail 右边为 166.03125px、Layer 左边为 178.03125px，但 Panel 因完成态仍残留入场 transform 实际左边退到 170.03125px；Badge/Indicator suffix 右边只有 122/119/112px，而 Button 右边为 163.03125px。",
+    "Header 运行态量测：Panel/Layer 完成态仍为 0.985 缩放，Close 所在 64rpx 轨比 56rpx Button 更宽，并叠加不等的纵横 padding，无法保证顶部与右侧相等。"
+  ],
+  "expected": "horizontal 根入口由真实 host 自适应：`scrollable=true` 时放得下则等宽，低于每项 208rpx 可读宽度时只在 Trigger viewport 内横向滚动；`scrollable=false` 时严格等宽并只截断标题；`wrap=true` 时按同一最小轨换行。只有 Trigger viewport 裁切，Panel/Overlay 保持兄弟层。双栏完成态 Panel 必须归零 transform，与 rail 保持默认 16px 阴影安全距；Badge/Indicator 进入右尾轨；Header Close 使用 56rpx 右轨并保持上/右 20rpx 等距。",
+  "actual": "旧实现只有两种水平失衡结果：按内容宽度无条件横滚，或关闭 x 轴后把所有项目压缩到不可读；粗暴裁切 track/host 会留下半个 Button 或先裁 Badge。双栏的 vertical 入场规则因选择器特异性压过通用 entered 规则，Panel 打开完成后仍停在 `translateX(-16rpx) scale(.985)`；12px 列距被残余位移压成 4px 视觉净距。根 Badge/Indicator 紧跟标题，Header 的 64rpx 操作轨、56rpx Button 和不同纵横 padding 也让 Close 右侧比顶部更宽。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户明确指出横滚、半透明遮罩错位和双栏阴影间距问题。"},
+    {"kind": "user-report", "ref": "/var/folders/2t/hbgcrd2n58n2j587pvlrr3gr0000gn/T/codex-clipboard-ecc5d6c3-e0e6-463b-b1a1-0791cb473264.png", "note": "用户截图证明外层直接裁切会把右侧 PUI Button 截成半块，不符合横向完整轨道要求。"},
+    {"kind": "file", "ref": "navigation-menu/navigation-menu.wxml", "note": "horizontal 仅在 scrollable 且非 wrap 时启用 x 轴；默认与 generic Trigger 都使用真实 trigger-host 和填充宿主 class，Layer 位于 ScrollView 之后。"},
+    {"kind": "file", "ref": "navigation-menu/navigation-menu.wxss", "note": "Trigger viewport 是唯一裁切边界；horizontal 使用自适应 host；vertical suffix 使用右尾轨，gap 为 offset + space-normal，entered transform 归零，Header Close 使用等宽轨与等距 inset。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/navigation-menu/index.js", "note": "horizontal 示例收敛为三个可读入口，完整五项继续由 vertical 双栏展示。"},
+    {"kind": "browser", "ref": "/tmp/poemui-navigation-menu-adaptive-3-fixed-390.png", "note": "微信开发者工具 390px：三个 horizontal PUI Button 均完整等宽落在容器内，标题、Badge 与 Indicator 可读。"},
+    {"kind": "browser", "ref": "/tmp/poemui-navigation-menu-adaptive-5-scrolled-final-390.png", "note": "同一运行态临时切换为五项并通过真实 ScrollViewContext 滚到末端；父边界裁切离屏内容，最后两项完整进入可视区。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "H5 同步根轨、双栏 gap，并让 Overlay 以 fixed inset 0 覆盖 PreviewDevice containing block。"},
+    {"kind": "test", "ref": "scripts/test-navigation-menu.js", "note": "专项锁定小程序/H5 的轨道、遮罩和阴影安全区合同。"}
+  ],
+  "rootCause": "根 PUI Button / generic Trigger 是自定义组件节点，内部 custom-class 不能约束组件宿主的外部几何；旧 track 又没有把“铺满、可读最小宽度、局部溢出”拆开。双栏另有三项独立根因：vertical Panel 入场选择器特异性高于通用 entered 选择器；gap 只有 12px；Button suffix 没有 auto 尾轨。Header 则用 64rpx Grid 轨承载 56rpx Button，并混用 8rpx 顶部与 20rpx 水平 padding。",
+  "decision": {
+    "outcome": "保留现有 scrollable，不新增 Prop。horizontal 且 scrollable 且非 wrap 时启用原生 x 轴，真实 host 使用 flex:1 0 208rpx；scrollable=false 严格等宽；wrap 使用同一最小轨换行。Trigger viewport 独占 overflow:hidden，Panel/Overlay 保持兄弟层。vertical Panel 的 entered 完成态显式使用 translateX(0) scale(1)，双栏 gap 使用 offset + space-normal；vertical Button suffix 以 margin-left:auto 进入右尾轨。Header 三列固定为 56rpx / 1fr / 56rpx，操作顶部对齐，四向 padding 统一使用 panel-padding-compact，标题独立垂直居中。",
+    "rationale": "可读宽度、滚动与裁切是三项不同职责。双栏的入场 transform、完成态几何和 Surface 阴影安全距也必须分别定义，不能让选择器优先级决定视觉终点。Badge/Indicator 属于尾部状态而非标题内容；Header 操作轨必须和真实 Button 同宽，才能用同一 inset 得到可量测的上/右等距。",
+    "alternativesRejected": [
+      "在独立页隐藏滚动条：没有修复真实内容宽度。",
+      "无条件关闭 horizontal x 轴：五项会被压缩到只剩图标或过度省略。",
+      "无条件按内容宽度横滚：三项明明放得下也无法稳定等宽。",
+      "只给 track/host 增加 overflow:hidden：会在父 viewport 之前把 Button、Badge 或 Indicator 裁掉。",
+      "继续扩大负 top/bottom：仍会随预览位置漂移。",
+      "给页面加左 margin：安装端组件仍会裁切阴影。",
+      "只扩大双栏 gap 而不修复 entered transform：Panel 仍会向左回退并保持 0.985 缩放。",
+      "继续用 64rpx 操作轨手调 Close margin：会破坏 back/close 对称与标题几何居中。"
+    ]
+  },
+  "impact": {
+    "files": ["navigation-menu/navigation-menu.js", "navigation-menu/navigation-menu.wxml", "navigation-menu/navigation-menu.wxss", "miniprogram/pages/components/navigation-menu/index.js", "miniprogram/pages/components/navigation-menu/index.wxml", "preview/styles.css", "scripts/test-navigation-menu.js", "scripts/test-miniprogram-navigation-pages.js", "docs/components/NAVIGATION-MENU.md", "docs/COMPONENT_API.md", "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md", "feedback/records/pui-fb-0467-navigation-menu-width-overlay-shadow-clearance.json"],
+    "dependencies": ["PUI Button", "PUI Popup-like overlay geometry", "PreviewDevice", "PUI spacing tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-navigation-menu.js"],
+    "commands": ["node scripts/test-navigation-menu.js：通过", "node scripts/test-miniprogram-navigation-pages.js：通过", "npm run feedback:generate && npm run feedback:check：478 records，通过", "npm run site:build：通过，74 component directories", "微信 DevTools build-npm：2026-07-28 horizontal 自适应复跑 cost=1017ms，双栏最终产物复跑 cost=1016ms，均 warnings=[]", "npm run pack:check：通过，当前0.1.1工作树559 files / 363.7 kB", "npm run check：precheck及NavigationMenu之前门禁通过，随后被本轮未修改的H5 search-clear原生按钮边界阻断", "git diff --check：通过"],
+    "browser": [
+      "H5 Chrome 390px 深色果味：四项 scrollable Trigger 均为 104px，水平 Trigger viewport clientWidth/scrollWidth=269/441，页面 375/375；超过可读宽度后只在组件内部横滚。展开 Overlay 实际覆盖 PreviewDevice 内框，vertical Panel 完成态显式清除 translateX 入场位移。",
+      "微信开发者工具 iPhone 12/13 Pro 390x844：默认三项 viewport/track=362/360px，三个真实 host 均117.328px，最右372.984px小于track right 375px，scrollWidth=360px、scrollLeft=0；实际点击“组件分类”后 visible=true、状态为“目录已展开”，Panel=362x342px；点击 PUI Close 后状态回写“目录已关闭”。",
+      "同一 390x844 运行态临时切换为五项：每个 host=108px、scrollWidth=550px；真实 ScrollViewContext 将 scrollLeft 从0滚至188px，末项移动到269..377px，父 viewport 边界保持14..376px。",
+      "同一五项数据把 scrollable 切为false后，根 class 真实变为fixed，五个host均69.594px、scrollWidth=360px；标题在Button内容轨省略，Badge/Indicator保留。",
+      "双栏修复前 rail/Layer/Panel 为14..166.03125 / 178.03125..376 / 170.03125..365.03046px，Panel 残留-8px位移与0.985缩放；修复后 Layer/Panel 均为182.03125..376px，rail→Panel净距16px。Badge/Indicator/dot suffix右边统一为158.03125px；Close相对Header内边界上/右为10.5/10px。浅色、深色阴影截图分别为/tmp/poemui-navigation-menu-vertical-tail-panel-close-390.png与/tmp/poemui-navigation-menu-vertical-tail-panel-close-dark-390.png。",
+      "调用真实 PUI Button onTap 后 vertical 父级 visible 与状态按true→false→true回写；Provider 临时切为dark+shadow后几何不变，并已恢复原light配置。",
+      "NavigationMenu JS/JSON/WXML/WXSS 在源码、miniprogram_dist、真实 node_modules、miniprogram_npm 四路逐字节一致，SHA-256 分别为29138d4259935c5c9889e58aace9798779c67457dcceee2f9de6573ff85595d1 / 0bc4c28ff624d4413c8e179706b15e1e5994d490375473142610d127c0ad846f / e0018ff97db14d7265ee6d005a164ad0e5eb40932ce2dba804f7cdddf96018ae / 14b30ae5973d38b51958d14d3bf3ffbf08c7c4920f20b1989fba465d4b6368c6。"
+    ],
+    "deviceRisks": ["iOS/Android 真机的触摸惯性、边界回弹、自定义组件宿主 flex、fixed 遮罩和 rpx 阴影仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "NavigationMenu 应先按可读宽度自适应；双栏 Panel 的 entered 终点必须归零，gap 包含阴影外扩，根状态进入右尾轨，Header 操作轨与 Button 同宽并使用等距 inset。",
+    "rules": [
+      "horizontal 根入口不能无条件横滚或无条件压缩；scrollable=true 时先等宽铺满，低于语义最小宽度才在局部 ScrollView 横向滚动。",
+      "自定义组件作为 flex item 时必须同时有真实 host 轨和填满 host 的组件宿主 class，不能假定内部 custom-class 能约束组件节点外部几何。",
+      "只有 Trigger viewport 可以裁切横向滚动内容；track/host 不得提前裁 Button、Badge 或 Indicator，Panel/Overlay 必须是 viewport 的兄弟层。",
+      "Overlay 禁止用负向魔法数拼接局部色带。",
+      "双栏浮层的列间距必须包含 Surface 阴影安全区，且 entered 完成态不得残留入场 transform。",
+      "双栏根 Badge/Indicator 属于右尾轨，不能紧跟标题漂移。",
+      "Header Close 的 Grid 轨必须与按钮同宽；顶部与右侧使用同一语义 inset，标题另行居中。"
+    ],
+    "tags": ["navigation-menu", "width", "overlay", "shadow", "390px", "h5-parity"]
+  }
+}

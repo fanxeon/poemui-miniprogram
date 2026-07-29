@@ -1,0 +1,103 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0478",
+  "title": "Image 独立页未展示加载与懒加载能力",
+  "scope": "component",
+  "components": [
+    "image",
+    "loading"
+  ],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Image 明确展示加载态和懒加载。",
+  "environment": {
+    "surfaces": [
+      "wechat-component-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开 Image 独立页。",
+    "旧页只提供 error 模拟，没有 loading/lazy 示例。"
+  ],
+  "expected": "独立页复用真实 Image loading/lazy/load/error 能力，H5 镜像浏览器 lazy。",
+  "actual": "能力虽在共享源码存在，但用户路径不可见。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "image/image.wxml",
+      "note": "共享组件已有 lazy-load 与 PUI Loading。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/image/index.wxml",
+      "note": "独立页启用 lazy/loading。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 使用 img loading=lazy。"
+    }
+  ],
+  "rootCause": "演示只覆盖错误态，未把完整资源状态合同接入页面。",
+  "decision": {
+    "outcome": "保留共享 API，补齐独立页受控 loading 与 lazy 示例。",
+    "rationale": "不重复实现已有能力。",
+    "alternativesRejected": [
+      "新增第二套 lazy API 会破坏现有合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/components/image/index.js",
+      "miniprogram/pages/components/image/index.wxml",
+      "docs/components/IMAGE.md"
+    ],
+    "dependencies": [
+      "native image lazy-load",
+      "PUI Loading"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-image.js"
+    ],
+    "commands": [
+      "node scripts/test-image.js"
+    ],
+    "browser": [
+      "微信开发者工具真实资源 load 后页面回写 imageLoading=false；模拟 error 与恢复分别回写 true/false。",
+      "H5 镜像使用真实 img loading=lazy 并保留 load/error 状态映射。"
+    ],
+    "deviceRisks": [
+      "真机视口懒加载时机待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "已有共享能力优先补演示闭环，不能重造 API。",
+    "rules": [
+      "外部 loading/error 不伪造 load/error。"
+    ],
+    "tags": [
+      "image",
+      "lazy-load",
+      "loading"
+    ]
+  }
+}

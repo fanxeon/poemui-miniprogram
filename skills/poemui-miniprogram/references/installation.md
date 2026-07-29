@@ -3,7 +3,7 @@
 ## 版本与来源
 
 - 最低适配版本：`0.1.0`
-- 当前验证版本：`0.1.0`
+- 当前验证版本：`0.1.2`
 - 包名：`poemui-miniprogram`
 - 组件根：`miniprogram_dist/`
 - 公共 npm 或 GitHub 只有在真实注册表/远端可读取后才算可用。
@@ -17,7 +17,7 @@ npm view poemui-miniprogram version
 只有命令返回目标版本，才使用：
 
 ```bash
-npm install poemui-miniprogram@0.1.0 --save --production
+npm install poemui-miniprogram@0.1.2 --save --production
 ```
 
 未公开发布时，使用维护者提供并经 SHA/来源确认的本地 tarball；不要自行从未知 URL 下载。

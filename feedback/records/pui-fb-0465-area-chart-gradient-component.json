@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0465",
+  "title": "Area Chart 视觉参考需要转译为真实原生 AreaChart 组件",
+  "scope": "component",
+  "components": ["area-chart", "preview-site", "miniprogram", "theme-tokens"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "参考 shadcn/ui Area Chart 新增可发布的 PoemUI AreaChart，并让实体描边与渐变到透明的配色同步到小程序和 H5，归入 0.1.1。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview", "npm-package", "component-catalog"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390px", "PreviewDevice 622px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "查看高级组件目录，修复前只有 BarChart 与 Waffle，没有连续趋势图。",
+    "查看 shadcn/ui Area Chart gradient 示例，其实现依赖 React/Recharts/Card，不能直接成为原生微信组件。",
+    "检查历史 Chart 研究入口，它没有 npm packageId、原生路由或跨端公开 API。"
+  ],
+  "expected": "提供真实 AreaChart 源码、AreaChartItem 数据合同、natural/linear/step、叠加/堆叠、共享零基线、Grid/XAxis/Legend/Dots、H5 SVG 镜像、独立小程序页、合同、测试和发布产物。",
+  "actual": "修复前没有 AreaChart 组件，直接复制 shadcn 示例会引入不可用的 React/Recharts 与 Card/Tooltip 边界。",
+  "evidence": [
+    {"kind": "browser", "ref": "https://ui.shadcn.com/charts/area", "note": "2026-07-28 读取官方 Area Chart 页面与 Gradient 示例。"},
+    {"kind": "browser", "ref": "https://raw.githubusercontent.com/shadcn-ui/ui/main/apps/v4/registry/new-york-v4/charts/chart-area-gradient.tsx", "note": "固定参考主分支提交 3150ac35a62e767eba39cc90730e9daeaa5be76f 的渐变源码。"},
+    {"kind": "file", "ref": "area-chart/area-chart.js", "note": "原生 Canvas 2D 读取继承后的 Chart Token 并绘制真实曲线。"},
+    {"kind": "file", "ref": "common/utils/area-chart-data.js", "note": "集中处理系列归一化、共享比例、三种曲线和堆叠几何。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 使用同数据合同的 SVG path 与 linearGradient 镜像。"},
+    {"kind": "test", "ref": "scripts/test-area-chart.js", "note": "覆盖数据、几何、Canvas/SVG、metadata、合同、独立页和发布入口。"}
+  ],
+  "rootCause": "外部视觉参考提供的是浏览器 React 图表组合，不是微信原生组件；如果不先定义数据、渲染和 Surface 边界，就只能得到静态演示或不可安装依赖。",
+  "decision": {
+    "outcome": "新增具体 AreaChart 而非通用 Chart：小程序用 Canvas 2D，H5 用 SVG，共享 AreaChartItem、曲线、堆叠和 Token 语义；保留实体描边与竖向渐隐原则，删除 Recharts、Tooltip 和 Card 假依赖。",
+    "rationale": "Canvas 2D 能在微信端真实表达连续曲线，SVG 便于 H5 检查几何和 Token；具体组件边界可完整测试并发布。",
+    "alternativesRejected": [
+      "直接复制 shadcn React/Recharts：无法在原生微信小程序运行。",
+      "用静态 SVG 或图片：不能响应 items、主题、曲线或堆叠。",
+      "把面积图写死在页面：不能作为 npm 组件复用。",
+      "恢复泛化 Chart：扩大 API 到本轮无法验收的坐标轴、Tooltip 和缩放。"
+    ]
+  },
+  "impact": {
+    "files": ["area-chart/", "common/utils/area-chart-data.js", "common/style/theme.wxss", "metadata/components.js", "preview/app.js", "preview/styles.css", "miniprogram/pages/components/area-chart/", "docs/components/AREA-CHART.md", "scripts/test-area-chart.js"],
+    "dependencies": ["ConfigProvider", "PreviewDevice", "Canvas 2D", "component catalog", "miniprogram_dist"]
+  },
+  "verification": {
+    "tests": ["scripts/test-area-chart.js", "scripts/test-miniprogram-component-pages.js", "scripts/test-appearance-contract-matrix.js"],
+    "commands": [
+      "PUI_VERIFY_DIST=1 node scripts/test-area-chart.js：通过",
+      "node scripts/test-miniprogram-component-pages.js：通过",
+      "node scripts/test-appearance-contract-matrix.js：通过",
+      "npm run site:build && npm run pack:check && npm run example:install：通过",
+      "npm pack + miniprogram npm install --no-save --package-lock=false：真实工程安装本地 0.1.1 验收包",
+      "微信 build-npm：cost=872ms、warnings=[]；AreaChart source/dist/example/consumer/miniprogram_npm 聚合 SHA-256 均为 8bf7f0e5239f796da3c2a3d14923ab5c66d6d1afbbe9128ab319371c02fbc284",
+      "npm run check：图表、metadata、页面、外观与全局动效均通过，最终被既有 Search H5 search-clear 私有按钮门禁阻断"
+    ],
+    "browser": [
+      "H5 390×844 实测 AreaChart 根宽 271px，2 个 area、2 条 line、2 组 linearGradient、4 个 stop 与 6 个 XAxis 标签真实存在；页面和 PreviewDevice 横向溢出均为 0。",
+      "深色 Blue/Teal 描边分别为 rgb(96,165,250) / rgb(45,212,191)，浅色 Blue 为 rgb(37,99,235)；根在两主题下均为透明、无阴影、无 filter。",
+      "5% / 95% stop 与 --pui-chart-area-fill-start/end 实际挂载；replay 后读取到 area opacity 0.87673→1、translateY 0.616351px→0、line dash offset 0.12327px→0 的中间帧。"
+    ],
+    "deviceRisks": ["微信 iOS/Android 真机的 Canvas DPR、曲线抗锯齿、主题继承、读屏和横竖屏仍待验证。"]
+  },
+  "ai": {
+    "summary": "外部 Area Chart 只作为视觉和信息层级参考；PoemUI 必须转译为原生 Canvas + H5 SVG 的具体组件合同。",
+    "rules": [
+      "AreaChart 小程序使用 Canvas 2D，H5 使用同数据合同的 SVG，不得使用截图。",
+      "所有系列共用从 0 开始的比例；堆叠只改变系列下边界，不改变数据。",
+      "组件根保持透明，不复制 shadcn Card 或 Tooltip。",
+      "外部参考必须记录 URL、日期和固定提交；不能凭模型记忆声称对齐。"
+    ],
+    "tags": ["area-chart", "shadcn", "canvas", "svg", "gradient", "miniprogram", "h5"]
+  }
+}

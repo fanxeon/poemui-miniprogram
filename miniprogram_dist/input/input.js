@@ -75,6 +75,7 @@ Component({
     align: { type: String, value: 'left' },
     bordered: { type: Boolean, value: true },
     clearable: { type: Boolean, value: false },
+    clearTrigger: { type: String, value: 'focus' },
     prefix: { type: String, value: '' },
     prefixIcon: { type: String, value: '' },
     suffix: { type: String, value: '' },
@@ -107,10 +108,13 @@ Component({
     invalidState: false,
     interactive: true,
     semanticLabel: '输入框',
-    normalizedStatus: 'default'
+    normalizedStatus: 'default',
+    normalizedClearTrigger: 'focus',
+    hasClear: false,
+    showClear: false
   },
   observers: {
-    'value,defaultValue,name,label,placeholder,type,maxlength,maxcharacter,size,align,bordered,clearable,prefix,prefixIcon,suffix,suffixIcon,disabled,readonly,loading,focus,confirmType,status,tips,required,cursorSpacing,adjustPosition,holdKeyboard,confirmHold,ariaLabel,reduceMotion,colorScheme': function syncStateObserver() {
+    'value,defaultValue,name,label,placeholder,type,maxlength,maxcharacter,size,align,bordered,clearable,clearTrigger,prefix,prefixIcon,suffix,suffixIcon,disabled,readonly,loading,focus,confirmType,status,tips,required,cursorSpacing,adjustPosition,holdKeyboard,confirmHold,ariaLabel,reduceMotion,colorScheme': function syncStateObserver() {
       this.syncState();
     }
   },
@@ -149,12 +153,14 @@ Component({
       var size = normalizeEnum(this.data.size, ['small', 'medium', 'large'], 'medium');
       var align = normalizeEnum(this.data.align, ['left', 'center', 'right'], 'left');
       var status = normalizeEnum(this.data.status, ['default', 'success', 'warning', 'error'], 'default');
+      var clearTrigger = normalizeEnum(this.data.clearTrigger, ['focus', 'always'], 'focus');
       var interactive = !(this.data.disabled || this.data.readonly || this.data.loading);
       var inputFocus = interactive && !!(this.data.focus || this.data.methodFocus || this.data.focused);
       var type = normalizeEnum(this.data.type, ['text', 'number', 'idcard', 'digit', 'safe-password', 'password', 'nickname'], 'text');
       var confirmType = normalizeEnum(this.data.confirmType, ['done', 'go', 'next', 'search', 'send'], 'done');
       var label = this.data.label === 'slot' ? '' : this.data.label;
       var semanticLabel = (this.data.ariaLabel || label || this.data.placeholder || '输入框').trim() || '输入框';
+      var hasClear = !!(this.data.clearable && innerValue && interactive);
 
       this.setData({
         innerValue: innerValue,
@@ -180,6 +186,9 @@ Component({
         interactive: interactive,
         semanticLabel: semanticLabel,
         normalizedStatus: status,
+        normalizedClearTrigger: clearTrigger,
+        hasClear: hasClear,
+        showClear: !!(hasClear && (clearTrigger === 'always' || this.data.focused)),
         inputFocus: inputFocus
       });
     },

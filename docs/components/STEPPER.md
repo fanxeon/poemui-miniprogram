@@ -39,7 +39,7 @@ Stepper(group)
 - 动效固定消费 `--pui-duration-normal` / `--pui-ease-standard`，默认 500ms；`reduceMotion` 为真时压缩为 1ms，不暴露私有 duration/easing。
 - 颜色、边界、圆角、阴影、焦点与禁用态只消费 PUI 语义 Token。
 - `inputWidth` 只控制中间输入区域宽度；尺寸枚举映射到 PUI Button/Input 的标准尺寸，不通过 `!important` 或魔法数改写子组件几何。
-- 小程序自定义组件宿主也属于组合几何：Stepper 根固定为“两侧标准 Button 轨 + 中间 `inputWidth` 轨”，并在同一有界 Surface 内裁切。微信 WebView 会让 PUI Input 宿主按流式宽度参与排版，因此小程序端必须使用实测后的固定坐标轨；视觉顺序始终为 `minus / value / plus`，不得回退为被宿主宽度推散的三段控件。该定位只负责编排，不改写 Button/Input 的标准高度、padding 或字号。
+- 小程序自定义组件宿主也属于组合几何：Stepper 根固定为“两侧标准 Button 轨 + 中间 `inputWidth` 轨”的 `inline-grid`，WXML 必须按 `minus / value / plus` 顺序提供三个真实包装轨，并让 PUI Button/Input 宿主在各自轨内占满。禁止再用自定义组件宿主的 absolute `left/right` 坐标交换视觉顺序；该做法在真机可能只留下最后覆盖的加号。物理三轨只负责编排，不改写 Button/Input 的标准高度、padding 或字号。
 - `normal / filled / outline` 只改变 Surface 关系，不改变控件尺寸、布局或事件语义。
 
 ## 5. 内容、Slot 与组合边界

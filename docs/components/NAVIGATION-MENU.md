@@ -16,7 +16,7 @@
 
 ```text
 Navigation(role=navigation)
-├─ root trigger scroll / menubar
+├─ root trigger viewport / menubar
 │  └─ Button + optional Badge / indicator
 └─ retained Layer（打开期间）
    ├─ Overlay（条件）
@@ -32,12 +32,13 @@ Navigation(role=navigation)
 ## 3. PUI 组合、内容与 Slot
 
 - 默认 Trigger 只能由 `buttonSample` / PUI Button 组合 Badge 与 Icon；位于 Trigger suffix 的 Badge 必须镜像原生空宿主的静态内联布局，不能继续绝对定位到菜单根或被 Trigger 裁切。默认 Item 只能由 `cellSample` / PUI Cell 组合，组件自定义 generic 才能替换对应内容。
-- 默认 Header 的可用 back 与 close 必须使用 PUI 的实底圆形 IconButton：小程序为 `pui-button variant="base" shape="circle" size="small" icon-only`，H5 为 `iconButtonSample`。两者均固定 `56rpx / 28px`、中性实底和高对比图标；根层 `canBack=false` 时不渲染禁用按钮，只保留同尺寸、不可交互且无 Surface 的空轨平衡三列标题，禁止出现半透明幽灵控件、透明 text 变体或裸 `×`/箭头字形。
+- 默认 Header 的可用 back 与 close 必须使用 PUI 的实底圆形 IconButton：小程序为 `pui-button variant="base" shape="circle" size="small" icon-only`，H5 为 `iconButtonSample`。两者均固定 `56rpx / 28px`、中性实底和高对比图标；小程序 Header 的左右轨固定为按钮同宽，操作轨顶部对齐，Close 的顶部与右侧共同消费 `--pui-panel-padding-compact`，标题轨独立垂直居中。根层 `canBack=false` 时不渲染禁用按钮，只保留同尺寸、不可交互且无 Surface 的空轨平衡三列标题，禁止出现半透明幽灵控件、透明 text 变体或裸 `×`/箭头字形。
 - `header/default/footer/empty` 是消费者组合区域。自定义 Slot 不得绕过 Layer、焦点、关闭、状态优先级或受控回写，也不得覆盖 Button/Cell/Badge 的几何。
 - `direction="vertical"` 是左侧 Root rail + 右侧 Panel 的同层工作区：Panel 不能仍在 Root 下方展开并留下空白右列。该模式为保证可读内容区固定占满父级可用宽度；`panelWidth=0` 时右侧自动占用余量，传入值时在余量内收窄。
-- 垂直工作区的组件根必须使用现有间距 Token 为右侧 Panel 的下投影预留安全区；不得让后续状态文字或父级滚动裁切覆盖 Panel 阴影，也不得用页面私有 margin 补救。
+- 垂直工作区的两列间距必须由 `offset + space-normal` 共同组成；默认 390px 下为 `6px + 10px = 16px`，为右侧 Panel 的左侧投影预留完整安全区。Panel 的 entered 完成态必须归零为 `translateX(0) scale(1)`，不得残留入场位移或缩放。Root rail 的 Badge/Indicator 统一进入 Button 右侧尾轨；不得让 rail、后续状态文字或父级滚动裁切覆盖 Panel 阴影，也不得用页面私有 margin 补救。
 - 页面底部的水平浮层属于绝对定位内容，不会自然撑高父级 ScrollArea；消费者应在展开期间通过 ScrollArea `contentPaddingBottom` 预留面板高度，关闭后恢复默认 `10vh`。
 - Error 使用 PUI Empty 后的同级 Retry Button；retry 仅发出请求，必须等待 Props 回写，不能自动假定恢复。
+- 小程序独立页不为 visible、value、expandedValue、checkedValues 或 radioValues 增加“已展开/已关闭/已选择”等重复状态文字；这些结果由组件本体表达。只有页面真实回写 error 恢复完成后，才可通过 ScrollArea 外的共享 `component-page-feedback` 显示 DynamicMessage，且不得覆盖 Error + Retry 的近场恢复入口。
 
 ## 4. 状态、受控与事件
 
@@ -50,7 +51,8 @@ Navigation(role=navigation)
 - Layer/Panel/内容双 pane 只过渡受测的 transform、opacity 和尺寸，默认 500ms、最大 1000ms；`reduceMotion` 与系统低动效均为 1ms。
 - WXSS 必须通过根节点的时长 Token 传递低动效，禁止以 `*` 覆盖 Trigger、Cell、Badge 或消费者 Slot。
 - 根为 navigation，Trigger 容器为 menubar，Panel 为 menu；Cell 键盘 Enter/Space 必须走同一选择路径并标记 `source=keyboard`。
-- 390px 下根横滚、Panel、长说明、Badge、快捷键和子菜单只在组件内部滚动/换行，禁止页面级横向溢出。垂直模式中 Badge/Indicator 是不收缩的 Trigger suffix，文字可截断但 Badge 不得被裁掉。
+- 390px 下 horizontal 根入口采用自适应宽度。Trigger viewport 是唯一 `overflow:hidden` 的裁切边界，Panel/Overlay 必须作为它的兄弟层保持可见。`scrollable=true && wrap=false` 时，每个真实 `trigger-host` 以 `208rpx` 为可读最小宽度：总宽放得下时共同等分铺满，超过容器时只在 Trigger viewport 内横向滚动；屏幕边界可裁切尚未滚入的项目，但不得用不透明遮罩盖住文字。`scrollable=false` 时所有 host 使用 `flex:1 1 0; min-width:0` 严格等分，只允许 Button 内部标题单行省略。`wrap=true` 时按同一 `208rpx` 最小轨换行，不建立横向滚动。默认 PUI Button 与自定义 `navigation-trigger` 的组件宿主都必须填满 host；Badge/Indicator 后缀不可被文字挤出。vertical 模式只保留自身纵向 ScrollView、满宽单列 Trigger 与完整 Badge。
+- Overlay 必须使用 fixed 四向 `0` 覆盖真实页面 viewport；H5 由 PreviewDevice 自身的 containing block 与裁切边界限制为完整设备 viewport。禁止通过负 top/bottom 魔法数拼出只覆盖组件附近的半透明带。
 
 ## 6. H5 与跨端边界
 

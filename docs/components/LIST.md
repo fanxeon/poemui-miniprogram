@@ -70,3 +70,16 @@
 ## 13. 2026-07-27 连续列表演示
 
 独立页和 H5 默认示例应提供足以滚动浏览的连续条目，并保留一个禁用项和真实 Footer 状态；不以 Card 网格或假加载完成代替。证据：`miniprogram/pages/components/list/index.js`、`preview/app.js`、`PUI-FB-0434`。
+
+## 14. 2026-07-28 加载更多闭环
+
+List 本体继续只发布 `load/retry`；独立页与 H5 演示父级必须在事件后真实回写 `loading=true`，完成后追加条目并更新 `finished/error`。默认动效为 500ms，不能只改事件文案或在 List 内自动成功。
+
+## 15. 2026-07-29 尾部追加展开与 API 边界
+
+- 已有非空 `items` 尾部真实追加条目时，只让新增索引进入 `max-height + opacity + transform` 展开；首次渲染、同长度替换、移除和仅状态变化不得重播。
+- 展开继续消费既有 `duration / easing / reduceMotion`，不新增 `expanded`、`animate`、`after-expand` 或另一套动效参数。动画只表达 DOM 已由父级追加，绝不代表请求成功。
+- `load/retry` 的事件与父级回写合同不变；`useSlot=true` 的默认 Slot 是消费者 DOM，List 不包裹或猜测其条目增量，Slot 内动效由消费者负责。
+- 小程序独立页不得传入不存在的 `retryText`；默认 Footer 的可见 Retry 文案复用 `errorText`。若未来需要拆分错误说明和操作文案，必须先完成公共 API 决策，不能让演示静默使用无效 Prop。
+- 2026-07-29 对照确认 TDesign 小程序 `1.15.3` 没有与 PoemUI 数据分页 List 同名同责的公开包；官方 Cell/CellGroup 负责连续信息行，Footer 负责静态页脚，均不提供分页追加或展开事件。因此本项不虚构 TDesign List API，只参考 `cell/{props.js,type.d.ts,cell.js,cell.wxml,cell.wxss}` 与 `footer/{props.js,type.d.ts,footer.js,footer.wxml,footer.wxss}` 的组合边界。
+- H5 最终汇总需在 `preview/app.js` 记录前一批 item 数，并只给新增尾项挂进入 class；`preview/styles.css` 镜像同名时长、缓动和 1ms 低动效。专项测试必须覆盖首次不播、追加只播新增项、重复渲染不重播、Slot 不越权和 `load/retry` 仍只发请求。

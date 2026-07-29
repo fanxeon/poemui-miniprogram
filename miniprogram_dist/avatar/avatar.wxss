@@ -49,3 +49,13 @@
   transition: opacity var(--pui-avatar-duration, var(--pui-duration-normal)) var(--pui-ease-standard);
 }
 .pui-avatar__image--loaded { opacity: 1; }
+.pui-avatar__loading {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pui-text-inverse);
+  background: var(--pui-bg-muted);
+}

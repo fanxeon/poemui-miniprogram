@@ -2,7 +2,7 @@
 
 > 本文件由 `metadata/components.js` 自动生成。修改组件状态、公开 Props 或官网目录时，请运行 `npm run site:build`。
 
-当前 npm 包包含 71 个组件目录：`done` 71 个，`beta` 0 个，`experimental` 0 个。
+当前 npm 包包含 74 个组件目录：`done` 74 个，`beta` 0 个，`experimental` 0 个。
 
 - `done`：稳定发布组件，核心 API 与主交互已完成验证。
 - `beta`：具有独立 WXML、WXSS、JS 实现的受控发布组件，主路径可用，复杂 API 按版本继续扩展。
@@ -60,9 +60,9 @@
 | Form 表单 | done | `poemui-miniprogram/form/form` | `data`、`rules`、`showErrorMessage`、`scrollToFirstError`、`resetType`、`ariaLabel`、`reduceMotion` |
 | Field | done | `poemui-miniprogram/field/field` | `name`、`label`、`help`、`message`、`status`、`required`、`requiredMarkPosition`、`labelAlign`、`contentAlign`、`labelWidth`、`arrow`、`reduceMotion` |
 | Label | done | `poemui-miniprogram/label/label` | `content`、`required`、`disabled`、`colon` |
-| Input | done | `poemui-miniprogram/input/input` | `value`、`defaultValue`、`name`、`label`、`placeholder`、`type`、`maxlength`、`maxcharacter`、`size`、`align`、`bordered`、`clearable`、`prefix`、`prefixIcon`、`suffix`、`suffixIcon`、`disabled`、`readonly`、`loading`、`focus`、`confirmType`、`status`、`tips`、`required`、`cursorSpacing`、`adjustPosition`、`holdKeyboard`、`confirmHold`、`ariaLabel`、`reduceMotion` |
+| Input | done | `poemui-miniprogram/input/input` | `value`、`defaultValue`、`name`、`label`、`placeholder`、`type`、`maxlength`、`maxcharacter`、`size`、`align`、`bordered`、`clearable`、`clearTrigger`、`prefix`、`prefixIcon`、`suffix`、`suffixIcon`、`disabled`、`readonly`、`loading`、`focus`、`confirmType`、`status`、`tips`、`required`、`cursorSpacing`、`adjustPosition`、`holdKeyboard`、`confirmHold`、`ariaLabel`、`reduceMotion` |
 | Input OTP | done | `poemui-miniprogram/input-otp/input-otp` | `value`、`length`、`type`、`mask`、`focus`、`disabled`、`error`、`errorMessage` |
-| Textarea | done | `poemui-miniprogram/textarea/textarea` | `value`、`defaultValue`、`name`、`label`、`placeholder`、`maxlength`、`maxcharacter`、`autosize`、`indicator`、`bordered`、`size`、`clearable`、`disabled`、`readonly`、`loading`、`focus`、`status`、`tips`、`required`、`confirmType`、`showConfirmBar`、`cursorSpacing`、`selectionStart`、`selectionEnd`、`adjustPosition`、`holdKeyboard`、`confirmHold`、`disableDefaultPadding`、`ariaLabel`、`reduceMotion` |
+| Textarea | done | `poemui-miniprogram/textarea/textarea` | `value`、`defaultValue`、`name`、`label`、`placeholder`、`maxlength`、`maxcharacter`、`autosize`、`indicator`、`bordered`、`size`、`disabled`、`readonly`、`loading`、`focus`、`status`、`tips`、`required`、`confirmType`、`showConfirmBar`、`cursorSpacing`、`selectionStart`、`selectionEnd`、`adjustPosition`、`holdKeyboard`、`confirmHold`、`disableDefaultPadding`、`ariaLabel`、`reduceMotion` |
 | Search 搜索 | done | `poemui-miniprogram/search/search` | `value`、`defaultValue`、`placeholder`、`clearable`、`clearTrigger`、`showCancel`、`cancelText`、`shape`、`center`、`maxlength`、`maxcharacter`、`disabled`、`readonly`、`focus`、`confirmType`、`ariaLabel`、`reduceMotion` |
 | Checkbox | done | `poemui-miniprogram/checkbox/checkbox` | `checked`、`defaultChecked`、`value`、`label`、`content`、`icon`、`indeterminate`、`checkAll`、`block`、`borderless`、`contentDisabled`、`disabled`、`readonly`、`name`、`placement`、`maxLabelRow`、`maxContentRow`、`ariaLabel`、`reduceMotion` |
 | Radio Group | done | `poemui-miniprogram/radio/radio` | `checked`、`defaultChecked`、`value`、`label`、`content`、`icon`、`allowUncheck`、`block`、`borderless`、`contentDisabled`、`disabled`、`readonly`、`name`、`placement`、`maxLabelRow`、`maxContentRow`、`ariaLabel`、`reduceMotion` |
@@ -82,13 +82,13 @@
 | 组件/能力 | 状态 | 路径 | 当前交付边界 |
 | --- | --- | --- | --- |
 | Accordion | done | `poemui-miniprogram/collapse/collapse` | `items`、`value`、`defaultValue`、`theme`、`disabled`、`expandIcon`、`expandMutex`、`defaultExpandAll`、`customPanel`、`loading`、`loadingText`、`error`、`errorText`、`retryText`、`emptyText`、`ariaLabel`、`reduceMotion` |
-| Avatar | done | `poemui-miniprogram/avatar/avatar` | `src`、`text`、`alt`、`icon`、`shape`、`size`、`bordered`、`hideOnLoadFailed`、`useSlot`、`ariaLabel`、`reduceMotion` |
+| Avatar | done | `poemui-miniprogram/avatar/avatar` | `src`、`text`、`alt`、`icon`、`shape`、`size`、`bordered`、`hideOnLoadFailed`、`lazy`、`loading`、`useSlot`、`ariaLabel`、`reduceMotion` |
 | Badge | done | `poemui-miniprogram/badge/badge` | `count`、`content`、`dot`、`maxCount`、`showZero`、`theme`、`variant`、`shape`、`size`、`color`、`offset`、`ariaLabel` |
 | Bubble | done | `poemui-miniprogram/bubble/bubble` | `content`、`text`、`variant`、`align`、`groupPosition`、`reactions`、`reactionSide`、`reactionAlign`、`customContent`、`customReactions`、`collapsible`、`expanded`、`defaultExpanded`、`maxLines`、`expandText`、`collapseText`、`selectable`、`visible`、`clickable`、`disabled`、`ariaLabel`、`ariaLive`、`duration`、`easing`、`reduceMotion` |
-| Card | done | `poemui-miniprogram/card/card` | `title`、`description`、`showHeader`、`bordered`、`padding`、`showFooter`、`headerBordered`、`footerBordered`、`shadow`、`clickable`、`disabled`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
+| Card | done | `poemui-miniprogram/card/card` | `title`、`description`、`showHeader`、`bordered`、`padding`、`showFooter`、`headerBordered`、`footerBordered`、`shadow`、`clickable`、`disabled`、`menuItems`、`menuIcon`、`menuVisible`、`defaultMenuVisible`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
 | Cell 单元格 | done | `poemui-miniprogram/cell/cell` | `title`、`description`、`value`、`note`、`image`、`leftIcon`、`rightIcon`、`size`、`align`、`variant`、`bordered`、`hover`、`required`、`arrow`、`clickable`、`selected`、`defaultSelected`、`selectable`、`allowUnselect`、`disabled`、`readonly`、`loading`、`url`、`jumpType`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
-| Collapsible | done | `poemui-miniprogram/collapsible/collapsible` | `open`、`defaultOpen`、`label`、`content`、`customTrigger`、`customContent`、`icon`、`expandIcon`、`iconPosition`、`theme`、`bordered`、`block`、`disabled`、`readonly`、`loading`、`loadingText`、`error`、`errorText`、`retryText`、`emptyText`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
-| CountDown 倒计时 | done | `poemui-miniprogram/count-down/count-down` | `time`、`autoStart`、`paused`、`content`、`format`、`millisecond`、`size`、`theme`、`splitWithUnit`、`ariaLabel`、`reduceMotion` |
+| Collapsible | done | `poemui-miniprogram/collapsible/collapsible` | `open`、`defaultOpen`、`label`、`content`、`customTrigger`、`customContent`、`icon`、`expandIcon`、`iconPosition`、`theme`、`bordered`、`shadow`、`block`、`disabled`、`readonly`、`loading`、`loadingText`、`error`、`errorText`、`retryText`、`emptyText`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
+| CountDown 倒计时 | done | `poemui-miniprogram/count-down/count-down` | `time`、`autoStart`、`paused`、`content`、`format`、`millisecond`、`size`、`theme`、`splitWithUnit`、`animation`、`ariaLabel`、`reduceMotion` |
 | Image 图片 | done | `poemui-miniprogram/image/image` | `src`、`mode`、`width`、`height`、`shape`、`lazy`、`webp`、`loading`、`error`、`text`、`showMenuByLongpress`、`showSlot`、`ariaLabel`、`reduceMotion` |
 | List 列表 | done | `poemui-miniprogram/list/list` | `items`、`title`、`description`、`showHeader`、`customHeader`、`useSlot`、`showIcon`、`showDescription`、`showValue`、`showBadge`、`showArrow`、`clickable`、`bordered`、`divided`、`compact`、`showFooter`、`customFooter`、`customEmpty`、`disabled`、`loading`、`loadText`、`loadingText`、`finished`、`finishedText`、`error`、`errorText`、`emptyText`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
 | SwipeCell 滑动单元格 | done | `poemui-miniprogram/swipe-cell/swipe-cell` | `disabled`、`left`、`opened`、`right`、`ariaLabel`、`reduceMotion` |
@@ -101,7 +101,7 @@
 | 组件/能力 | 状态 | 路径 | 当前交付边界 |
 | --- | --- | --- | --- |
 | Alert | done | `poemui-miniprogram/alert/alert` | `theme`、`variant`、`title`、`description`、`closable`、`visible`、`defaultVisible`、`icon`、`showIcon`、`closeIcon`、`verticalAlign`、`center`、`duration`、`easing`、`reduceMotion` |
-| Dialog | done | `poemui-miniprogram/dialog/dialog` | `visible`、`actions`、`buttonLayout`、`cancelBtn`、`closeBtn`、`closeOnOverlayClick`、`confirmBtn`、`content`、`overlayProps`、`preventScrollThrough`、`showOverlay`、`title`、`usingCustomNavbar`、`zIndex`、`ariaLabel`、`reduceMotion` |
+| Dialog | done | `poemui-miniprogram/dialog/dialog` | `visible`、`actions`、`buttonLayout`、`cancelBtn`、`closeBtn`、`closeOnOverlayClick`、`confirmBtn`、`content`、`overlayProps`、`preventScrollThrough`、`showOverlay`、`showFooter`、`title`、`usingCustomNavbar`、`zIndex`、`ariaLabel`、`reduceMotion` |
 | Empty | done | `poemui-miniprogram/empty/empty` | `description`、`icon`、`image`、`ariaLabel`、`reduceMotion` |
 | Loading 加载 | done | `poemui-miniprogram/loading/loading` | `delay`、`duration`、`fullscreen`、`indicator`、`inheritColor`、`layout`、`loading`、`pause`、`progress`、`reverse`、`size`、`text`、`theme`、`ariaLabel`、`reduceMotion` |
 | Notice Bar | done | `poemui-miniprogram/notice-bar/notice-bar` | `content`、`direction`、`interval`、`marquee`、`operation`、`prefixIcon`、`suffixIcon`、`theme`、`visible`、`defaultVisible`、`ariaLabel`、`reduceMotion` |
@@ -125,11 +125,13 @@
 
 | 组件/能力 | 状态 | 路径 | 当前交付边界 |
 | --- | --- | --- | --- |
-| Chart | experimental | `文档能力` | 文档能力 |
-| DynamicMessage 灵动通知 | done | `poemui-miniprogram/dynamic-message/dynamic-message` | `theme`、`title`、`message`、`icon`、`actionText`、`closable`、`duration`、`safeArea`、`ariaLabel`、`reduceMotion` |
+| AreaChart 面积图 | done | `poemui-miniprogram/area-chart/area-chart` | `items`、`max`、`curve`、`stacked`、`size`、`showGrid`、`showXAxis`、`showLegend`、`showDots`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
+| BarChart 条形图 | done | `poemui-miniprogram/bar-chart/bar-chart` | `items`、`orientation`、`mode`、`max`、`size`、`showValue`、`showLegend`、`showGrid`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
+| DynamicMessage 灵动通知 | done | `poemui-miniprogram/dynamic-message/dynamic-message` | `theme`、`title`、`message`、`icon`、`actionText`、`closable`、`duration`、`safeArea`、`shadow`、`frostedGlass`、`ariaLabel`、`reduceMotion` |
 | PullRefresh 下拉刷新 | done | `poemui-miniprogram/pull-refresh/pull-refresh` | `disabled`、`enableBackToTop`、`enablePassive`、`loadingBarHeight`、`loadingProps`、`loadingTexts`、`lowerThreshold`、`maxBarHeight`、`refreshTimeout`、`scrollIntoView`、`showScrollbar`、`successDuration`、`upperThreshold`、`usingCustomNavbar`、`value`、`defaultValue`、`ariaLabel`、`reduceMotion` |
 | TopLoading 顶部加载 | done | `poemui-miniprogram/top-loading/top-loading` | `state`、`progress`、`delay`、`minimumVisible`、`successDuration`、`duration`、`ariaLabel`、`reduceMotion` |
 | VirtualList 虚拟列表 | done | `poemui-miniprogram/virtual-list/virtual-list` | `items`、`value`、`defaultValue`、`multiple`、`selectable`、`allowUnselect`、`itemKey`、`height`、`itemHeight`、`overscan`、`scrollTop`、`scrollWithAnimation`、`upperThreshold`、`lowerThreshold`、`showScrollbar`、`bordered`、`showIndex`、`showDescription`、`showValue`、`showItemIcon`、`showItemBadge`、`activeIcon`、`customHeader`、`customFooter`、`customEmpty`、`customItem`、`clickable`、`readonly`、`disabled`、`loading`、`loadingText`、`error`、`errorText`、`retryText`、`emptyText`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
+| Waffle 组件点阵图 | done | `poemui-miniprogram/waffle/waffle` | `items`、`columns`、`groupColumns`、`shape`、`size`、`unit`、`maxCells`、`showValue`、`showLegend`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
 | Watermark 水印 | done | `poemui-miniprogram/watermark/watermark` | `alpha`、`content`、`height`、`isRepeat`、`layout`、`lineSpace`、`movable`、`moveInterval`、`offset`、`rotate`、`watermarkContent`、`width`、`x`、`y`、`zIndex`、`ariaLabel`、`reduceMotion` |
 
 ## 发布边界

@@ -40,6 +40,25 @@
 .pui-list__content,
 .pui-list__item-wrap { box-sizing: border-box; width: 100%; min-width: 0; }
 
+.pui-list__item-wrap--entering {
+  overflow: hidden;
+  animation: pui-list-item-reveal var(--pui-list-duration) var(--pui-list-easing) backwards;
+}
+
+@keyframes pui-list-item-reveal {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(8rpx);
+  }
+
+  to {
+    max-height: 320rpx;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .pui-list__content {
   max-height: 12000rpx;
   overflow: hidden;
@@ -115,6 +134,10 @@
 .pui-list--reduced,
 .pui-list--reduced .pui-list__header,
 .pui-list--reduced .pui-list__content,
+.pui-list--reduced .pui-list__item-wrap--entering,
 .pui-list--reduced .pui-list__item,
 .pui-list--reduced .pui-list__state,
-.pui-list--reduced .pui-list__footer { transition-duration: 1ms; }
+.pui-list--reduced .pui-list__footer {
+  transition-duration: 1ms;
+  animation-duration: 1ms;
+}

@@ -1,7 +1,7 @@
 <view
   wx:if="{{rendered}}"
   class="{{rootClass}} {{active ? 'pui-bubble--active' : ''}} {{customClass}}"
-  style="{{customStyle}};{{rootStyle}}{{measureStyle}}"
+  style="{{customStyle}};{{rootStyle}}"
 >
   <view class="pui-bubble__shell">
     <view
@@ -14,14 +14,15 @@
       bindtap="onContentTap"
       bindlongpress="onContentLongPress"
     >
-      <view class="pui-bubble__clip">
+      <view class="pui-bubble__clip" style="{{clipStyle}}">
         <slot wx:if="{{customContent}}"></slot>
         <text wx:else class="pui-bubble__text" user-select="{{selectable}}">{{displayContent}}</text>
       </view>
       <view wx:if="{{collapsible && !customContent}}" class="pui-bubble__measure pui-bubble__measure--full" aria-hidden="true">{{displayContent}}</view>
-      <view wx:if="{{collapsible && !customContent}}" class="pui-bubble__measure pui-bubble__measure--clamped" aria-hidden="true">{{displayContent}}</view>
+      <view wx:if="{{collapsible && !customContent}}" class="pui-bubble__measure pui-bubble__measure--line" aria-hidden="true">{{displayContent}}</view>
       <view wx:if="{{collapsible && showToggle}}" class="pui-bubble__toggle" catchtap="stopTap">
         <pui-button
+          block
           size="small"
           variant="text"
           content="{{expandedState ? collapseText : expandText}}"

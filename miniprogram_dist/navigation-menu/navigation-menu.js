@@ -507,6 +507,7 @@ Component({
           'pui-navigation-menu--' + variant,
           'pui-navigation-menu--' + size,
           this.data.block ? 'pui-navigation-menu--block' : '',
+          this.data.scrollable ? 'pui-navigation-menu--scrollable' : 'pui-navigation-menu--fixed',
           this.data.wrap ? 'pui-navigation-menu--wrap' : '',
           this.data.disabled ? 'pui-navigation-menu--disabled' : '',
           this.data.readonly ? 'pui-navigation-menu--readonly' : '',

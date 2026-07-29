@@ -96,9 +96,10 @@
 
 .pui-tabbar__item-wrap--active::after { opacity: 1; transform: translateX(50%) scaleX(1); }
 
-/* 纯图标导航把图标和短横收成同一视觉组：图标微下移，短横上收。 */
-.pui-tabbar__item-wrap--icon-only::after { bottom: var(--pui-space-step-20); }
-.pui-tabbar__item-wrap--icon-only .pui-tabbar__icon { transform: translateY(var(--pui-space-step-4)); }
+/* 只有整条导航均为纯图标时才切换另一套垂直节奏。
+   混合文案时所有目的地共用同一条活动短横基线。 */
+.pui-tabbar--all-icon-only .pui-tabbar__item-wrap::after { bottom: var(--pui-space-step-20); }
+.pui-tabbar--all-icon-only .pui-tabbar__icon { transform: translateY(var(--pui-space-step-4)); }
 
 .pui-tabbar--split .pui-tabbar__item-wrap + .pui-tabbar__item-wrap::before {
   position: absolute;

@@ -138,6 +138,7 @@ Component({
       var theme = this.data.theme === 'tag' ? 'tag' : 'normal';
       var shape = this.data.shape === 'round' ? 'round' : 'normal';
       var fixed = !!this.data.fixed;
+      var allIconOnly = items.length > 0 && items.every(function everyItem(item) { return !item.label; });
       this._wasControlled = controlled;
       this.setData({
         normalizedItems: items,
@@ -150,6 +151,7 @@ Component({
           'pui-tabbar--shape-' + shape,
           this.data.bordered ? '' : 'pui-tabbar--borderless',
           this.data.split ? 'pui-tabbar--split' : '',
+          allIconOnly ? 'pui-tabbar--all-icon-only' : '',
           fixed ? 'pui-tabbar--fixed' : '',
           this.data.safeAreaInsetBottom ? 'pui-tabbar--safe-bottom' : '',
           this.data.disabled ? 'pui-tabbar--disabled' : '',

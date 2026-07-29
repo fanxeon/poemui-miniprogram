@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0493",
+  "title": "Indexes 独立页 Retry 只改文案没有恢复闭环",
+  "scope": "component",
+  "components": ["indexes", "miniprogram"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Indexes 加载失败后点击重新加载，应看到真实 loading，并由页面成功恢复内容或回到可重试失败态。",
+  "environment": {
+    "surfaces": ["wechat-component-page"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 Indexes 独立页的错误示例。",
+    "点击重新加载索引。",
+    "旧 WXML 把 error 永久写死为 true，onIndexesRetry 只更新状态文案，组件始终停留在错误态。"
+  ],
+  "expected": "组件只发布 retry；页面接管 error→loading→content，校验不到有效分组时回到 error，重复点击期间不启动第二个任务。",
+  "actual": "修复前没有 error/loading/items 三个受控真相源，也没有成功或失败分支；文案变化伪装成了重新加载。",
+  "evidence": [
+    {"kind": "file", "ref": "miniprogram/pages/components/indexes/index.js", "note": "页面新增可取消的恢复任务、有效分组校验、成功与失败分支。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/indexes/index.wxml", "note": "error/loading/items 改为页面受控绑定，不再永久 error=true。"},
+    {"kind": "file", "ref": "indexes/indexes.js", "note": "组件 onRetry 继续只发布 retry，不修改自身状态。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-navigation-pages.js", "note": "可控定时器锁定 error→loading→content 和恢复数据。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "组件层 retry 只发布事件且自身仍为 error。"}
+  ],
+  "rootCause": "演示页把错误态写成常量，同时把 retry 当作文案反馈，没有履行消费者对数据和状态的所有权。",
+  "decision": {
+    "outcome": "由独立页维护 recoveryItems/loading/error；retry 后进入 loading，校验本地真实分组源并恢复，空数据则回到 error。组件保持纯请求事件。",
+    "rationale": "这既展示了组件真实 API，也让成功与失败状态都能闭环，不把业务恢复伪造进共享组件。",
+    "alternativesRejected": [
+      "组件内部收到 retry 后自动成功会违反业务所有权。",
+      "继续只改提示文案属于 fake success。",
+      "页面永久 error=true 无法验收 Loading 和恢复内容。"
+    ]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/components/indexes/index.js", "miniprogram/pages/components/indexes/index.wxml", "scripts/test-miniprogram-navigation-pages.js", "scripts/test-indexes.js", "docs/components/INDEXES.md"],
+    "dependencies": ["PUI Empty", "PUI Loading", "PUI Button", "component-page"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js", "scripts/test-miniprogram-navigation-pages.js"],
+    "commands": ["node scripts/test-indexes.js：通过", "node scripts/test-miniprogram-navigation-pages.js：通过"],
+    "browser": [
+      "微信开发者工具 390x844 实际点击 PUI Retry 后，页面最终为 error=false、loading=false、14 个恢复分组、状态文案“组件索引已重新加载。”，截图 `/tmp/poemui-indexes-0.1.2-recovered.png`。",
+      "同一真实运行时捕获 before(error=true/count=0) → 40ms during(loading=true/stateType=loading) → 700ms after(error=false/loading=false/count=14/stateType=content)，证明不是只改文案。"
+    ],
+    "deviceRisks": ["弱性能设备 600ms loading 动画、页面卸载清理和读屏通知仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Indexes retry 是请求事件，恢复状态和数据必须由页面真实回写。",
+    "rules": [
+      "禁止把 error 写死后只修改提示文案。",
+      "组件不得在 retry 内部自动把 error 改成 success。",
+      "页面恢复必须覆盖 loading、success、failure 和重复点击门禁。"
+    ],
+    "tags": ["indexes", "retry", "loading", "recovery", "parent-owned", "fake-success"]
+  }
+}

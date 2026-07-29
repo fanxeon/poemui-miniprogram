@@ -56,7 +56,7 @@ Component({
     separatorIcon: { type: String, value: '' },
     showIcon: { type: Boolean, value: true },
     size: { type: String, value: 'medium' },
-    wrap: { type: Boolean, value: true },
+    wrap: { type: Boolean, value: false },
     maxLabelLength: { type: Number, value: 0 },
     currentClickable: { type: Boolean, value: false },
     customPrefix: { type: Boolean, value: false },

@@ -72,6 +72,7 @@ Component({
     leftWidth: 0,
     rightWidth: 0,
     currentPosition: '',
+    actionPosition: '',
     offset: 0,
     dragging: false,
     rootClass: 'pui-swipe-cell',
@@ -106,6 +107,7 @@ Component({
         leftWidth: leftWidth,
         rightWidth: rightWidth,
         currentPosition: position,
+        actionPosition: position,
         offset: offset,
         dragging: false,
         contentStyle: this.buildContentStyle(offset, false, duration),
@@ -123,7 +125,9 @@ Component({
       return 'transform:translate3d(' + offset + 'rpx, 0, 0);transition-duration:' + (dragging ? 0 : duration) + 'ms;';
     },
     setPresentation: function setPresentation(offset, dragging) {
+      var actionPosition = offset > 0 ? 'left' : (offset < 0 ? 'right' : '');
       this.setData({
+        actionPosition: actionPosition,
         offset: offset,
         dragging: dragging,
         contentStyle: this.buildContentStyle(offset, dragging, this.data.reduceMotion ? 1 : MOTION_DURATION),

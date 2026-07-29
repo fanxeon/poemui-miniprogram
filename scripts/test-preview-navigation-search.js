@@ -29,12 +29,13 @@ for (const [id, group] of [
   ['shadcn-card', '数据展示'],
   ['shadcn-dialog', '反馈'],
   ['shadcn-popover', '浮层'],
-  ['shadcn-chart', '高级'],
+  ['bar-chart', '高级'],
+  ['waffle', '高级'],
 ]) {
   assert.strictEqual(groupFor(id), group, `${id} must stay in ${group}`);
 }
 
-for (const duplicateAlias of ['button-group', 'shadcn-button-group', 'shadcn-button', 'shadcn-typography', 'shadcn-direction']) {
+for (const duplicateAlias of ['button-group', 'shadcn-button-group', 'shadcn-button', 'shadcn-typography', 'shadcn-direction', 'shadcn-chart']) {
   assert(!ids.includes(duplicateAlias), `${duplicateAlias} must redirect to its canonical entry instead of duplicating the catalog`);
 }
 

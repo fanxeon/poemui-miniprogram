@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0490",
+  "title": "Indexes 长索引轨产生灰色滚动条并破坏触摸映射",
+  "scope": "component",
+  "components": ["indexes", "button", "miniprogram"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Indexes 的 A–Z 长轨应完整、清楚且可连续滑动，侧栏不出现灰色滚动条，也不能裁掉当前索引。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844", "680rpx component body"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "在 390x844 微信开发者工具中进入 Indexes 独立页。",
+    "观察右侧索引轨；旧轨固定每项 36rpx 且 overflow-y:auto，长轨产生灰色滚动条并侵入活动项。",
+    "轨道发生内部滚动后，旧 touch 比例只使用 bar rect 与 clientY，没有加入轨道 scrollTop，命中索引与视觉位置可能漂移。"
+  ],
+  "expected": "默认 680rpx 完整容纳 A–Z；侧栏本身不滚动且没有第二条滚动条，首项、中项和末项的触摸坐标与可见索引严格一致。",
+  "actual": "修复前 26×36rpx 已超过可用约 640rpx，轨道只能内部滚动；可见灰线裁切活动项，触摸算法却仍按未滚动的整条比例取值。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户要求指出并修复 Indexes，同时询问侧栏滚动条是否必须存在。"},
+    {"kind": "browser", "ref": "/tmp/poemui-indexes-rail-crop.png", "note": "修复前 390x844 模拟器证据显示灰色侧栏滚动条侵入并裁切活动 A。"},
+    {"kind": "file", "ref": "indexes/indexes.js", "note": "按 height、上下安全距和真实索引数量生成单项高度与轨道总高度。"},
+    {"kind": "file", "ref": "indexes/indexes.wxss", "note": "侧栏改为精确高度并删除 overflow-y:auto。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "A–Z fixture 锁定完整 26 项、轨道不越界及首中尾命中。"}
+  ],
+  "rootCause": "旧实现同时锁死 36rpx 单项高度和有界 body 高度，只能靠侧栏自身滚动消化矛盾；触摸映射又未建模该内部滚动位置。",
+  "decision": {
+    "outcome": "侧栏高度由索引数量动态等分，每项以 36rpx 为上限；默认 680rpx 的可用 640rpx 完整容纳 A–Z，并彻底移除侧栏内部滚动。",
+    "rationale": "无嵌套滚动的单一几何让视觉位置、触摸比例和当前态共享同一个真相源，也消除灰色系统滚动条。",
+    "alternativesRejected": [
+      "只隐藏滚动条但保留 overflow-y:auto，仍会让触摸坐标在轨道滚动后失真。",
+      "继续固定 36rpx 并增大所有实例高度，会破坏 height 公共合同和紧凑用法。",
+      "手写字母 text 轨会绕过 PUI Button。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.js", "indexes/indexes.wxml", "indexes/indexes.wxss", "scripts/test-indexes.js", "docs/components/INDEXES.md"],
+    "dependencies": ["PUI Button", "PUI spacing tokens", "SelectorQuery"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["node scripts/test-indexes.js：通过", "node --check indexes/indexes.js：通过"],
+    "browser": [
+      "修复前 390x844 灰色轨道证据为 `/tmp/poemui-indexes-rail-crop.png`。",
+      "修复后微信开发者工具 390x844 实测组件 body 为 360x353px，14 项轨为 29x262px、每项 21x18px，首尾完整落轨且 overflow-y=visible；浅色截图 `/tmp/poemui-indexes-0.1.2-light.png`。完整 A-Z 的 26 项几何与首中尾命中由专项运行测试锁定。"
+    ],
+    "deviceRisks": ["iOS/Android 真机连续 touchmove、rpx 取整、字体放大和合成 click 仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "长索引轨不能通过自身滚动解决密度问题；轨道几何和触摸映射必须同源。",
+    "rules": [
+      "默认 680rpx 必须完整容纳 A–Z，侧栏不得使用 overflow-y:auto。",
+      "触摸命中必须读取真实 bar rect，并与同一动态 item geometry 对齐。",
+      "不要只隐藏滚动条外观而保留未建模的内部滚动。"
+    ],
+    "tags": ["indexes", "rail", "scrollbar", "touch", "geometry", "390px"]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0469",
+  "title": "Tabbar 混合文案时按单项调整短横造成基线跳动",
+  "scope": "component",
+  "components": ["tabbar"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "同一条 Tabbar 的活动短横使用一致基线；只有整条均无文案时才采用纯图标位置。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "在同一 Tabbar 放入带文案和空文案目的地。",
+    "依次选中两类目的地，旧规则按单项 icon-only class 上收短横，活动基线来回跳动。"
+  ],
+  "expected": "只要任一目的地有文案，所有短横共用带文案基线；仅所有目的地均无文案时统一切换纯图标基线。",
+  "actual": "旧 CSS 对每个 icon-only item 单独调整图标与短横。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户明确给出混合文案与全无文案两套基线规则。"},
+    {"kind": "file", "ref": "tabbar/tabbar.js", "note": "组件从完整 items 派生 pui-tabbar--all-icon-only。"},
+    {"kind": "file", "ref": "tabbar/tabbar.wxss", "note": "纯图标偏移只挂在根级 all-icon-only。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 同步按完整 items 派生 is-all-icon-only。"},
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "专项同时覆盖混合文案和全纯图标。"}
+  ],
+  "rootCause": "旧实现把单个目的地的内容形态误当成整条导航的排版节奏，导致相邻目的地选中时 indicator y 坐标不一致。",
+  "decision": {
+    "outcome": "新增仅内部使用的根级 all-icon-only class；混合文案完全沿用默认基线，全纯图标统一调整图标和短横。",
+    "rationale": "活动反馈属于整条导航的共同几何，不应逐项跳变。",
+    "alternativesRejected": ["给每项增加公开 indicatorOffset 会暴露页面调参。", "只在独立页统一 label 会掩盖组件能力问题。"]
+  },
+  "impact": {
+    "files": ["tabbar/tabbar.js", "tabbar/tabbar.wxss", "preview/app.js", "preview/styles.css", "scripts/test-tabbar.js", "docs/components/TABBAR.md", "feedback/records/pui-fb-0469-tabbar-family-indicator-baseline.json"],
+    "dependencies": ["PUI Button", "PUI Icon", "Tabbar item normalization"]
+  },
+  "verification": {
+    "tests": ["scripts/test-tabbar.js"],
+    "commands": ["node scripts/test-tabbar.js：通过", "npm run example:install：通过", "微信 DevTools CLI build-npm：cost=1146ms，warnings=[]"],
+    "browser": [
+      "H5 390px：混合标签 items 下 Root 不含 is-all-icon-only，三个样例的 active indicator bottom 均为 3px；空标签项与有标签项同基线。切换全图标 items 后 Root 统一进入 is-all-icon-only，三个 indicator bottom 均为 20px，document 375/375。",
+      "微信开发者工具 iPhone 12/13 Pro 390x844：混合“首页/收藏/纯图标创建/我的”中点击创建后横线与有文案项共用底部基线；运行态把四项标签全部置空后，整条 Tabbar 统一切换为靠近图标的全图标基线。"
+    ],
+    "deviceRisks": ["iOS/Android 安全区、rpx 舍入和真实底部点击仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Tabbar indicator 基线由整条 items 集合决定，不由单项 label 决定。",
+    "rules": ["混合文案使用同一默认基线。", "只有 all-icon-only 根可以启用纯图标偏移。"],
+    "tags": ["tabbar", "indicator", "baseline", "icon-only", "h5-parity"]
+  }
+}

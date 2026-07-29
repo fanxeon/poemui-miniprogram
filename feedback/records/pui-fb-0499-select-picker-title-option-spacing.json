@@ -1,0 +1,140 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0499",
+  "title": "Select 与 Picker 标题到选项内容重复叠加间距 Token",
+  "scope": "component",
+  "components": ["select", "picker", "popup"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "Select 与 Picker 弹层标题应清晰归属下方选项，标题到第一组选项或滚轮之间保持克制、稳定的单一间距，不因全局等距模式重复放大。",
+  "environment": {
+    "surfaces": ["miniprogram-source", "npm-dist", "miniprogram-component-pages", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在微信开发者工具 390x844 打开 Select 独立页并展开发布通道。",
+    "观察 Popup Header 标题到第一项同时叠加 Popup section gap、Popup Content padding 与 Select Options padding。",
+    "打开 Picker 独立页，观察 Popup Header 到滚轮内容仍叠加 Popup section gap 与 Content padding；切换 equalSpacing 时两类 Token 的所有权继续不清晰。"
+  ],
+  "expected": "Header 标题到 Options/Wheel 只出现一个 --pui-surface-inset。普通模式由 Popup Content padding 提供；equalSpacing 移除顶部 padding 后才由 section gap 提供。Select Options 不再重复增加 panel padding；Picker 保留默认 5 行、itemHeight 与中心选中几何。",
+  "actual": "修复前 Select 的结构空白为 section gap 36rpx + Content top padding 28rpx + Options top padding 28rpx，共 92rpx；Picker 为 36rpx + 28rpx。该空白来自 Token 叠层，不是标题字号、选项行高或演示页面间距。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前组件 battle 对话",
+      "note": "用户指出 Select 与 Picker 标题和选项之间间距过大，并要求核查是否由间距 Token 引起。"
+    },
+    {
+      "kind": "file",
+      "ref": "popup/popup.wxss",
+      "note": "Popup 默认 section gap 为 --pui-surface-section-gap，Content 使用 --pui-popup-panel-padding；equalSpacing 会移除 Content padding-top。"
+    },
+    {
+      "kind": "file",
+      "ref": "select/select.wxss",
+      "note": "修复前 Options 在 Popup Content 内再次设置 --pui-panel-padding；修复后 padding=0，并使用组件语义 title-options gap。"
+    },
+    {
+      "kind": "file",
+      "ref": "picker/picker.wxss",
+      "note": "Picker 不再让 Popup 默认 section gap 与 Content inset 同时存在，滚轮内部几何保持不变。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://tdesign.tencent.com/miniprogram/components/picker",
+      "note": "2026-07-29 访问的 TDesign Mini Program Picker 官方组件页。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/picker",
+      "note": "2026-07-29 同时解包固定 1.15.3；Toolbar 高 116rpx，Main 紧随其后，没有额外 section gap，默认 visibleItemCount 仍为 5。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-select.js",
+      "note": "锁定 Select Popup section gap 语义变量、普通/等距模式唯一 inset，以及 Options padding=0。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-picker.js",
+      "note": "锁定 Picker Popup section gap 语义变量与普通/等距模式唯一 inset，不改变滚轮 API。"
+    }
+  ],
+  "rootCause": "Popup 已分别拥有 Header/Content 的 section gap 与 Content panel padding；Select 又在 Options 根重复增加 panel padding，Picker 则直接继承 section gap 与 Content padding。equalSpacing 只调整了 Popup 内部 padding，却没有让复合组件显式声明标题到选择内容的单一间距所有权。",
+  "decision": {
+    "outcome": "Select 与 Picker 分别新增内部 --pui-*-title-options-gap，并通过 Popup custom-style 映射到 --pui-popup-section-gap：普通模式为 0，equalSpacing 为 --pui-surface-inset。Select Options padding 归零，由 Popup Content 统一提供四向 inset；Picker 的 visibleItemCount、itemHeight、滚轮 mask 和中心选中逻辑均保持不变。",
+    "rationale": "标题与其直接标注的选择内容属于紧密单一分区，只需要一个面板 inset。让 normal/equal 模式分别由 Content padding 或 section gap 承担同一数值，可避免叠层并保持等距模式盒模型合同。",
+    "alternativesRejected": [
+      "直接缩小全局 --pui-section-gap 会改变所有 Popup 和页面分区，越出当前组件范围。",
+      "只在独立页用 CSS 负 margin 会掩盖安装端共享组件缺陷。",
+      "减少 Picker visibleItemCount 或 itemHeight 会破坏滚轮可读性、命中区和 TDesign 同类默认 5 行合同。",
+      "给标题或第一项写负 margin 会制造主题、等距与安全区下的魔法数。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "select/select.wxml",
+      "select/select.wxss",
+      "picker/picker.wxml",
+      "picker/picker.wxss",
+      "miniprogram_dist/select/select.wxml",
+      "miniprogram_dist/select/select.wxss",
+      "miniprogram_dist/picker/picker.wxml",
+      "miniprogram_dist/picker/picker.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-select.js",
+      "scripts/test-picker.js",
+      "docs/components/SELECT.md",
+      "docs/components/PICKER.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "docs/COMPONENT_DETAIL_PAGE_UI_CHECKLIST_2026-07-28.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md"
+    ],
+    "dependencies": ["PUI Popup three-region spacing", "ConfigProvider equalSpacing", "PUI Surface inset"]
+  },
+  "verification": {
+    "tests": ["scripts/test-select.js", "scripts/test-picker.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": [
+      "node scripts/test-select.js：通过",
+      "node scripts/test-picker.js：通过",
+      "node scripts/test-miniprogram-form-pages.js：通过",
+      "npm run miniprogram:build：通过，生成 74 个组件目录",
+      "npm run feedback:generate：通过，481 records",
+      "npm run feedback:check：通过，481 records",
+      "本地 tarball 安装到真实 miniprogram/node_modules 后 verify-install：通过",
+      "微信 build-npm：通过，1377ms，warnings=[]",
+      "Select / Picker 源码、dist、真实 node_modules、miniprogram_npm 四件套 SHA-256 一致；Picker template.wxml 四路一致",
+      "根仓 git diff --check：通过；嵌套 miniprogram 仓被本轮未修改的 pages/index/index.json:2 尾随空白阻断"
+    ],
+    "browser": [
+      "微信 DevTools iPhone 12/13 Pro 390x844：Select 浅色普通、浅色 equalSpacing、深色 equalSpacing 展开后，标题到首项保持同一紧凑 inset；点击候选版，父级回写当前发布通道：候选版。",
+      "微信 DevTools 390x844：Picker 浅色/深色 equalSpacing 均保留 5 行滚轮与中心选中；实际拖动后确认，父级回写当前选择：开发版。",
+      "截图：/tmp/poemui-select-title-options-fixed-390.png、/tmp/poemui-select-title-options-equal-390.png、/tmp/poemui-select-title-options-dark-equal-390.png、/tmp/poemui-picker-title-options-equal-390.png、/tmp/poemui-picker-title-options-dark-equal-390.png。",
+      "验收后恢复浅色、非 equalSpacing 外观。DevTools 最终 Errors=0、问题面板=0；6 条既有警告来自灰度基础库、此前 Textarea/Navbar 选择器、IntersectionObserver 与预加载资源。",
+      "H5 Chrome 390px 深色果味：Picker 普通态 Header 为 36px/1fr/36px 三列、8px 操作间距且四项完整；equalSpacing 时 Panel 为 padding 14px/gap 14px、Header/Footer padding=0。Select 菜单为 padding 14px/gap 14px，四项完整，Trigger 与 selected option 在 largeRadius 下均为 20px 圆角；两者无横向溢出。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 Popup 自定义属性继承、rpx 取整、picker-view mask、惯性滚动、触摸命中和读屏仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "Select 与 Picker 的 Header 到选择内容只允许一个 Surface inset；普通模式由 Content padding 提供，equalSpacing 由 section gap 提供，二者不得叠加。",
+    "rules": [
+      "不得通过缩小全局 section gap 修复单个选择组件。",
+      "Select Options 在 Popup Content 内不得再次设置 panel padding。",
+      "Picker 标题间距问题不得通过减少 visibleItemCount、itemHeight 或移动中心选中项解决。",
+      "普通模式与 equalSpacing 模式必须保持同一个可见 title-to-options inset，只允许间距所有权切换。",
+      "H5 最终同步时必须在 preview/app.js 和 preview/styles.css 保持同一结构，并在 390px 测试 light/dark/equalSpacing、展开与选择。"
+    ],
+    "tags": ["select", "picker", "popup", "spacing-token", "equal-spacing", "miniprogram", "pending-h5"]
+  }
+}

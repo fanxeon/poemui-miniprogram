@@ -1,0 +1,142 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0501",
+  "title": "SwipeCell 打开一侧时相反动作层从容器边缘露出",
+  "scope": "component",
+  "components": [
+    "swipe-cell"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "SwipeCell 向一侧滑开时只能看到该侧操作，另一侧的颜色、边框和圆角不能从容器边缘露出。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "miniprogram-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "进入 SwipeCell 独立页，使用同时配置 left/right 的首个示例。",
+    "向右滑开左侧“置顶”。",
+    "旧实现以根级 dragging/opened 同时激活左右动作层，右侧 danger 动作的红色圆角从组件右边缘露出；向左滑开时存在同类反向风险。"
+  ],
+  "expected": "实时位移为正时只显示并允许点击 left，位移为负时只显示并允许点击 right，位移归零时两侧都隐藏；跨零拖动时立即互斥切换。",
+  "actual": "旧 WXSS 在任一侧拖动或打开时同时把左右 action layer 设为 opacity:1 并着色，相反方向动作层仍位于组件边缘下方。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务截图",
+      "note": "左侧黑色置顶已打开时，右侧仍可见 danger 红色圆角边界。"
+    },
+    {
+      "kind": "file",
+      "ref": "swipe-cell/swipe-cell.js",
+      "note": "内部 actionPosition 由实时 offset 正负计算，不改变公开 opened/currentPosition 合同。"
+    },
+    {
+      "kind": "file",
+      "ref": "swipe-cell/swipe-cell.wxml",
+      "note": "左右动作层分别只在 actionPosition 命中同侧时获得 visible class，并同步 aria-hidden。"
+    },
+    {
+      "kind": "file",
+      "ref": "swipe-cell/swipe-cell.wxss",
+      "note": "隐藏侧 opacity:0 且 pointer-events:none；只有同侧 visible 动作层恢复显示与交互。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-swipe-cell.js",
+      "note": "锁定关闭、左右 opened、双向拖动及跨零拖动的互斥可见性，并禁止恢复根级双侧激活选择器。"
+    }
+  ],
+  "rootCause": "PUI-FB-0481 为解决毛玻璃提前透色，把动作底板着色绑定到根级 dragging/opened；该状态只表达组件正在交互或已有一侧打开，不能表达实时方向，结果两侧 wrapper 同时获得 opacity 和语义色。",
+  "decision": {
+    "outcome": "新增仅供内部渲染的 actionPosition，由 offset 的正负实时派生；WXML 对左右层分别挂 visible class，WXSS 只给 visible 层着色并开启 pointer events。公共 API 保持 6 Props、3 Events、3 Slots、0 Methods。",
+    "rationale": "方向是已有位移状态的确定性派生，不需要新增公共 API；互斥显示同时修复视觉泄漏、隐藏侧误触和 aria-hidden 不一致。",
+    "alternativesRejected": [
+      "只增加根 overflow:hidden：相反动作本就在根内部，半透明前景和圆角边缘仍可能暴露。",
+      "把前景强制改为不透明：会破坏毛玻璃和主题 Surface 合同。",
+      "按 opened 最终位置控制：拖动期间和跨零反向拖动无法正确切换。",
+      "通过页面 CSS 遮盖右边缘：会掩盖共享组件缺陷并让其他消费者继续复现。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "swipe-cell/swipe-cell.js",
+      "swipe-cell/swipe-cell.wxml",
+      "swipe-cell/swipe-cell.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-swipe-cell.js",
+      "docs/components/SWIPE-CELL.md",
+      "docs/COMPONENT_API.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md",
+      "docs/COMPONENT_DETAIL_PAGE_UI_CHECKLIST_2026-07-28.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": [
+      "PUI Button",
+      "visualConfig"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-swipe-cell.js",
+      "scripts/test-miniprogram-data-pages.js"
+    ],
+    "commands": [
+      "node scripts/test-swipe-cell.js",
+      "node scripts/test-miniprogram-data-pages.js",
+      "npm run feedback:generate && npm run feedback:check",
+      "npm run miniprogram:build",
+      "npm pack 后在 miniprogram 以 --no-save --package-lock=false 安装本地 tar",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project miniprogram：1537ms，warnings=[]",
+      "PUI_VERIFY_DIST=1 node scripts/test-swipe-cell.js",
+      "git diff --check"
+    ],
+    "browser": [
+      "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 (Pro) 390px：浅色左滑只显示右侧删除；从右侧打开态跨零右滑后只显示左侧置顶，截图分别为 /tmp/poemui-swipe-cell-light-right-390.png 与 /tmp/poemui-swipe-cell-light-left-cross-zero-390.png。",
+      "深色 + 阴影 + 毛玻璃 + 大圆角果味组合下重复左右及跨零拖动，删除与置顶继续互斥，相反语义色、边框和圆角均未从容器边缘泄漏；截图为 /tmp/poemui-swipe-cell-dark-fruit-right-390.png 与 /tmp/poemui-swipe-cell-dark-fruit-left-cross-zero-390.png。",
+      "真实点击左侧置顶后动作层收起，页面父级回写“已收到 置顶 操作请求。”；禁用条目实际拖动后无位置或语义变化。",
+      "调试器累计为 Errors:0 / Warnings:12；SwipeCell 页面命中的 warning 为既有 Navbar WXSS selector、IntersectionObserver slow path 与 worker/reportRealtimeAction 等共享或开发者工具基线，没有 SwipeCell 运行错误。验收后恢复浅色、shadow on、frost off、largeRadius on 的原标准外观。",
+      "H5 Chrome 390px 深色果味：初始左右动作层均 opacity=0/aria-hidden=true/transparent；跨零拖动时根为 is-drag-left，只显示左侧 primary 动作，右侧 danger 层立即变为 opacity=0/aria-hidden=true/transparent，document scrollWidth=clientWidth。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的触摸连续帧、圆角抗锯齿、毛玻璃合成和系统手势竞争仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "SwipeCell 双侧动作层必须由实时位移方向互斥显示，根级 opened/dragging 不能代表具体可见侧。",
+    "rules": [
+      "同时存在 left/right 时，offset>0 只显示 left，offset<0 只显示 right，offset=0 两侧都隐藏。",
+      "隐藏动作层必须同时不可见、不可点击并设置 aria-hidden，不能只依赖前景遮挡。",
+      "拖动跨零时必须切换同侧可见性，不等待 dragend 或 opened 最终态。",
+      "H5 最终同步必须修改 preview/app.js 的 Pointer runtime 与 preview/styles.css，并增加跨零和双侧泄漏测试。"
+    ],
+    "tags": [
+      "swipe-cell",
+      "underlay",
+      "bidirectional",
+      "clipping",
+      "pointer-events"
+    ]
+  }
+}

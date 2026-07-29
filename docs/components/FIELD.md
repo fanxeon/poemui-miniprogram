@@ -29,7 +29,7 @@ Field(role=group, field-row editable)
 ```
 
 - Field 根通过内部 `field-row` 原语承担唯一行级 Surface；Cell 同样复用该原语但标记为只读态。两者共享背景、圆角、内距、主题、边框和低动效 Token，且始终无外投影；Form 根和内部纯布局节点仍透明。
-- 默认 `labelAlign=left`，以固定标签列组织左标签、右控件；`top` 只用于多行或较长控件。默认 Slot 内 `pui-input` 在普通态退为透明，Field 不再形成“Cell 外壳 + 第二个输入框”的双层 Surface；focus、readonly 与输入自身状态边界仍由真实 Input 保留。
+- 默认 `labelAlign=left`，以固定标签列组织左标签、右控件；`top` 只用于多行或较长控件。默认 Slot 内 `pui-input` 在普通态退为透明，Field 不再形成“Cell 外壳 + 第二个输入框”的双层 Surface；透明只移除背景、边框、阴影和毛玻璃，Input 仍保留 `space-sm` 左右输入内距与 `radius-medium` 命中/焦点几何，不能把文字贴到 Field 边缘。focus、readonly 与输入自身状态边界仍由真实 Input 保留。
 - `label/help/message="slot"` 是三个具名 Slot 的显式激活合同；extra 直接投影。
 
 ## 3. 布局与窄屏

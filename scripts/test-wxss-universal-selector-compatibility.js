@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { packageComponents } = require('../metadata/components');
 
+require('./test-wxml-conditional-loop-compatibility');
+
 const root = path.resolve(__dirname, '..');
 
 function walk(directory) {

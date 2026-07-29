@@ -106,7 +106,18 @@
   transition: color var(--pui-breadcrumb-duration) var(--pui-breadcrumb-ease), background-color var(--pui-breadcrumb-duration) var(--pui-breadcrumb-ease), opacity var(--pui-breadcrumb-duration) var(--pui-breadcrumb-ease);
 }
 
-.pui-breadcrumb__state--error { color: var(--pui-color-danger); }
+.pui-breadcrumb__state--error {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  justify-content: stretch;
+  color: var(--pui-color-danger);
+  text-align: left;
+}
+
+.pui-breadcrumb__state-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .pui-breadcrumb--small .pui-breadcrumb__item { min-height: 52rpx; font-size: 24rpx; }
 .pui-breadcrumb--small .pui-breadcrumb__label { max-width: 200rpx; }
 .pui-breadcrumb--large .pui-breadcrumb__item { min-height: 68rpx; font-size: var(--pui-font-size-base); }

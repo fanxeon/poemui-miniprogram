@@ -47,15 +47,18 @@ assert.deepStrictEqual(Object.keys(definition.properties), expectedProps, 'Swipe
 
 const defaults = create();
 assert.strictEqual(defaults.instance.data.currentPosition, '');
+assert.strictEqual(defaults.instance.data.actionPosition, '');
 assert.strictEqual(defaults.instance.data.leftWidth, 0);
 assert.strictEqual(defaults.instance.data.rightWidth, 0);
 
 const rightOpened = create({ left: [{ text: '收藏' }], right: [{ text: '删除' }], opened: true });
 assert.strictEqual(rightOpened.instance.data.currentPosition, 'right', 'Boolean opened prioritizes right actions just like TDesign');
+assert.strictEqual(rightOpened.instance.data.actionPosition, 'right', 'only the opened side may expose its action layer');
 assert.strictEqual(rightOpened.instance.data.offset, -136);
 
 const leftOpened = create({ left: [{ text: '收藏' }], right: [{ text: '删除' }], opened: [true, false] });
 assert.strictEqual(leftOpened.instance.data.currentPosition, 'left');
+assert.strictEqual(leftOpened.instance.data.actionPosition, 'left');
 assert.strictEqual(leftOpened.instance.data.offset, 136);
 
 const customWidth = create({ left: [{ text: '收藏', style: 'width:200rpx;background:#000' }], right: [{ text: '删除', style: 'width:80px' }], opened: [true, false] });
@@ -68,12 +71,20 @@ gesture.instance.onTouchStart({ touches: [{ clientX: 100, clientY: 80 }] });
 gesture.instance.onTouchMove({ touches: [{ clientX: 170, clientY: 80 }] });
 assert.deepStrictEqual(JSON.parse(JSON.stringify(gesture.events)), [{ name: 'dragstart' }]);
 assert.strictEqual(gesture.instance.data.dragging, true);
+assert.strictEqual(gesture.instance.data.actionPosition, 'left', 'rightward drag only reveals the left action layer');
 gesture.instance.onTouchEnd();
 assert.strictEqual(gesture.instance.data.currentPosition, 'left', 'horizontal travel beyond 30% opens the matching side');
 assert.deepStrictEqual(JSON.parse(JSON.stringify(gesture.events)), [{ name: 'dragstart' }, { name: 'dragend' }]);
 
 gesture.instance.onContentTap();
 assert.strictEqual(gesture.instance.data.currentPosition, '', 'content tap closes an opened action layer');
+assert.strictEqual(gesture.instance.data.actionPosition, '', 'closed content hides both action layers');
+
+const crossDirection = create({ left: [{ text: '收藏' }], right: [{ text: '删除' }], opened: [true, false] });
+crossDirection.instance.onTouchStart({ touches: [{ clientX: 170, clientY: 80 }] });
+crossDirection.instance.onTouchMove({ touches: [{ clientX: 60, clientY: 80 }] });
+assert(crossDirection.instance.data.offset < 0, 'drag may cross the resting position toward the opposite side');
+assert.strictEqual(crossDirection.instance.data.actionPosition, 'right', 'crossing zero hides the previous side before revealing the opposite side');
 
 const action = create({ right: [{ text: '删除', icon: 'delete', style: 'background:red' }], opened: true });
 action.instance.onActionTap({ currentTarget: { dataset: { position: 'right', index: 0 } } });
@@ -104,11 +115,14 @@ const exampleWxml = fs.readFileSync(path.join(root, '_example/miniprogram/pages/
 
 assert(wxml.includes('<slot name="left"></slot>') && wxml.includes('<slot name="right"></slot>') && wxml.includes('<slot></slot>'));
 assert(wxml.includes('bindtouchstart="onTouchStart"') && wxml.includes('bindtouchend="onTouchEnd"'));
+assert(wxml.includes("actionPosition === 'left'") && wxml.includes("actionPosition === 'right'"), 'native action layers must be mutually visible by offset direction');
 assert(wxml.includes('style="width:{{item.width}}rpx;{{item.style}}"'), 'array action style widths must reach the native layout');
 assert(!/title=|description=|loading=|left-actions|right-actions|bind:input|bind:change|bind:open|bind:close|bind:action/.test(wxml));
 assert.deepStrictEqual(Object.keys(json.usingComponents), ['pui-button']);
 assert(!/height\s*:\s*auto[^;]*transition|display\s*:\s*none/.test(wxss));
 assert(wxss.includes('transition-property: transform'));
+assert(wxss.includes('.pui-swipe-cell__actions--visible { opacity: 1; pointer-events: auto; }') && wxss.includes('color: transparent; background: transparent; border: 0; box-shadow: none;'), 'only the current side becomes visible and interactive during drag/open');
+assert(!/\.pui-swipe-cell--(?:dragging|opened) \.pui-swipe-cell__actions/.test(wxss), 'root drag/open state must not reveal both action layers together');
 
 assert.deepStrictEqual(metadata.apiProps['swipe-cell'], expectedProps);
 assert.deepStrictEqual(metadata.apiEvents['swipe-cell'].map((event) => event.name), ['click', 'dragstart', 'dragend']);

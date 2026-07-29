@@ -36,9 +36,9 @@ function plain(value) {
 
 const expectedProps = [
   'visible', 'actions', 'buttonLayout', 'cancelBtn', 'closeBtn', 'closeOnOverlayClick', 'confirmBtn', 'content',
-  'overlayProps', 'preventScrollThrough', 'showOverlay', 'title', 'usingCustomNavbar', 'zIndex', 'ariaLabel', 'reduceMotion',
+  'overlayProps', 'preventScrollThrough', 'showOverlay', 'showFooter', 'title', 'usingCustomNavbar', 'zIndex', 'ariaLabel', 'reduceMotion',
 ].sort();
-assert.deepStrictEqual(Object.keys(definition.properties).sort(), expectedProps, 'Dialog publishes exactly the aligned 16 Props');
+assert.deepStrictEqual(Object.keys(definition.properties).sort(), expectedProps, 'Dialog publishes exactly the aligned 17 Props');
 assert.deepStrictEqual(Object.keys(definition.methods).sort(), ['close', 'onAction', 'onCancel', 'onCloseTap', 'onConfirm', 'onPopupVisibleChange', 'requestClose', 'syncState'].sort());
 
 const defaults = create();
@@ -135,15 +135,16 @@ assert(!/<button\b|<input\b|<image\b/.test(wxml), 'native Dialog must compose Po
 assert(!wxml.includes('<pui-loading'));
 assert(!wxml.includes('<pui-empty'));
 assert(!/<slot(?:\s*\/|\s*><\/slot>)/.test(wxml), 'Dialog must not claim a default Slot');
-for (const slot of ['top', 'title', 'content', 'middle', 'actions', 'cancel-btn', 'confirm-btn']) assert(wxml.includes(`name="${slot}"`), `Dialog must expose ${slot} Slot`);
+for (const slot of ['top', 'header-left', 'title', 'content', 'middle', 'actions', 'cancel-btn', 'confirm-btn']) assert(wxml.includes(`name="${slot}"`), `Dialog must expose ${slot} Slot`);
 assert(wxml.includes('custom-class="pui-dialog__close"'));
 assert(wxml.includes('shape="circle"'));
 assert(wxml.includes('size="small"'));
-assert(!wxml.includes('header-left'));
+assert(wxml.includes('icon-only'), 'Dialog Close must opt into fixed icon-button geometry in WeChat');
+assert(wxml.includes('theme="default"') && wxml.includes('variant="base"'), 'Dialog close is a default circular icon button');
 assert(!wxml.includes('bind:after-open'));
 assert(!wxml.includes('bind:after-close'));
 assert(!wxml.includes('bind:retry'));
-assert(wxml.includes('<view class="pui-dialog__footer pui-dialog__actions'), 'Footer must remain the unique action region for named Slots');
+assert(wxml.includes('wx:if="{{hasFooter}}" class="pui-dialog__footer pui-dialog__actions'), 'Footer mounts only when built-in or slotted actions are requested');
 assert(wxml.includes('wx:if="{{!normalizedActions.length && normalizedCancelBtn}}"'), 'actions must replace the built-in Cancel button');
 assert(wxml.includes('wx:if="{{!normalizedActions.length && normalizedConfirmBtn}}"'), 'actions must replace the built-in Confirm button');
 assert.strictEqual(json.usingComponents['pui-popup'], '../popup/popup');
@@ -198,22 +199,22 @@ assert(/\.pui-dialog--preview\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*co
 
 assert.deepStrictEqual(metadata.apiProps.dialog.slice().sort(), expectedProps);
 assert.strictEqual(metadata.apiEvents.dialog.length, 5);
-assert.strictEqual(metadata.apiSlots.dialog.length, 7);
+assert.strictEqual(metadata.apiSlots.dialog.length, 8);
 assert.deepStrictEqual(metadata.apiMethods.dialog.map((item) => item.name), ['close()']);
 assert.strictEqual(metadata.apiPropGroups.dialog.length, 3);
-assert(dialogApi.includes('16 个 Props'));
+assert(dialogApi.includes('17 个 Props'));
 assert(dialogApi.includes('`close()`'));
-assert(dialogApi.includes('七个具名 Slot'));
+assert(dialogApi.includes('八个具名 Slot'));
 assert(!dialogApi.includes('`defaultVisible` | `Boolean` / `false`'));
-assert(!dialogApi.includes('四个 slot 为 `header-left`'));
+assert(dialogApi.includes('`header-left`'));
 assert(!api.includes('| `Dialog` | `visible`、`defaultVisible`'));
-assert(compatibility.includes('16 个 Props'));
+assert(compatibility.includes('17 个 Props'));
 assert(compatibility.includes('Dialog 不再内建 error/empty/loading/retry'));
 for (const heading of ['## 1. 组件定位与公开边界', '## 2. 固定结构与区域', '## 3. PUI 组合与依赖', '## 4. Token、间距与排版', '## 5. 内容、Slot 与组合边界', '## 6. 状态与优先级', '## 7. 交互、受控边界与事件', '## 8. 可访问性', '## 9. H5 预览与跨端一致性', '## 10. 响应式、主题与视觉配置', '## 11. 明确禁止', '## 12. 修改闭环']) assert(dialogContract.includes(heading));
-assert(dialogContract.includes('16 个 Props、5 个 Events、7 个具名 Slots'));
+assert(dialogContract.includes('17 个 Props、5 个 Events、8 个具名 Slots'));
 assert(dialogContract.includes('Cancel 固定按 `cancel → close({ trigger: \'cancel\' })`'));
 assert(componentContractIndex.includes('[Dialog](./DIALOG.md)'));
-assert(shadcn.includes('原生 Dialog 提供 16 Props'));
+assert(shadcn.includes('原生 Dialog 提供 17 Props'));
 
 const exampleDialogStart = example.indexOf('<pui-dialog\n    id="deliveryDialog"');
 const exampleDialogEnd = example.indexOf('/>', exampleDialogStart) + 2;

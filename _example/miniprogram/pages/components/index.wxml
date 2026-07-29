@@ -311,14 +311,14 @@
       </pui-button-group>
       <pui-cell title="ButtonGroup 状态" value="{{buttonGroupStatus}}" />
     </pui-card>
-    <pui-card title="Avatar 图片、回退与 slot" description="无图片时按 slot、Icon、text/alt 回退；头像本体只展示，操作由外层组件承担。" custom-class="section-card">
+    <pui-card title="Avatar 图片、加载与回退" description="真实图片自动管理资源等待；loading 强制态也由 Avatar 内部绘制，不在页面外拼 Spinner。" custom-class="section-card">
       <view class="avatar-example-row">
-        <pui-avatar text="PoemUI" size="large" bordered aria-label="PoemUI 文本头像" />
-        <pui-avatar icon="profile" size="medium" shape="round" aria-label="个人图标头像" />
+        <pui-avatar src="https://lg-1sobdtqg-1254094290.cos.ap-shanghai.myqcloud.com/user_img/QX_girl.png" lazy size="large" aria-label="真实用户头像" />
+        <pui-avatar loading text="L" size="large" aria-label="头像持续加载中" />
         <pui-avatar use-slot size="medium" shape="square" aria-label="星光图标头像">
           <pui-icon name="spark" size="36" />
         </pui-avatar>
-        <pui-avatar src="/__poemui__/missing-avatar.png" text="F" aria-label="失败回退头像" bind:error="onAvatarError" />
+        <pui-avatar src="/__poemui__/missing-avatar.png" text="F" lazy aria-label="懒加载失败回退头像" bind:error="onAvatarError" />
       </view>
       <pui-tag theme="primary" variant="outline">Avatar + Icon slot</pui-tag>
       <pui-cell title="Avatar 状态" value="{{avatarStatus}}" />

@@ -49,16 +49,15 @@ const nonDeviceRouteIds = new Set([
   'spacing',
   'style-utilities',
   'typography',
-  'shadcn-chart',
   'icon',
 ]);
 const standardPreviewRoutes = catalogRoutes.filter((item) => !nonDeviceRouteIds.has(item.id));
-assert.strictEqual(routeIds.length, 78, 'the public catalog must remain the single route source for preview coverage after TopLoading and DynamicMessage are added');
+assert.strictEqual(routeIds.length, 80, 'the public catalog must remain the single route source for preview coverage after AreaChart, BarChart and Waffle are added');
 assert.strictEqual(standardPreviewRoutes.length, routeIds.length - nonDeviceRouteIds.size, 'every standard component route must be covered by the shared PreviewDevice viewport');
 assert.deepStrictEqual(
   routeIds.filter((id) => nonDeviceRouteIds.has(id)).sort(),
   [...nonDeviceRouteIds].sort(),
-  'only documentation, unreleased Chart and the Icon resource library may opt out of a component PreviewDevice',
+  'only documentation and the Icon resource library may opt out of a component PreviewDevice',
 );
 assert(stage.includes('if (isDocumentationPage(state.current))'), 'documentation routes must exit before component preview rendering');
 assert(stage.includes("if (state.current === 'icon')"), 'the Icon resource library must keep its dedicated non-device renderer');

@@ -17,7 +17,7 @@ Props、Events、Methods 的完整清单以 `docs/COMPONENT_API.md` 为准；本
 ```text
 fixed top layer（无 Overlay、不阻断页面）
 └── retained island surface
-    ├── theme accent
+    ├── transient semantic edge flow（装饰、无语义）
     ├── PUI Loading 或 PUI Icon
     ├── title + message
     ├── PUI Button action（可选）
@@ -36,11 +36,15 @@ fixed top layer（无 Overlay、不阻断页面）
 
 ## 4. Token、间距与动效
 
-- Surface 使用深色中性身份色，主题只改变窄 accent 与 Icon 色；不能让 success/error 把整个通知染成大色块。
+- Surface 固定使用深色中性反色身份面，不属于 `primary` 主题：浅色模式下仍保持 `#09090b` 黑底与浅色正文，深色模式下继续作为独立高对比浮层。`theme` 只改变 Icon 色与从展开阶段开始的一次性单束流光；不能让 success/error 把整个通知染成大色块。
 - 内距、gap、字号、行高和圆角使用 PUI Token；title/message 之间只用紧密信息间距。
-- 进场不是整张卡片的一段线性缩放：先用 `180ms` 让只含 PUI Icon/Loading 与 title 的紧凑胶囊从顶部落下，再用 `320ms` 横向、纵向长成完整面板；message、Action、Close 与主题 accent 只在第二阶段淡入。
+- 进场不是整张卡片的一段线性缩放：先用 `180ms` 让只含 PUI Icon/Loading 与 title 的紧凑胶囊从顶部落下，再用 `320ms` 横向、纵向长成完整面板；message、Action、Close 在第二阶段淡入。
+- 旧的左侧满高竖向 accent 与“整段边框依次换色”的伪流动都已废弃。当前结构必须由一个 `edge-flow` 裁切轨道和内部唯一 `edge-beam` 组成：轨道仅暴露小程序 `6rpx` / H5 `3px` 的顶部与右侧 L 形区域，单束对角渐变从顶部经过右上角继续向右侧移动。它在进入 `expanding` 时启动，独立播放 `1500ms`，允许在面板完成 `320ms` 展开后继续短暂经过 `visible`，随后自动清除；不能用整条上边/右边同时变色冒充移动，也不能循环、呼吸、改变布局或成为常驻彩边。
+- 流光没有独立 Prop、事件或业务语义，必须与 Icon 共用当前主题的语义色变量：`loading=中性灰`、`info=信息蓝`、`success=成功绿`、`warning=警告橙`、`error（失败）=危险红`。不得把流光固定成绿色、primary 或白色，也不得用状态色整块染色 Surface；`aria-hidden=true`、`pointer-events:none`。`reduceMotion=true` 和系统低动效必须完全取消流光，而不是把它压缩成一次闪烁。
+- `edge-flow` 是 Surface 内的绝对定位装饰兄弟层，Content、Action 与 Close 位于它之上；它只改变自身 `opacity/background-position`。启动、结束、关闭和低动效都不得改写、覆盖或卸载根 Surface 的 `background`、`backdrop-filter`、`box-shadow`，因此毛玻璃在流光结束后必须连续保留。
+- `shadow` 与 `frostedGlass` 是 DynamicMessage 的组件私有三态开关：`null` 继承 ConfigProvider，`true` 强制当前通知开启，`false` 强制当前通知关闭。二者只改变 Surface 效果，不写入全局 `visualConfig`，也不改变边框、圆角、尺寸、状态色、流光路径或动画时序。
 - 退场必须严格反向：先用 `320ms` 收起 message、Action、Close 和完整面板，回到只含 Icon 与 title 的紧凑胶囊；再用 `180ms` 让胶囊向上淡出，之后才能卸载节点并触发 `close`。
-- 单次完整进场或退场仍固定为默认 `500ms`，上限合同 `1000ms`；`reduceMotion=true` 跳过可感知分段并压缩为 `1ms`。
+- 单次完整进场或退场仍固定为默认 `500ms`，公开交互动效上限合同仍为 `1000ms`；`1500ms` 只属于不可配置、不阻塞交互的一次性 edge-flow 装饰例外。`reduceMotion=true` 跳过可感知分段并压缩为 `1ms`，同时完全不启动流光。
 - 禁止 transition `height:auto`、`display:none` 瞬移、把标题和正文一起缩放，或在收拢完成前销毁节点。宽高变化使用明确的 `max-width / min-height / max-height` 边界，文本在 Surface 展开期间单独淡入，保持可读。
 - `duration` 是进入完成后的停留时间，支持 `0` 持久显示，不是 motion duration。
 
@@ -70,11 +74,13 @@ fixed top layer（无 Overlay、不阻断页面）
 - PreviewDevice 使用 `edge-to-edge`；通知 fixed 语义在网页中限制为设备内 absolute，必须覆盖设备完整顶边上下文，而不是只覆盖局部分区。
 - 概览底部提供一组真实 PUI Button：开始生成、更新进度、成功、失败、加入队列、关闭；上方保留可滚动业务内容证明通知不清空、不阻断预览。
 - H5 必须真实验证同 key 更新、不同 key 队列、duration=0、动作事件、自动关闭、手动关闭、`compact → expanding → visible` 与 `collapsing → leave-compact → hidden` 中间帧，以及低动效。
+- H5 与小程序必须同时验证：`compact` 无流光、`expanding` 启动唯一一束 `1500ms` 主题光束、面板在 `320ms` 后进入 `visible` 时同一光束不中断也不重启、计时结束后彩边清零，`collapsing/leave-compact` 立即清理未完成流光。loading/info/success/warning/error 五态必须分别回读中性灰/信息蓝/成功绿/警告橙/危险红；主题切换只更新当前语义色而不重播完整入场，同 key 完成态 update 不重建节点。
+- `shadow/frostedGlass` 的 `null/true/false` 必须在属性面板、WXML 生成器和两端运行态同源。验证流光前、中、后根 Surface 的背景、滤镜和阴影计算值保持不变，证明装饰退场不会破坏毛玻璃。
 
 ## 9. 响应式、主题与视觉配置
 
 - 390px 下左右安全边界一致，标题、消息、Action、Close 不得相互覆盖或导致页面级横向溢出。
-- 通知中性深色身份在 light/dark 下都必须保持可读；全局阴影开关只影响浮层投影，border、frost、largeRadius 不得破坏紧凑几何。
+- 通知中性深色身份在 light/dark 下都必须保持可读；`shadow/frostedGlass=null` 时跟随全局有效值，组件私有 `true/false` 可局部覆盖。border、largeRadius 与这些效果不得破坏紧凑几何。
 - safeArea=true 时优先读取微信胶囊和状态栏真实位置；读取失败才使用最小安全 fallback，不能硬编码某一机型。
 
 ## 10. 明确禁止

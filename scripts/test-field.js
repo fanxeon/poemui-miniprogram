@@ -114,6 +114,8 @@ assert(wxss.includes('transition: color var(--pui-field-duration)'));
 assert(wxss.includes('@import "../common/style/field-row.wxss";'), 'Field imports the shared field-row primitive');
 ['min-height: 104rpx', 'padding: var(--pui-space-xs) var(--pui-space-normal)', 'background: var(--pui-glass-surface)', 'border-radius: var(--pui-radius-medium)', 'box-shadow: none', 'backdrop-filter: var(--pui-frosted-filter)'].forEach((rule) => assert(fieldRowStyles.includes(rule), `Field-row primitive keeps editable Cell rule: ${rule}`));
 assert(wxss.includes('.pui-field__content .pui-input__field'), 'Field flattens the default PUI Input into its editable Cell surface');
+assert(wxss.includes('padding: 0 var(--pui-space-sm);'), 'transparent embedded Input retains control-internal horizontal spacing');
+assert(wxss.includes('border-radius: var(--pui-radius-medium);'), 'transparent embedded Input retains semantic focus and status radius');
 
 assert.strictEqual(metadata.apiProps.field.length, 12);
 assert.strictEqual((metadata.apiEvents.field || []).length, 0);
@@ -146,6 +148,10 @@ assert(previewHelper.includes('bordered: false'), 'Field H5 flattens the shared 
 assert(previewHelper.includes('pui-field-row-preview--editable'), 'Field H5 uses the shared editable field-row preview primitive');
 assert(/\.pui-field__content > pui-input,[\s\S]*?flex:\s*1 1 0;[\s\S]*?width:\s*100%;/.test(wxss), 'Field slot must reserve the full control column for a PUI Input');
 assert(previewStyles.includes('.pui-field-preview__input .pui-input-preview__control'), 'Field H5 removes the nested Input surface in its normal state');
+assert(previewStyles.includes('padding: 0 var(--pui-preview-space-sm);'), 'Field H5 keeps the same embedded Input horizontal spacing');
+assert(previewStyles.includes('border-radius: var(--pui-preview-radius-control, var(--pui-preview-radius-medium));'), 'Field H5 keeps the same semantic embedded radius');
+assert(previewStyles.includes('body .app-shell[data-page-mode] .preview-stage .pui-field-preview__input .pui-input-preview__control'), 'Field H5 transparent Input must override the later global frosted-input rule');
+assert(previewStyles.includes('padding-right: var(--pui-preview-space-sm);\n  padding-left: var(--pui-preview-space-sm);\n  background: transparent;'), 'Field H5 keeps its inset while remaining a transparent single Surface under fruit appearance');
 assert(previewStyles.includes('@media (prefers-reduced-motion: reduce)'));
 assert(previewStyles.includes('@keyframes pui-field-preview-message-color'));
 assert(previewStyles.includes('animation-duration: 1ms'));

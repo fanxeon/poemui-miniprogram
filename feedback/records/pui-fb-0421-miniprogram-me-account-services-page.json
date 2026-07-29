@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-27",
-  "updatedAt": "2026-07-27",
+  "updatedAt": "2026-07-28",
   "userGoal": "把“我的”页面保持为克制可用的账户页：可修改昵称并访问真实服务入口，同时彻底删除 OpenID 展示、获取、兼容读取和复制链路。",
   "environment": {
     "surfaces": ["miniprogram tabbar", "me top-level page"],
@@ -35,17 +35,17 @@
     {
       "kind": "file",
       "ref": "miniprogram/pages/me/index.wxml",
-      "note": "页面组合 ConfigProvider、Navbar、ScrollArea、Card、Avatar、Input、Button、CellGroup、Cell、Toast 与 Tabbar；服务区相对资料卡增加标准内容间距，并以 PUI Button open-type=contact 提供微信客服入口。"
+      "note": "页面组合 ConfigProvider、Navbar、ScrollArea、Card、Avatar、Input、Button、CellGroup、Cell、Toast 与 Tabbar；服务区使用正文剩余空间靠近底部，并以 PUI Button open-type=contact 提供微信客服入口。"
     },
     {
-      "kind": "file",
-      "ref": "miniprogram/common/utils/user-profile.js",
-      "note": "资料 Store 当前只读取和写入 nickname；不访问 getApp、旧 openid 键，也不公开 setOpenId。"
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "后续 PUI-FB-0459 已删除资料 Store；反向合同锁定页面不再读取本地身份资料。"
     },
     {
       "kind": "file",
       "ref": "miniprogram/pages/me/index.js",
-      "note": "页面已移除 OpenID 状态和剪贴板方法；隐私合同与跨小程序跳转继续分别使用 wx.openPrivacyContract 与 wx.navigateToMiniProgram。"
+      "note": "页面已移除 OpenID 状态和剪贴板方法；隐私合同与跨小程序跳转继续分别使用 wx.openPrivacyContract 与 wx.navigateToMiniProgram；商业授权真实外链另由 PUI-FB-0457 固化。"
     },
     {
       "kind": "test",
@@ -55,7 +55,7 @@
   ],
   "rootCause": "早期账户页需求曾包含 OpenID 复制，因此身份字段进入页面状态、Cell、剪贴板方法和资料 Store；用户最新产品决策已撤销该能力，必须同步清理整个链路而不是只隐藏 Cell。",
   "decision": {
-    "outcome": "保留真实 pages/me/index 与 nickname Store，但删除 OpenID Cell、页面状态、脱敏函数、剪贴板动作、App.globalData/旧存储读取和 setOpenId 桥接；下一次昵称保存只写入 nickname。隐私和关于诗上继续调用微信真实平台能力；高级版商业授权使用“查阅详情”语义并明确提示详情正在准备中，订单在真实查询链完成前继续明确反馈未开放。服务 CellGroup 相对资料卡额外使用一个 --pui-section-gap，为资料 Input 与 Surface 阴影保留稳定安全空间；客服入口投影到 Navbar 最左侧 left Slot，以 text/transparent/small/circle/iconOnly 的透明 PUI Button 保留 open-type=contact。",
+    "outcome": "保留真实 pages/me/index 与 nickname Store，但删除 OpenID Cell、页面状态、脱敏函数、剪贴板动作、App.globalData/旧存储读取和 setOpenId 桥接；下一次昵称保存只写入 nickname。隐私和关于诗上继续调用微信真实平台能力；高级版商业授权保留“查阅详情”语义，其后续 Dialog → WebView 真实外链由 PUI-FB-0457 接管，订单在真实查询链完成前继续明确反馈未开放。资料版头使用大头像与满宽昵称 Input 两行结构；服务 CellGroup 以 margin-top:auto 消费短屏正文剩余空间，并由正文 --pui-section-gap 保证长内容下的最小分区距离；客服入口投影到 Navbar 最左侧 left Slot，以 text/transparent/small/circle/iconOnly 的透明 PUI Button 保留 open-type=contact。",
     "rationale": "用户已经撤销客户端 OpenID 入口；完整删除读取与桥接可以避免敏感身份残留和后续 Agent 误恢复。旧存储不做主动破坏性清理，但不再读取，保存昵称时资料对象自然收敛为单字段。",
     "alternativesRejected": [
       "只隐藏 OpenID Cell 但保留 Store 和页面读取：仍会在后台保留已撤销的身份链路。",
@@ -69,7 +69,7 @@
   "impact": {
     "files": [
       "miniprogram/pages/me/",
-      "miniprogram/common/utils/user-profile.js",
+      "miniprogram/common/utils/",
       "scripts/test-miniprogram-me-page.js",
       "scripts/test-miniprogram-tabbar-pages.js",
       "docs/MINIPROGRAM_ME_PAGE.md",
@@ -105,7 +105,7 @@
       "微信客服会话依赖小程序后台客服配置；模拟器属性存在不等于真机客服链路已经可用，仍需 iOS/Android 点击、进入、返回和失败回调验收。",
       "小程序深色及边框、阴影、毛玻璃、大圆角、等距组合仍未在本页逐项运行验证。",
       "未来若新增登录，必须另建服务端身份合同，不能恢复本地昵称 Store 中的 OpenID 字段。",
-      "高级版商业授权详情与订单服务尚未交付；授权 Cell 使用“查阅详情”语义并明确提示正在准备中，订单继续提供未开放反馈。",
+      "商业授权 WebView 的业务域名与真机链路由 PUI-FB-0457 跟踪；订单服务继续提供未开放反馈。",
       "iOS/Android 真机仍未验证资料旧对象在用户下一次保存昵称后自然收敛为单字段。"
     ]
   },
@@ -116,7 +116,8 @@
       "user-profile Store 只公开 restore 和 setNickname，持久化对象只包含 nickname。",
       "微信隐私合同和跨小程序跳转必须使用平台 API，并由失败回调反馈，不能以静态页面或成功文案替代。",
       "客服使用 Navbar 最左侧 left Slot 的透明 PUI IconButton，保留 open-type=contact；capsule=true 时禁用 right Slot，leftBtn 不能替代平台开放能力。",
-      "服务 CellGroup 与资料卡的额外间距使用 --pui-section-gap；它同时为资料 Input/Surface 阴影留出稳定空间，不得增加页面魔法数或第二层 Surface。",
+      "资料区使用大头像与满宽昵称 Input 两行结构；服务 CellGroup 以 margin-top:auto 消费正文剩余空间，并由正文 --pui-section-gap 保证最小分区距离，不得用固定 vh padding、页面魔法数或第二层 Surface 伪造底部对齐。",
+      "头像昵称与本地 user-profile 的当前产品规则已由后续 PUI-FB-0459 取代；不得从本历史记录恢复资料区。",
       "没有支付、订单或登录后端时明确显示未开放，不建立假路由、假数据或假成功。",
       "应用一级目的地优先组合 PUI 组件；应用页面不伪造成 H5 标准组件页。"
     ],

@@ -82,18 +82,12 @@
 }
 
 .pui-bubble__clip {
+  display: block;
   box-sizing: border-box;
   min-width: 0;
-  max-height: var(--pui-bubble-expanded-height, 2400rpx);
+  max-height: 2400rpx;
   overflow: hidden;
   transition: max-height var(--pui-bubble-duration, 500ms) var(--pui-bubble-ease, cubic-bezier(.2, 0, 0, 1)), opacity var(--pui-bubble-duration, 500ms) var(--pui-bubble-ease, cubic-bezier(.2, 0, 0, 1));
-}
-
-.pui-bubble--collapsible.pui-bubble--collapsed .pui-bubble__clip {
-  display: -webkit-box;
-  max-height: var(--pui-bubble-collapsed-height, 160rpx);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--pui-bubble-lines, 4);
 }
 
 .pui-bubble__text { white-space: pre-wrap; }
@@ -113,22 +107,23 @@
   white-space: pre-wrap;
 }
 
-.pui-bubble__measure--clamped {
-  display: -webkit-box;
-  max-height: var(--pui-bubble-collapsed-height, 160rpx);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--pui-bubble-lines, 4);
-}
+.pui-bubble__measure--line { white-space: nowrap; }
 
 .pui-bubble__toggle {
   position: relative;
   z-index: 1;
   display: flex;
+  width: 100%;
+  min-width: 0;
   justify-content: flex-end;
   margin: var(--pui-space-xs) 0 0;
 }
 
 .pui-bubble__toggle-button {
+  width: 100% !important;
+  max-width: 100% !important;
+  justify-content: flex-end !important;
+  margin: 0 !important;
   min-height: 48rpx !important;
   padding: 0 var(--pui-space-xs) !important;
   color: currentColor !important;

@@ -72,7 +72,7 @@ pui-notice-bar（status / error 时 alert 根）
 ## 10. 响应式、主题与视觉配置
 
 - 390px 下前后操作区不收缩，正文在可用 viewport 内裁切或轮播，页面与 PreviewDevice 不得出现横向溢出。
-- light/dark 与边框、阴影、毛玻璃、大圆角、渐变必须在真实 Notice Surface 与 PUI 子按钮上可见；低动效不改变可访问名称或事件。
+- light/dark 与边框、阴影、毛玻璃、大圆角、渐变必须作用于真实 Notice Surface；尾部透明按钮不得因这些开关重新获得独立 Surface。低动效不改变可访问名称或事件。
 - 渐变只属于页面、Stage 或 PreviewDevice 画布，不能为 NoticeBar 再造一层装饰 Surface。
 
 ## 11. 明确禁止
@@ -89,3 +89,11 @@ pui-notice-bar（status / error 时 alert 根）
 4. 更新 NoticeBar Feedback Ledger；真机必须保留 swiper、SelectorQuery、rpx、Slot 投影、样式隔离、读屏和系统低动效风险。
 
 本次对照依据为 2026-07-20 在线访问的 [TDesign NoticeBar 页面](https://tdesign.tencent.com/miniprogram/components/notice-bar)、[官方仓库](https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/notice-bar) 与固定 `tdesign-miniprogram@1.15.3` 包内 `miniprogram_dist/notice-bar/{props.js,type.d.ts,notice-bar.js,notice-bar.wxml,notice-bar.wxss}`。
+
+## 13. 2026-07-29 语义染色与透明关闭
+
+`theme` 的规范值为 `primary/success/warning/danger`，兼容输入 `info/error` 分别归一到 `primary/danger`。背景、文字和默认前置图标必须共同染色；尾部 Close 是右对齐的小号透明圆形图标按钮，只发布 `click({trigger:"suffix-icon"})`，由父级决定关闭。
+
+尾部按钮固定使用 PUI Button 的 `variant="transparent"`，不声明 `theme="default"`，也不使用会移除圆角的 `surface="transparent"`。这样保留 `small + circle + icon-only` 的命中区、无障碍名称和点击路径，但不在 NoticeBar 唯一语义 Surface 内再制造 muted 背景、边框、阴影或毛玻璃。按钮前景继承当前 NoticeBar 语义色。
+
+本次复核依据为 2026-07-29 再次访问的 [TDesign NoticeBar 页面](https://tdesign.tencent.com/miniprogram/components/notice-bar)、[官方仓库](https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/notice-bar)，以及重新解包的固定 `tdesign-miniprogram@1.15.3` 包内 `miniprogram_dist/notice-bar/{props.js,type.d.ts,notice-bar.js,notice-bar.wxml,notice-bar.wxss}`。固定源码把 suffix 定义为图标区域而不是第二层 Button Surface；PoemUI 保留 PUI Button 组合合同，并以透明变体表达同一视觉层级。

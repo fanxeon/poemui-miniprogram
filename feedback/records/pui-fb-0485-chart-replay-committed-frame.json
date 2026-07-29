@@ -1,0 +1,154 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0485",
+  "title": "AreaChart BarChart Waffle 重播动画没有重新触发",
+  "scope": "component",
+  "components": [
+    "area-chart",
+    "bar-chart",
+    "waffle"
+  ],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
+  "userGoal": "每次点击重播都能看到图表重新入场。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "等待 AreaChart、BarChart 或 Waffle 的默认 500ms 入场完成。",
+    "点击概览中的重播 IconButton，观察图形和浏览器计算样式。",
+    "旧 H5 实现清除 is-entered 后只等待双 RAF 便重新添加；复位方向仍在执行同一个 500ms transition。"
+  ],
+  "expected": "每次点击都先完整回到无过渡的初始几何，再播放一次 500ms 入场；连续点击清理旧 RAF，多个示例一起重播。",
+  "actual": "旧 H5 只让反向 transition 运行约 32ms 就折返回完成态，图形只离开最终值极小距离，用户感知为没有反应。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "area-chart/area-chart.js",
+      "note": "setData callback 后 32ms 入场。"
+    },
+    {
+      "kind": "file",
+      "ref": "bar-chart/bar-chart.js",
+      "note": "同一提交时序。"
+    },
+    {
+      "kind": "file",
+      "ref": "waffle/waffle.js",
+      "note": "同一提交时序。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 重播收口到委托 action，使用 is-replay-reset、强制布局和双 RAF；连续点击先取消旧帧。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "三组件的重播复位类精确关闭目标图形 transition，确保初始 opacity/transform/stroke 几何立即提交。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/area-chart",
+      "note": "2026-07-29 实点后 Area opacity=0.869596、translateY=0.652021px、line dash offset=0.130404px，随后恢复 1/0/0。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/bar-chart",
+      "note": "2026-07-29 实点同时重播横纵两个根，scaleX/scaleY 中间帧均为 0.859601，最终恢复 1。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/waffle",
+      "note": "2026-07-29 实点同时重播常规与缩放点阵，首格中间 opacity=0.859737、scale=0.966337，最终恢复 1。"
+    }
+  ],
+  "rootCause": "此前只解决了 class 提交时序，没有关闭复位方向的 CSS transition。清除 is-entered 后，图形会从完成态沿 500ms transition 缓慢倒退；双 RAF 约 32ms 后又恢复 is-entered，因此新的正向动画只从接近完成态的位置开始，视觉幅度不足。",
+  "decision": {
+    "outcome": "小程序继续在 setData(false) 回调后计时入场；H5 统一由委托 chart-replay action 执行，先添加 is-replay-reset 关闭 transition、清除完成类并强制布局，再双 RAF 移除复位类并恢复完成类。",
+    "rationale": "只有先提交无过渡初始几何，后续 500ms 正向 transition 才拥有完整可见行程；委托 action 同时避免按钮节点绑定与预览重建竞争。",
+    "alternativesRejected": [
+      "只增加动画时长：会让反向过渡更慢，重播仍从接近完成态折返。",
+      "只清除完成类后等待更久：会先播放明显的反向退场，再播放入场，不符合 replay 直接从初始帧重播的语义。",
+      "重建整个 PreviewDevice：会丢失滚动、焦点和组件运行态。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "area-chart/area-chart.js",
+      "bar-chart/bar-chart.js",
+      "waffle/waffle.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-area-chart.js",
+      "scripts/test-bar-chart.js",
+      "scripts/test-waffle.js",
+      "docs/components/AREA-CHART.md",
+      "docs/components/BAR-CHART.md",
+      "docs/components/WAFFLE.md"
+    ],
+    "dependencies": [
+      "setData commit",
+      "requestAnimationFrame",
+      "CSS transition committed reset frame"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-area-chart.js",
+      "scripts/test-bar-chart.js",
+      "scripts/test-waffle.js"
+    ],
+    "commands": [
+      "node scripts/test-area-chart.js：通过",
+      "node scripts/test-bar-chart.js：通过",
+      "node scripts/test-waffle.js：通过",
+      "npm run feedback:generate && npm run feedback:check：通过，487 条记录",
+      "npm run site:build：通过，74 个组件目录与 6 个 catalog 产物完成生成",
+      "npm run check：图表专项与 precheck 通过，随后被本次范围外既有 scripts/test-miniprogram-home.js:316 的 enableShareTimeline 缺失阻断",
+      "npm run pack:check：通过，559 files / 366.8kB / shasum c14cbcd2972b1810f975eeb687c87b55b7c8aabb"
+    ],
+    "browser": [
+      "H5 实际点击 AreaChart，面积、描边与位移均出现非完成中间帧后恢复完成态。",
+      "H5 实际点击 BarChart，横向与纵向两个示例同步出现 scale 中间帧并恢复完成态。",
+      "H5 实际点击 Waffle，常规与超限缩放两个示例同步出现 opacity/scale/translate 中间帧并恢复完成态。"
+    ],
+    "deviceRisks": [
+      "本轮共享小程序 replay 实现未改动；iOS/Android 真机连续点击、系统低动效和 Canvas 合成仍待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "图表重播不仅要跨帧切换完成类，还要先关闭复位 transition 并提交完整初始几何。",
+    "rules": [
+      "先清旧 Timer。",
+      "false 提交后再 true。",
+      "H5 复位帧必须禁用 transition，强制布局后双 RAF 再恢复。",
+      "重播不得通过重建 PreviewDevice 丢失滚动、焦点或运行态。"
+    ],
+    "tags": [
+      "chart",
+      "replay",
+      "animation",
+      "frame"
+    ]
+  }
+}

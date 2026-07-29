@@ -8,12 +8,14 @@
   box-shadow: none;
   -webkit-backdrop-filter: var(--pui-frosted-filter);
   backdrop-filter: var(--pui-frosted-filter);
+  transition: box-shadow var(--pui-collapsible-duration) var(--pui-collapsible-easing);
 }
 
 .pui-collapsible--block { width: 100%; }
 .pui-collapsible--inline { display: inline-block; min-width: 280rpx; max-width: 100%; }
 .pui-collapsible--bordered { border: 1rpx solid var(--pui-glass-border); }
 .pui-collapsible--borderless { border: 0; box-shadow: none; }
+.pui-collapsible--shadow.pui-collapsible--open { box-shadow: var(--pui-shadow-card); }
 .pui-collapsible--primary { --pui-collapsible-accent: var(--pui-color-info); --pui-collapsible-accent-bg: var(--pui-color-info-light); }
 .pui-collapsible--success { --pui-collapsible-accent: var(--pui-color-success); --pui-collapsible-accent-bg: var(--pui-color-success-light); }
 .pui-collapsible--warning { --pui-collapsible-accent: var(--pui-color-warning); --pui-collapsible-accent-bg: var(--pui-color-warning-light); }

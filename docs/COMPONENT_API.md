@@ -267,7 +267,7 @@ Collapse 不公开业务实例方法，也不重复发布 `input/open/close`。�
 
 ## SwipeCell
 
-`pui-swipe-cell` 用于在列表项左右滑动后呈现操作。调用方负责默认内容和两侧 Slot；数组操作由内部 PUI Button 渲染。横向移动超过 10px 后才开始拖动，释放时越过对应操作区宽度的 30% 才展开；轻点前景或数组操作后收起。它不承载 loading、empty、error、retry、业务成功或实例方法。
+`pui-swipe-cell` 用于在列表项左右滑动后呈现操作。调用方负责默认内容和两侧 Slot；数组操作由内部 PUI Button 渲染。横向移动超过 10px 后才开始拖动，释放时越过对应操作区宽度的 30% 才展开；实时位移只显示同方向动作层，跨过零点时互斥切换，避免另一侧动作从容器边缘泄漏。轻点前景或数组操作后收起。它不承载 loading、empty、error、retry、业务成功或实例方法。
 
 SwipeCell 有 6 个 Props、3 个 Events、3 个 Slots，没有公开 Methods。
 
@@ -473,7 +473,7 @@ H5 镜像用同一组内部 Button 渲染，组根默认全宽并消费单一集
 
 ## Card
 
-`pui-card` 用于把内容、说明和操作组织成一致的容器。它保留默认 `content` slot，并提供 `header`、`footer` 命名 slot；当没有标题或说明但仍需使用 `header` slot 时，显式传入 `showHeader`。`clickable` 只控制 Card 自身的点击事件；footer 使用 `catchtap` 保留 slot 内 Button 的独立 `click`，不会把保存等操作误报为 Card click。
+`pui-card` 用于把内容、说明和操作组织成一致的容器。它保留默认内容 slot，并提供 `header`、`header-right`、`footer` 命名 slot；`header-right` 是固定右侧轨道，最多承载三个紧凑操作。未提供该 slot 且 `menuItems` 非空时，Card 自动显示默认 `more` 圆形图标按钮，并用 Popover 打开组件级下拉菜单。`clickable` 只控制 Card 自身的点击事件；header/footer 使用 `catchtap` 保留子 Button 的独立事件。
 
 | 属性 | 类型 / 默认值 | 说明 |
 | --- | --- | --- |
@@ -483,12 +483,25 @@ H5 镜像用同一组内部 Button 渲染，组根默认全宽并消费单一集
 | `padding` | `String` / `'normal'` | `normal` 或 `compact`；非法值回退 `normal`，各分区采用一致内距。 |
 | `shadow` | `Boolean` / `false` | 使用主题卡片阴影 token。 |
 | `clickable`、`disabled` | `Boolean` / `false`、`false` | 仅当 `clickable && !disabled` 时 Card 自身可点并触发 `click`；`disabled` 不劫持 footer 内子 Button 的独立事件。 |
+| `menuItems` | `Array` / `[]` | 默认 More 菜单条目；每项使用 `{ value, label, icon?, disabled?, danger? }`，最多展示 8 项。传入 `header-right` slot 时由消费者接管右侧轨道。 |
+| `menuIcon` | `String` / `'more-horizontal'` | 默认菜单触发器的 PUI More 图标名称。 |
+| `menuVisible` | `Boolean \| null` / `null` | `null` 为非受控模式；布尔值为受控模式，组件只发出可见性请求。 |
+| `defaultMenuVisible` | `Boolean` / `false` | 非受控模式的初始菜单状态。 |
 | `ariaLabel` | `String` / `'卡片'` | Card 语义名称。 |
 | `duration`、`easing`、`reduceMotion` | `Number`、`String`、`Boolean` / `500`、`'standard'`、`false` | hover / disabled 视觉变化的动画配置；时长规整为 `0–1000ms`，低动效为 `1ms`。 |
 
 | 事件 | `detail` | 触发条件 |
 | --- | --- | --- |
 | `click` | `{ source: 'card' }` | 点按可点击且非禁用的 Card 内容区域。 |
+| `menu-visible-change` | `{ visible, source }` | 默认菜单请求打开或关闭；受控模式由父级回写 `menuVisible`。 |
+| `menu-select` | `{ value, label, index, item }` | 选择可用菜单项；组件关闭菜单，但不伪造后续业务结果。 |
+
+| Slot | 说明 |
+| --- | --- |
+| 默认 Slot | Card 主内容。 |
+| `header` | 标题左侧/下方的自定义 Header 内容。 |
+| `header-right` | 固定右侧操作轨道，最多三个紧凑 Button/IconButton；存在时替代默认 More 菜单。 |
+| `footer` | Footer 操作内容。 |
 
 ```xml
 <pui-card
@@ -497,6 +510,8 @@ H5 镜像用同一组内部 Button 渲染，组根默认全宽并消费单一集
   show-footer
   clickable
   bind:click="onCardClick"
+  bind:menu-select="onCardMenuSelect"
+  menu-items="{{menuItems}}"
 >
   <pui-tag slot="header" theme="primary" variant="outline">header slot</pui-tag>
   <pui-cell title="组件目录" value="ready" />
@@ -660,6 +675,8 @@ H5 镜像与 WXML 共享 12 项 Props、零值/上限/null Slot、固定右上�
 | `shape`、`size` | `String` / `'circle'`、`'medium'` | `shape` 为 `circle`、`round`、`square`；`size` 为 `small`、`medium`、`large`；非法值分别回退默认。 |
 | `bordered` | `Boolean` / `false` | 绘制与容器背景一致的头像边框及细轮廓。 |
 | `hideOnLoadFailed` | `Boolean` / `false` | 图片失败时是否淡出并隐藏整个 Avatar；否则保留 Icon / 文本 / slot 回退。 |
+| `lazy` | `Boolean` / `false` | 是否启用微信 image 的 `lazy-load`。只改变资源何时开始请求，不改变 Avatar 内部状态职责。 |
+| `loading` | `Boolean` / `false` | 是否强制保持 Avatar 内部 PUI Loading 与 `aria-busy=true`；关闭后继续按真实 `src → load/error` 生命周期自动显示或结束等待态。 |
 | `ariaLabel` | `String` / `''` | Avatar 的可访问名称；为空时依次回退 `alt`、`text`、`icon`、`'头像'`。 |
 | `reduceMotion` | `Boolean` / `false` | 是否将固定的图片淡入与失败退场压缩为 `1ms`。 |
 
@@ -1103,19 +1120,22 @@ H5 使用 Pointer Events 和局部 overflow 镜像原生 touch/scroll-view，尺
 
 `pui-dialog` 是由父级 `visible` 控制的中心模态。它组合 `pui-popup` 承担遮罩、层级和进退场，组合 PUI Button 承担内建操作；它不维护第二套显隐状态，也不把加载、空、错误或重试伪装成 Dialog 自身能力。此类内容应由调用方在 `content` slot 中组合 PUI Loading、Empty 与 Button。
 
+Dialog 公开 17 个 Props、5 个 Events、8 个具名 Slots 和 `close()` 方法。
+
 | 属性 | 类型 / 默认值 | 说明 |
 | --- | --- | --- |
 | `visible` | `Boolean` / `false` | 唯一显隐真相源。`false` 是明确关闭；收到 `close` 后由父级回写 `false`。 |
 | `actions` | `DialogButtonProps[]` / `[]` | 非空时渲染数组按钮，每项支持 `content`、`text`、`label`、`theme`、`variant`、`size`、`shape`、`icon`、`loading`、`disabled`、`ariaLabel`；点击只触发 `action({ index })`。 |
 | `buttonLayout` | `'horizontal' \| 'vertical'` / `'horizontal'` | 默认按钮或数组动作的排列方式。 |
 | `cancelBtn` | `String \| Number \| DialogButtonProps \| null` / `null` | 内建取消按钮。使用 PUI Button 的中性 `base` 样式；`null` 或 `false` 不渲染。 |
-| `closeBtn` | `Boolean \| DialogCloseButtonProps` / `false` | 右上关闭入口；对象可设置 `icon`、`disabled` 与 `ariaLabel`。 |
+| `closeBtn` | `Boolean \| DialogCloseButtonProps` / `true` | 右上默认关闭入口；对象可设置 `icon`、`disabled` 与 `ariaLabel`。 |
 | `closeOnOverlayClick` | `Boolean` / `false` | `true` 时遮罩点击固定按 `overlay-click → close({ trigger: 'overlay' })` 请求关闭。 |
 | `confirmBtn` | `String \| Number \| DialogButtonProps \| null` / `null` | 内建确认按钮。默认主题为 `primary`；点击只触发 `confirm`，是否关闭由父级决定。 |
 | `content` | `String` / `''` | 文本正文；与 `content` slot 并列时由调用方避免重复内容。 |
 | `overlayProps` | `OverlayProps` / `{}` | 当前映射 `backgroundColor` 到 Popup 遮罩；其余字段不作虚假兼容承诺。 |
 | `preventScrollThrough` | `Boolean` / `true` | 遮罩显示时阻止遮罩触摸事件向页面滚动穿透。 |
 | `showOverlay` | `Boolean` / `true` | 是否渲染遮罩；不改变 Dialog 本体的受控显隐。 |
+| `showFooter` | `Boolean` / `false` | 没有内建动作但需要 actions/cancel-btn/confirm-btn Slot 时显式挂载 Footer。 |
 | `title` | `String` / `''` | 标题文字；Header 采用固定三列，使标题在有无 Close 时均保持几何居中。 |
 | `usingCustomNavbar` | `Boolean` / `false` | 转发给 Popup 的自定义导航栏上下文标记。 |
 | `zIndex` | `Number` / `11500` | 传给 Popup 的层级，运行时规整到 `1–12000`。 |
@@ -1134,7 +1154,7 @@ H5 使用 Pointer Events 和局部 overflow 镜像原生 touch/scroll-view，尺
 | --- | --- | --- |
 | `close()` | `Boolean` | 发布 `close({ trigger: 'programmatic' })` 请求；父级回写 `visible=false` 后由 Popup 完成退场。已关闭时返回 `false`。 |
 
-Dialog Surface 固定为 Header、Content、Footer 三个平级区域，分区间距为 `36rpx`；Header 使用 `72rpx | minmax(0,1fr) | 72rpx` 三列 Grid，左右轨等宽，Close 使用圆形 PUI IconButton。Footer 的内建 Cancel 为中性 `base` Button、Confirm 为主色 Button；横向按钮等宽，纵向按移动端操作顺序反向排列。超长内容只有 Content 可以内部滚动，Header 和 Footer 保持可见。
+Dialog Surface 固定为 Header、Content、Footer 三个平级区域；复用 Popup 时清除 Popup Content 的重复 padding。Header 使用 `72rpx | minmax(0,1fr) | 72rpx` 三列 Grid，左侧可选 `header-left` 紧凑图标按钮（PUI Button 需声明 `icon-only`），右侧为默认圆形 Close。Footer 按一个或两个动作形成一列或两列全宽 Grid，左右、底部和按钮间距相等。超长内容只有 Content 可以内部滚动。
 
 基础用法只声明组件本体，不展示事件全集：
 
@@ -1157,9 +1177,9 @@ Dialog Surface 固定为 Header、Content、Footer 三个平级区域，分区�
 />
 ```
 
-七个具名 Slot 为 `top`、`title`、`content`、`middle`、`actions`、`cancel-btn`、`confirm-btn`。其中 `content` 用于组合 Cell、Badge、Loading、Empty、Button 等现有 PUI 组件；这些业务状态由调用方真实管理，Dialog 不伪造成功、错误或重试。`actions`、`cancel-btn`、`confirm-btn` 是操作区组合入口，Slot 内按钮的业务事件仍归消费者。
+八个具名 Slot 为 `top`、`header-left`、`title`、`content`、`middle`、`actions`、`cancel-btn`、`confirm-btn`。其中 `header-left` 只承载一个声明 `icon-only` 的紧凑 PUI 圆形图标按钮；`content` 用于组合 Cell、Badge、Loading、Empty、Button 等现有 PUI 组件。`actions`、`cancel-btn`、`confirm-btn` 是操作区组合入口，Slot 内按钮的业务事件仍归消费者。
 
-Popup 在关闭请求后保留节点至其真实退场完成；Dialog 不建立重复动画。H5 镜像同步 16 个 Props、上述事件顺序、四个分区示例和 500ms/1ms 动效；Escape 仅是浏览器辅助关闭入口，原生小程序不宣称 DOM focus trap 或硬件键盘能力。
+Popup 在关闭请求后保留节点至其真实退场完成；Dialog 不建立重复动画。H5 镜像同步 17 个 Props、上述事件顺序、四个分区示例和 500ms/1ms 动效；Escape 仅是浏览器辅助关闭入口，原生小程序不宣称 DOM focus trap 或硬件键盘能力。
 
 ## Direction
 
@@ -1379,7 +1399,7 @@ RadioGroup 只公开一个 `change`：`{ value, previousValue, option, index, so
 | `label`、`content` | `String` / `'展开详情'`、`''` | 默认触发器文案与简单正文；复杂内容使用 slot。 |
 | `customTrigger`、`customContent` | `Boolean` / `false` | 分别启用 `trigger` slot 和默认 slot；关闭时内容节点仍保留。 |
 | `icon`、`expandIcon`、`iconPosition` | `String`、`Boolean`、`'left' \| 'right'` / `''`、`true`、`'right'` | 前导 Icon、展开箭头及箭头位置；非法位置回退 `right`。 |
-| `theme`、`bordered`、`block` | `default \| primary \| success \| warning \| danger`、`Boolean`、`Boolean` / `default`、`true`、`true` | 语义色、边框和块级宽度；非法主题回退 default。 |
+| `theme`、`bordered`、`shadow`、`block` | `default \| primary \| success \| warning \| danger`、`Boolean`、`Boolean`、`Boolean` / `default`、`true`、`false`、`true` | 语义色、边框、展开态卡片阴影和块级宽度；`shadow=true` 只在 open 时消费 ConfigProvider 的有效阴影 Token，非法主题回退 default。 |
 | `disabled`、`readonly` | `Boolean` / `false` | disabled 阻止 trigger、retry 和实例方法；readonly 保留展示并只回传 `blocked=true` 的 trigger click。 |
 | `loading`、`loadingText` | `Boolean`、`String` / `false`、`'内容加载中…'` | 正文使用内部 Loading；trigger 仍可开合。 |
 | `error`、`errorText`、`retryText` | `Boolean`、`String` / `false`、`'内容加载失败'`、`'重试'` | 错误优先于 loading；内部 Empty/Button 只触发 retry，不自行清除错误。空 retryText 隐藏入口。 |
@@ -1411,6 +1431,7 @@ RadioGroup 只公开一个 `change`：`{ value, previousValue, option, index, so
   custom-trigger
   custom-content
   theme="primary"
+  shadow
   bind:input="onCollapsibleInput"
   bind:change="onCollapsibleChange"
   bind:after-open="onCollapsibleAfterOpen"
@@ -1508,7 +1529,7 @@ H5 使用真实 `<button>`、常驻内容节点、`scrollHeight` 和 `transition
 | 组件 | 关键属性 | 关键事件 |
 | --- | --- | --- |
 | `Input` | 受控/非受控值、原生键盘参数、尺寸/对齐、Icon/slot、清空/加载/错误、语义与动效 | `input`、`change`、`clear`、`focus`、`blur`、`confirm`；5 个实例方法 |
-| `Textarea` | 30 Props：受控/非受控值、双字符上限、autosize、尺寸/状态、键盘参数、`label/tips/extra` slot 与固定动效 | `change/clear/focus/blur/enter/line-change/keyboardheightchange`；4 个实例方法 |
+| `Textarea` | 29 Props：受控/非受控值、双字符上限、autosize、尺寸/状态、键盘参数、`label/tips/extra` slot 与固定动效 | `change/focus/blur/enter/line-change/keyboardheightchange`；3 个实例方法 |
 | `Search` | 17 Props：值与字符上限、清空策略、取消操作、形状/居中、禁用/只读、焦点/键盘与低动效；1 个默认 Slot；0 Methods | `change`、`clear`、`search`、`cancel`、`focus`、`blur`；清空固定 `clear → change` |
 | `Switch` | `value`、`checked`、`defaultValue`、`size`、`loading`、`disabled` | `change` |
 | `Checkbox` | `value`、`checked`、选中/半选默认值、标签/说明、位置/尺寸、状态、slot、动效 | `click`、`input`、`change`；4 个实例方法 |
@@ -1526,7 +1547,7 @@ H5 使用真实 `<button>`、常驻内容节点、`scrollHeight` 和 `transition
 
 ## Input
 
-### Input：TDesign 对照后的 30 Props
+### Input：TDesign 对照后的 31 Props
 
 `pui-input` 是对微信原生 `input` 的单一状态与组合层。`value` 非 `null/undefined` 时进入受控模式：用户输入和清空只发出请求，父级回写前保持当前值；退控后继续最后一次受控渲染值。未传 `value` 时由 `defaultValue` 仅初始化一次。空字符串、数字 `0` 和布尔 `false` 都是合法受控值并规整为显示字符串。
 
@@ -1537,7 +1558,8 @@ H5 使用真实 `<button>`、常驻内容节点、`scrollHeight` 和 `transition
 | `type` | `String` / `'text'` | `text/number/idcard/digit/safe-password/password/nickname`；非法类型回退 text，密码统一由 type 表达。 |
 | `maxlength`、`maxcharacter` | `Number` / `-1`、`-1` | Unicode 字符上限与加权字符上限；后者启用时优先，ASCII=1、非 ASCII 与 emoji=2，均不会截断半个代理对。 |
 | `size`、`align` | `String` / `'medium'`、`'left'` | `small/medium/large` 与 `left/center/right`；非法值分别回退 medium/left。 |
-| `bordered`、`clearable` | `Boolean` / `true`、`false` | 是否显示中性边界；有值且可交互时显示内部 PoemUI Button/Icon 清空操作。 |
+| `bordered`、`clearable` | `Boolean` / `true`、`false` | 是否显示中性边界；clearable 启用内部 PoemUI Button/Icon 清空操作。 |
+| `clearTrigger` | `String` / `'focus'` | `focus/always`；普通 Input 默认只在真实聚焦、有值且可交互时显示 Clear，非法值回退 focus。 |
 | `prefix`、`prefixIcon`、`suffix`、`suffixIcon` | `String` / `''` | 前置短文本、前置 Icon、后置短文本和最右 Icon；对应值为 `slot` 时启用同名 Slot。 |
 | `disabled/readonly/loading` | `Boolean` / `false` | 三者都阻断用户输入、清空、聚焦与确认；loading 组合内部 Loading 并设置 busy 语义。 |
 | `focus`、`confirmType` | `Boolean`、`String` / `false`、`'done'` | 请求原生焦点；确认类型支持 `done/go/next/search/send`。 |
@@ -1744,9 +1766,9 @@ H5 镜像使用同一 Label + PUI Input 组合，`disabled` 只表达 Label 自�
 
 ## Textarea
 
-`pui-textarea` 是微信原生 `textarea` 的受控与组合层。它只管理真实多行输入、字符上限、自动增高、状态提示、清空与键盘桥接，不承担 Form 校验或提交成功。当前公共合同为 30 Props / 7 Events / 3 Slots / 4 Methods。
+`pui-textarea` 是微信原生 `textarea` 的受控与组合层。它只管理真实多行输入、字符上限、自动增高、状态提示与键盘桥接，不承担 Form 校验或提交成功。当前公共合同为 29 Props / 6 Events / 3 Slots / 3 Methods。
 
-`value !== null/undefined` 时进入受控模式；`0`、`false` 和空字符串均为合法受控值。受控交互只发布请求，父级回写前保持当前值；从受控切为非受控时继续最后一次受控渲染值。`defaultValue` 只初始化一次。
+`value !== null/undefined` 时进入受控模式；`0`、`false` 和空字符串均为合法受控值。受控交互只发布请求；组件将逻辑值与原生渲染值分离，父级回写与当前原生草稿相同的 value 时不再次重绑 textarea，真正不同的外部 value 才覆盖输入。受控切为非受控时继续最后一次受控值，`defaultValue` 只初始化一次。
 
 | 属性 | 类型 | 默认值 | 可选值 / 边界 | 说明 |
 | --- | --- | --- | --- | --- |
@@ -1761,8 +1783,7 @@ H5 镜像使用同一 Label + PUI Input 组合，`disabled` 只表达 Label 自�
 | `indicator` | `Boolean` | `false` | `true, false` | 显示与 change 事件同源的 count/limit。 |
 | `bordered` | `Boolean` | `true` | `true, false` | 是否显示中性边界；关闭后仍保留盒模型和状态边界。 |
 | `size` | `String` | `medium` | `small, medium, large` | 文本、行高与内距尺寸。 |
-| `clearable` | `Boolean` | `false` | `true, false` | 有值且可交互时显示 PUI Button 清空入口。 |
-| `disabled` | `Boolean` | `false` | `true, false` | 禁用输入、清空、确认与 focus()。 |
+| `disabled` | `Boolean` | `false` | `true, false` | 禁用输入、确认与 focus()。 |
 | `readonly` | `Boolean` | `false` | `true, false` | 只读语义；小程序端通过 native disabled 阻断编辑。 |
 | `loading` | `Boolean` | `false` | `true, false` | 显示 PUI Loading 并阻断写入；不伪造异步结果。 |
 | `focus` | `Boolean` | `false` | `true, false` | 请求原生 textarea 聚焦。 |
@@ -1784,7 +1805,6 @@ H5 镜像使用同一 Label + PUI Input 组合，`disabled` 只表达 Label 自�
 | 事件 | `detail` | 触发条件 |
 | --- | --- | --- |
 | `change` | `{ value, previousValue, count, limit, countMode, truncated, source, controlled, name, detail }` | 原生输入请求改变时触发；不再重复发布 input。 |
-| `clear` | 同 change，source 为 `clear` 或 `method-clear` | 清空时先触发；随后发布同一次 change。 |
 | `focus` | 值详情加原生 detail | 原生 textarea 实际获得焦点时触发。 |
 | `blur` | 值详情加原生 detail | 原生 textarea 实际失去焦点时触发。 |
 | `enter` | 值详情加原生 detail | 点击微信键盘确认键时触发；不与 Form submit 混用。 |
@@ -1801,7 +1821,6 @@ H5 镜像使用同一 Label + PUI Input 组合，`disabled` 只表达 Label 自�
 | --- | --- | --- |
 | `focus()` | `Boolean` | 请求原生聚焦；disabled、readonly、loading 时返回 false。 |
 | `blur()` | `Boolean` | 请求原生失焦，不改变值。 |
-| `clear()` | 值详情或 `false` | 请求清空并按 clear → change 发布；空值或锁定状态返回 false。 |
 | `getValue()` | `String` | 读取当前真实渲染值，不触发事件。 |
 
 基础用法保持最小，不展示任何 `bind:*`：
@@ -1810,7 +1829,7 @@ H5 镜像使用同一 Label + PUI Input 组合，`disabled` 只表达 Label 自�
 <pui-textarea placeholder="请输入内容" />
 ```
 
-只有业务需要接收输入、清空和键盘确认时才绑定事件：
+只有业务需要接收输入和键盘确认时才绑定事件：
 
 ```xml
 <pui-textarea
@@ -1819,16 +1838,14 @@ H5 镜像使用同一 Label + PUI Input 组合，`disabled` 只表达 Label 自�
   maxcharacter="160"
   autosize="{{ { minRows: 3, maxRows: 6 } }}"
   indicator
-  clearable
   bind:change="onReleaseNoteChange"
-  bind:clear="onReleaseNoteClear"
   bind:enter="onReleaseNoteEnter"
 />
 ```
 
-H5 使用真实 HTML textarea 镜像输入、焦点、清空和受控父级回写；Cmd/Ctrl + Enter 只作为 enter 的浏览器测试桥接。浏览器没有微信确认栏、键盘抬升策略、原生 line-change 与 keyboardheightchange，因此官网明确记录差异而不伪造事件。反馈壳使用 grid rows/opacity/transform 常驻过渡，不对 height:auto 做无效 transition。
+H5 使用真实 HTML textarea 镜像输入、焦点和受控父级回写；同值 echo 先比较当前 DOM value，不做第二次赋值。Textarea 不提供内置 Clear，需要清空时由父级把受控 value 写回空字符串。Cmd/Ctrl + Enter 只作为 enter 的浏览器测试桥接。浏览器没有微信确认栏、键盘抬升策略、原生 line-change 与 keyboardheightchange，因此官网明确记录差异而不伪造事件。反馈壳使用 grid rows/opacity/transform 常驻过渡，不对 height:auto 做无效 transition。
 
-TDesign Mini Program 1.15.3 Textarea 公开 28 Props / 6 Events / 1 Slot / 0 Methods。PoemUI 对齐其常用值、字符、autosize、indicator、边界、键盘与事件主干，保留已形成真实闭环的 size/clearable/status/tips/required/loading/ARIA/reduceMotion；不照搬 allowInputOverMax、autofocus、cursor、cursorColor、fixed、placeholderClass、placeholderStyle 等平台长尾参数，也不恢复旧版重复别名、调试方法和重复事件。
+TDesign Mini Program 1.15.3 Textarea 公开 28 Props / 6 Events / 1 Slot / 0 Methods，且没有 Clear 能力。PoemUI 对齐其常用值、字符、autosize、indicator、边界、键盘与事件主干，保留已形成真实闭环的 size/status/tips/required/loading/ARIA/reduceMotion；不照搬 allowInputOverMax、autofocus、cursor、cursorColor、fixed、placeholderClass、placeholderStyle 等平台长尾参数，也不恢复旧版 clearable/clear/clear()、重复别名、调试方法和重复事件。
 ## Search
 
 `pui-search` 直接组合 PUI Input、Button 和 Icon，只负责查询文本与确认/取消意图。业务结果、历史记录、加载和错误状态应在组件外组合，组件不会伪造检索成功。
@@ -2687,7 +2704,7 @@ Sidebar 不公开 Slot 和实例方法。品牌、标题、辅助操作及右侧
 
 | 属性 | 类型 / 默认值 | 说明 |
 | --- | --- | --- |
-| `items` | `Array` / `[]` | 字符串或对象数组。对象支持 `title/label/text`、原始类型 `value`、`valueText`、`description`、`note`、`image`、`leftIcon/icon`、`rightIcon`、`badge/badgeDot/badgeMax/badgeColor`、`arrow`、`required`、`align`、`clickable`、`disabled`、`loading`；`badge=0` 和 `value=false/0` 均保留。 |
+| `items` | `Array` / `[]` | 字符串或对象数组。对象支持 `title/label/text`、原始类型 `value`、`valueText`、`description`、`note`、`image`、`leftIcon/icon`、`rightIcon`、`badge/badgeDot/badgeMax/badgeColor`、`arrow`、`required`、`align`、`clickable`、`disabled`、`loading`；`badge=0` 和 `value=false/0` 均保留。已有非空列表尾部追加 items 时，新条目使用 List 的动效参数展开；首次渲染、同长度替换和移除不重播入场。 |
 | `title`、`description` | `String` / `''` | 默认 header 的标题与说明。 |
 | `showHeader`、`customHeader` | `Boolean` / `false` | 显示默认 header，或启用 `header` 具名 slot；customHeader 优先。 |
 | `useSlot` | `Boolean` / `false` | 用默认 slot 完全接管内容区；此时消费者自行管理 slot 内条目及事件。 |
@@ -2702,9 +2719,9 @@ Sidebar 不公开 Slot 和实例方法。品牌、标题、辅助操作及右侧
 | `error`、`errorText` | `Boolean`、`String` / `false`、`'加载失败，点击重试'` | 无内容时展示错误 Empty，footer 提供 retry；error 优先于尚未清除的 loading，重试不会被该 loading 锁死。 |
 | `emptyText` | `String` / `'暂无列表数据'` | 默认 Empty 文案。 |
 | `ariaLabel` | `String` / `'列表'` | 根 list 的辅助名称。 |
-| `duration`、`easing`、`reduceMotion` | `Number`、`String`、`Boolean` / `500`、`'ease-out'`、`false` | 内容、状态、footer 与视觉表面的 0–1000ms 过渡；低动效压缩为 1ms。 |
+| `duration`、`easing`、`reduceMotion` | `Number`、`String`、`Boolean` / `500`、`'ease-out'`、`false` | 内容、状态、footer、尾部新增条目与视觉表面的 0–1000ms 过渡；低动效压缩为 1ms。 |
 
-无内容时状态优先级固定为 `error > loading > empty`；已有 items 或默认 slot 时内容持续可见，footer 再按 `error > loading > finished > ready` 表达分页状态。内容、三种状态层和 footer 都保留在渲染树中，以 `max-height + opacity + transform` 平滑切换，不通过 `display:none` 瞬移。
+无内容时状态优先级固定为 `error > loading > empty`；已有 items 或默认 slot 时内容持续可见，footer 再按 `error > loading > finished > ready` 表达分页状态。内容、三种状态层和 footer 都保留在渲染树中，以 `max-height + opacity + transform` 平滑切换，不通过 `display:none` 瞬移。只有已有非空 `items` 继续增长时才展开新增尾项；空列表收到首批内容、同长度替换、移除与重复同步不播放。该展开是 `items` 变化后的纯视觉结果，不新增 `expanded`、`animate` 或动画完成事件，也不会改变 `load/retry` 的业务所有权；`useSlot=true` 时消费者自行管理 Slot 内节点和动效。
 
 | 事件 | `detail` | 触发条件 |
 | --- | --- | --- |
@@ -2751,8 +2768,9 @@ H5 官网使用 px 镜像相同的 Cell/Badge/Button/Empty/Loading 组合和状�
 | `size` | `String` | `medium` | `small, medium, large` | 控制数字块与文字字号；非法值回退 medium。 |
 | `theme` | `String` | `default` | `default, round, square` | 默认文本、圆形数字块或方形数字块；非法值回退 default。 |
 | `splitWithUnit` | `Boolean` | `false` | `true, false` | 给数字 token 追加天、时、分、秒、毫秒单位，format 字面量仍保留。 |
+| `animation` | `String` | `pulse` | `pulse, roll` | 数字变化风格；pulse 为兼容渐隐入场，roll 只垂直滚动变化的 DD/HH/mm/ss 数字位，SSS 直接刷新。 |
 | `ariaLabel` | `String` | `倒计时` | `—` | `role=timer` 的辅助名称，组件会追加当前格式化剩余时间。 |
-| `reduceMotion` | `Boolean` | `false` | `true, false` | 将固定 500ms 数字过渡压缩为 1ms，不改变计时精度。 |
+| `reduceMotion` | `Boolean` | `false` | `true, false` | 将选中的 pulse/roll 固定 500ms 过渡压缩为 1ms，不改变计时精度或 animation 值。 |
 
 ### Events
 
@@ -2782,6 +2800,12 @@ H5 官网使用 px 镜像相同的 Cell/Badge/Button/Empty/Loading 组合和状�
 
 ```xml
 <pui-count-down time="{{15000}}" format="mm:ss" />
+```
+
+数字滚动风格只需增加一个展示 Prop，不改变事件与实例方法：
+
+```xml
+<pui-count-down time="{{15000}}" format="mm:ss" animation="roll" />
 ```
 
 只有需要响应自然变化时才绑定对应事件：
@@ -3241,9 +3265,9 @@ TopLoading 有 8 个 Props，没有 Events、Slots 或公开 Methods。
 
 ## DynamicMessage
 
-`pui-dynamic-message` 是页面顶部的非模态灵动通知。它先以 PUI Icon/Loading + 标题的紧凑胶囊从顶部出现，再长成完整消息面板；关闭时先反向收回胶囊，再向上退出。它保留同一个通知节点完成 `loading → info/success/error` 原位更新；不同 key 按调用顺序排队。通知不使用遮罩、不锁页面滚动，Action 只把用户意图交给父级，组件不会伪造业务完成。
+`pui-dynamic-message` 是页面顶部的非模态灵动通知。它的深色身份面属于中性反色 Surface，不是 `primary`，因此浅色模式下仍保持黑底高对比。通知先以 PUI Icon/Loading + 标题的紧凑胶囊从顶部出现，再长成完整消息面板；进入展开阶段时，一束对应主题色的对角渐变在小程序 `6rpx` / H5 `3px` 的顶部与右侧轨道中连续移动 `1500ms`，不是让整段边框依次换色。流光与 Icon 共用语义色：loading 中性灰、info 信息蓝、success 成功绿、warning 警告橙、error（失败）危险红。面板本体仍在 `500ms` 内完成并可操作；流光结束只移除装饰层状态，根 Surface 的背景、毛玻璃和阴影不会被覆盖或重建。关闭时先反向收回胶囊，再向上退出。它保留同一个通知节点完成 `loading → info/success/error` 原位更新；不同 key 按调用顺序排队。通知不使用遮罩、不锁页面滚动，Action 只把用户意图交给父级，组件不会伪造业务完成。
 
-DynamicMessage 有 10 个 Props、3 个 Events、3 个公开 Methods，没有 Slots。
+DynamicMessage 有 12 个 Props、3 个 Events、3 个公开 Methods，没有 Slots。
 
 | 属性 | 类型 | 演示初值 | 可选值 | 说明 |
 | --- | --- | --- | --- | --- |
@@ -3255,6 +3279,8 @@ DynamicMessage 有 10 个 Props、3 个 Events、3 个公开 Methods，没有 Sl
 | `closable` | `Boolean` | `true` | `true, false` | 是否展示 PUI 圆形关闭 IconButton。 |
 | `duration` | `Number` | `3000` | `0–60000ms` | 入场完成后的停留时间；`0` 持续显示。loading 未显式传值时默认为 `0`。 |
 | `safeArea` | `Boolean` | `true` | `true, false` | 结合微信状态栏与胶囊下缘计算顶部偏移。 |
+| `shadow` | `Boolean \| null` | `null` | `true, false, null` | 组件私有阴影开关：`null` 继承 ConfigProvider，`true` 强制开启，`false` 强制关闭；不写入全局外观。 |
+| `frostedGlass` | `Boolean \| null` | `null` | `true, false, null` | 组件私有毛玻璃开关：`null` 继承 ConfigProvider，`true` 强制开启，`false` 强制关闭；只改变通知 Surface，不影响流光层。 |
 | `ariaLabel` | `String` | 空字符串 | — | 整条通知的可访问名称；为空时回退标题、说明或主题语义。 |
 | `reduceMotion` | `Boolean` | `false` | `true, false` | 不改变 retained node、队列、事件和关闭原因；正常进场为 `180ms` 胶囊 + `320ms` 面板，退场反向执行，低动效压缩到 `1ms`。 |
 
@@ -3593,8 +3619,8 @@ Swiper 不公开 Slot；标题、Footer、状态摘要和业务操作在组件�
 | `variant` | `default / outline / soft` | `'default'` | 根触发器容器表面。 |
 | `size` | `small / medium / large` | `'medium'` | 根项和内部 Cell 密度。 |
 | `block` | `Boolean` | `true` | horizontal 时占满父级可用宽度；vertical 为保留右侧 Panel 内容区，始终占满可用宽度。 |
-| `scrollable` | `Boolean` | `true` | 根项溢出时启用局部 scroll-view。 |
-| `wrap` | `Boolean` | `false` | 横向根项允许换行；开启后关闭横向滚动。 |
+| `scrollable` | `Boolean` | `true` | horizontal 且未开启 `wrap` 时采用自适应轨道：放得下则等宽铺满，低于每项 `208rpx` 可读宽度时在 Trigger viewport 内横向滚动；设为 `false` 时严格等宽并只省略过长标题。vertical 根 rail 溢出时控制局部纵向 scroll-view。 |
+| `wrap` | `Boolean` | `false` | horizontal 根项是否按最小轨换行；false 时保持单行等分，不建立横向滚动。 |
 | `showHeader` | `Boolean` | `true` | 显示面板标题、返回与关闭区。 |
 | `showIcon` | `Boolean` | `true` | 显示根项和菜单项内部 Icon。 |
 | `showDescription` | `Boolean` | `true` | 显示根项/分组/菜单项说明。 |

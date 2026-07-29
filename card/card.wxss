@@ -18,7 +18,10 @@
 .pui-card__content,
 .pui-card__footer { padding: var(--pui-card-inset); }
 
-.pui-card__header { padding-bottom: 0; }
+.pui-card__header { display: flex; min-width: 0; align-items: flex-start; gap: var(--pui-card-stack-gap); padding-bottom: 0; }
+.pui-card__header-main { flex: 1; min-width: 0; }
+.pui-card__header-right { display: flex; flex: none; max-width: calc(var(--pui-space-step-36) * 3 + var(--pui-space-step-8) * 2); align-items: center; gap: var(--pui-space-step-8); overflow: visible; }
+.pui-card__menu { display: grid; box-sizing: border-box; min-width: 240rpx; gap: var(--pui-space-step-8); padding: var(--pui-space-step-12); }
 .pui-spacing--equal .pui-card {
   --pui-card-stack-gap: var(--pui-card-inset);
   --pui-card-section-gap: var(--pui-card-inset);

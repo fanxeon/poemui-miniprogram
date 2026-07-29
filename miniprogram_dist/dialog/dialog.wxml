@@ -11,12 +11,13 @@
   prevent-scroll-through="{{preventScrollThrough}}"
   using-custom-navbar="{{usingCustomNavbar}}"
   bind:visible-change="onPopupVisibleChange"
+  custom-class="pui-dialog__popup"
 >
   <view class="{{rootClass}} {{customClass}}" style="{{customStyle}}" role="document" aria-label="{{semanticLabel}}">
     <slot name="top"></slot>
 
     <view wx:if="{{hasHeader}}" class="pui-dialog__header">
-      <view class="pui-dialog__header-action pui-dialog__header-action--start"></view>
+      <view class="pui-dialog__header-action pui-dialog__header-action--start"><slot name="header-left"></slot></view>
       <view class="pui-dialog__heading">
         <view wx:if="{{title}}" class="pui-dialog__title">{{title}}</view>
         <slot name="title"></slot>
@@ -25,10 +26,12 @@
         <pui-button
           wx:if="{{normalizedCloseBtn}}"
           custom-class="pui-dialog__close"
-          variant="text"
+          theme="default"
+          variant="base"
           shape="circle"
           size="small"
           icon="{{normalizedCloseBtn.icon}}"
+          icon-only
           disabled="{{normalizedCloseBtn.disabled}}"
           aria-label="{{normalizedCloseBtn.ariaLabel}}"
           reduce-motion="{{reduceMotion}}"
@@ -45,7 +48,7 @@
 
     <slot name="middle"></slot>
 
-    <view class="pui-dialog__footer pui-dialog__actions pui-dialog__actions--{{normalizedButtonLayout}}" style="{{normalizedButtonLayout === 'horizontal' ? 'grid-template-columns:repeat(' + footerColumnCount + ',minmax(0,1fr));' : ''}}">
+    <view wx:if="{{hasFooter}}" class="pui-dialog__footer pui-dialog__actions pui-dialog__actions--{{normalizedButtonLayout}}" style="{{normalizedButtonLayout === 'horizontal' ? 'grid-template-columns:repeat(' + footerColumnCount + ',minmax(0,1fr));' : ''}}">
       <pui-button
         wx:for="{{normalizedActions}}"
         wx:key="key"

@@ -6,7 +6,7 @@ CountDown 用于展示从给定毫秒数归零的剩余时间。它是一个可�
 
 ## 2. 公开合同
 
-- Props：`time/autoStart/paused/content/format/millisecond/size/theme/splitWithUnit/ariaLabel/reduceMotion`。
+- Props：`time/autoStart/paused/content/format/millisecond/size/theme/splitWithUnit/animation/ariaLabel/reduceMotion`。
 - Events：`change/finish`。
 - Slots：默认 Slot，仅在 `content="slot"` 时接管可见内容；计时仍在组件内部继续。
 - Methods：`start()/pause()/reset()/getTime()`。
@@ -27,7 +27,9 @@ CountDown 用于展示从给定毫秒数归零的剩余时间。它是一个可�
 - `format` 支持 `DD/HH/mm/ss/SSS` 和字面量；未出现更高位 token 时，`HH/mm/ss` 分别表达总小时、总分钟和总秒。
 - `splitWithUnit=true` 只给数字 token 追加天、时、分、秒、毫秒，字面量仍保留。
 - `theme` 仅支持 `default/round/square`；`size` 仅支持 `small/medium/large`，非法值回退默认。
-- 数字变化使用固定 500ms；`reduceMotion` 或系统低动效压缩为 1ms。不得重新公开 duration/easing，也不得以 display:none 或 height:auto transition 制造状态跳变。
+- `animation` 仅支持 `pulse/roll`，默认 `pulse` 保持 0.1.1 兼容，非法值回退 `pulse`。`pulse` 保留整段数字渐隐入场；`roll` 保留上一帧与当前帧，只让真实变化的 `DD/HH/mm/ss` 数字位从旧值垂直滚到新值，未变化位保持静止。
+- `SSS` 毫秒位在 `roll` 下直接更新，不开启 500ms 卷轴；否则 50ms 刷新会持续重启动画并破坏可读性。`content="slot"` 时可见内容由消费者负责，`animation` 不包装或猜测 Slot 内部结构。
+- 数字变化使用固定 500ms；`reduceMotion` 将选中的 `pulse/roll` 压缩为 1ms，不改变 `animation` 值、计时精度或事件顺序。不得重新公开 duration/easing，也不得以 display:none 或 height:auto transition 制造状态跳变。
 - `role=timer` 与 ariaLabel 必须始终包含可读的剩余时间。
 
 ## 5. H5 镜像与演示
@@ -36,14 +38,17 @@ CountDown 用于展示从给定毫秒数归零的剩余时间。它是一个可�
 - 基础 WXML 只展示完成任务所需 Props，零 `bind:*`；change/finish 只进入 API Events 与事件专项示例。
 - Start、Pause、Reset、读取剩余必须调用共享 PUI Button，并真实调用同一 H5 时钟；状态文本展示真实方法结果，不以静态提示冒充操作。
 - `content="slot"` 的演示组合真实默认 Slot；H5 不恢复已删除的 prefix/suffix 或完成文案捷径。
-- API 完整展示 11 Props、2 Events、1 Slot、4 Methods，所有表格文字自然换行且禁止省略号。
+- API 完整展示 12 Props、2 Events、1 Slot、4 Methods，所有表格文字自然换行且禁止省略号。
 
 ## 6. TDesign 1.15.3 对照决定
 
 - 参考官方 CountDown 文档与 `tdesign-miniprogram@1.15.3` 安装包的 props、WXML/WXSS、类型和实现源码。
 - 借鉴 `autoStart/content/format/millisecond/size/splitWithUnit/theme/time`、`change/finish` 与 `start/pause/reset` 主干，以及 `default/round/square` 主题语义。
 - PoemUI 保留声明式 `paused`、`ariaLabel`、`reduceMotion` 和 `getTime()`，用于父级控制、无障碍、统一动效和真实剩余时间读取。
+- PoemUI 0.1.2 新增 `animation="pulse|roll"` 作为自身展示扩展；TDesign 1.15.3 与 2026-07-29 在线文档都没有逐位滚动 API，因此不把该能力伪写成 TDesign 对齐项。
 - 不照搬独立 content 文案约束；PoemUI 的 `content="slot"` 明确启用默认 Slot，保持小程序组合能力。
+
+本轮于 2026-07-29 重新访问 [TDesign CountDown 文档](https://tdesign.tencent.com/miniprogram/components/count-down) 与 [官方源码目录](https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/count-down)，并重新解包固定 `tdesign-miniprogram@1.15.3`，实际读取 `miniprogram_dist/count-down/{props.js,type.d.ts,count-down.js,count-down.wxml,count-down.wxs,count-down.wxss}`。在线文档仍公开 `auto-start/content/format/millisecond/size/split-with-unit/theme/time`、`change/finish` 与默认/content Slot；npm 页面当日返回 403，不替代 registry 包与安装包源码证据。
 
 ## 7. 明确禁止
 
@@ -54,7 +59,8 @@ CountDown 用于展示从给定毫秒数归零的剩余时间。它是一个可�
 
 ## 8. 验收与真机风险
 
-- 验证 time 0/负值/上界、autoStart、paused、毫秒、格式总量语义、三种主题、三种尺寸、单位、Slot 和方法返回值。
+- 验证 time 0/负值/上界、autoStart、paused、毫秒、格式总量语义、三种主题、三种尺寸、单位、`pulse/roll`、非法动效回退、Slot 和方法返回值。
+- 验证 `roll` 只作用于真实变化位、未变化位不滚动、`SSS` 不持续重启卷轴、切换动效不重置计时，以及 1ms 低动效仍保留选中的呈现合同。
 - 验证 change→finish 顺序、finish 单次、reset 不伪造 finish、后台节流恢复后的目标时间校正和 1ms 低动效。
 - 验证 390px、light/dark、边框、阴影、毛玻璃、大圆角、渐变、API 全文与无页面级横向溢出。
 - 微信真机仍需复核后台/前台调度、50ms 毫秒刷新功耗、系统低动效、辅助技术播报频率和长时倒计时精度。
@@ -65,4 +71,11 @@ CountDown 用于展示从给定毫秒数归零的剩余时间。它是一个可�
 
 ## 10. 2026-07-27 单位防挤压
 
-`splitWithUnit` 的数字与日/时/分/秒单位构成不可拆分行内组：segments 不换行、单位 `nowrap`、各段不收缩。小程序和 H5 必须同步，见 `count-down/count-down.wxss`、`preview/styles.css`、`PUI-FB-0436`。
+`splitWithUnit` 的数字与日/时/分/秒单位构成不可拆分行内组：固定宽高、背景和圆角只作用于数字 value，单位位于其外侧且 `nowrap`；segments 不换行、各段不收缩。禁止把单位放进带 `overflow:hidden` 的数字盒。
+
+## 11. 2026-07-29 数字滚动风格
+
+- `animation="roll"` 是展示层 API，不建立第二套计时器，不改变 `targetTime`、剩余值、`change → finish` 顺序或四个实例方法。
+- 原生结构为固定数字 value → digits → 单位外置。变化位的 reel 同时保留旧/新 glyph，以 `translateY(0 → -50%)` 完成垂直滚动；未变化位只渲染当前 glyph，避免整段闪烁。
+- 小程序独立页默认展示 `roll`，并允许在同一实例运行期间切换 `pulse/roll`；页面只回写展示选择与暂停状态，不伪造验证码或业务成功。
+- H5 0.1.2 已同步：`preview/app.js` 增加 `animation` 默认值、属性控件、WXML 输出、逐位前后帧模型和运行中切换；`preview/styles.css` 镜像 value 裁切、digit/reel/glyph 与 500ms/1ms；`preview/components-data.js` 由 metadata 重生成。390px 深色果味实测 roll 仅对变化位生成 reel，合成中间帧 transform 非端点，且无横向溢出。

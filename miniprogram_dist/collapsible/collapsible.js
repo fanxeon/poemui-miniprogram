@@ -44,6 +44,7 @@ Component({
     iconPosition: { type: String, value: 'right' },
     theme: { type: String, value: 'default' },
     bordered: { type: Boolean, value: true },
+    shadow: { type: Boolean, value: false },
     block: { type: Boolean, value: true },
     disabled: { type: Boolean, value: false },
     readonly: { type: Boolean, value: false },
@@ -70,7 +71,7 @@ Component({
     motionEasing: EASING.standard,
   },
   observers: {
-    'open,defaultOpen,label,content,customTrigger,customContent,icon,expandIcon,iconPosition,theme,bordered,block,disabled,readonly,loading,loadingText,error,errorText,retryText,emptyText,ariaLabel,duration,easing,reduceMotion,colorScheme': function sync() {
+    'open,defaultOpen,label,content,customTrigger,customContent,icon,expandIcon,iconPosition,theme,bordered,shadow,block,disabled,readonly,loading,loadingText,error,errorText,retryText,emptyText,ariaLabel,duration,easing,reduceMotion,colorScheme': function sync() {
       this.syncState();
     },
   },
@@ -105,6 +106,7 @@ Component({
         'pui-collapsible--icon-' + iconPosition,
         this.data.block ? 'pui-collapsible--block' : 'pui-collapsible--inline',
         this.data.bordered ? 'pui-collapsible--bordered' : 'pui-collapsible--borderless',
+        this.data.shadow ? 'pui-collapsible--shadow' : '',
         innerOpen ? 'pui-collapsible--open' : 'pui-collapsible--closed',
         this.data.disabled ? 'pui-collapsible--disabled' : '',
         this.data.readonly ? 'pui-collapsible--readonly' : '',

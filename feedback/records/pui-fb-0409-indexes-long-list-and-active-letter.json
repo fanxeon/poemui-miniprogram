@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-27",
-  "updatedAt": "2026-07-27",
+  "updatedAt": "2026-07-28",
   "userGoal": "Indexes 列表需要足够长以验证滚动，右侧索引当前项必须清楚、居中且不与列表内容冲突。",
   "environment": {
     "surfaces": ["indexes component page"],
@@ -33,12 +33,13 @@
     {"kind": "file", "ref": "indexes/indexes.js", "note": "程序定位保护覆盖完整动画与收敛余量，末端短尾不再覆盖目标字母。"},
     {"kind": "test", "ref": "scripts/test-indexes.js", "note": "锁定紧凑 Button、反色、内部边界、内容预留和隐藏重复滚动条。"},
     {"kind": "browser", "ref": "/tmp/poemui-indexes-final5.png", "note": "390x844 模拟器确认十四字母索引、内容避让与黑底白字 A 居中显示。"},
-    {"kind": "browser", "ref": "/tmp/poemui-indexes-selected-t-final.png", "note": "390x844 模拟器确认受控定位 T 后活动态保持 T，不再错误跳为 U。"}
+    {"kind": "browser", "ref": "/tmp/poemui-indexes-selected-t-final.png", "note": "390x844 模拟器确认受控定位 T 后活动态保持 T，不再错误跳为 U。"},
+    {"kind": "file", "ref": "feedback/records/pui-fb-0490-indexes-index-rail-overflow-touch-coordinate.json", "note": "0.1.2 将固定 36rpx 上限改为按索引数量动态等分，并移除侧栏内部滚动。"}
   ],
   "rootCause": "示例数据预算不足；Button 的标准 small 高度大于索引紧凑轨，且默认 Slot 基线未按 36rpx 轨做光学校正；索引浮层缺少内容安全轨；程序定位抑制时间短于真实滚动动画。",
   "decision": {
-    "outcome": "独立页扩展为十四分组；小程序 Button 使用 content prop、内联紧凑几何和 Token 化光学校正；索引栏限制在组件 body，条目内容按左右位置预留索引轨并隐藏重复原生滚动条；程序定位保护覆盖 500ms 动画与 120ms 收敛余量。",
-    "rationale": "保留 PUI Button 的真实交互与可访问名称，同时让紧凑索引视觉和内容区各自拥有明确几何。",
+    "outcome": "独立页保持十四分组；索引栏限制在组件 body，Button 与轨道使用动态同宽同高几何，标题和条目按左右位置预留同一 rail width；程序定位保护覆盖 500ms 动画与 120ms 收敛余量。本决定明确取代 PUI-FB-0269 的页面 fixed 和 PUI-FB-0270 的零预留方案。",
+    "rationale": "保留 PUI Button 的真实交互与可访问名称，同时让有界轨、标题和内容区共享明确几何；长轨通过动态等分而不是嵌套滚动解决。",
     "alternativesRejected": [
       "只换活动背景颜色不能解决文字基线落出底色。",
       "手写 text 点击区会绕过 PUI Button。",
@@ -59,8 +60,9 @@
     "summary": "紧凑索引 Button 必须同时验证根几何、内部文字基线、活动反色和内容避让。",
     "rules": [
       "Indexes 独立页至少十二个分组。",
-      "活动字母必须在 42rpx×36rpx 轨内黑底白字居中。",
-      "索引轨不得覆盖 Badge、箭头或内容操作区。"
+      "42rpx×36rpx 是单字符轨的宽度与高度上限，长轨按可用高度动态等分。",
+      "索引轨不得覆盖 Badge、箭头、标题或内容操作区。",
+      "当前合同取代页面 fixed 与零内容预留的历史决定。"
     ],
     "tags": ["indexes", "long-list", "active-state", "button", "390px"]
   }

@@ -1,0 +1,119 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0497",
+  "title": "组件详情页弱状态回显需要按语义分级而非全部替换为 DynamicMessage",
+  "scope": "global",
+  "components": ["miniprogram", "component-page", "dynamic-message", "navigation-menu", "toast"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "把组件独立页中不明显的状态提示改成更清楚的真实反馈，同时避免每个开关、选择和展开动作都制造灵动通知。",
+  "environment": {
+    "surfaces": ["wechat-component-page", "shared-page-infrastructure", "documentation"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 NavigationMenu 独立页，打开或关闭横向目录。",
+    "组件视觉已经完成展开或关闭，但页面下方仍以小号次级文字显示“目录已展开”或“目录已关闭”。",
+    "全库静态扫描发现 66 个组件详情页共有 75 个 component-page__status/navigation-page__status 节点，其中大量节点重复当前值、选中、开关或展开状态。"
+  ],
+  "expected": "组件详情页按 none、inline、Toast、DynamicMessage 分级；重复反馈删除，近场状态保留，一次轻反馈使用 Toast，重要恢复和多阶段任务使用共享 DynamicMessage，且所有成功来自真实状态回写。",
+  "actual": "修复前页面普遍依赖低对比内联状态文字，没有共享反馈宿主和调用入口，也没有阻止高频事件、重复 aria-live 或把 DynamicMessage 当 Toast 使用的合同。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "miniprogram/styles/component-page.wxss",
+      "note": "旧 component-page__status 使用次级颜色和 body-small，属于低强调内联回显。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/components/component-page-feedback/component-page-feedback.js",
+      "note": "共享宿主组合 DynamicMessage，并真实返回 show、update 和 hide 结果。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/navigation-menu/index.js",
+      "note": "页面删除重复状态变量，并只在 error 真实回写完成后显示恢复通知。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/MINIPROGRAM_PAGE_FEEDBACK.md",
+      "note": "记录 none、inline、Toast、DynamicMessage 四级决策和接入边界。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-page-feedback.js",
+      "note": "锁定宿主组合、真实返回值、ScrollArea 外挂载、稳定 key 和 NavigationMenu 去重。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-navigation-pages.js",
+      "note": "锁定 retry 完成后才展示 DynamicMessage，并保留原有受控导航回写。"
+    }
+  ],
+  "rootCause": "组件独立页缺少页面级反馈信息架构，事件处理器统一把结果写入弱状态文字；如果只解决视觉强调而不区分语义，就会把自明状态、高频值、近场错误和真实任务全部挤进同一种通知。",
+  "decision": {
+    "outcome": "新增只供小程序详情页使用的 component-page-feedback 宿主和 createComponentPage 调用入口；建立四级反馈合同；NavigationMenu 删除三处重复内联状态，仅在目录 error 真实恢复后显示稳定 key DynamicMessage。",
+    "rationale": "分级能同时提高重要结果的可见性并减少重复信息；共享宿主复用公共 DynamicMessage 状态机，不扩张 npm API，也让未挂载和未命中的调用返回真实失败值。",
+    "alternativesRejected": [
+      "把所有状态文字换成 DynamicMessage 会造成 500ms 动画噪声、队列积压和读屏重复播报。",
+      "只提高 component-page__status 字号或颜色仍保留大量自明的重复信息。",
+      "每页直接复制 pui-dynamic-message、selectComponent 和事件逻辑会产生多套漂移实现。",
+      "把恢复成功写在 Retry 点击时而不等待状态回写属于 fake success。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/components/component-page-feedback/",
+      "miniprogram/utils/component-page.js",
+      "miniprogram/pages/components/navigation-menu/index.js",
+      "miniprogram/pages/components/navigation-menu/index.wxml",
+      "miniprogram/pages/components/navigation-menu/index.json",
+      "scripts/test-miniprogram-page-feedback.js",
+      "scripts/test-miniprogram-navigation-pages.js",
+      "docs/MINIPROGRAM_PAGE_FEEDBACK.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/components/NAVIGATION-MENU.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md"
+    ],
+    "dependencies": ["PUI DynamicMessage", "PUI Toast", "component-page", "PUI ScrollArea"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-page-feedback.js", "scripts/test-miniprogram-navigation-pages.js"],
+    "commands": [
+      "node scripts/test-miniprogram-page-feedback.js：通过",
+      "node scripts/test-miniprogram-navigation-pages.js：通过",
+      "npm run feedback:check：通过",
+      "npm run pack:check：通过，仍为未发布 0.1.1，559 files / 363.8 kB",
+      "相关 JS 语法检查与 git diff --check：通过",
+      "npm run check：执行到 H5 设计合同后被本轮未修改的 search-clear 私有 raw button 既有边界拦截"
+    ],
+    "browser": [
+      "微信开发者工具 390x844：showPageFeedback 真实返回 runtime-proof，顶部完整显示 success Icon、目录已恢复标题和说明，未被 ScrollArea 裁切。",
+      "微信开发者工具：错误 Panel 的真实 PUI Retry Button 可点击；专项运行时测试确认恢复通知只在 error=false 的 setData callback 后发布。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机安全区、VoiceOver/TalkBack 单次播报和低端设备连续通知性能仍为 pending-device。",
+      "其余详情页的 75 个状态节点仍需按事件处理器逐项分类，当前决策禁止机械批量替换。"
+    ]
+  },
+  "ai": {
+    "summary": "组件详情页反馈按 none、inline、Toast、DynamicMessage 分级，重要任务才使用共享灵动通知。",
+    "rules": [
+      "组件视觉已经明确的展开、关闭、选中、开关和当前值直接删除重复反馈。",
+      "字段错误、上传失败和持续限制必须留在对应控件附近。",
+      "单次轻反馈使用 Toast；重要恢复、多阶段任务和需要 Action 的错误使用 DynamicMessage。",
+      "页面必须先完成真实状态或数据回写，再显示 success。",
+      "DynamicMessage 宿主必须位于 ScrollArea 外，并通过 createComponentPage 返回真实 show、update、hide 结果。",
+      "高频 input、change、changing、scroll 和 touchmove 不得逐次创建通知。"
+    ],
+    "tags": ["miniprogram", "component-page", "dynamic-message", "toast", "inline-feedback", "aria-live", "no-fake-success"]
+  }
+}

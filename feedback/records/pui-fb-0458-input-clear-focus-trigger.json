@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0458",
+  "title": "Input Clear 默认应只在真实聚焦时显示",
+  "scope": "component",
+  "components": ["input", "search", "preview-site", "documentation"],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "普通 Input 的 Clear 图标只在字段聚焦且有值时出现，同时不能破坏 Search 已有的 always/focus 清空策略。",
+  "environment": {
+    "surfaces": ["wechat-component", "h5-preview", "miniprogram me page"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "渲染 clearable=true 且已有值的 pui-input。",
+    "不聚焦字段即可看到 Clear 图标。",
+    "Search 已公开 clearTrigger=always/focus，直接把 Input 固定为 focus 会导致 Search always 语义回退。"
+  ],
+  "expected": "Input 新增 clearTrigger=focus/always 且默认 focus；普通字段只在真实聚焦时显示 Clear，Search 显式保留自己的策略；H5 同步相同行为。",
+  "actual": "旧 Input 只要 clearable、有值且可交互就常驻 Clear，没有组件级聚焦显示策略。",
+  "evidence": [
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户明确要求 Input Clear 图标只在聚焦时出现，并要求组件级设定。"},
+    {"kind": "file", "ref": "input/input.js", "note": "clearTrigger 归一化为 focus/always；hasClear 保留非空字段的操作轨道，showClear 由交互状态和真实 focused 共同计算。"},
+    {"kind": "file", "ref": "input/input.wxml", "note": "隐藏 Clear 继续占用稳定轨道，但 disabled 且 aria-hidden；聚焦后切换为 visible 并恢复命中。"},
+    {"kind": "file", "ref": "search/search.wxml", "note": "Search 对内部 Input 显式传递自己归一化后的 clearTrigger，继续保留公开 always/focus 策略。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 inputControlSample 与标准 Input 镜像输出 clearTrigger class，Search 显式传递自身策略。"},
+    {"kind": "test", "ref": "scripts/test-input.js", "note": "专项覆盖默认失焦隐藏、聚焦显示、失焦恢复隐藏、always 与非法值回退。"}
+  ],
+  "rootCause": "Input 旧实现把 clearable 直接等同于常驻可见，没有区分普通字段的编辑时操作与 Search 的显式常驻策略。",
+  "decision": {
+    "outcome": "Input 增加 clearTrigger=focus/always，默认 focus；小程序由原生 focus/blur 计算 showClear，H5 由 focus-within 控制可见性；非空 clearable 字段始终保留 Clear 几何，隐藏态同时退出命中与可访问树；Search 显式传递归一化策略并保留原 always/focus 合同。",
+    "rationale": "默认聚焦显示降低非编辑状态的视觉噪音，显式 always 又避免复合 Search 的既有 API 回退。",
+    "alternativesRejected": [
+      "把所有 Input 固定为 focus 且不提供策略：会破坏 Search clearTrigger=always。",
+      "只在我的页隐藏 Clear：会制造页面私有分叉并让其他 Input 继续漂移。",
+      "用透明度隐藏但保留可点击命中：会产生不可见操作与无障碍错误。"
+    ]
+  },
+  "impact": {
+    "files": ["input/input.js", "input/input.wxml", "input/input.wxss", "search/search.js", "search/search.wxml", "metadata/components.js", "preview/app.js", "preview/styles.css", "scripts/test-input.js", "scripts/test-search.js", "docs/components/INPUT.md", "docs/components/SEARCH.md", "docs/COMPONENT_API.md", "docs/H5_PREVIEW_COMPATIBILITY.md", "feedback/records/pui-fb-0458-input-clear-focus-trigger.json"],
+    "dependencies": ["PUI Button", "PUI Icon", "native input focus", "Search clearTrigger"]
+  },
+  "verification": {
+    "tests": ["scripts/test-input.js", "scripts/test-search.js", "scripts/test-appearance-contract-matrix.js"],
+    "commands": [
+      "node scripts/test-input.js：通过",
+      "node scripts/test-search.js：通过",
+      "node scripts/test-appearance-contract-matrix.js：74 roots + 1 composed field 通过",
+      "npm run example:install：通过",
+      "微信 DevTools build-npm：1376ms，warnings=[]",
+      "源码、miniprogram_dist、miniprogram/node_modules 与 miniprogram_npm 的 Input/Search SHA-256 一致"
+    ],
+    "browser": [
+      "H5 390px Input 实际计算样式：失焦稳定态 Clear 为 visibility:hidden / opacity:0 / pointer-events:none，聚焦后 visibility:visible / pointer-events:auto；根宽 271px、scrollWidth 271px，显隐前后不变，页面横向溢出为 0。",
+      "H5 外观阴影关闭时 Input control box-shadow=none；开启后为两层真实投影；恢复关闭后再次为 none。",
+      "微信开发者工具 pages/me/index：失焦 outerWxml 为 clear-host--hidden、aria-hidden=true、Button disabled=true；点击原生昵称 Input 后变为 pui-input--focus、clear-host--visible、aria-hidden=false、Button disabled=false；点击页面空白后 Clear 从可访问树退出并恢复 hidden。",
+      "小程序全局阴影从首页真实 onAppearanceSwitchChange 切为 false 后，我的页 ConfigProvider 根输出 pui-shadow--off；恢复后为 pui-shadow--on，Input 页面无私有阴影状态。"
+    ],
+    "deviceRisks": ["iOS/Android 真机的 Clear 触摸到 blur/click 时序、软键盘、clear→change 事件顺序与辅助技术朗读仍未验证。"]
+  },
+  "ai": {
+    "summary": "普通 Input Clear 默认仅聚焦显示，Search 显式传递自身清空策略。",
+    "rules": [
+      "Input clearTrigger 默认 focus，非法值也回退 focus。",
+      "Search 等复合组件若公开 always/focus，必须显式传给内部 Input，不得依赖 Input 默认值。",
+      "小程序与 H5 隐藏 Clear 时同时关闭命中与可访问性，但保留 suffix 和 Trailing 几何。"
+    ],
+    "tags": ["input", "clear", "focus", "search", "h5-parity", "api-contract"]
+  }
+}

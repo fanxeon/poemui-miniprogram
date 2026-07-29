@@ -36,12 +36,13 @@ description: 使用 PoemUI 开发、迁移或排查原生微信小程序界面�
 - 不生成 fake success、假支付、假订单、假事件或只更新提示文字的伪交互。
 - 页面根需要共享视觉时使用 `<pui-config-provider use-global-config>`；不要复制第二份全局外观 Store。
 - 使用 PoemUI Token 与 Style Utilities；390px 不产生页面级横向溢出。
-- 动效默认 500ms、上限 1000ms；`reduceMotion` 压缩为 1ms。
+- 交互动效默认 500ms、上限 1000ms；`reduceMotion` 压缩为 1ms。唯一现行例外是 DynamicMessage 不可配置的 edge-flow：顶部与右侧 6rpx 轨道内只有一束对角渐变光束，从 expanding 开始独立播放一次 1500ms，并与状态 Icon 共用 loading 中性灰、info 信息蓝、success 成功绿、warning 警告橙、error 危险红语义色；不得让整段边框换色冒充移动，也不得拖慢组件本体 500ms 进场、改写根 Surface 的毛玻璃/阴影、形成常驻彩边、固定为单一颜色或在低动效下播放。DynamicMessage 的 `shadow/frostedGlass` 可用 `Boolean|null` 做组件私有覆盖：`null` 继承 ConfigProvider，`true/false` 只影响当前通知。
 - 微信专属能力、H5 镜像与真机边界见 [平台边界](references/platform-boundaries.md)。
 - 需要最小可运行组合时读 [示例](references/examples.md)。
 
 ## 版本合同
 
-本 Skill 的最低适配版本与当前验证版本均为 `poemui-miniprogram@0.1.0`。公共 npm 与
+本 Skill 的最低适配版本为 `poemui-miniprogram@0.1.0`，当前验证版本为
+`poemui-miniprogram@0.1.2`。公共 npm 与
 `https://github.com/fanxeon/poemui-miniprogram` 是当前网络安装真相源；遇到其他版本，
 先比较 `package.json`、公开入口、组件目录和合同，再继续修改。

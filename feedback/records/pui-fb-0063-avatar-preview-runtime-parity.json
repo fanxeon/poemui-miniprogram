@@ -10,7 +10,7 @@
   "acceptance": "accepted",
   "source": "battle",
   "reportedAt": "2026-07-19",
-  "updatedAt": "2026-07-19",
+  "updatedAt": "2026-07-29",
   "userGoal": "Avatar 官网必须真实镜像 WXML/WXSS，图片成功、失败、隐藏动效、尺寸和全局视觉开关都应可在网页中直接验收。",
   "environment": {
     "surfaces": ["h5-preview", "api-reference", "props-workspace", "documentation"],
@@ -21,26 +21,27 @@
   "reproduction": [
     "旧 H5 Avatar 使用 34/46/58px，而原生 small/medium/large 为 56/80/112rpx，对应 28/40/56px。",
     "hideOnLoadFailed 的 180ms 定时器写入 hidden 后，.pui-avatar-demo 的 display:inline-flex 覆盖浏览器隐藏规则，完成态节点仍可见。",
-    "bordered 使用固定 Surface 边线且 Avatar 不消费共享 shadow Token，导致全局边框关闭和阴影开启对组件本体无真实效果。",
-    "组合按钮点击只更新会被 component-only 归一化删除的事件文字，用户看不到真实操作结果；缓存完成的 image 也可能早于 listener 挂载。"
+    "旧 bordered 使用固定 Surface 边线；同时错误期待 shadow 开关给展示叶子增加外投影，和当前外观资格矩阵冲突。",
+    "组合按钮点击只更新会被 component-only 归一化删除的事件文字，用户看不到真实操作结果；缓存完成的 image 也可能早于 listener 挂载。",
+    "2026-07-29 回归发现 Avatar 镜像已失去资源运行时注册：有 src 时生成 Loading 与透明 img，但没有真实 load/error 完成路径。"
   ],
   "expected": "H5 与原生尺寸、回退优先级和 500ms/1ms 状态一致；失败动画结束后节点真正隐藏；边框和阴影开关改变计算样式；宿主点击有就地可见回写。",
   "actual": "旧镜像的尺寸、完成态、视觉 Token 和交互反馈分别与原生或标准概览规则冲突。",
   "evidence": [
     {"kind": "user-report", "ref": "当前任务对话", "note": "用户授权后续共有组件在完整审计、浏览器 battle 与门禁后由 agent 自主验收并连续推进。"},
-    {"kind": "file", "ref": "preview/app.js", "note": "Avatar runtime 现覆盖缓存 load/error、固定 180ms/1ms、四段用法和宿主按钮就地回写。"},
-    {"kind": "file", "ref": "preview/styles.css", "note": "尺寸改为 28/40/56px；hidden 只在退场完成后 display:none；border/shadow 使用共享 Token。"},
-    {"kind": "file", "ref": "avatar/avatar.wxss", "note": "原生 Avatar 消费 --pui-glass-shadow-soft 与 --pui-border-color，和 ConfigProvider 视觉合同一致。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "Avatar runtime 现覆盖内部 Loading、缓存 load/error、lazy/eager、固定 500ms/1ms、四段用法和宿主按钮就地回写。"},
+    {"kind": "file", "ref": "preview/styles.css", "note": "尺寸为 28/40/56px；hidden 只在退场完成后 display:none；边线使用共享 Token，展示叶子固定无外投影。"},
+    {"kind": "file", "ref": "avatar/avatar.wxss", "note": "原生 Avatar 消费 --pui-border-color，并按外观资格矩阵固定 box-shadow:none。"},
     {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-avatar", "note": "失败回退保持可见；hideOnLoadFailed 完成态为 hidden/display:none/opacity=0，normal transition=0.18s，reduceMotion=0.001s。"},
-    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-avatar", "note": "390px document 375/inner 390 无横向溢出；dark+shadow+frost+radius+border-off 下 Avatar 为 40px/999px、真实 soft shadow、透明边线，宿主 Button 为 blur(18px)/20px。"}
+    {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-avatar", "note": "390px 无横向溢出；dark+shadow+frost+radius 下 Avatar 保持展示叶子无外投影，圆形保持满圆，宿主 Button 才消费 Surface 效果。"}
   ],
   "rootCause": "H5 镜像、原生 WXSS、component-only 归一化和全局视觉开关分属多条路径，旧实现没有以计算样式和动画完成态做端到端验收。",
   "decision": {
-    "outcome": "统一原生/H5 三档尺寸和固定动效；为所有演示图片补缓存完成检测；失败隐藏在计时器完成后才应用 hidden；Avatar 边线和阴影改用共享 Token；宿主 Button 点击直接更新自身标签。",
+    "outcome": "统一原生/H5 三档尺寸和固定动效；恢复 Avatar 真实图片运行时，非空 src 先显示内部 Loading，缓存 load/error 完成后关闭自动等待；loading=true 时在资源完成后仍持续显示内部 Loading；lazy 映射浏览器 loading；失败隐藏在计时器完成后才应用 hidden；宿主 Button 点击直接更新自身标签。",
     "rationale": "这些变化不扩张 Avatar API，但让真实页面、原生安装端和全局视觉合同读取同一语义。",
     "alternativesRejected": [
       "只删除 hidden 被覆盖的 display 会让 Avatar 丢失 inline-flex 布局。",
-      "在退场开始立即 display:none 会制造瞬移并丢失 180ms 中间帧。",
+      "在退场开始立即 display:none 会制造瞬移并丢失 500ms 中间帧。",
       "保留独立事件状态卡会违反标准概览 component-only 与 Less is more 规则。"
     ]
   },
@@ -52,7 +53,7 @@
     "tests": ["scripts/test-avatar.js", "scripts/test-preview-native-control-boundaries.js", "scripts/test-design-contracts.js"],
     "commands": ["node --check preview/app.js", "npm run catalog:generate", "npm run miniprogram:build", "npm run site:build", "npm run check", "npm run pack:check"],
     "browser": [
-      "真实图片成功加载并显示，故意缺失地址触发回退；hideOnLoadFailed=false 保留节点，true 在 180ms 完成后隐藏。",
+      "真实图片成功加载并显示，故意缺失地址触发回退；hideOnLoadFailed=false 保留节点，true 在 500ms 完成后隐藏。",
       "reduceMotion=true 的内联 Token 和计算 transition 均为 1ms，失败节点完成隐藏。",
       "390px API 四表切换为纵向单元格，所有字段 white-space=normal、text-overflow=clip、clientWidth=scrollWidth。",
       "light/dark、边框、阴影、毛玻璃、大圆角、渐变全部真实切换并恢复标准浅色，浏览器日志为空。"
@@ -66,8 +67,9 @@
     "summary": "Avatar 镜像必须以原生尺寸、真实 img 事件、动画完成态和共享外观 Token 为准，不能只看静态 DOM。",
     "rules": [
       "H5 small/medium/large 固定镜像 28/40/56px，禁止建立第二套尺寸。",
-      "hideOnLoadFailed 必须先播放 180ms 或 1ms 退场，再隐藏或卸载；hidden 完成态必须通过计算样式验证。",
+      "hideOnLoadFailed 必须先播放 500ms 或 1ms 退场，再隐藏或卸载；hidden 完成态必须通过计算样式验证。",
       "缓存 image 必须同时处理 complete/naturalWidth，不能假设 listener 一定先于 load/error。",
+      "非空 src 必须先显示 Avatar 内部 Loading，真实 load/error 后关闭自动等待；loading=true 只强制内部 Loading，页面不得另拼 Spinner。",
       "标准概览中的可见交互结果放在真实宿主组件内，不恢复会被归一化删除的事件诊断卡。"
     ],
     "tags": ["avatar", "preview", "image", "motion", "appearance", "390px"]

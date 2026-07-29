@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0496",
+  "title": "Indexes 内部不透明层遮蔽根毛玻璃 Surface",
+  "scope": "component",
+  "components": ["indexes", "config-provider"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Indexes 在毛玻璃、阴影和大圆角外观下仍应是一个完整集合 Surface，内部不能再铺一层不透明底遮住效果。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "开启毛玻璃并观察 Indexes 根。",
+    "旧根消费 glass surface 和 backdrop-filter，但 body、entry、state 又铺满 --pui-bg-container。",
+    "不透明内部层遮住根的半透明背景，外观开关只剩边缘可见。"
+  ],
+  "expected": "根是唯一覆盖整个集合的 Surface；body、直接条目与状态层透明，内部 Cell 保持连续无阴影。放大提示作为临时脱流反馈可独立使用浮层 Surface。",
+  "actual": "修复前根和三个内部大面积层同时绘制背景，毛玻璃无法透过正文或状态区域展示。",
+  "evidence": [
+    {"kind": "file", "ref": "indexes/indexes.wxss", "note": "body、entry、state 改为 transparent，根继续消费 glass/background/border/radius/shadow。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "专项锁定 body 透明和 disabled 不恢复不透明阻断层。"},
+    {"kind": "file", "ref": "docs/UI_DESIGN_CONTRACT.md", "note": "集合根承接唯一 Surface，组合子项不得形成第二层大面积背景。"}
+  ],
+  "rootCause": "旧状态实现为每个 retained layer 分别铺了容器色，没有区分布局层和真实 Surface，导致外观 Token 虽挂在根上却被子层遮蔽。",
+  "decision": {
+    "outcome": "仅保留 Indexes 根为集合 Surface；body、entry、loading/error/empty 状态层透明。sticky heading 可保留语义 muted 分组条，放大提示作为临时浮层 Surface。",
+    "rationale": "这让阴影、毛玻璃、边框和圆角由同一根统一控制，同时保留状态层和分组标题的可读性。",
+    "alternativesRejected": [
+      "提高根毛玻璃强度无法穿透不透明子层。",
+      "给每个 Cell 和状态层都加毛玻璃会形成卡片套卡片。",
+      "页面覆盖背景会绕过组件与 ConfigProvider。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.wxss", "scripts/test-indexes.js", "docs/components/INDEXES.md"],
+    "dependencies": ["PUI appearance tokens", "pui-config-provider", "PUI Cell"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["node scripts/test-indexes.js：通过"],
+    "browser": [
+      "微信开发者工具 390x844 深色果味实测根 background=rgba(24,24,27,.88)、backdrop-filter=blur(13px) saturate(1.5)、主题阴影；body/entry/state 为 transparent 且无外阴影，截图 `/tmp/poemui-indexes-0.1.2-dark-fruit.png`。",
+      "验收后已把 Provider 恢复到原始 light / frost-off / shadow-on / large-radius / border-off / equal-spacing 配置。"
+    ],
+    "deviceRisks": ["iOS/Android backdrop-filter 支持、滚动合成性能、深色对比度和系统降透明设置仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Indexes 的外观 Surface 属于集合根，布局和状态子层必须透明。",
+    "rules": [
+      "不能只检查根 class 或 CSS 变量；必须读取 body/state 的实际 background。",
+      "连续 Cell 不获得独立 shadow、radius 或 blur。",
+      "只有脱离内容流的放大提示可以作为第二个临时 Surface。"
+    ],
+    "tags": ["indexes", "surface", "frosted-glass", "appearance", "transparency"]
+  }
+}

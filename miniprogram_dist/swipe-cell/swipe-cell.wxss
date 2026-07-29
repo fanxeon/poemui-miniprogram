@@ -13,15 +13,20 @@
   bottom: 0;
   display: flex;
   align-items: stretch;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--pui-duration-fast) var(--pui-ease-standard);
 }
+.pui-swipe-cell__actions--visible { opacity: 1; pointer-events: auto; }
 
 .pui-swipe-cell__actions--left { left: 0; }
 .pui-swipe-cell__actions--right { right: 0; }
-.pui-swipe-cell__action-wrap { display: flex; flex: 0 0 auto; align-items: stretch; min-height: 100%; overflow: hidden; color: var(--pui-text-inverse); background: var(--pui-color-brand); }
-.pui-swipe-cell__action-wrap--default { color: var(--pui-text-primary); background: var(--pui-bg-muted); }
-.pui-swipe-cell__action-wrap--success { background: var(--pui-color-success); }
-.pui-swipe-cell__action-wrap--warning { color: var(--pui-text-primary); background: var(--pui-color-warning); }
-.pui-swipe-cell__action-wrap--danger { background: var(--pui-color-danger); }
+.pui-swipe-cell__action-wrap { display: flex; flex: 0 0 auto; align-items: stretch; min-height: 100%; overflow: hidden; color: transparent; background: transparent; border: 0; box-shadow: none; }
+.pui-swipe-cell__actions--visible .pui-swipe-cell__action-wrap { color: var(--pui-text-inverse); background: var(--pui-color-brand); }
+.pui-swipe-cell__actions--visible .pui-swipe-cell__action-wrap--default { color: var(--pui-text-primary); background: var(--pui-bg-muted); }
+.pui-swipe-cell__actions--visible .pui-swipe-cell__action-wrap--success { background: var(--pui-color-success); }
+.pui-swipe-cell__actions--visible .pui-swipe-cell__action-wrap--warning { color: var(--pui-text-primary); background: var(--pui-color-warning); }
+.pui-swipe-cell__actions--visible .pui-swipe-cell__action-wrap--danger { background: var(--pui-color-danger); }
 .pui-swipe-cell__action-button { width: 100% !important; height: 100% !important; min-height: 100% !important; color: inherit !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 .pui-swipe-cell__action-button::after { border: 0 !important; }
 .pui-swipe-cell__content { position: relative; z-index: 1; display: block; width: 100%; min-width: 0; background: var(--pui-page); transform-origin: center; transition-property: transform; transition-timing-function: var(--pui-ease-standard); }

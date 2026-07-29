@@ -26,7 +26,8 @@ Search(role=search)
 
 - Search/Input 只能形成一个可见字段 Surface；Search 根只负责横向布局，不得叠加第二层背景、边框、阴影或毛玻璃。Search 的阴影资格由嵌入 Input Field 承担，清空按钮仍是透明的 PUI IconButton。
 - 小程序端 Search 宿主与内部根均占满调用者可用宽度并允许收缩（`width/max-width:100%`、`min-width:0`）；内部 PUI Input 宿主在横向行中占用剩余空间。消费者不应依赖跨组件 WXSS 选择器修复宿主宽度。
-- 清空必须继续由 Input 的 PUI Button + PUI Icon 承担；取消固定使用 PUI Button。
+- 清空必须继续由 Input 的 PUI Button + PUI Icon 承担；Search 将自己的 `clearTrigger` 显式传给内部 Input，因而 `always/focus` 不受普通 Input 默认 `focus` 策略影响。取消固定使用 `text + surface-transparent + extra-small` 的 PUI Button：`text` 是正式的紧凑文字操作合同，会将普通 Button 的最小宽度归零并只保留 `--pui-space-xs` 左右内距；`surface-transparent` 保证锁定态也不重新出现独立 Surface。取消文字使用 secondary 色和 medium 字重，不能与输入字段争夺主层级。
+- Search 只能通过 Button 的公开变体、尺寸、Surface 与 CSS 变量表达取消层级；页面或 Search 父级 WXSS 不得用 `!important`、私有 `min-width/padding` 覆盖 Button 内部几何。微信的自定义组件宿主不能可靠消费 `auto/fit-content/min-content`，因此标签 `class`（不是传给内部根的 `custom-class`）按取消文案字符权重选择 `compact / regular / wide / xwide` 四级语义宽度：默认两字取消为 `68rpx`，英文 Cancel 为 `104rpx`，较长文案为 `144/176rpx`；长文案由 Button 自身 nowrap/ellipsis 保持 390px 可用。不得增加补偿 wrapper、Surface、内距或事件处理。`transparent` 变体本身仍保留 extra-small Button 的 `88rpx` 最小宽度，不能把它误当作紧凑文字按钮。
 - 默认 Slot 只承接取消按钮后的自定义操作，不承接结果列表或状态面板。
 
 ## 3. 值、字符与受控边界
@@ -58,6 +59,7 @@ Search(role=search)
 
 - 字段、焦点和取消操作固定使用 500ms standard easing；`reduceMotion=true` 压缩为 1ms，不公开私有 duration/easing。
 - 根固定 `role=search`，提供可访问名称、disabled 与 readonly；输入与操作继承同一语义。
+- 取消文案必须同时进入 PUI Button 的 `content` 与 `aria-label`，不能只放默认 Slot 让辅助技术读成泛化“按钮”。
 - 不使用 `display:none` 制造字段状态瞬移，不对 `height:auto` 做 transition。
 
 ## 7. H5 演示
@@ -75,6 +77,13 @@ Search(role=search)
 - PoemUI 将 `action/action-click/submit` 收敛为已有且更直接的 `showCancel/cancelText/cancel/search`；保留 `defaultValue/readonly/ariaLabel/reduceMotion` 的真实闭环。
 - 不照搬 `resultList`：搜索结果是业务数据，不应耦合进基础输入；不照搬 type/leftIcon 和光标、键盘位移、placeholder 样式等平台长尾透传。
 - 不恢复重复 `input` 事件、私有 duration/easing 或实例方法。
+
+### 0.1.2 跨端 Battle 同步
+
+- 本轮小程序源码以 `text + surface-transparent + extra-small` 收口取消层级；H5 不在逐组件阶段提前改动。
+- 最终跨端汇总必须同步 `preview/app.js` 的 Search `buttonSample`：使用同源 text/extra-small/surface-transparent、secondary tone 与 medium 字重，并保留 `previewIdFor(state.current)` 的真实 cancel 路由。
+- H5 已同步 `preview/styles.css` 的 `.pui-search-cancel`：删除私有最小宽度和 padding 几何，不照搬微信平台专用的透明宿主 wrapper。390px 深色果味实测为 `26×32px`，小于旧基线 `44px`，且无独立 Surface 或横向溢出。
+- H5 专项测试必须锁定 Button text 合同的 `min-width:0`、当前取消操作的计算宽高、输入字段占剩余宽度、点击只发布 cancel 且消费者回写后才清空；不能再用“透明”外观代替真实紧凑几何。
 
 ## 9. 明确禁止
 

@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-25",
-  "updatedAt": "2026-07-26",
+  "updatedAt": "2026-07-28",
   "userGoal": "深浅色、边框、阴影、毛玻璃、大圆角、等距和渐变在全部小程序组件页与 H5 中应遵守同一组件语义；非 Surface 组件不能因为全局阴影开关获得外投影，关闭总效果也不能破坏布局或已保存偏好。",
   "environment": {
     "surfaces": ["wechat-miniprogram", "h5-preview"],
@@ -21,7 +21,8 @@
   "reproduction": [
     "逐个检查 miniprogram/**/*.wxml 中真实 pui-* 根节点；完整搬迁后根节点从 31 扩展为 70，并对照 H5 镜像的 Surface、条目、叶子和屏幕附着角色。",
     "打开外观设置并关闭 effectsEnabled，再观察依赖的 shadow/frost/radius 与独立的 theme/border/equalSpacing 是否发生错误联动。",
-    "检查 Image、Collapsible、Cell、Icon 等非独立 Surface 是否获得外投影，以及 Navbar、Tabbar、Popup、Sheet、ActionSheet 的阴影是否朝向真实附着边。"
+    "检查 Image、Cell、Icon 等非独立 Surface 是否获得外投影，以及 Navbar、Tabbar、Popup、Sheet、ActionSheet 的阴影是否朝向真实附着边。",
+    "对 Collapsible 分别验证默认扁平、显式 shadow 但 closed、显式 shadow 且 open 三种状态。"
   ],
   "expected": "由一份可执行的 70 根组件矩阵定义 shadow/frost/radius/border/equalSpacing/gradient 资格；effectsEnabled 只暂停 shadow/frost/radius 的有效值，保留持久化单项和布局；小程序与 H5 同步消费语义 Token。",
   "actual": "scripts/appearance-contract-matrix.js 与专项测试现覆盖 70 个根组件：完整搬迁新增的布局、表单、数据展示和高级组件按 Surface 角色获得资格；Input 同时保留独立字段 Surface 和 Search/Combobox 嵌入规则。",
@@ -34,8 +35,8 @@
   ],
   "rootCause": "外观开关曾主要按全局 class 传播，完整小程序迁移后新增根组件没有同步进入按 Surface 角色约束的共享资格矩阵；effectsEnabled 也必须继续只暂停三项效果而不改变主题、边框、等距和几何。",
   "decision": {
-    "outcome": "以 70 根矩阵作为小程序与 H5 的资格真源；独立 Surface 才能消费外投影、毛玻璃和语义圆角，条目/叶子与布局根保持无外投影；effectsEnabled=false 只暂停 shadow/frost/largeRadius，有效边框、主题、等距、布局和持久化单项保持独立。",
-    "rationale": "把视觉开关的影响范围从“所有节点”收敛到真实组件语义，避免 Cell/Icon/Image/Collapsible 等展示叶子被错误装饰，也避免关闭效果时发生布局漂移。",
+    "outcome": "以真实根矩阵作为小程序与 H5 的资格真源；独立 Surface 才能消费外投影、毛玻璃和语义圆角，条目/叶子与布局根保持无外投影；Collapsible 默认扁平，只有显式 shadow=true 且 open 时才提升为 card Surface；effectsEnabled=false 只暂停 shadow/frost/largeRadius，有效边框、主题、等距、布局和持久化单项保持独立。",
+    "rationale": "把视觉开关的影响范围从“所有节点”收敛到真实组件语义，同时允许页面明确声明展开后的 Collapsible 已成为独立 Surface；这样关闭态和未声明实例不产生额外层级，展开态又能与外观 Store 同步。",
     "alternativesRejected": [
       "给所有 pui-* 根统一加 shadow/radius/frost，会制造面板套面板和错误层级。",
       "在每个页面维护一份外观组件名单，会与 H5、发布 WXML 和未来组件持续漂移。",
@@ -54,7 +55,7 @@
   },
   "ai": {
     "summary": "外观设置必须按组件 Surface 资格消费，effectsEnabled 只暂停三类效果且不改布局或已保存偏好。",
-    "rules": ["新增真实 pui-* 根组件前先更新外观资格矩阵和对应专项测试。", "非独立 Surface 的 Cell、Icon、Image、Collapsible、Badge、Tag、Progress、Skeleton 不得因全局 shadow 获得外投影。", "effectsEnabled=false 不得清除 shadow/frost/radius 的持久化值，也不得改变 theme/border/equalSpacing。", "Navbar、Tabbar、Popup、Sheet、ActionSheet 的阴影方向必须由真实附着边决定。"],
+    "rules": ["新增真实 pui-* 根组件前先更新外观资格矩阵和对应专项测试。", "非独立 Surface 的 Cell、Icon、Image、Badge、Tag、Progress、Skeleton 不得因全局 shadow 获得外投影。", "Collapsible 默认保持扁平；只有消费者显式 shadow=true 且组件 open 时才能消费 card 阴影。", "effectsEnabled=false 不得清除 shadow/frost/radius 的持久化值，也不得改变 theme/border/equalSpacing。", "Navbar、Tabbar、Popup、Sheet、ActionSheet 的阴影方向必须由真实附着边决定。"],
     "tags": ["appearance", "visualConfig", "surface-eligibility", "effectsEnabled", "cross-platform"]
   }
 }

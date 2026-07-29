@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0460",
+  "title": "历史 Chart 文档例外不能继续替代真实图表组件",
+  "scope": "global",
+  "components": ["area-chart", "bar-chart", "waffle", "preview-site", "miniprogram"],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "在高级分区提供可真实调用的 AreaChart、BarChart 和 Waffle；不能继续用 H5 静态 Chart 说明代替组件。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview", "npm-package", "component-catalog"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390px", "PreviewDevice 622px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "查看 metadata/shadcn.js，Chart 被标为 document/research，packageId 与 previewId 都为空。",
+    "查看 docs/MINIPROGRAM_ADVANCED_PAGES.md 与 COMPONENT_MATRIX，历史规则明确禁止创建静态小程序 Chart 假路由。",
+    "高级分区需要展示连续趋势、版本组件增量与组件总量时，原发布包没有可安装、可传数据的具体图表组件。"
+  ],
+  "expected": "新增三个边界明确的真实组件，具备 npm 源码、原生运行时、独立页、H5 标准页、Props、合同、测试和发布产物；旧 Chart 研究入口退出公开目录。",
+  "actual": "修复前只有未发布的 Chart 文档例外，没有原生组件、公开 API、小程序页、H5 真实镜像或安装产物。",
+  "evidence": [
+    {"kind": "file", "ref": "metadata/shadcn.js", "note": "历史 Chart 仅为 document/research。"},
+    {"kind": "file", "ref": "docs/BAR_CHART_WAFFLE_COMPONENT_PLAN.md", "note": "锁定两个具体组件的数据、视觉、外观资格和跨端验收边界。"},
+    {"kind": "file", "ref": "docs/AREA_CHART_GRADIENT_COMPONENT_PLAN.md", "note": "在同一具体组件策略下补充 AreaChart 与三图表统一动效。"},
+    {"kind": "file", "ref": "area-chart/area-chart.js", "note": "AreaChart 使用原生 Canvas 2D 和同源几何 helper 渲染连续趋势。"},
+    {"kind": "file", "ref": "bar-chart/bar-chart.js", "note": "BarChart 以共享比例与父级 items 回写渲染真实条形。"},
+    {"kind": "file", "ref": "waffle/waffle.js", "note": "Waffle 计算真实点阵数量与超限有效单位。"},
+    {"kind": "test", "ref": "scripts/test-bar-chart.js", "note": "覆盖共享比例、边界、H5/小程序/metadata 与透明 Surface。"},
+    {"kind": "test", "ref": "scripts/test-waffle.js", "note": "覆盖有效单位、透明度重启、轮廓、跨端与发布入口。"},
+    {"kind": "test", "ref": "scripts/test-area-chart.js", "note": "覆盖三种曲线、堆叠、零基线、Canvas/SVG、动效和发布入口。"}
+  ],
+  "rootCause": "早期未确定 Canvas/插件和跨端合同，因此正确保留了 Chart 文档例外；后续需求已能收敛为 AreaChart、BarChart、Waffle 三个具体能力，继续保留泛化研究入口会阻止真实组件落地。",
+  "decision": {
+    "outcome": "不创建通用 Chart；新增 AreaChart、BarChart 与 Waffle 三个透明展示叶子，以共享 helper 统一非负数据、主题和零基线，并从公开目录移除 shadcn-chart 研究入口。",
+    "rationale": "具体组件可在小程序和 H5 使用同一语义真实渲染，同时避免为尚未承诺的坐标轴、Tooltip、缩放和 Canvas 能力制造假 API。",
+    "alternativesRejected": [
+      "继续用 shadcn-chart 静态文档：不能被小程序或消费者真实调用。",
+      "一次建立通用 Chart/Canvas 框架：扩大范围且无法在当前 Goal 中证明跨端一致性。",
+      "把图表写死在仪表盘页面：无法作为组件发布和复用。"
+    ]
+  },
+  "impact": {
+    "files": ["area-chart/", "bar-chart/", "waffle/", "common/utils/chart-data.js", "common/utils/area-chart-data.js", "metadata/components.js", "preview/app.js", "preview/styles.css", "miniprogram/pages/components/area-chart/", "miniprogram/pages/components/bar-chart/", "miniprogram/pages/components/waffle/", "docs/components/AREA-CHART.md", "docs/components/BAR-CHART.md", "docs/components/WAFFLE.md"],
+    "dependencies": ["ConfigProvider", "PreviewDevice", "component catalog", "miniprogram_dist"]
+  },
+  "verification": {
+    "tests": ["scripts/test-area-chart.js", "scripts/test-bar-chart.js", "scripts/test-waffle.js", "scripts/test-appearance-contract-matrix.js"],
+    "commands": ["node scripts/test-bar-chart.js", "node scripts/test-waffle.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run check", "npm run example:install", "npm run pack:check"],
+    "browser": [
+      "H5 真实打开 #/advanced/bar-chart 与 #/advanced/waffle；两页均进入标准 PreviewDevice shadow-safe，DOM 暴露 role=img、标签/数值/图例和可访问摘要。",
+      "390×844 下两页 document 与 PreviewDevice 横向溢出均为 0；BarChart 真实段数 12，Waffle 两场景真实单元数 143。",
+      "shadow/frost/border/large-radius/equal-spacing 全开时，两组件根计算背景透明、border=0、box-shadow=none、backdrop-filter=none，未被全局 Surface 外观污染。",
+      "浏览器 warn/error 日志为 0。"
+    ],
+    "deviceRisks": ["微信 iOS/Android 真机的 rpx、Grid、长标签、深浅色、读屏与系统低动效尚需合法 AppID 复核。"]
+  },
+  "ai": {
+    "summary": "Chart 研究文档不能替代真实组件；只发布已经建立跨端合同的具体图表能力。",
+    "rules": [
+      "不要恢复泛化 shadcn-chart 公共入口，除非先建立并验收完整原生 API。",
+      "AreaChart/BarChart/Waffle 必须消费共享图表 helper，不得在页面复制另一套值归一化。",
+      "图表业务数据由消费者提供；组件不得伪造版本、分类或云端统计。"
+    ],
+    "tags": ["chart", "area-chart", "bar-chart", "waffle", "no-fake-success", "miniprogram", "h5"]
+  }
+}

@@ -99,6 +99,9 @@ assert.strictEqual(empty.instance.data.activeIndex, -1);
 const iconOnly = create({ items: [{ label: '', value: 'home', icon: 'home', ariaLabel: '首页' }], fixed: false });
 assert.strictEqual(iconOnly.instance.data.normalizedItems[0].label, '', 'an explicit empty label enables the icon-only Tabbar form');
 assert.strictEqual(iconOnly.instance.data.normalizedItems[0].ariaLabel, '首页', 'icon-only items retain an accessible destination name');
+assert(iconOnly.instance.data.rootClass.includes('pui-tabbar--all-icon-only'), 'all-icon Tabbar uses the alternate shared indicator baseline');
+const mixedLabels = create({ items: [{ label: '首页', value: 'home', icon: 'home' }, { label: '', value: 'profile', icon: 'profile', ariaLabel: '我的' }], fixed: false });
+assert(!mixedLabels.instance.data.rootClass.includes('pui-tabbar--all-icon-only'), 'one visible label keeps every item on the common labeled indicator baseline');
 
 const motion = create({ items: ITEMS, defaultValue: 0, reduceMotion: false });
 assert(motion.instance.data.rootStyle.includes('500ms'), 'Tabbar motion is fixed at 500ms');
@@ -145,8 +148,9 @@ assert(wxss.includes('top: var(--pui-space-step-28);') && wxss.includes('bottom:
 assert(wxss.includes('.pui-tabbar__button-host') && wxss.includes('flex: 1;') && wxss.includes('width: 0;') && wxss.includes('height: 112rpx;'), 'native Tabbar 等分轨道 host 以微信兼容的 flex:1 + width:0 固定等分并采用统一导航高度');
 assert(wxss.includes('min-height: 112rpx;'), 'native Tabbar reserves a calm 56px navigation rhythm');
 assert(wxss.includes('.pui-tabbar__item .pui-button__content { overflow: visible; }'), 'native Tabbar Badge is not clipped by the shared Button content baseline');
-assert(wxss.includes('.pui-tabbar__item-wrap--icon-only::after { bottom: var(--pui-space-step-20); }'), 'native icon-only Tabbar raises its active indicator into the visual center');
-assert(wxss.includes('.pui-tabbar__item-wrap--icon-only .pui-tabbar__icon { transform: translateY(var(--pui-space-step-4)); }'), 'native icon-only Tabbar lowers its icon to balance the raised indicator');
+assert(wxss.includes('.pui-tabbar--all-icon-only .pui-tabbar__item-wrap::after { bottom: var(--pui-space-step-20); }'), 'native all-icon Tabbar raises one shared indicator baseline');
+assert(wxss.includes('.pui-tabbar--all-icon-only .pui-tabbar__icon { transform: translateY(var(--pui-space-step-4)); }'), 'native all-icon Tabbar lowers every icon with the same shared rhythm');
+assert(!wxss.includes('.pui-tabbar__item-wrap--icon-only::after'), 'mixed-label Tabbar must not move an individual item indicator');
 assert(!wxss.includes('.pui-tabbar__item {') || wxss.includes('background: transparent;'), 'Tabbar custom class can arrange contents but cannot reintroduce a Button-owned surface');
 const buttonWxss = fs.readFileSync(path.join(root, 'button/button.wxss'), 'utf8');
 assert(buttonWxss.includes('.pui-button--surface-transparent::after { border: 0 !important; }'), 'Tabbar 依赖 Button 组件根清除微信原生 ::after，不能以页面样式补丁隐藏未激活项底色');
@@ -179,6 +183,7 @@ assert(tabbarPreviewSource.includes("hasExplicitLabel"), 'H5 uses the same expli
 assert(tabbarPreviewSource.includes('const iconSlot = visual ?'), 'H5 Tabbar 必须把图标投影到与小程序一致的 PUI Button icon Slot');
 assert(tabbarPreviewSource.includes('iconOnly: !item.label,'), 'H5 纯图标 Tabbar 必须通过共享 Button 镜像移除空默认内容轨道');
 assert(tabbarPreviewSource.includes("${!item.label ? 'is-icon-only' : ''}"), 'H5 mirrors the native icon-only indicator state');
+assert(tabbarPreviewSource.includes("allIconOnly ? 'is-all-icon-only' : ''"), 'H5 derives the alternate baseline from the whole Tabbar, not one item');
 assert(tabbarPreviewSource.includes('block: true,'), 'H5 Tabbar 必须镜像原生 Button 的 block 等分轨道');
 assert(tabbarPreviewSource.includes("variant: 'transparent',"), 'H5 Tabbar 必须镜像原生的 transparent Button 视觉变体');
 assert(tabbarPreviewSource.includes("surface: 'transparent',"), 'H5 Tabbar must use the same transparent Button surface composition');
@@ -213,8 +218,8 @@ assert(previewStyles.includes('body .app-shell[data-page-mode] .preview-stage .p
 assert(previewStyles.includes('.pui-tabbar-preview .pui-tabbar-preview__item.is-active { color: var(--brand); }'), 'H5 active item uses the semantic primary token');
 assert(previewStyles.includes('.pui-tabbar-preview .pui-tabbar-preview__item.pui-button-preview:disabled {\n  background: transparent;\n  background-color: transparent !important;\n  border-color: transparent;'), 'H5 disabled Tabbar item remains part of the unique transparent navigation surface');
 assert(previewStyles.includes('.pui-tabbar-preview__item::after'), 'H5 Tabbar uses a theme-independent active indicator');
-assert(previewStyles.includes('.pui-tabbar-preview__item.is-icon-only::after { bottom: var(--pui-preview-space-step-20); }'), 'H5 icon-only Tabbar raises the indicator with the same semantic navigation inset');
-assert(previewStyles.includes('.pui-tabbar-preview__item.is-icon-only .pui-tabbar-preview__icon { transform: translateY(var(--pui-preview-space-step-4)); }'), 'H5 icon-only Tabbar lowers the icon with the same semantic navigation offset');
+assert(previewStyles.includes('.pui-tabbar-preview.is-all-icon-only .pui-tabbar-preview__item::after { bottom: var(--pui-preview-space-step-20); }'), 'H5 all-icon Tabbar raises one shared indicator baseline');
+assert(previewStyles.includes('.pui-tabbar-preview.is-all-icon-only .pui-tabbar-preview__icon { transform: translateY(var(--pui-preview-space-step-4)); }'), 'H5 all-icon Tabbar mirrors the shared icon offset');
 assert(!previewStyles.includes('pui-tabbar-preview--theme-tag .pui-tabbar-preview__item.is-active'), 'H5 tag theme must not reintroduce an active item Surface');
 assert(wxss.includes('.pui-tabbar__item-wrap--active .pui-tabbar__item { color: var(--pui-color-brand);'), 'native active item uses the semantic primary token');
 assert(wxss.includes('.pui-tabbar__item-wrap--active::after'), 'native active indicator applies without a themed item Surface');

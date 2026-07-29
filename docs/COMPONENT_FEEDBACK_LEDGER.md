@@ -2,7 +2,7 @@
 
 > 本文件由 `feedback/records/*.json` 自动生成，请勿手工编辑。工作流见 `docs/COMPONENT_FEEDBACK.md`。
 
-当前 438 条记录，数据更新至 2026-07-28：open 0、investigating 0、planned 0、needs-device 1、resolved 436；pending-user 249、accepted 182。
+当前 488 条记录，数据更新至 2026-07-29：open 0、investigating 0、planned 0、needs-device 2、resolved 483；pending-user 296、accepted 183。
 
 | ID | 范围 | 类型 | 严重度 | 状态 | 验收 | 问题 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -261,8 +261,8 @@
 | PUI-FB-0266 | indexes, button, preview-site | visual-layout | high | resolved | pending-user | Indexes H5 索引 Button 热区重叠且活动字符不可见 |
 | PUI-FB-0267 | indexes, preview-site | preview-parity | medium | resolved | pending-user | Indexes H5 滚到底部时短尾分组不会成为活动项 |
 | PUI-FB-0268 | indexes, button, preview-site | accessibility | high | resolved | pending-user | Indexes 隐藏状态层仍保留可键盘操作的滚动区与重试按钮 |
-| PUI-FB-0269 | indexes, preview-site | preview-parity | high | resolved | pending-user | Indexes 默认侧栏未按页面 fixed 浮动 |
-| PUI-FB-0270 | indexes, cell, preview-site | visual-layout | medium | resolved | pending-user | Indexes Cell 被固定侧栏预留区挤窄 |
+| PUI-FB-0269 | indexes, preview-site | preview-parity | high | wont-fix | not-required | 历史决定：Indexes 页面 fixed 侧栏已被有界组件轨取代 |
+| PUI-FB-0270 | indexes, cell, preview-site | visual-layout | medium | wont-fix | not-required | 历史决定：Indexes Cell 满宽覆盖方案已被安全轨取代 |
 | PUI-FB-0271 | navbar, preview-site, example, documentation | compatibility | high | resolved | pending-user | Navbar 未为微信原生胶囊保留真实安全区 |
 | PUI-FB-0272 | navigation-menu, badge, button, preview-site | preview-parity | high | resolved | pending-user | NavigationMenu Trigger 后缀 Badge 锚定到菜单根并被裁切 |
 | PUI-FB-0273 | steps, button, preview-site, preview-device | visual-layout | high | resolved | pending-user | Steps 概览把互斥示例纵向堆叠，无法快速筛选场景 |
@@ -414,7 +414,7 @@
 | PUI-FB-0424 | sticky, component-page-navbar | bug | high | resolved | pending-user | Sticky 独立页未计入组件 Navbar 高度 |
 | PUI-FB-0425 | navbar, preview-site | capability-gap | medium | resolved | pending-user | Navbar 缺少左右 Slot 组合与对称胶囊演示 |
 | PUI-FB-0426 | tabs, preview-site | visual-layout | high | resolved | pending-user | Tabs 在毛玻璃外观下把每个 Tab 渲染成独立按钮轮廓 |
-| PUI-FB-0427 | steps | visual-layout | medium | resolved | pending-user | Steps 连线未留出图标中心两侧间距 |
+| PUI-FB-0427 | steps | visual-layout | high | resolved | pending-user | Steps 纵向连线把完整指示器尺寸误作中心锚点 |
 | PUI-FB-0428 | indexes | visual-layout | medium | resolved | pending-user | Indexes 默认滚动预算不足影响连续浏览 |
 | PUI-FB-0429 | sidebar | visual-layout | medium | resolved | pending-user | Sidebar 选中态在原图标外追加 Check 造成重复信息 |
 | PUI-FB-0430 | field, input | bug | high | resolved | pending-user | Field 独立页输入控件未以可编辑单元格变体组合 |
@@ -427,7 +427,7 @@
 | PUI-FB-0437 | swiper, image | visual-layout | medium | resolved | pending-user | Swiper 演示缺少图片底板且错误重试未形成独立全宽行 |
 | PUI-FB-0438 | table, checkbox | visual-layout | medium | resolved | pending-user | Table 选择 Checkbox 被固定列边界塑造成独立容器 |
 | PUI-FB-0439 | brand-identity, icon | design-decision | medium | resolved | pending-user | 公司书写 Logo 以 poemcoder-mark 正式接入 pui-icon |
-| PUI-FB-0440 | miniprogram, cell, popup, tag, icon, top-loading, button | capability-gap | medium | resolved | pending-user | 我的页缺少更新公告且共享云服务边界未建立 |
+| PUI-FB-0440 | miniprogram, cell, popup, tag, icon, top-loading, button, area-chart | capability-gap | medium | resolved | pending-user | 我的页缺少更新公告且共享云服务边界未建立 |
 | PUI-FB-0441 | picker, popup, date-time-picker, preview-site, miniprogram | api-contract | high | resolved | pending-user | Picker / DateTimePicker 默认图标 Header 与 Classic 底部模式 |
 | PUI-FB-0442 | input, button, miniprogram-me, preview-site | api-contract | medium | resolved | pending-user | Input 尾部保存操作与清除按钮需要统一组件轨道 |
 | PUI-FB-0443 | top-loading, preview-site, miniprogram-advanced-page | api-contract | high | resolved | accepted | TopLoading 需要区分未知进度、精确零值与真实完成 |
@@ -439,11 +439,61 @@
 | PUI-FB-0449 | miniprogram-home, icon, collapsible | visual-layout | low | resolved | pending-user | 首页高级分区缺少语义标记且 premium 视觉基线偏低 |
 | PUI-FB-0450 | popup, top-loading | api-contract | high | resolved | pending-user | Popup 内的 TopLoading 错贴在 Content 顶部 |
 | PUI-FB-0451 | miniprogram, tabbar, scroll-area, card, empty, loading, top-loading | capability-gap | high | resolved | pending-user | 安装一级页需要由共享云驱动页面与未来 Skill 内容 |
-| PUI-FB-0452 | miniprogram, tabbar, card, avatar, input, button | visual-layout | medium | resolved | pending-user | 我的页资料版头不应重复展示昵称和编辑框 |
-| PUI-FB-0453 | miniprogram, card, input, cell, cell-group | visual-layout | medium | resolved | pending-user | 我的页服务 CellGroup 需要避让资料输入区的投影 |
+| PUI-FB-0452 | miniprogram, card, avatar, input, button | visual-layout | medium | resolved | pending-user | 我的页资料版头应使用大头像与满宽昵称两行布局 |
+| PUI-FB-0453 | miniprogram, card, input, cell, cell-group, scroll-area | visual-layout | medium | resolved | accepted | 我的页服务 CellGroup 应消费剩余空间靠近底部 |
 | PUI-FB-0454 | miniprogram, button, icon, tabbar | visual-layout | low | resolved | pending-user | 我的页客服入口应进入 Navbar 左 Slot |
 | PUI-FB-0455 | h5, miniprogram, npm, skill, documentation | ai-usability | high | resolved | accepted | 公共发布准备需要真实快速开始、Beta 边界与 AI Skill |
 | PUI-FB-0456 | config-provider, miniprogram, preview-site, switch | design-decision | medium | resolved | accepted | 用户外观菜单不应暴露含糊的总效果闸门 |
+| PUI-FB-0457 | miniprogram, dialog, cell, button | bug | high | needs-device | pending-user | 高级版商业授权未进入已发布落地页 |
+| PUI-FB-0458 | input, search, preview-site, documentation | api-contract | medium | resolved | pending-user | Input Clear 默认应只在真实聚焦时显示 |
+| PUI-FB-0459 | miniprogram, tabbar, cell, cell-group, navbar | design-decision | medium | resolved | pending-user | 第四 Tab 不是用户中心并应移除本地头像昵称资料链 |
+| PUI-FB-0460 | area-chart, bar-chart, waffle, preview-site, miniprogram | capability-gap | high | resolved | pending-user | 历史 Chart 文档例外不能继续替代真实图表组件 |
+| PUI-FB-0461 | area-chart, bar-chart, waffle, theme-tokens | visual-layout | medium | resolved | pending-user | 渐变到透明的图表需要保留终点与低透明单元可读性 |
+| PUI-FB-0462 | bar-chart, miniprogram, npm-dist | compatibility | critical | resolved | pending-user | BarChart 条件循环 WXML 阻断微信页面编译 |
+| PUI-FB-0463 | bar-chart, theme-tokens, preview-site | visual-layout | medium | resolved | pending-user | BarChart 默认配色缺少层次且零基线不可见 |
+| PUI-FB-0464 | miniprogram, me-page, area-chart, card, catalog-metadata | design-decision | medium | resolved | pending-user | Me 页使用真实版本总量接入 AreaChart 趋势仪表盘 |
+| PUI-FB-0465 | area-chart, preview-site, miniprogram, theme-tokens | capability-gap | high | resolved | pending-user | Area Chart 视觉参考需要转译为真实原生 AreaChart 组件 |
+| PUI-FB-0466 | area-chart, bar-chart, waffle, preview-site | capability-gap | medium | resolved | pending-user | 三类图表缺少统一且默认开启的优雅入场 API |
+| PUI-FB-0467 | navigation-menu | visual-layout | high | resolved | pending-user | NavigationMenu 根轨、双栏尾轨、Panel 与 Header 几何漂移 |
+| PUI-FB-0468 | breadcrumb | visual-layout | medium | resolved | pending-user | Breadcrumb 默认换行与错误态 Retry 轨道不符合路径阅读 |
+| PUI-FB-0469 | tabbar | visual-layout | medium | resolved | pending-user | Tabbar 混合文案时按单项调整短横造成基线跳动 |
+| PUI-FB-0470 | indexes | visual-layout | medium | resolved | pending-user | Indexes 当前索引被光学位移裁切且错误态缺少底部安全区 |
+| PUI-FB-0471 | field, input | visual-layout | medium | resolved | pending-user | Field 透明嵌入 Input 错误移除了输入内距与圆角 |
+| PUI-FB-0472 | textarea | bug | high | resolved | pending-user | Textarea 受控回写期间 autosize 高度闪动 |
+| PUI-FB-0473 | search, button | visual-layout | medium | resolved | pending-user | Search 取消操作尺寸过大抢占主层级 |
+| PUI-FB-0474 | select, picker | design-decision | low | resolved | pending-user | Select 与 Picker 独立页候选过少不足以验收展开层 |
+| PUI-FB-0475 | stepper, button, input | visual-layout | critical | resolved | pending-user | Stepper 自定义组件宿主绝对定位在真机只显示加号 |
+| PUI-FB-0476 | avatar, loading | capability-gap | medium | resolved | pending-user | Avatar 资源加载态不应由页面外部控制 |
+| PUI-FB-0477 | card, popover, button | api-contract | high | resolved | pending-user | Card 缺少固定右侧操作轨与溢出菜单 |
+| PUI-FB-0478 | image, loading | preview-parity | medium | resolved | pending-user | Image 独立页未展示加载与懒加载能力 |
+| PUI-FB-0479 | list, loading, button | bug | high | resolved | pending-user | List 加载更多和重试没有父级响应 |
+| PUI-FB-0480 | bubble, button | visual-layout | medium | resolved | pending-user | Bubble 展开操作未稳定右下对齐 |
+| PUI-FB-0481 | swipe-cell, button | visual-layout | high | resolved | pending-user | SwipeCell 毛玻璃下提前透出动作底色 |
+| PUI-FB-0482 | count-down | visual-layout | high | resolved | pending-user | CountDown 时分秒单位被数字盒裁切 |
+| PUI-FB-0483 | notice-bar, button, icon | visual-layout | high | resolved | pending-user | NoticeBar 关闭按钮层级和语义染色不正确 |
+| PUI-FB-0484 | dialog, popup, button, overlay | api-contract | critical | resolved | pending-user | Dialog 未正确复用 Popup 三分区并出现双重内距 |
+| PUI-FB-0485 | area-chart, bar-chart, waffle | bug | high | resolved | pending-user | AreaChart BarChart Waffle 重播动画没有重新触发 |
+| PUI-FB-0486 | miniprogram-home, collapsible, scroll-area | visual-layout | medium | resolved | pending-user | 首页手动打开目录分区后标题没有进入顶部阅读位置 |
+| PUI-FB-0487 | miniprogram-me, miniprogram-codepage, navbar, button, popup, dialog, config-provider | design-decision | medium | resolved | pending-user | Me 与安装一级页 Navbar 缺少一致的双 Slot 操作和外观入口 |
+| PUI-FB-0488 | miniprogram, me-page, area-chart, card, style-utilities | visual-layout | medium | resolved | pending-user | Me 仪表盘移除冗余版头并增加三列真实数据摘要 |
+| PUI-FB-0489 | collapsible, config-provider, miniprogram-home, preview-site | visual-layout | medium | resolved | pending-user | 首页展开目录分区未作为可配置外观 Surface |
+| PUI-FB-0490 | indexes, button, miniprogram | bug | high | resolved | pending-user | Indexes 长索引轨产生灰色滚动条并破坏触摸映射 |
+| PUI-FB-0491 | indexes, miniprogram | capability-gap | medium | resolved | pending-user | Indexes 按住拖动缺少当前索引放大提示 |
+| PUI-FB-0492 | indexes, miniprogram | bug | high | resolved | pending-user | Indexes 受控滚动回写被误判为再次定位 |
+| PUI-FB-0493 | indexes, miniprogram | bug | high | resolved | pending-user | Indexes 独立页 Retry 只改文案没有恢复闭环 |
+| PUI-FB-0494 | indexes, button, cell | visual-layout | medium | resolved | pending-user | Indexes 左轨与完整索引没有共享安全几何 |
+| PUI-FB-0495 | indexes | accessibility | medium | resolved | pending-user | Indexes disabled 同时剥夺只读滚动浏览 |
+| PUI-FB-0496 | indexes, config-provider | visual-layout | medium | resolved | pending-user | Indexes 内部不透明层遮蔽根毛玻璃 Surface |
+| PUI-FB-0497 | miniprogram, component-page, dynamic-message, navigation-menu, toast | design-decision | medium | resolved | pending-user | 组件详情页弱状态回显需要按语义分级而非全部替换为 DynamicMessage |
+| PUI-FB-0498 | dynamic-message, preview-site, miniprogram-advanced-page | visual-layout | medium | resolved | pending-user | DynamicMessage 状态装饰需要一束连续且不破坏 Surface 的流光 |
+| PUI-FB-0499 | select, picker, popup | visual-layout | medium | resolved | pending-user | Select 与 Picker 标题到选项内容重复叠加间距 Token |
+| PUI-FB-0500 | list | visual-layout | medium | resolved | pending-user | List 尾部追加条目瞬间撑开且 API 边界不清 |
+| PUI-FB-0501 | swipe-cell | visual-layout | high | resolved | pending-user | SwipeCell 打开一侧时相反动作层从容器边缘露出 |
+| PUI-FB-0502 | bubble | bug | medium | resolved | pending-user | Bubble 小程序折叠测量与受控回写导致展开状态失真 |
+| PUI-FB-0503 | count-down | api-contract | medium | resolved | pending-user | CountDown 缺少非闪烁的逐位数字滚动风格 |
+| PUI-FB-0504 | dynamic-message, preview-site, miniprogram-advanced-page | api-contract | medium | resolved | pending-user | DynamicMessage 需要组件私有阴影与毛玻璃覆盖 |
+| PUI-FB-0505 | skeleton | visual-layout | medium | resolved | pending-user | Skeleton 自定义 circle 被固定最小高度拉成椭圆 |
+| PUI-FB-0506 | area-chart, bar-chart, waffle | visual-layout | medium | resolved | pending-user | 图表演示数据变化幅度过小导致动画不明显 |
 
 ## PUI-FB-0001 · Style Utilities 缺少显式深色条件变体
 
@@ -2107,15 +2157,15 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0062-avatar-display-leaf-api-contract.json`
 - 范围：`component` / `avatar`、`documentation`、`example`
-- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-19
+- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-29
 - 用户目标：Avatar 应快速表达图片、Icon、文字或 Slot 头像，不把宿主点击、禁用状态、重复图片别名和可由全局 Token 管理的动效暴露成头像自身 API。
 - 实际问题：旧合同把图片来源、宿主交互、禁用门禁、加载诊断和私有动画配置混在同一组件内，基础用法和调用职责都不清晰。
-- 决策：公开合同收敛为 src/text/alt/icon/shape/size/bordered/hideOnLoadFailed/useSlot/ariaLabel/reduceMotion 11 Props、error 1 Event、default 1 Slot、0 业务 Methods；删除 image/clickable/disabled/duration/easing 和 click/load。
-- 理由：头像的独立用户任务是稳定展示身份；点击、禁用、loading、selected 和业务反馈属于宿主，固定 500ms/1ms 动效可避免重复入口并保持跨端一致。
+- 决策：公开合同收敛为 src/text/alt/icon/shape/size/bordered/hideOnLoadFailed/lazy/loading/useSlot/ariaLabel/reduceMotion 13 Props、error 1 Event、default 1 Slot、0 业务 Methods；loading 只强制内部等待视觉，删除 image/clickable/disabled/duration/easing 和 click/load。
+- 理由：头像的独立用户任务是稳定展示身份；图片资源 Loading 与 lazy 属于 Avatar 内部图片职责，宿主业务的点击、禁用、loading、selected 和反馈仍属于外层组件。
 
 AI 必须遵守：
 
-- 禁止恢复 image 别名、clickable/disabled、Avatar 自身 click/load 或私有 duration/easing。
+- 禁止恢复 image 别名、clickable/disabled、Avatar 自身 click/load 或私有 duration/easing；loading 只能驱动组件内部 PUI Loading。
 - 基础用法只写最小 Avatar WXML，不绑定 error；完整 error 只进入 API Events 或真实失败专项示例。
 - 需要 Badge 时使用外层组合，需要点击时使用 PUI Button/Cell 包裹，不新增重复透传 Prop。
 - 图片 load 只改变内部 opacity；只有 error 对消费者有独立处理价值。
@@ -2134,17 +2184,18 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0063-avatar-preview-runtime-parity.json`
 - 范围：`component` / `avatar`、`preview-site`、`documentation`
-- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-19
+- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-29
 - 用户目标：Avatar 官网必须真实镜像 WXML/WXSS，图片成功、失败、隐藏动效、尺寸和全局视觉开关都应可在网页中直接验收。
 - 实际问题：旧镜像的尺寸、完成态、视觉 Token 和交互反馈分别与原生或标准概览规则冲突。
-- 决策：统一原生/H5 三档尺寸和固定动效；为所有演示图片补缓存完成检测；失败隐藏在计时器完成后才应用 hidden；Avatar 边线和阴影改用共享 Token；宿主 Button 点击直接更新自身标签。
+- 决策：统一原生/H5 三档尺寸和固定动效；恢复 Avatar 真实图片运行时，非空 src 先显示内部 Loading，缓存 load/error 完成后关闭自动等待；loading=true 时在资源完成后仍持续显示内部 Loading；lazy 映射浏览器 loading；失败隐藏在计时器完成后才应用 hidden；宿主 Button 点击直接更新自身标签。
 - 理由：这些变化不扩张 Avatar API，但让真实页面、原生安装端和全局视觉合同读取同一语义。
 
 AI 必须遵守：
 
 - H5 small/medium/large 固定镜像 28/40/56px，禁止建立第二套尺寸。
-- hideOnLoadFailed 必须先播放 180ms 或 1ms 退场，再隐藏或卸载；hidden 完成态必须通过计算样式验证。
+- hideOnLoadFailed 必须先播放 500ms 或 1ms 退场，再隐藏或卸载；hidden 完成态必须通过计算样式验证。
 - 缓存 image 必须同时处理 complete/naturalWidth，不能假设 listener 一定先于 load/error。
+- 非空 src 必须先显示 Avatar 内部 Loading，真实 load/error 后关闭自动等待；loading=true 只强制内部 Loading，页面不得另拼 Spinner。
 - 标准概览中的可见交互结果放在真实宿主组件内，不恢复会被归一化删除的事件诊断卡。
 
 验证与遗留风险：
@@ -7050,11 +7101,11 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0268-indexes-hidden-state-focus.json`
 - 范围：`component` / `indexes`、`button`、`preview-site`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-23
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
 - 用户目标：Indexes 在 content、loading、error、empty 间切换时，键盘和读屏只能接触当前真实状态，不能操作视觉上已经隐藏的内容。
 - 实际问题：隐藏层只在视觉和指针层面不可见，滚动区与 Retry Button 仍可能被键盘聚焦，形成不可见操作和读屏噪音。
-- 决策：H5 为非当前内容、导航和状态层增加 inert 与 aria-hidden，并把隐藏滚动区 tabindex 改为 -1；原生 Retry 增加 stateType 锁定。
-- 理由：保留节点和 500ms 视觉状态结构不变，同时把键盘与辅助技术的可操作范围限制到当前真实状态。
+- 决策：H5 为非当前内容、导航和状态层增加 inert 与 aria-hidden，并把隐藏滚动区 tabindex 改为 -1；原生 Retry 增加 stateType 锁定，0.1.2 原生正文和索引轨也同步 aria-hidden。
+- 理由：保留节点和 500ms 视觉状态结构不变，同时把键盘与辅助技术的可操作范围限制到当前真实状态；原生没有 inert 时至少保持状态语义同源。
 
 AI 必须遵守：
 
@@ -7070,21 +7121,21 @@ AI 必须遵守：
 - 验证：`2026-07-23 微信 CLI build-npm：IDE server 已启动，touristappid 不存在，code 10；未生成或伪造 miniprogram_npm`
 - 真机/兼容风险：微信 WXML 没有浏览器 inert；合法 AppID 真机仍需验证 aria-hidden、disabled Button、scroll-view 与读屏组合行为。
 
-## PUI-FB-0269 · Indexes 默认侧栏未按页面 fixed 浮动
+## PUI-FB-0269 · 历史决定：Indexes 页面 fixed 侧栏已被有界组件轨取代
 
 - 原始记录：`feedback/records/pui-fb-0269-indexes-fixed-sidebar.json`
 - 范围：`component` / `indexes`、`preview-site`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-23
+- 状态：`wont-fix`，用户验收：`not-required`，更新：2026-07-28
 - 用户目标：Indexes 默认索引入口应固定浮动在页面视口中央，内容滚动时侧栏保持可见且不随列表内容流移动。
-- 实际问题：原生侧栏仅 absolute 在组件卡片内部；H5 也按组件根绝对定位，未记录真实页面 fixed 语义。
-- 决策：原生 pui-indexes__bar 改为 fixed、top:50%、左右边界和垂直居中；H5 保持 absolute 但改为 PreviewDevice 内 top:50% 的边界受限 fixed 视觉镜像。
-- 理由：小程序必须复现页面级可持续可见的 Indexes 入口，官网则不能让 fixed 逃出手机预览设备；两端在各自运行时保留同一产品语义。
+- 实际问题：页面级 fixed 曾短暂实现，但与 PoemUI 的嵌入式固定高度、多个组件同页和 PreviewDevice 边界冲突；当前共享源码已恢复组件内 absolute 有界轨。
+- 决策：本条的页面 fixed 方案不再作为当前实现；由 PUI-FB-0409 与 0.1.2 动态轨决定取代：侧栏 absolute 定位于组件 body、垂直居中并被根裁切。
+- 理由：有界轨才能保证独立组件可组合、不会占用 Navbar 或其他实例；长轨通过动态几何解决，不再依赖页面 fixed。
 
 AI 必须遵守：
 
-- 对照 TDesign 时要分别确认 sidebar 和 anchor 的定位语义，不能把页面 fixed 简化成组件 absolute。
-- 小程序 fixed 组件必须检查页面滚动、安全区和 touch 命中，H5 fixed 预览必须检查设备裁切。
-- 固定定位改变属于 API/预览合同变化，必须同步原生 WXSS、H5 CSS、专项测试、Ledger 和产物。
+- 读取本条时必须同时读取 PUI-FB-0409 和 docs/components/INDEXES.md，禁止恢复页面 fixed。
+- TDesign 页面级结构只能作为参考，PoemUI 嵌入式组件的边界以当前合同为准。
+- 长轨密度由动态 item geometry 解决，不用 fixed 或嵌套滚动逃避。
 
 验证与遗留风险：
 
@@ -7093,20 +7144,21 @@ AI 必须遵守：
 - 验证：`2026-07-23 微信 CLI build-npm：IDE server 已启动，但 touristappid 不存在（code 10）；未生成或伪造 miniprogram_npm`
 - 真机/兼容风险：微信真机仍需验证页面 fixed 与页面滚动、系统安全区、横竖屏、touchmove 和样式隔离的组合行为。
 
-## PUI-FB-0270 · Indexes Cell 被固定侧栏预留区挤窄
+## PUI-FB-0270 · 历史决定：Indexes Cell 满宽覆盖方案已被安全轨取代
 
 - 原始记录：`feedback/records/pui-fb-0270-indexes-cell-full-width.json`
 - 范围：`component` / `indexes`、`cell`、`preview-site`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-23
+- 状态：`wont-fix`，用户验收：`not-required`，更新：2026-07-28
 - 用户目标：Indexes 内的 Cell 应撑满内容列，固定索引栏作为浮层存在，不应额外压缩列表宽度。
-- 实际问题：修复前 H5 PreviewDevice 中 Cell 为 279px，而滚动内容列为 322px，右侧存在 32px 预留空白。
-- 决策：移除 Indexes 滚动容器针对左右侧栏的 32px padding，让 Cell 撑满内容列；侧栏继续作为独立 fixed/PreviewDevice bounded 浮层。
-- 理由：fixed 浮层不应改变内容列盒模型；视觉遮挡风险由侧栏自身的独立命中区承担，而不是把所有 Cell 压窄。
+- 实际问题：移除全部预留曾让 Cell 视觉更宽，但后续 390px battle 证明右侧 Badge/操作会进入有界索引轨；当前实现重新建立动态安全轨。
+- 决策：本条的零预留方案不再作为当前实现；Cell 改为充满扣除动态 rail-width + normal gap 后的安全内容列，sticky heading 使用同一避让。
+- 理由：组件内有界轨与内容共享同一平面，必须显式保护 Badge、箭头、标题和触摸命中区；动态宽度只扣除真实轨道，不恢复固定 32px 魔法数。
 
 AI 必须遵守：
 
-- 先区分浮层命中区和内容布局区；fixed sidebar 不应成为列表的 grid/flex 子项。
-- Cell 满宽指充满内容列，同时保留 PreviewDevice 和滚动条的真实安全边界。
+- 读取本条时必须同时读取 PUI-FB-0409/0494，禁止删除当前动态安全轨。
+- Cell 满宽指充满扣除真实索引轨后的安全内容列。
+- 标题和条目必须消费同一个 rail-width，不能各写一套 padding。
 
 验证与遗留风险：
 
@@ -9871,16 +9923,17 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0373-appearance-eligibility-matrix-and-effects-gate.json`
 - 范围：`global` / `config-provider`、`input`、`search`、`combobox`、`popup`、`sheet`、`action-sheet`、`tabbar`、`navbar`、`image`、`collapsible`、`preview-site`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-26
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
 - 用户目标：深浅色、边框、阴影、毛玻璃、大圆角、等距和渐变在全部小程序组件页与 H5 中应遵守同一组件语义；非 Surface 组件不能因为全局阴影开关获得外投影，关闭总效果也不能破坏布局或已保存偏好。
 - 实际问题：scripts/appearance-contract-matrix.js 与专项测试现覆盖 70 个根组件：完整搬迁新增的布局、表单、数据展示和高级组件按 Surface 角色获得资格；Input 同时保留独立字段 Surface 和 Search/Combobox 嵌入规则。
-- 决策：以 70 根矩阵作为小程序与 H5 的资格真源；独立 Surface 才能消费外投影、毛玻璃和语义圆角，条目/叶子与布局根保持无外投影；effectsEnabled=false 只暂停 shadow/frost/largeRadius，有效边框、主题、等距、布局和持久化单项保持独立。
-- 理由：把视觉开关的影响范围从“所有节点”收敛到真实组件语义，避免 Cell/Icon/Image/Collapsible 等展示叶子被错误装饰，也避免关闭效果时发生布局漂移。
+- 决策：以真实根矩阵作为小程序与 H5 的资格真源；独立 Surface 才能消费外投影、毛玻璃和语义圆角，条目/叶子与布局根保持无外投影；Collapsible 默认扁平，只有显式 shadow=true 且 open 时才提升为 card Surface；effectsEnabled=false 只暂停 shadow/frost/largeRadius，有效边框、主题、等距、布局和持久化单项保持独立。
+- 理由：把视觉开关的影响范围从“所有节点”收敛到真实组件语义，同时允许页面明确声明展开后的 Collapsible 已成为独立 Surface；这样关闭态和未声明实例不产生额外层级，展开态又能与外观 Store 同步。
 
 AI 必须遵守：
 
 - 新增真实 pui-* 根组件前先更新外观资格矩阵和对应专项测试。
-- 非独立 Surface 的 Cell、Icon、Image、Collapsible、Badge、Tag、Progress、Skeleton 不得因全局 shadow 获得外投影。
+- 非独立 Surface 的 Cell、Icon、Image、Badge、Tag、Progress、Skeleton 不得因全局 shadow 获得外投影。
+- Collapsible 默认保持扁平；只有消费者显式 shadow=true 且组件 open 时才能消费 card 阴影。
 - effectsEnabled=false 不得清除 shadow/frost/radius 的持久化值，也不得改变 theme/border/equalSpacing。
 - Navbar、Tabbar、Popup、Sheet、ActionSheet 的阴影方向必须由真实附着边决定。
 
@@ -10790,17 +10843,18 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0409-indexes-long-list-and-active-letter.json`
 - 范围：`component` / `indexes`、`button`、`cell`、`miniprogram`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-27
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
 - 用户目标：Indexes 列表需要足够长以验证滚动，右侧索引当前项必须清楚、居中且不与列表内容冲突。
 - 实际问题：分组过短，活动字母部分落出选中底色，列表右侧内容会进入索引轨；末端程序定位还会被滚动回调覆盖为最后一组。
-- 决策：独立页扩展为十四分组；小程序 Button 使用 content prop、内联紧凑几何和 Token 化光学校正；索引栏限制在组件 body，条目内容按左右位置预留索引轨并隐藏重复原生滚动条；程序定位保护覆盖 500ms 动画与 120ms 收敛余量。
-- 理由：保留 PUI Button 的真实交互与可访问名称，同时让紧凑索引视觉和内容区各自拥有明确几何。
+- 决策：独立页保持十四分组；索引栏限制在组件 body，Button 与轨道使用动态同宽同高几何，标题和条目按左右位置预留同一 rail width；程序定位保护覆盖 500ms 动画与 120ms 收敛余量。本决定明确取代 PUI-FB-0269 的页面 fixed 和 PUI-FB-0270 的零预留方案。
+- 理由：保留 PUI Button 的真实交互与可访问名称，同时让有界轨、标题和内容区共享明确几何；长轨通过动态等分而不是嵌套滚动解决。
 
 AI 必须遵守：
 
 - Indexes 独立页至少十二个分组。
-- 活动字母必须在 42rpx×36rpx 轨内黑底白字居中。
-- 索引轨不得覆盖 Badge、箭头或内容操作区。
+- 42rpx×36rpx 是单字符轨的宽度与高度上限，长轨按可用高度动态等分。
+- 索引轨不得覆盖 Badge、箭头、标题或内容操作区。
+- 当前合同取代页面 fixed 与零内容预留的历史决定。
 
 验证与遗留风险：
 
@@ -11088,10 +11142,10 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0421-miniprogram-me-account-services-page.json`
 - 范围：`component` / `miniprogram`、`tabbar`、`card`、`avatar`、`input`、`button`、`cell`、`toast`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-27
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
 - 用户目标：把“我的”页面保持为克制可用的账户页：可修改昵称并访问真实服务入口，同时彻底删除 OpenID 展示、获取、兼容读取和复制链路。
 - 实际问题：昵称与服务入口已经可用，但 OpenID Cell、页面状态、剪贴板方法、App.globalData/旧存储读取和 setOpenId 桥接仍存在。
-- 决策：保留真实 pages/me/index 与 nickname Store，但删除 OpenID Cell、页面状态、脱敏函数、剪贴板动作、App.globalData/旧存储读取和 setOpenId 桥接；下一次昵称保存只写入 nickname。隐私和关于诗上继续调用微信真实平台能力；高级版商业授权使用“查阅详情”语义并明确提示详情正在准备中，订单在真实查询链完成前继续明确反馈未开放。服务 CellGroup 相对资料卡额外使用一个 --pui-section-gap，为资料 Input 与 Surface 阴影保留稳定安全空间；客服入口投影到 Navbar 最左侧 left Slot，以 text/transparent/small/circle/iconOnly 的透明 PUI Button 保留 open-type=contact。
+- 决策：保留真实 pages/me/index 与 nickname Store，但删除 OpenID Cell、页面状态、脱敏函数、剪贴板动作、App.globalData/旧存储读取和 setOpenId 桥接；下一次昵称保存只写入 nickname。隐私和关于诗上继续调用微信真实平台能力；高级版商业授权保留“查阅详情”语义，其后续 Dialog → WebView 真实外链由 PUI-FB-0457 接管，订单在真实查询链完成前继续明确反馈未开放。资料版头使用大头像与满宽昵称 Input 两行结构；服务 CellGroup 以 margin-top:auto 消费短屏正文剩余空间，并由正文 --pui-section-gap 保证长内容下的最小分区距离；客服入口投影到 Navbar 最左侧 left Slot，以 text/transparent/small/circle/iconOnly 的透明 PUI Button 保留 open-type=contact。
 - 理由：用户已经撤销客户端 OpenID 入口；完整删除读取与桥接可以避免敏感身份残留和后续 Agent 误恢复。旧存储不做主动破坏性清理，但不再读取，保存昵称时资料对象自然收敛为单字段。
 
 AI 必须遵守：
@@ -11100,7 +11154,8 @@ AI 必须遵守：
 - user-profile Store 只公开 restore 和 setNickname，持久化对象只包含 nickname。
 - 微信隐私合同和跨小程序跳转必须使用平台 API，并由失败回调反馈，不能以静态页面或成功文案替代。
 - 客服使用 Navbar 最左侧 left Slot 的透明 PUI IconButton，保留 open-type=contact；capsule=true 时禁用 right Slot，leftBtn 不能替代平台开放能力。
-- 服务 CellGroup 与资料卡的额外间距使用 --pui-section-gap；它同时为资料 Input/Surface 阴影留出稳定空间，不得增加页面魔法数或第二层 Surface。
+- 资料区使用大头像与满宽昵称 Input 两行结构；服务 CellGroup 以 margin-top:auto 消费正文剩余空间，并由正文 --pui-section-gap 保证最小分区距离，不得用固定 vh padding、页面魔法数或第二层 Surface 伪造底部对齐。
+- 头像昵称与本地 user-profile 的当前产品规则已由后续 PUI-FB-0459 取代；不得从本历史记录恢复资料区。
 - 没有支付、订单或登录后端时明确显示未开放，不建立假路由、假数据或假成功。
 - 应用一级目的地优先组合 PUI 组件；应用页面不伪造成 H5 标准组件页。
 
@@ -11118,7 +11173,7 @@ AI 必须遵守：
 - 真机/兼容风险：微信客服会话依赖小程序后台客服配置；模拟器属性存在不等于真机客服链路已经可用，仍需 iOS/Android 点击、进入、返回和失败回调验收。
 - 真机/兼容风险：小程序深色及边框、阴影、毛玻璃、大圆角、等距组合仍未在本页逐项运行验证。
 - 真机/兼容风险：未来若新增登录，必须另建服务端身份合同，不能恢复本地昵称 Store 中的 OpenID 字段。
-- 真机/兼容风险：高级版商业授权详情与订单服务尚未交付；授权 Cell 使用“查阅详情”语义并明确提示正在准备中，订单继续提供未开放反馈。
+- 真机/兼容风险：商业授权 WebView 的业务域名与真机链路由 PUI-FB-0457 跟踪；订单服务继续提供未开放反馈。
 - 真机/兼容风险：iOS/Android 真机仍未验证资料旧对象在用户下一次保存昵称后自然收敛为单字段。
 
 ## PUI-FB-0422 · 首页从组件页返回后分区锚点覆盖原阅读位置
@@ -11216,44 +11271,58 @@ AI 必须遵守：
 - 验证：`node scripts/test-tabs.js`
 - 真机/兼容风险：WXSS Button 样式隔离仍需真机确认。
 
-## PUI-FB-0427 · Steps 连线未留出图标中心两侧间距
+## PUI-FB-0427 · Steps 纵向连线把完整指示器尺寸误作中心锚点
 
 - 原始记录：`feedback/records/pui-fb-0427-steps-connector-center-gap.json`
 - 范围：`component` / `steps`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-27
-- 用户目标：步骤 1、2、3 的连线位于图标垂直中心且两端保留视觉间距。
-- 实际问题：连线锚点沿用旧尺寸，视觉上直接连接图标。
-- 决策：水平和垂直连线均从指标中心偏移后的安全点开始与结束。
-- 理由：数字指标保持独立可读，连线只表达步骤关系。
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Steps 的纵向连线必须精确落在指示器中心，并在当前与下一指示器外缘之间保留相等间隙。
+- 实际问题：小程序旧规则以 left=step-22 把 44rpx 完整尺寸作为中心，纵向线落在右边缘；H5 虽使用 11px 中心，但纵向起止与小程序使用不同魔法数，旧测试没有校验真实数值关系。
+- 决策：Steps 根声明 indicator size/center、connector gap、vertical item gap、dot size/center/offset 内部别名；default/dot 与 horizontal/vertical 统一按指示器外缘加减连接间隙，纵向线以 translateX(-50%) 抵消线宽。H5 使用同名半比例别名与公式。
+- 理由：把几何关系表达为可复用语义并让测试验证数值关系，能同时消除错误锚点、两端 gap 漂移和小程序/H5 魔法数分叉。
 
 AI 必须遵守：
 
-- 不要让 connector 直接贴住数字图标。
+- 不得把完整 indicator size 直接写入纵向 left；默认 44rpx 指示器的中心是 22rpx。
+- default/dot、horizontal/vertical 必须共享中心、尺寸和 connector gap 语义，H5 按半比例镜像。
+- 几何测试必须读取 Token 数值并验证中心和线段端点，不能只检查某个 Token 字符串存在。
+- 页面不得覆盖 Steps connector 坐标；所有修复必须进入组件、H5 镜像、合同和分发产物。
 
 验证与遗留风险：
 
-- 验证：`node scripts/test-steps.js`
-- 真机/兼容风险：不同字体与 rpx 回流仍需真机确认。
+- 验证：`node scripts/test-steps.js：通过，验证真实 Token 数值、default/dot 横纵公式、对称 gap、跨端 1px≈2rpx 与五份安装产物一致性。`
+- 验证：`npm run miniprogram:build：通过，生成 71 个组件目录。`
+- 验证：`npm run example:install：通过，H5 构建与本地 tarball 示例安装完成。`
+- 验证：`微信 CLI build-npm --project miniprogram：通过，使用当前 AppID，耗时 1275ms、warnings=[]。`
+- 验证：`Steps 源码、miniprogram_dist、_example/node_modules、miniprogram/node_modules、miniprogram_npm 五份 WXSS SHA-256 均为 4fa7f8a6c98c64db23e8969e31110a311f5d43293b9f16450c4537788a6272d5。`
+- 验证：`node scripts/test-preview-css-token-contract.js：通过。`
+- 验证：`node scripts/test-non-elevated-shadow-semantics.js：通过。`
+- 验证：`npm run feedback:generate && npm run feedback:check：通过，生成并校验 440 条记录。`
+- 验证：`npm run pack:check：通过，0.1.0 dry-run 为 545 files / 348.3kB tarball / 1.7MB unpacked。`
+- 验证：`npm run check：Steps 之前的 precheck 全部通过，完整 check 被本次未修改且 HEAD 内已不一致的首页版头断言 scripts/test-miniprogram-home.js:91 阻断；页面真实文案为“面向 AI 的原生小程序组件库。”，测试仍要求旧文案“原生小程序组件库，按需组合。”。`
+- 真机/兼容风险：微信开发者工具已完成 390px 视觉复核；自动化 SelectorQuery 不能穿透组件内部，因此没有把静态公式伪报为小程序运行态 px 量测。
+- 真机/兼容风险：仓库完整 check 存在本次范围外的首页版头文案基线断言漂移，未越界修改首页或其测试。
+- 真机/兼容风险：iOS/Android 真机的 1rpx 抗锯齿、rpx 舍入、系统字体回流、触摸与读屏仍需复核。
 
 ## PUI-FB-0428 · Indexes 默认滚动预算不足影响连续浏览
 
 - 原始记录：`feedback/records/pui-fb-0428-indexes-scroll-budget.json`
 - 范围：`component` / `indexes`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-27
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
 - 用户目标：Indexes 列表滚动区域提高约 30%，便于用户连续浏览。
-- 实际问题：默认和页面高度为 640rpx 或更低，连续浏览空间不足。
-- 决策：默认与独立页主示例统一使用 680rpx，H5 以同一 rpx 镜像。
-- 理由：增加可浏览内容而不改变索引导航 API。
+- 实际问题：公共 Prop 已改为 680rpx，但运行时 clamp 的非法值 fallback 仍为旧 640rpx，形成两个默认真相源。
+- 决策：默认、非法值 fallback 与独立页主示例统一使用 680rpx；H5 0.1.2 同源规整列入跨端同步债务。
+- 理由：单一默认值避免属性面板、原生运行时和页面演示在异常输入时改变几何。
 
 AI 必须遵守：
 
-- 调整高度时同步小程序与 H5 默认值。
+- 调整 height 默认值时同步 Prop、clamp fallback、小程序与 H5。
+- 默认 680rpx 必须同时验收正文滚动和 A–Z 轨道。
 
 验证与遗留风险：
 
-- 验证：`node scripts/test-indexes.js`
-- 验证：`npm run example:install`
-- 真机/兼容风险：微信惯性滚动和 sticky 标题仍需真机确认。
+- 验证：`node scripts/test-indexes.js：通过`
+- 真机/兼容风险：微信惯性滚动、极低 height、A–Z rpx 取整和 sticky 标题仍需真机确认。
 
 ## PUI-FB-0429 · Sidebar 选中态在原图标外追加 Check 造成重复信息
 
@@ -11482,11 +11551,11 @@ AI 必须遵守：
 ## PUI-FB-0440 · 我的页缺少更新公告且共享云服务边界未建立
 
 - 原始记录：`feedback/records/pui-fb-0440-miniprogram-update-announcement-shared-cloud.json`
-- 范围：`component` / `miniprogram`、`cell`、`popup`、`tag`、`icon`、`top-loading`、`button`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-27
+- 范围：`component` / `miniprogram`、`cell`、`popup`、`tag`、`icon`、`top-loading`、`button`、`area-chart`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
 - 用户目标：在我的页增加更新公告 Cell，点击后使用 Popup 陈列真实更新内容；接入共享环境 poemcoder-1gkbkid139b08f45 的 pui_updatelog，并突出版本、日期和组件改动。
 - 实际问题：页面没有公告能力，共享云服务的环境共享、跨主体接入和权限分区也没有文档合同。
-- 决策：新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Popup 使用唯一滚动 Content，以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。后续 PUI 云集合统一使用 pui_ 前缀。
+- 决策：新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Popup 使用唯一滚动 Content，以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。0.1.1 公告按稳定 _id/version 更新同一记录，云端写入与包内 fallback 使用同一 schema/content；最终文案压缩为高级图表、导航、表单、展示与反馈、小程序五组，Me 页内容同步为 AreaChart 的 71→74 真实趋势。微信 Canvas 会穿过普通浮层 Surface，Popup/Dialog 可见期间由 Me 页面用 wx:if 卸载图表，关闭后恢复。工作树版本不冒充 npm Registry 已发布。后续 PUI 云集合统一使用 pui_ 前缀。
 - 理由：共享环境和集合已经由用户确认，直接使用微信环境共享可以复用现有生产资源；独立 Cloud 实例避免污染默认环境，稳定 Schema 与缓存保证弱网可读，来源字段防止 fallback 被误报为云端成功。
 
 AI 必须遵守：
@@ -11495,10 +11564,13 @@ AI 必须遵守：
 - Popup Content 是唯一公告滚动区，Footer Button 通过 block 使用全宽操作轨。
 - 公告请求使用受控 TopLoading；只有真实云端成功进入 success，缓存、本地回退和异常都回到 idle，不得保留居中 Spinner 或用停止加载推断成功。
 - 公告 Service 使用独立 Shared Cloud，返回副本并保持稳定 Schema；远程失败时不得把缓存或包内回退冒充刚从云端刷新。
+- 新公告必须先按 version/_id 查重，再以 documents 数组写入并回读；包内 fallback 与云端保持同形。
+- 公告只写入可由源码、版本差集和验收证明的改动；本地 package 版本不等于 npm Registry 已发布。
 - 所有 PoemUI 专属云集合使用 pui_ 前缀；更新公告固定使用 pui_updatelog。
 - 同主体小程序可评估微信云开发环境共享；跨主体或多端使用独立 HTTPS/CloudBase HTTP 服务。
 - 共享用户、授权或订单必须由服务端按可信 AppID 和用户身份分区，不能信任客户端传入的 appId/openid。
 - 没有环境 ID、主体授权和部署证据时不得宣称云服务已经接入。
+- 页面下方存在微信 Canvas 时，必须实际打开浮层检查原生绘制层；宿主 hidden 若仍穿透，应在浮层可见期间卸载 Canvas，并验证关闭后恢复。
 
 验证与遗留风险：
 
@@ -11508,9 +11580,12 @@ AI 必须遵守：
 - 验证：`node scripts/test-tag.js：通过`
 - 验证：`cloud_db_write_doc：insertedCount=1，insertedIds=[pui-v0-1-0-20260727]`
 - 验证：`cloud_db_read_doc：写后回读唯一文档成功`
+- 验证：`cloud_db_read_doc version=v0.1.1：写前 total=0；cloud_db_write_doc documents[]：insertedCount=1、insertedIds=[pui-v0-1-1-20260728]；按 _id 写后回读 total=1`
+- 验证：`cloud_db_write_doc：requestId=8f382a5a-978d-40b7-b244-7989f586fce8，matchedCount=1、modifiedCount=1；cloud_db_read_doc：requestId=e7d485f7-6b24-4a70-af42-a78d0af92fb2，按稳定 _id 回读 total=1 与五组精简 highlights`
 - 验证：`微信开发者工具 pages/me/index：announcementSource=cloud、announcementSyncError 为空，版本与五组 highlights 来自共享集合`
-- 真机/兼容风险：390x844 微信模拟器已验证 Popup 视觉层级；长公告真实滚动边界和 Footer 点击仍需回归。
-- 真机/兼容风险：深浅色、边框、阴影、毛玻璃、大圆角、等距组合及 iOS/Android 真机仍待验证。
+- 验证：`node scripts/test-miniprogram-me-page.js：通过；锁定五组公告、云端 Schema、Popup 三段结构、AreaChart 浮层避让和关闭恢复`
+- 真机/兼容风险：390x844 微信模拟器已验证 Popup 视觉层级、长公告 scrollTop=700、Footer 固定和关闭回写；iOS/Android 真机的 Canvas 合成与触摸滚动仍待验证。
+- 真机/兼容风险：Me 页浅色公告与深色果味 AreaChart 已分别验证；深色公告 Popup、边框、等距组合与系统低动效仍待真机回归。
 - 真机/兼容风险：开发者工具已验证调用方能读 published 文档；客户端禁止读取草稿、写入、更新和删除的完整安全规则仍需在资源方控制台专项验收。
 - 真机/兼容风险：共享环境的配额、费用、日志、告警和备份仍需在资源方控制台治理。
 
@@ -11620,7 +11695,8 @@ AI 必须遵守：
 AI 必须遵守：
 
 - 进场必须是 compact 180ms 后 expanding 320ms；退场必须先 collapsing 320ms 再 leave-compact 180ms。
-- compact 只显示 PUI Icon/Loading 与 title；message、Action、Close 和 accent 只能在完整面板阶段出现。
+- compact 只显示 PUI Icon/Loading 与 title；message、Action、Close 只能在完整面板阶段出现。主题 edge flow 从 expanding 开始独立播放一次 1500ms，可短暂跨入 visible，但不得中断重启或形成常驻彩边。
+- edge flow 与状态 Icon 共用当前 PUI 语义色：loading 中性灰、info 信息蓝、success 成功绿、warning 警告橙、error 危险红；不得固定为单一颜色。
 - 不得用单段 scale 缩放标题正文，不得 transition height:auto 或用 display:none 制造瞬移。
 - 同 key 更新不得销毁当前节点或重播完整入场。
 - 消费者未传 icon 时主题变化必须同步刷新默认 PUI Icon。
@@ -11842,53 +11918,53 @@ AI 必须遵守：
 - 验证：`微信开发者工具 automation_evaluate：调用方 published 查询 pui-codepage 返回 1 条，title=安装。`
 - 真机/兼容风险：iOS/Android 真机的共享环境鉴权、弱网、字体、读屏、Tabbar 触摸和外观组合仍未验证。
 
-## PUI-FB-0452 · 我的页资料版头不应重复展示昵称和编辑框
+## PUI-FB-0452 · 我的页资料版头应使用大头像与满宽昵称两行布局
 
 - 原始记录：`feedback/records/pui-fb-0452-me-profile-inline-nickname-editor.json`
-- 范围：`component` / `miniprogram`、`tabbar`、`card`、`avatar`、`input`、`button`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-27
-- 用户目标：优化“我的”Tab 的版头，将昵称展示与编辑昵称合并为更紧凑、清晰的一组资料信息。
-- 实际问题：静态昵称摘要与编辑 Input 分两行，造成重复信息与过高的资料版头。
-- 决策：保留 Card、Avatar、Input、Input suffix IconButton 与 user-profile Store；删除静态昵称和身份副标题，改为 Avatar 左侧、带 label 的 Input 右侧的一行资料编辑布局。
-- 理由：昵称是唯一资料字段，单一可编辑 Field 同时承担展示和编辑，减少高度并保留清晰字段语义。
+- 范围：`component` / `miniprogram`、`card`、`avatar`、`input`、`button`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：将“我的”页资料版头改为居中大头像和满宽昵称编辑区两行排列，同时继续只保留一个真实昵称字段。
+- 实际问题：资料卡此前将 Avatar 与 Input 横向并排，头像视觉层级和昵称可用宽度不足。
+- 决策：保留 Card、Avatar、Input、Input suffix IconButton 与 user-profile Store，改为 size=large Avatar 居中在第一行、唯一昵称 Input 满宽位于第二行。
+- 理由：使用 Avatar 已公开的最大尺寸和纵向组合即可强化身份层级，不需要扩张 Avatar API 或写页面私有尺寸。
 
 AI 必须遵守：
 
-- 页面资料行的 Avatar 只能展示，昵称编辑由唯一 PUI Input 承担。
-- 保存必须继续通过 Input suffix Slot 的 PUI IconButton 触发既有 Store，不创建页面私有编辑机制。
-- 资料行的 gap、宽度和文字均使用 PUI Token；编辑区必须可收缩，390px 不得横向溢出。
+- 本记录只保留历史排版证据；当前 pages/me/index 已由 PUI-FB-0459 删除全部头像昵称资料链。
+- 不得从本历史记录恢复 Avatar、昵称 Input、保存按钮或 user-profile Store。
+- 后续组件状态仪表盘必须基于真实状态源另行设计，不能复用资料卡占位。
 
 验证与遗留风险：
 
-- 验证：`node scripts/test-miniprogram-me-page.js：通过。`
-- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过。`
-- 验证：`微信开发者工具 compile_wxml / compile_wxss：通过。`
-- 真机/兼容风险：浅色 390px 模拟器已验证；深色、毛玻璃和大圆角组合仍需在本页运行验证。
-- 真机/兼容风险：iOS/Android 真机的触摸、系统字体、中文输入法、键盘与读屏仍未验证。
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
+- 验证：`微信 DevTools build-npm：1376ms，warnings=[]`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过`
+- 真机/兼容风险：iOS/Android 真机的中文输入法、键盘抬升、触摸、系统字体和读屏仍未验证。
 
-## PUI-FB-0453 · 我的页服务 CellGroup 需要避让资料输入区的投影
+## PUI-FB-0453 · 我的页服务 CellGroup 应消费剩余空间靠近底部
 
 - 原始记录：`feedback/records/pui-fb-0453-me-services-shadow-clearance.json`
-- 范围：`component` / `miniprogram`、`card`、`input`、`cell`、`cell-group`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-27
-- 用户目标：将“我的”页的服务 Cell 卡片下移，为资料区在阴影外观下留下足够空间。
-- 实际问题：服务区仅使用内容组合间距，不能表达相邻独立 Surface 的安全距离。
-- 决策：保留正文的 --pui-section-gap，并将服务区自身 margin-top 从 --pui-content-gap 提升为 --pui-section-gap；两段标准 Token 间距共同避让投影，阴影关闭时也不收缩布局。
-- 理由：资料编辑与服务入口是两个独立任务分区，使用已有 section Token 既避免阴影被覆盖，也不创建页面私有尺寸。
+- 范围：`component` / `miniprogram`、`card`、`input`、`cell`、`cell-group`、`scroll-area`
+- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-28
+- 用户目标：在大头像两行资料卡下，让服务 CellGroup 利用页面剩余空间靠近底部，同时保证内容较高时仍能完整滚动。
+- 实际问题：正文未绑定剩余高度，服务区仅使用固定 margin，短内容时底部留白无法被语义化分配。
+- 决策：将 contentHeight 作为正文 min-height，并让服务区 margin-top:auto；正文原有 section gap 继续承担最小分区距离，内容超过视口时自然增高并由唯一 ScrollArea 滚动。
+- 理由：min-height 与 Flex 自动边距能同时满足短内容底部对齐和长内容滚动，不需要 fixed、absolute 或设备高度魔法数。
 
 AI 必须遵守：
 
-- 相邻独立任务分区优先使用 --pui-section-gap；--pui-content-gap 只用于同一分区内部组合。
-- 阴影安全空间必须在 shadow 关闭时继续保留，不能依赖条件 margin。
-- 连续 CellGroup 不拆成单行卡片，也不以页面私有 margin 修补投影。
+- 一级页面已有实测 contentHeight 时，应把它传给内部内容根作为 min-height。
+- 短内容底部对齐使用正常文档流的 Flex auto margin，不使用 fixed、absolute 或 vh 魔法数。
+- 内容超高时必须由页面既有唯一 ScrollArea 滚动，不能新增同向滚动宿主。
+- PUI-FB-0459 删除头像昵称后仍保留服务区 margin-top:auto；不得借资料删除移动服务列表。
 
 验证与遗留风险：
 
-- 验证：`node scripts/test-miniprogram-me-page.js：通过。`
-- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过。`
-- 验证：`微信开发者工具 compile_wxss：通过。`
-- 真机/兼容风险：默认阴影 390px 模拟器已验证；深色、毛玻璃与大圆角组合仍需在本页运行验证。
-- 真机/兼容风险：iOS/Android 真机的投影渲染、安全区与惯性滚动仍未验证。
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
+- 验证：`微信 DevTools build-npm：1376ms，warnings=[]`
+- 真机/兼容风险：iOS/Android 真机的安全区、键盘抬升与惯性滚动仍未验证。
 
 ## PUI-FB-0454 · 我的页客服入口应进入 Navbar 左 Slot
 
@@ -11990,4 +12066,1344 @@ AI 必须遵守：
 - 验证：`npm run check：通过；同时将 miniprogram/package.json 发布前 file:.. 旧断言更新为公共固定版 0.1.0 合同。`
 - 真机/兼容风险：H5 首项焦点恢复和真实刷新后的旧存储迁移由契约测试覆盖，尚未在浏览器通过注入旧 localStorage 做破坏性复核。
 - 真机/兼容风险：小程序跨页面恢复及 iOS/Android 真机仍需验证；当前仅完成微信开发者工具 390px 热重载验收。
+
+## PUI-FB-0457 · 高级版商业授权未进入已发布落地页
+
+- 原始记录：`feedback/records/pui-fb-0457-miniprogram-license-dialog-webview.json`
+- 范围：`component` / `miniprogram`、`dialog`、`cell`、`button`
+- 状态：`needs-device`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：点击“高级版商业授权”后先明确确认，再真实打开 https://poemcoder.com/poem-ui 查阅授权范围与版本权益。
+- 实际问题：onPurchaseLicense 仍沿用旧占位 Toast，已发布且 HTTP 200 的生产落地页没有接入小程序用户链路。
+- 决策：Cell 继续使用“查阅详情”而不是购买文案；点击先打开受控 PUI Dialog，确认后进入固定 pages/license/index，由微信 WebView 加载生产落地页。导航期间 Confirm loading/disabled；navigateTo 失败保留 Dialog，WebView 加载失败提供复制链接恢复。
+- 理由：当前能力是查阅已发布授权信息而不是支付。Dialog 能在离开当前页面前清楚告知目标，固定 WebView 路由避免任意外部 URL，真实平台回调保证没有假成功。
+
+AI 必须遵守：
+
+- 高级版商业授权 Cell 必须先打开受控 PUI Dialog，确认后才进入 WebView。
+- WebView 地址固定为 https://poemcoder.com/poem-ui，不接受任意 query URL。
+- wx.navigateTo 成功后才能关闭 Dialog；失败必须恢复 Confirm 并保留重试或取消。
+- 没有支付后端时继续使用“查阅详情”语义，不创建价格、订单、授权成功或支付成功状态。
+- 业务域名与 iOS/Android 真机未验证时必须明确标记 pending-device。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js：通过。`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过。`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过，PoemUI 0.1.0、路径与微信 npm 产物可解析。`
+- 验证：`微信开发者工具 build-npm：872ms，warnings=[]。`
+- 验证：`curl -I https://poemcoder.com/poem-ui：HTTP/2 200。`
+- 验证：`npm run site:build、npm run pack:check、npm run example:install：通过。`
+- 验证：`npm run check：precheck 与 439 条 Ledger 等前序门禁通过，随后被范围外首页版头旧断言阻断。`
+- 真机/兼容风险：当前开发者工具已经复现 WebView 拒绝；生产 AppID 必须确认不是个人类型，并在微信公众平台把 poemcoder.com 配置为业务域名后才能闭环。
+- 真机/兼容风险：iOS/Android 真机仍需验证 Dialog 取消、确认、WebView 首屏、返回栈、加载失败与复制链接。
+- 真机/兼容风险：WebView 页面使用微信原生导航栏承接返回；深浅色导航栏跟随平台，不能由 PUI ConfigProvider 控制。
+
+## PUI-FB-0458 · Input Clear 默认应只在真实聚焦时显示
+
+- 原始记录：`feedback/records/pui-fb-0458-input-clear-focus-trigger.json`
+- 范围：`component` / `input`、`search`、`preview-site`、`documentation`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：普通 Input 的 Clear 图标只在字段聚焦且有值时出现，同时不能破坏 Search 已有的 always/focus 清空策略。
+- 实际问题：旧 Input 只要 clearable、有值且可交互就常驻 Clear，没有组件级聚焦显示策略。
+- 决策：Input 增加 clearTrigger=focus/always，默认 focus；小程序由原生 focus/blur 计算 showClear，H5 由 focus-within 控制可见性；非空 clearable 字段始终保留 Clear 几何，隐藏态同时退出命中与可访问树；Search 显式传递归一化策略并保留原 always/focus 合同。
+- 理由：默认聚焦显示降低非编辑状态的视觉噪音，显式 always 又避免复合 Search 的既有 API 回退。
+
+AI 必须遵守：
+
+- Input clearTrigger 默认 focus，非法值也回退 focus。
+- Search 等复合组件若公开 always/focus，必须显式传给内部 Input，不得依赖 Input 默认值。
+- 小程序与 H5 隐藏 Clear 时同时关闭命中与可访问性，但保留 suffix 和 Trailing 几何。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-input.js：通过`
+- 验证：`node scripts/test-search.js：通过`
+- 验证：`node scripts/test-appearance-contract-matrix.js：74 roots + 1 composed field 通过`
+- 验证：`npm run example:install：通过`
+- 验证：`微信 DevTools build-npm：1376ms，warnings=[]`
+- 验证：`源码、miniprogram_dist、miniprogram/node_modules 与 miniprogram_npm 的 Input/Search SHA-256 一致`
+- 真机/兼容风险：iOS/Android 真机的 Clear 触摸到 blur/click 时序、软键盘、clear→change 事件顺序与辅助技术朗读仍未验证。
+
+## PUI-FB-0459 · 第四 Tab 不是用户中心并应移除本地头像昵称资料链
+
+- 原始记录：`feedback/records/pui-fb-0459-me-page-remove-local-profile.json`
+- 范围：`component` / `miniprogram`、`tabbar`、`cell`、`cell-group`、`navbar`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：第四 Tab 不是用户中心，因此先彻底删除头像和昵称，但保持服务列表原来的靠下位置，后续再讨论接入真实组件状态仪表盘。
+- 实际问题：资料卡、Avatar、昵称 Input、保存事件、本地 Store 和对应样式仍存在；服务列表的位置依赖同一正文 Flex 布局。
+- 决策：删除页面资料 Card、Avatar、昵称 Input、suffix 保存按钮、全部昵称状态与事件、身份资料样式和 user-profile Store；保留服务列表 margin-top:auto。本记录取代 PUI-FB-0421 与 PUI-FB-0452 中关于保留昵称资料的当前产品规则，并保留 PUI-FB-0453 的服务区靠下几何。后续 PUI-FB-0464 已建立真实 metadata 统计源并只恢复一张组件状态 Card；该 Card 不是身份资料壳，不推翻本记录的用户中心禁令。
+- 理由：彻底删除失去产品职责的身份链路比隐藏节点更安全；保持服务区原位可避免本次删除造成页面跳变，并为下一轮真实仪表盘规划保留上方空间。
+
+AI 必须遵守：
+
+- pages/me/index 不注册或渲染 Avatar、Input 或 Card 作为身份资料，也不读取 poemui-user-profile；PUI-FB-0464 允许唯一组件状态 Card。
+- 删除身份资料不得移动服务 CellGroup；继续用正文 Flex 与 margin-top:auto 保持原位置。
+- 组件状态仪表盘未建立真实状态源、指标和失败边界前，不得放静态占位或假数据；PUI-FB-0464 建立生成型 metadata 统计源后，此前的未就绪风险已被替代。
+- 后续若引入登录，必须另建服务端身份合同，不能恢复本地昵称 Store 冒充认证。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过，0.1.0 包、页面组件路径与微信 npm 产物均可解析`
+- 验证：`npm run feedback:generate && npm run feedback:check：通过，生成并校验 441 条记录`
+- 验证：`微信 CLI build-npm --project miniprogram：通过，AppID wx23aa017375535746，cost=1150ms，warnings=[]`
+- 验证：`npm run site:build：通过，71 个组件目录、562 个工具类与 220 个图标同步生成`
+- 验证：`npm run pack:check：通过，0.1.0 dry-run 为 545 files / 348.3kB tarball / 1.7MB unpacked`
+- 验证：`npm run check：precheck 全部通过，完整 check 被本次未修改且 HEAD 内已漂移的首页版头文案断言 scripts/test-miniprogram-home.js:91 阻断`
+- 真机/兼容风险：未来组件状态仪表盘的状态源、指标口径、刷新机制和异常态尚未规划，本次未实现。
+- 真机/兼容风险：仓库完整 check 仍存在本次范围外的首页版头文案基线断言漂移。
+- 真机/兼容风险：iOS/Android 真机的安全区、惯性滚动、平台跳转和读屏仍未验证。
+
+## PUI-FB-0460 · 历史 Chart 文档例外不能继续替代真实图表组件
+
+- 原始记录：`feedback/records/pui-fb-0460-chart-research-exception-to-real-components.json`
+- 范围：`global` / `area-chart`、`bar-chart`、`waffle`、`preview-site`、`miniprogram`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：在高级分区提供可真实调用的 AreaChart、BarChart 和 Waffle；不能继续用 H5 静态 Chart 说明代替组件。
+- 实际问题：修复前只有未发布的 Chart 文档例外，没有原生组件、公开 API、小程序页、H5 真实镜像或安装产物。
+- 决策：不创建通用 Chart；新增 AreaChart、BarChart 与 Waffle 三个透明展示叶子，以共享 helper 统一非负数据、主题和零基线，并从公开目录移除 shadcn-chart 研究入口。
+- 理由：具体组件可在小程序和 H5 使用同一语义真实渲染，同时避免为尚未承诺的坐标轴、Tooltip、缩放和 Canvas 能力制造假 API。
+
+AI 必须遵守：
+
+- 不要恢复泛化 shadcn-chart 公共入口，除非先建立并验收完整原生 API。
+- AreaChart/BarChart/Waffle 必须消费共享图表 helper，不得在页面复制另一套值归一化。
+- 图表业务数据由消费者提供；组件不得伪造版本、分类或云端统计。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-bar-chart.js`
+- 验证：`node scripts/test-waffle.js`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`npm run site:build`
+- 验证：`npm run check`
+- 验证：`npm run example:install`
+- 验证：`npm run pack:check`
+- 真机/兼容风险：微信 iOS/Android 真机的 rpx、Grid、长标签、深浅色、读屏与系统低动效尚需合法 AppID 复核。
+
+## PUI-FB-0461 · 渐变到透明的图表需要保留终点与低透明单元可读性
+
+- 原始记录：`feedback/records/pui-fb-0461-chart-gradient-transparency-readability.json`
+- 范围：`component` / `area-chart`、`bar-chart`、`waffle`、`theme-tokens`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：AreaChart、BarChart 和 Waffle 使用更优雅、圆润且渐变到透明的统一图表视觉。
+- 实际问题：修复前没有图表 Token 或组件，透明渐变的方向、最低值、轮廓和跨主题语义均未定义。
+- 决策：AreaChart 使用实体强调色描边与 0.42→0.04 竖向填充；BarChart 基线端 28%、中段 66%、数值端 100%；Waffle 每格使用实体到半透明单元渐变，目标 opacity 每段从 1 到 0.28 且保留语义轮廓。H5 与小程序使用同名 Token。
+- 理由：既保留用户要求的透明渐变和圆润感，又让条形长度、点阵格数和新增含义在两种主题及渐变背景上可读。
+
+AI 必须遵守：
+
+- BarChart 的实体端必须位于数值终点，不得把终点渐变为透明。
+- Waffle 的最低 opacity 不低于 0.28，并保留 chart fade outline。
+- 每个 segment 独立重启透明度梯度；新增量同时显示 label/legend/value。
+- 不得给图表根添加阴影、毛玻璃、边框或等距 Surface。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-bar-chart.js`
+- 验证：`node scripts/test-waffle.js`
+- 验证：`npm run site:build`
+- 验证：`npm run check`
+- 真机/兼容风险：不同 iPhone/Android 屏幕的最低透明度、弱视可读性和大字体标签换行仍需真机复核。
+
+## PUI-FB-0462 · BarChart 条件循环 WXML 阻断微信页面编译
+
+- 原始记录：`feedback/records/pui-fb-0462-bar-chart-wxml-conditional-loop-compiler.json`
+- 范围：`component` / `bar-chart`、`miniprogram`、`npm-dist`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：BarChart 发布到小程序 npm 产物后必须能被微信基础库 3.17.0 正常编译和使用。
+- 实际问题：微信开发者工具 2.02.2607272 报 `Bad attr wx:else` 与 `wx:if not found`，错误定位到 miniprogram_npm 的 bar-chart.wxml 第 13 行，页面无法编译。
+- 决策：使用不生成真实布局节点的 `<block wx:else>` 包裹 grouped segment 循环，并把禁止同节点 `wx:else + wx:for` 的扫描接入 precheck/check。
+- 理由：保留分支互斥、循环数据、渲染节点和 H5 几何，同时从唯一源码阻止编译错误再次进入 dist 与微信 npm 产物。
+
+AI 必须遵守：
+
+- 循环 else 分支必须用紧邻前序 wx:if 的 block wx:else 包裹，或写成完整互斥 wx:if。
+- 仅用于模板控制的 wrapper 使用 block，禁止增加会改变布局的实体 view。
+- 编译问题必须从组件源修复并重建 dist、安装包与微信 npm 产物，禁止手改 miniprogram_npm。
+- 构建 npm 复制成功不等于 WXML 页面编译成功，必须继续执行普通编译或真实页面加载。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-bar-chart.js`
+- 验证：`node scripts/test-wxml-conditional-loop-compatibility.js`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`npm run site:build`
+- 验证：`npm run example:install`
+- 验证：`npm run pack:check`
+- 验证：`微信开发者工具构建 npm`
+- 验证：`微信开发者工具普通编译`
+- 真机/兼容风险：实际上传仍需由用户复核；iOS/Android 真机图表可读性不由本次编译修复替代。
+
+## PUI-FB-0463 · BarChart 默认配色缺少层次且零基线不可见
+
+- 原始记录：`feedback/records/pui-fb-0463-bar-chart-default-palette-zero-scale.json`
+- 范围：`component` / `bar-chart`、`theme-tokens`、`preview-site`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：BarChart 使用更协调的默认配色，并让图表基线明确从 0 开始。
+- 实际问题：默认色主要是 Neutral/Violet，分类层次弱；共享零基线虽然数学成立，但 UI 没有端点标识。
+- 决策：共享工具新增可选内部 palette；BarChart 固定传入 Blue/Teal/Violet，单段分类按 item 索引循环，多段按 segment 索引循环，显式合法 theme 始终优先。横向 showGrid 新增真实 0/max 端点；Waffle 通用回退不变。H5 同名镜像。
+- 理由：Blue 与 Teal 在浅深色均有清晰层次，Violet 作为第三强调色保留扩展；组件内部默认序列可避免页面私有配色，同时不破坏调用方主题和 Waffle 既有行为。端点直接读取同一 scaleMax，不建立第二套比例。
+
+AI 必须遵守：
+
+- 省略主题时 BarChart 使用 Blue/Teal/Violet；合法显式 theme 始终优先。
+- 单段分类按 item 索引轮换，多段按 segment 索引分配；Waffle 通用回退不得被联动修改。
+- showGrid 横向端点必须读取同一 0/scaleMax 真相源，不能创建页面私有坐标。
+- 小程序、H5、独立页、合同和专项测试必须同步默认序列与端点结构。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-bar-chart.js：通过`
+- 验证：`node scripts/test-miniprogram-advanced-pages.js：通过`
+- 验证：`npm run feedback:generate && npm run feedback:check：通过，446 条 Ledger 记录`
+- 验证：`npm run site:build：通过，73 个组件目录与 6 个 catalog 产物完成生成`
+- 验证：`npm run example:install：通过，本地 tarball 已安装到示例工程`
+- 验证：`npm run pack:check：通过，0.1.0 dry-run 为 554 files / 354.0kB tarball / 1.7MB unpacked`
+- 验证：`微信开发者工具 build-npm：通过，cost=921ms，warnings=[]`
+- 真机/兼容风险：iOS/Android 真机的 Blue/Teal/Violet 色差、渐变抗锯齿、大字体标签和读屏顺序仍需验证。
+
+## PUI-FB-0464 · Me 页使用真实版本总量接入 AreaChart 趋势仪表盘
+
+- 原始记录：`feedback/records/pui-fb-0464-me-component-status-dashboard.json`
+- 范围：`component` / `miniprogram`、`me-page`、`area-chart`、`card`、`catalog-metadata`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：第四 Tab 使用 AreaChart 精简展示 0.1.0 到 0.1.1 的真实组件增长；不虚构趋势点，也不保留与趋势语义无关的分类展开操作。
+- 实际问题：页面没有仪表盘；若直接在页面手写数量，会与 metadata 漂移并形成 fake success。
+- 决策：保留 catalog 生成器的显式 release delta 作为 71→74 真相源；Me 页只把 previousVersion/previousTotal 与 currentVersion/total 转为同一 components 系列，在唯一 Card 中组合 small AreaChart，显示 Grid、XAxis 和 Dots，隐藏单系列冗余 Legend，显式 max=74。删除旧 BarChart、分类合并/排序、查看更多按钮、SelectorQuery 高度测量和过渡样式。服务 CellGroup 继续 margin-top:auto，超高由页面唯一 ScrollArea 滚动。微信 Canvas 的宿主 hidden 在 Popup 上方仍会留下原生绘制层，因此 Popup/Dialog 可见期间使用 wx:if 卸载 AreaChart，关闭后重新挂载。
+- 理由：AreaChart 适合连续版本趋势，BarChart 更适合分类横向比较。只有 0.1.0 与 0.1.1 两个发布事实，因此宁可保留两点和完整读屏名称，也不虚构月份或健康度。Card 继续提供唯一 Surface，AreaChart 保持透明叶子；Canvas 避让属于 Me 页面与浮层的组合边界，不应向共享 AreaChart 增加伪业务状态。
+
+AI 必须遵守：
+
+- 组件总量必须由 metadata packageComponents 与显式 release delta 生成，页面不维护第二份数字。
+- 版本增量必须由显式 release delta 生成并验证 added component ID；不能按日期、文件数量或 UI 文案猜测。
+- AreaChart 版本趋势只使用已证实的 release delta 点，不得为了曲线丰富虚构时间点或监控指标。
+- 单系列可以隐藏冗余 Legend，但版本横轴、圆点、摘要和读屏名称必须完整表达变化。
+- 版本只读取 poemui-miniprogram/version 轻量入口，不加载组件总入口或硬编码。
+- 页面只允许一个仪表盘 Card；AreaChart 保持透明，服务 CellGroup 继续 margin-top:auto。
+- 页面同时存在 Canvas 图表与 Popup/Dialog 时必须打开浮层检查真实合成层；hidden 不能保证原生层退出，必要时在浮层可见期间用 wx:if 卸载并验证关闭恢复。
+- H5 同步 Card/AreaChart 组件合同，不复制小程序业务页或伪造微信平台能力。
+- 新增真实监控、版本增量或云端状态前必须先建立独立数据源、异常态和权限合同。
+
+验证与遗留风险：
+
+- 验证：`node scripts/generate-catalog.js：通过；0.1.0 71 → 0.1.1 74、本版 +3，只有 advanced 为 5+3`
+- 验证：`node scripts/test-miniprogram-me-page.js：通过；锁定唯一 AreaChart、71→74 两点、无 BarChart 和无分类展开链`
+- 验证：`node scripts/test-area-chart.js：通过`
+- 验证：`node scripts/test-bar-chart.js：通过`
+- 验证：`node scripts/test-waffle.js：通过`
+- 验证：`node scripts/test-miniprogram-advanced-pages.js：通过`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
+- 验证：`npm pack + miniprogram npm install --no-save --package-lock=false：本地 0.1.1 包安装成功，未修改真实工程的公共 0.1.0 依赖声明`
+- 验证：`npm run feedback:generate && npm run feedback:check：通过，468 条 Ledger 记录`
+- 验证：`npm run site:build && npm run example:install：通过；npm run pack:check 通过，0.1.1 dry-run 为 559 files / 361.8kB`
+- 验证：`微信最终 build-npm：cost=907ms、warnings=[]；AreaChart source/dist/miniprogram node_modules/miniprogram_npm 四件套哈希一致`
+- 验证：`生产共享云 pui_updatelog 稳定文档 pui-v0-1-1-20260728：原位更新 matchedCount=1/modifiedCount=1，写后回读 total=1；小程序 source=cloud 且同步错误为空`
+- 验证：`npm run check：precheck 全部通过，本次 AreaChart/BarChart/Waffle/Me/生成链/ConfigProvider/全局动效均通过；总命令被本轮未修改的 Search H5 search-clear 私有原生按钮设计门禁阻断`
+- 真机/兼容风险：iOS/Android 真机的 Canvas/Popup 合成、ScrollArea 惯性、Card 阴影、图表文字、读屏和安全区仍需验证。
+- 真机/兼容风险：该数据只描述当前工作树目录分类数量和显式 release delta，不代表 npm 0.1.1 已发布，也不代表组件运行健康度、使用量或用户量。
+
+## PUI-FB-0465 · Area Chart 视觉参考需要转译为真实原生 AreaChart 组件
+
+- 原始记录：`feedback/records/pui-fb-0465-area-chart-gradient-component.json`
+- 范围：`component` / `area-chart`、`preview-site`、`miniprogram`、`theme-tokens`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：参考 shadcn/ui Area Chart 新增可发布的 PoemUI AreaChart，并让实体描边与渐变到透明的配色同步到小程序和 H5，归入 0.1.1。
+- 实际问题：修复前没有 AreaChart 组件，直接复制 shadcn 示例会引入不可用的 React/Recharts 与 Card/Tooltip 边界。
+- 决策：新增具体 AreaChart 而非通用 Chart：小程序用 Canvas 2D，H5 用 SVG，共享 AreaChartItem、曲线、堆叠和 Token 语义；保留实体描边与竖向渐隐原则，删除 Recharts、Tooltip 和 Card 假依赖。
+- 理由：Canvas 2D 能在微信端真实表达连续曲线，SVG 便于 H5 检查几何和 Token；具体组件边界可完整测试并发布。
+
+AI 必须遵守：
+
+- AreaChart 小程序使用 Canvas 2D，H5 使用同数据合同的 SVG，不得使用截图。
+- 所有系列共用从 0 开始的比例；堆叠只改变系列下边界，不改变数据。
+- 组件根保持透明，不复制 shadcn Card 或 Tooltip。
+- 外部参考必须记录 URL、日期和固定提交；不能凭模型记忆声称对齐。
+
+验证与遗留风险：
+
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-area-chart.js：通过`
+- 验证：`node scripts/test-miniprogram-component-pages.js：通过`
+- 验证：`node scripts/test-appearance-contract-matrix.js：通过`
+- 验证：`npm run site:build && npm run pack:check && npm run example:install：通过`
+- 验证：`npm pack + miniprogram npm install --no-save --package-lock=false：真实工程安装本地 0.1.1 验收包`
+- 验证：`微信 build-npm：cost=872ms、warnings=[]；AreaChart source/dist/example/consumer/miniprogram_npm 聚合 SHA-256 均为 8bf7f0e5239f796da3c2a3d14923ab5c66d6d1afbbe9128ab319371c02fbc284`
+- 验证：`npm run check：图表、metadata、页面、外观与全局动效均通过，最终被既有 Search H5 search-clear 私有按钮门禁阻断`
+- 真机/兼容风险：微信 iOS/Android 真机的 Canvas DPR、曲线抗锯齿、主题继承、读屏和横竖屏仍待验证。
+
+## PUI-FB-0466 · 三类图表缺少统一且默认开启的优雅入场 API
+
+- 原始记录：`feedback/records/pui-fb-0466-chart-entrance-animation-api.json`
+- 范围：`component` / `area-chart`、`bar-chart`、`waffle`、`preview-site`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：所有图表组件都提供优雅的入场动画 API，并且默认打开。
+- 实际问题：修复前图表没有统一入场 API，调用方只能在页面层复制动画或接受直接出现。
+- 决策：三组件固定公开 animated、duration、reduceMotion 与 replay()：AreaChart 淡入，H5 描边展开；BarChart 从共享零基线伸展；Waffle 上移缩放到目标 opacity。级联均设置有限上限，replay 不修改数据。
+- 理由：图形自身拥有入场语义可避免页面穿透；默认 500ms 与现有 PUI normal motion 一致，有限级联避免大量点阵拖慢完成。
+
+AI 必须遵守：
+
+- 图表统一默认 animated=true、duration=500，并将 duration 限制到 0–1000ms。
+- replay() 只能重播图形，不修改 items、比例、单位或请求状态。
+- 低动效必须使用 1ms 且取消级联 delay。
+- 不要在页面穿透内部 class 或复制另一套图表动画。
+
+验证与遗留风险：
+
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-area-chart.js：通过`
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-bar-chart.js：通过`
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-waffle.js：通过`
+- 验证：`微信 390x844 运行态：三组件 animated=true、duration=500、replay() 均真实经历 entered=false→true`
+- 验证：`微信 build-npm：cost=872ms、warnings=[]；三组件和 chart helper 的 source/dist/example/consumer/miniprogram_npm 五路哈希一致`
+- 真机/兼容风险：浏览器系统 prefers-reduced-motion 的真实媒体查询切换仍待人工复核；静态合同已锁定 1ms 和零 delay。
+- 真机/兼容风险：微信真机的定时器帧、Canvas 淡入、长 Waffle 性能和系统低动效仍待验证。
+
+## PUI-FB-0467 · NavigationMenu 根轨、双栏尾轨、Panel 与 Header 几何漂移
+
+- 原始记录：`feedback/records/pui-fb-0467-navigation-menu-width-overlay-shadow-clearance.json`
+- 范围：`component` / `navigation-menu`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：水平根入口保持横向排列：放得下时等宽铺满，低于可读最小宽度时允许局部横向滑动；父容器必须正确裁切滚动边界，不能用遮罩盖住内容或把预期可见的 Button 裁成半块。双栏左侧 Badge/Indicator 必须右对齐，右侧 Panel 完成态与 rail 保持完整阴影安全距，Header Close 必须右对齐且上/右间距相等。
+- 实际问题：旧实现只有两种水平失衡结果：按内容宽度无条件横滚，或关闭 x 轴后把所有项目压缩到不可读；粗暴裁切 track/host 会留下半个 Button 或先裁 Badge。双栏的 vertical 入场规则因选择器特异性压过通用 entered 规则，Panel 打开完成后仍停在 `translateX(-16rpx) scale(.985)`；12px 列距被残余位移压成 4px 视觉净距。根 Badge/Indicator 紧跟标题，Header 的 64rpx 操作轨、56rpx Button 和不同纵横 padding 也让 Close 右侧比顶部更宽。
+- 决策：保留现有 scrollable，不新增 Prop。horizontal 且 scrollable 且非 wrap 时启用原生 x 轴，真实 host 使用 flex:1 0 208rpx；scrollable=false 严格等宽；wrap 使用同一最小轨换行。Trigger viewport 独占 overflow:hidden，Panel/Overlay 保持兄弟层。vertical Panel 的 entered 完成态显式使用 translateX(0) scale(1)，双栏 gap 使用 offset + space-normal；vertical Button suffix 以 margin-left:auto 进入右尾轨。Header 三列固定为 56rpx / 1fr / 56rpx，操作顶部对齐，四向 padding 统一使用 panel-padding-compact，标题独立垂直居中。
+- 理由：可读宽度、滚动与裁切是三项不同职责。双栏的入场 transform、完成态几何和 Surface 阴影安全距也必须分别定义，不能让选择器优先级决定视觉终点。Badge/Indicator 属于尾部状态而非标题内容；Header 操作轨必须和真实 Button 同宽，才能用同一 inset 得到可量测的上/右等距。
+
+AI 必须遵守：
+
+- horizontal 根入口不能无条件横滚或无条件压缩；scrollable=true 时先等宽铺满，低于语义最小宽度才在局部 ScrollView 横向滚动。
+- 自定义组件作为 flex item 时必须同时有真实 host 轨和填满 host 的组件宿主 class，不能假定内部 custom-class 能约束组件节点外部几何。
+- 只有 Trigger viewport 可以裁切横向滚动内容；track/host 不得提前裁 Button、Badge 或 Indicator，Panel/Overlay 必须是 viewport 的兄弟层。
+- Overlay 禁止用负向魔法数拼接局部色带。
+- 双栏浮层的列间距必须包含 Surface 阴影安全区，且 entered 完成态不得残留入场 transform。
+- 双栏根 Badge/Indicator 属于右尾轨，不能紧跟标题漂移。
+- Header Close 的 Grid 轨必须与按钮同宽；顶部与右侧使用同一语义 inset，标题另行居中。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-navigation-menu.js：通过`
+- 验证：`node scripts/test-miniprogram-navigation-pages.js：通过`
+- 验证：`npm run feedback:generate && npm run feedback:check：478 records，通过`
+- 验证：`npm run site:build：通过，74 component directories`
+- 验证：`微信 DevTools build-npm：2026-07-28 horizontal 自适应复跑 cost=1017ms，双栏最终产物复跑 cost=1016ms，均 warnings=[]`
+- 验证：`npm run pack:check：通过，当前0.1.1工作树559 files / 363.7 kB`
+- 验证：`npm run check：precheck及NavigationMenu之前门禁通过，随后被本轮未修改的H5 search-clear原生按钮边界阻断`
+- 验证：`git diff --check：通过`
+- 真机/兼容风险：iOS/Android 真机的触摸惯性、边界回弹、自定义组件宿主 flex、fixed 遮罩和 rpx 阴影仍为 pending-device。
+
+## PUI-FB-0468 · Breadcrumb 默认换行与错误态 Retry 轨道不符合路径阅读
+
+- 原始记录：`feedback/records/pui-fb-0468-breadcrumb-single-line-retry-layout.json`
+- 范围：`component` / `breadcrumb`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：路径默认尽量在一行完整阅读，加载失败时重新加载按钮固定在消息右侧且不与文案错位。
+- 实际问题：默认允许换行，错误态没有独立剩余宽度消息轨。
+- 决策：wrap 默认 false；错误态采用三轨 Grid，消息允许内部换行，Retry 固定在尾轨。
+- 理由：路径阅读优先保持连续，恢复操作则应稳定可见。
+
+AI 必须遵守：
+
+- wrap 是显式多行能力，不应作为默认。
+- 状态消息和 Retry 必须分轨，不靠文字长度定位。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-breadcrumb.js：通过`
+- 验证：`node scripts/test-miniprogram-navigation-pages.js：通过`
+- 验证：`npm run example:install：通过`
+- 验证：`微信 DevTools CLI build-npm：cost=1146ms，warnings=[]`
+- 真机/兼容风险：微信真机字体回流、内部横滚手势与读屏顺序仍为 pending-device。
+
+## PUI-FB-0469 · Tabbar 混合文案时按单项调整短横造成基线跳动
+
+- 原始记录：`feedback/records/pui-fb-0469-tabbar-family-indicator-baseline.json`
+- 范围：`component` / `tabbar`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：同一条 Tabbar 的活动短横使用一致基线；只有整条均无文案时才采用纯图标位置。
+- 实际问题：旧 CSS 对每个 icon-only item 单独调整图标与短横。
+- 决策：新增仅内部使用的根级 all-icon-only class；混合文案完全沿用默认基线，全纯图标统一调整图标和短横。
+- 理由：活动反馈属于整条导航的共同几何，不应逐项跳变。
+
+AI 必须遵守：
+
+- 混合文案使用同一默认基线。
+- 只有 all-icon-only 根可以启用纯图标偏移。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-tabbar.js：通过`
+- 验证：`npm run example:install：通过`
+- 验证：`微信 DevTools CLI build-npm：cost=1146ms，warnings=[]`
+- 真机/兼容风险：iOS/Android 安全区、rpx 舍入和真实底部点击仍为 pending-device。
+
+## PUI-FB-0470 · Indexes 当前索引被光学位移裁切且错误态缺少底部安全区
+
+- 原始记录：`feedback/records/pui-fb-0470-indexes-active-center-error-gap.json`
+- 范围：`component` / `indexes`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：索引选中态完整展示并让文字严格居中，加载失败的恢复区在底部保留足够间距。
+- 实际问题：旧规则先以 translateY 和 scale 做光学校正，首轮删除后仍保留通用 Button；Button 的整项 line-height 继续把字形基线压向活动底板下方。错误态首轮只增加底部 padding，却没有计算 192rpx Empty 图形与按钮的总高度。
+- 决策：索引项改为 Indexes 自身的语义 view 交互根，文字使用 line-height:1 的独立节点；选中底板按动态项高生成正圆并与文字共同锚定 50%/50%。文字再统一消费 x=.5px / y=.25px 的语义光学补偿，使系统字体墨迹中心对齐正圆但不移动圆或命中区；rpx 在 390px 模拟器中发生取整，同值双轴补偿仍会纵向过量。错误态保留 space-xl + space-normal 底距，同时把嵌入 PUI Empty 图形收敛为 88rpx 并删除第二层 padding。
+- 理由：索引连续手势属于组件自身交互语义，不需要通用 Button；去除无关内部结构后，字形、正圆和命中轨可以共享同一几何中心。压缩组件内部图形而不是继续堆 padding，才能让 360rpx 有界状态真实容纳全部内容。
+
+AI 必须遵守：
+
+- 索引文字不得依赖通用 Button 的整行 line-height；布局几何居中与系统字体墨迹光学补偿必须分开，统一补偿不得作用于圆或命中区。
+- 组件自身连续手势命中点使用语义交互根；真正的 Retry 操作继续复用 PUI Button。
+- 错误态间距属于组件，不由页面补。
+- 状态布局验收必须量测 Empty、Button 和 body 边界，不能只匹配 padding 字符串。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-indexes.js：通过`
+- 验证：`node scripts/test-miniprogram-navigation-pages.js：通过`
+- 真机/兼容风险：微信真机长按滑动命中、字形抗锯齿与底部安全区仍为 pending-device。
+
+## PUI-FB-0471 · Field 透明嵌入 Input 错误移除了输入内距与圆角
+
+- 原始记录：`feedback/records/pui-fb-0471-field-embedded-input-inset-radius.json`
+- 范围：`component` / `field`、`input`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Field 内的真实输入文字保留左右呼吸空间，并随组件圆角保持焦点几何一致。
+- 实际问题：旧样式把透明误等同于无内部几何，padding/radius 均为 0。
+- 决策：保留 Field 唯一 Surface，同时恢复嵌入 Input 的 space-sm 内距和 medium 圆角；H5 用组件级后置选择器阻止全局 frosted Input 规则给嵌入控件加回第二层底色。
+- 理由：透明嵌入不等于无可读内距，焦点边界仍属于真实 Input。
+
+AI 必须遵守：
+
+- 透明嵌入 Input 仍保留内部 padding/radius。
+- 不得以页面 wrapper 补组件输入几何。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-field.js：通过`
+- 验证：`npm run example:install：通过`
+- 验证：`微信 DevTools CLI build-npm：cost=1146ms，warnings=[]`
+- 真机/兼容风险：微信真机键盘、焦点轮廓与大圆角外观仍为 pending-device。
+
+## PUI-FB-0472 · Textarea 受控回写期间 autosize 高度闪动
+
+- 原始记录：`feedback/records/pui-fb-0472-textarea-controlled-autosize-flash.json`
+- 范围：`component` / `textarea`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Textarea 连续输入时高度稳定增长；用户明确要求完全删除输入区内 Clear，避免输入后结构变化。
+- 实际问题：旧组件在原生输入已经完成 auto-height 测量后，又因父级同值 value echo 全量提交组件派生状态并重绑原生 value，造成可见高度回缩；Clear 已由用户复看排除为主因。
+- 决策：保留 Clear API 清理，并在组件内把逻辑 innerValue 与原生 renderValue 分离：正常输入只差量更新逻辑值与计数；匹配当前原生草稿的父级 value echo 不产生第二次子组件 setData，只有真正外部不同 value 或字符截断才重写原生 textarea。
+- 理由：TDesign 官方合同同样没有 Textarea Clear，因此删除 Clear 仍是合理 API 收敛；运行态补丁与高度采样证明，同值 echo 隔离后六行输入只增长一次且不会回落，同时外部不同值仍能正常重绑，组件受控语义没有被削弱。
+
+AI 必须遵守：
+
+- 正常受控 input 返回 undefined。
+- 逻辑 innerValue 与原生 renderValue 必须隔离；匹配当前草稿的父级 echo 不得产生第二次组件 setData。
+- 只有真实外部不同 value 或字符规整时更新原生 renderValue。
+- Textarea 不公开 clearable/clear/clear()，清空由父级写回 value。
+- 不得用页面 debounce 掩盖组件输入闪动。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-textarea.js：通过（29/6/3/3，无 Clear；正常受控 input 只提交 innerValue/count，匹配父级 echo 零次额外子组件 setData，外部不同 value 更新 renderValue）`
+- 验证：`node scripts/test-miniprogram-form-pages.js、node scripts/test-preview-native-control-boundaries.js：通过（独立页保留 textarea-primary 运行态锚点，H5 原生控件边界合法）`
+- 验证：`npm run example:install、npm run pack:check：通过（559 files / 364.8kB / shasum 9f1481016543b05ca758a20833f0c1b046a4e3ff）`
+- 验证：`微信 CLI build-npm：通过（932ms，warnings=[]）；源码、dist、真实 node_modules 与 miniprogram_npm 的 Textarea JS SHA-1 一致`
+- 验证：`npm run feedback:check、根仓 git diff --check：通过；npm run check 在本轮未修改的首页 enableShareTimeline 基线断言停止，嵌套仓 git diff --check 被 pages/index/index.json:2 的既有尾随空白阻断`
+- 真机/兼容风险：iOS/Android 真机软键盘、中文输入法 composition 与 autosize 仍为 pending-device。
+
+## PUI-FB-0473 · Search 取消操作尺寸过大抢占主层级
+
+- 原始记录：`feedback/records/pui-fb-0473-search-cancel-action-hierarchy.json`
+- 范围：`component` / `search`、`button`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：取消是搜索输入旁的次要退出动作，不应与搜索字段或主要操作争夺视觉层级。
+- 实际问题：transparent/extra-small 只把高度降到 64rpx，没有移除 88rpx 最小宽度；改成 text 后 Button 内部虽为 min-width:0，微信自定义组件宿主仍实际占 184px，auto/fit-content/min-content 均未收缩。此前 Ledger 将 44x32px 错记为已解决，用户复核后仍明确认为过大、主次不清。
+- 决策：取消固定使用 PUI Button text/surface-transparent/extra-small；secondary tone 与 medium 字重通过 Button 公开 custom-style 变量传入，宿主按文案权重选择 68/104/144/176rpx 四级语义宽度。
+- 理由：text 把 Button 内部普通最小宽度归零；四级宿主宽度绕开微信 auto intrinsic sizing 缺口并保留自定义 cancelText；extra-small 保持 64rpx 高度，surface-transparent 保证锁定态不出现第二层 Surface。
+
+AI 必须遵守：
+
+- 判断层级必须同时审计内部根和自定义组件宿主计算几何；transparent 仍可能继承 Button 最小宽度。
+- 微信宿主的 auto/fit-content/min-content 不能未经实测当作内容收缩。
+- 不得用 small 或普通 transparent Button 承载紧凑取消。
+- 不得用原生文字点击区或页面 CSS 内部几何补丁替代 PUI Button。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-search.js：通过`
+- 验证：`node scripts/test-miniprogram-form-pages.js：通过`
+- 验证：`npm run miniprogram:build：生成 74 个组件目录`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：ok=true`
+- 验证：`微信 DevTools build-npm：最终 cost=1187ms，warnings=[]`
+- 验证：`npm run feedback:generate && npm run feedback:check：480 records，通过`
+- 验证：`根仓与 miniprogram 嵌套仓 git diff --check：通过`
+- 真机/兼容风险：微信真机触摸命中、软键盘与长取消文案仍为 pending-device。
+
+## PUI-FB-0474 · Select 与 Picker 独立页候选过少不足以验收展开层
+
+- 原始记录：`feedback/records/pui-fb-0474-select-picker-four-option-demo.json`
+- 范围：`component` / `select`、`picker`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Select 与 Picker 的演示各提供四个候选项，能真实观察选中、禁用、滚动和弹层空间。
+- 实际问题：小程序页只有稳定版/预览版两项；H5 Picker 基础数据也不足四项。
+- 决策：统一使用四个发布通道作为 Select/Picker 独立页教学数据，并让 H5 默认镜像具备四项；API 不变。
+- 理由：增加真实数据密度即可提高验收覆盖，不需要扩展组件 API。
+
+AI 必须遵守：
+
+- 候选项必须进入真实 options/columns。
+- 页面选择后必须真实回写 value 和标签。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-select.js：通过`
+- 验证：`node scripts/test-picker.js：通过`
+- 验证：`node scripts/test-miniprogram-form-pages.js：通过`
+- 验证：`npm run example:install：通过`
+- 验证：`微信 DevTools CLI build-npm：cost=1146ms，warnings=[]`
+- 真机/兼容风险：微信真机 Popup 层级、滚轮惯性和触摸选择仍为 pending-device。
+
+## PUI-FB-0475 · Stepper 自定义组件宿主绝对定位在真机只显示加号
+
+- 原始记录：`feedback/records/pui-fb-0475-stepper-physical-three-track-device-layout.json`
+- 范围：`component` / `stepper`、`button`、`input`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Stepper 在微信真机稳定显示减号、数值输入和加号，三段顺序与 H5 一致。
+- 实际问题：旧结构没有真实布局轨，依赖 custom component 宿主 absolute left/right/top 与覆盖顺序，真机解析后出现节点丢失/覆盖。
+- 决策：Stepper 根使用 inline-grid；WXML 按 minus/input/plus 放置三个普通 view 轨，PUI Button/Input 通过宿主 style 与 custom-style 同时占满自己的物理轨；移除绝对定位。
+- 理由：物理 DOM 顺序和 Grid 轨道不依赖跨组件选择器或宿主坐标计算，真机可见性更稳定。
+
+AI 必须遵守：
+
+- WXML 顺序固定 minus/value/plus。
+- 三个宿主各自占满物理轨，根宽由 Button track + inputWidth 计算。
+- 不得用字符控件或页面补丁替代 PUI Button/Input。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-form-pages.js：通过`
+- 验证：`node scripts/test-stepper.js：通过`
+- 验证：`npm run example:install：通过`
+- 验证：`微信 DevTools CLI build-npm：cost=1146ms，warnings=[]`
+- 真机/兼容风险：本次修复由用户真机失败触发，但修改后的 iOS/Android 真机三轨显示尚未复测，必须保持 pending-device。
+
+## PUI-FB-0476 · Avatar 资源加载态不应由页面外部控制
+
+- 原始记录：`feedback/records/pui-fb-0476-avatar-loading-state.json`
+- 范围：`component` / `avatar`、`loading`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：Avatar 自己管理图片懒加载与资源等待，并提供稳定持续加载示例；页面不得在外部拼装重复 Spinner。
+- 实际问题：当前实现把公开 loading 与内部资源状态混合，独立页可手动宣布加载完成；H5 又缺少真实资源事件绑定。
+- 决策：新增 lazy Boolean，并保留 loading Boolean 作为 Avatar 内部 Loading 的强制态；非空 src 的自动等待、成功淡入、错误回退和地址切换全部由 Avatar 内部完成。
+- 理由：图片 load/error 是组件可直接观测的资源事实，不需要父级再回写；loading 只为稳定持续等待场景强制同一内部视觉；聚焦 lazy 比全量 imageProps 透传更符合 PoemUI API 收敛。
+
+AI 必须遵守：
+
+- 非空 src 自动显示内部 PUI Loading，并由真实 load/error 结束自动等待；loading=true 可持续保持同一个内部 Loading。
+- lazy 只控制何时请求，不能由页面用按钮模拟加载完成。
+- 主题、形状和边线变化不得重置已加载图片，旧 src 事件不得覆盖新资源。
+- 宿主业务 loading 继续放在外层 Button、Cell 或页面状态中，不要塞回 Avatar。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-avatar.js`
+- 验证：`node scripts/test-miniprogram-data-pages.js`
+- 验证：`npm run feedback:generate && npm run feedback:check`
+- 验证：`npm run site:build`
+- 验证：`npm run example:install`
+- 验证：`npm run pack:check`
+- 验证：`npm run check（Avatar precheck 通过；随后被未修改的 scripts/test-miniprogram-home.js:316 阻断）`
+- 验证：`wechatide -c codex-avatar build_npm --project "/Users/fanx/Documents/poemUI 小程序组件库/miniprogram" --compile-type miniprogram`
+- 真机/兼容风险：iOS/Android 真机图片缓存、COS 域名策略与 Loading 叠层待验证。
+
+## PUI-FB-0477 · Card 缺少固定右侧操作轨与溢出菜单
+
+- 原始记录：`feedback/records/pui-fb-0477-card-header-right-menu-api.json`
+- 范围：`component` / `card`、`popover`、`button`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：Card Header 最多承载三个固定右侧操作，并能用默认 More 打开不受 Card 圆角裁切的完整下拉菜单。
+- 实际问题：API 与菜单入口已经存在，但内置 Popover 使用普通绝对定位，三项菜单被 Card 根 overflow:hidden 裁掉。
+- 决策：保留 header-right 与现有菜单 API；内置 More 固定启用 PUI Popover 的 fixed 定位，H5 Surface 同步允许菜单越界显示。
+- 理由：菜单是脱离 Card 内容流的浮层，应复用 Popover 的视口定位与碰撞能力，而不是靠减少选项或放大 Card 隐藏裁切。
+
+AI 必须遵守：
+
+- menu-select 不表示业务成功。
+- 受控 menuVisible 等待父级回写。
+- Card 内置浮层必须使用 Popover 视口定位，禁止用减少菜单项掩盖 overflow 裁切。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-card.js`
+- 验证：`npm run site:build`
+- 验证：`wechatide -c codex build_npm --project miniprogram`
+- 真机/兼容风险：iOS/Android 真机的 fixed 合成、屏幕边缘翻转、触摸、Slot 投影和读屏待验证。
+
+## PUI-FB-0478 · Image 独立页未展示加载与懒加载能力
+
+- 原始记录：`feedback/records/pui-fb-0478-image-loading-lazy-demo.json`
+- 范围：`component` / `image`、`loading`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Image 明确展示加载态和懒加载。
+- 实际问题：能力虽在共享源码存在，但用户路径不可见。
+- 决策：保留共享 API，补齐独立页受控 loading 与 lazy 示例。
+- 理由：不重复实现已有能力。
+
+AI 必须遵守：
+
+- 外部 loading/error 不伪造 load/error。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-image.js`
+- 真机/兼容风险：真机视口懒加载时机待验证。
+
+## PUI-FB-0479 · List 加载更多和重试没有父级响应
+
+- 原始记录：`feedback/records/pui-fb-0479-list-load-more-parent-loop.json`
+- 范围：`component` / `list`、`loading`、`button`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：点击加载更多或重试后看到加载动画和真实条目更新。
+- 实际问题：事件有发出但页面不响应，视觉上像按钮失效。
+- 决策：不修改 List 自动状态机；修复小程序页和 H5 消费者真实响应。
+- 理由：组件不伪造网络成功，演示又能闭环。
+
+AI 必须遵守：
+
+- 不得只更新事件文案。
+- 不得在 List 内自动成功。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-list.js`
+- 真机/兼容风险：真机 Timer 与滚动位置待验证。
+
+## PUI-FB-0480 · Bubble 展开操作未稳定右下对齐
+
+- 原始记录：`feedback/records/pui-fb-0480-bubble-toggle-bottom-right.json`
+- 范围：`component` / `bubble`、`button`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：Bubble 展开/收起操作始终位于右下方。
+- 实际问题：此前只给 Button 内部根增加 auto margin，无法改变自定义组件宿主的满宽占位，展开文案仍停在气泡中部偏右。
+- 决策：操作轨占满宽度，直接复用 PUI Button 的 block 合同，并把 Text Button 内容对齐到右侧；H5 使用同义 toggle-row 与 block Button。
+- 理由：接受小程序自定义组件宿主的满宽布局事实，在真实 PUI Button 内完成稳定的视觉右对齐，避免绝对定位、float 或不可靠的宿主收缩。
+
+AI 必须遵守：
+
+- 禁止用 absolute 固定展开按钮。
+- 组合组件对齐 PUI 子组件时必须检查自定义组件宿主几何；宿主固定满宽时应使用子组件公开的 block 合同并显式对齐内容。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-bubble.js`
+- 真机/兼容风险：iOS/Android 真机的字体回流、长文本与自定义 Slot 测量仍待验证。
+
+## PUI-FB-0481 · SwipeCell 毛玻璃下提前透出动作底色
+
+- 原始记录：`feedback/records/pui-fb-0481-swipe-cell-transparent-underlay.json`
+- 范围：`component` / `swipe-cell`、`button`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：滑动前下层无颜色、边框或阴影，开始滑动后才显示语义动作色。
+- 实际问题：动作底色从初始帧存在，且底层边界可能露出。
+- 决策：关闭时 transparent/no border/no shadow；drag/open 根类激活动作色。
+- 理由：适配毛玻璃且不改变动作按钮语义。
+
+AI 必须遵守：
+
+- 底层关闭态不得预着色。
+- 底层不得有边框阴影。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-swipe-cell.js`
+- 真机/兼容风险：真机拖动首帧与圆角抗锯齿待验证。
+
+## PUI-FB-0482 · CountDown 时分秒单位被数字盒裁切
+
+- 原始记录：`feedback/records/pui-fb-0482-countdown-unit-box-separation.json`
+- 范围：`component` / `count-down`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：时分秒单位位置整齐且完整可读。
+- 实际问题：时/分/秒落入固定宽盒并挤压、截断。
+- 决策：part 负责数字+单位组，value 单独负责固定盒。
+- 理由：保持单位对齐且不改变计时语义。
+
+AI 必须遵守：
+
+- overflow 只限 value。
+- unit nowrap 位于 value 外。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-count-down.js`
+- 真机/兼容风险：真机系统字体基线待验证。
+
+## PUI-FB-0483 · NoticeBar 关闭按钮层级和语义染色不正确
+
+- 原始记录：`feedback/records/pui-fb-0483-noticebar-close-semantic-tone.json`
+- 范围：`component` / `notice-bar`、`button`、`icon`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：关闭操作右对齐为小号透明圆形 Close，不在 NoticeBar 内制造第二层 Surface；多条信息按 primary/warning 等语义共同染色。
+- 实际问题：default/base Close 在 NoticeBar 内形成第二层按钮 Surface，关闭操作主次过强。
+- 决策：规范 theme 为 primary/success/warning/danger，兼容 info/error；suffix close 使用 variant=transparent、small/circle/icon-only，点击后仍由父级回写 visible。
+- 理由：透明变体保留 PUI Button 的圆形命中区和无障碍语义，同时消除第二层 Surface，让关闭保持次级操作。
+
+AI 必须遵守：
+
+- suffix close 不自动改 visible。
+- 复合 Surface 内的次级图标操作使用透明 Button 视觉，不要用 default/base 再造 Surface。
+- 需要保留圆形命中区时使用 variant=transparent，不要用会移除圆角的 surface=transparent。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-notice-bar.js`
+- 验证：`node scripts/test-miniprogram-feedback-pages.js`
+- 验证：`node scripts/test-miniprogram-component-pages.js`
+- 验证：`node scripts/test-miniprogram-component-page-quality.js`
+- 验证：`npm run miniprogram:build`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 真机/兼容风险：iOS/Android 真机的透明 Button 样式隔离、触摸命中、swiper 与深色语义色待验证。
+
+## PUI-FB-0484 · Dialog 未正确复用 Popup 三分区并出现双重内距
+
+- 原始记录：`feedback/records/pui-fb-0484-dialog-popup-structure-inset.json`
+- 范围：`component` / `dialog`、`popup`、`button`、`overlay`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Dialog Header/Content/Footer 与 Popup 同构：左附加操作、中间标题、右默认 Close，Footer 一/二列全宽且等距。
+- 实际问题：总体内距过大，Header 能力不足，Footer 可能错位或幽灵占位。
+- 决策：新增 showFooter/header-left，closeBtn 默认 true；最多两个内建 actions，Footer 按数量全宽；Popup 只提供 Surface。
+- 理由：统一三段结构、间距 Token 和可访问操作。
+
+AI 必须遵守：
+
+- header-left 只放一个紧凑图标按钮。
+- 单按钮 Footer 满宽。
+- 请求状态留在 content Slot。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-dialog.js`
+- 真机/兼容风险：真机 Slot 投影、长内容滚动和 Overlay 毛玻璃待验证。
+
+## PUI-FB-0485 · AreaChart BarChart Waffle 重播动画没有重新触发
+
+- 原始记录：`feedback/records/pui-fb-0485-chart-replay-committed-frame.json`
+- 范围：`component` / `area-chart`、`bar-chart`、`waffle`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：每次点击重播都能看到图表重新入场。
+- 实际问题：旧 H5 只让反向 transition 运行约 32ms 就折返回完成态，图形只离开最终值极小距离，用户感知为没有反应。
+- 决策：小程序继续在 setData(false) 回调后计时入场；H5 统一由委托 chart-replay action 执行，先添加 is-replay-reset 关闭 transition、清除完成类并强制布局，再双 RAF 移除复位类并恢复完成类。
+- 理由：只有先提交无过渡初始几何，后续 500ms 正向 transition 才拥有完整可见行程；委托 action 同时避免按钮节点绑定与预览重建竞争。
+
+AI 必须遵守：
+
+- 先清旧 Timer。
+- false 提交后再 true。
+- H5 复位帧必须禁用 transition，强制布局后双 RAF 再恢复。
+- 重播不得通过重建 PreviewDevice 丢失滚动、焦点或运行态。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-area-chart.js：通过`
+- 验证：`node scripts/test-bar-chart.js：通过`
+- 验证：`node scripts/test-waffle.js：通过`
+- 验证：`npm run feedback:generate && npm run feedback:check：通过，487 条记录`
+- 验证：`npm run site:build：通过，74 个组件目录与 6 个 catalog 产物完成生成`
+- 验证：`npm run check：图表专项与 precheck 通过，随后被本次范围外既有 scripts/test-miniprogram-home.js:316 的 enableShareTimeline 缺失阻断`
+- 验证：`npm run pack:check：通过，559 files / 366.8kB / shasum c14cbcd2972b1810f975eeb687c87b55b7c8aabb`
+- 真机/兼容风险：本轮共享小程序 replay 实现未改动；iOS/Android 真机连续点击、系统低动效和 Canvas 合成仍待验证。
+
+## PUI-FB-0486 · 首页手动打开目录分区后标题没有进入顶部阅读位置
+
+- 原始记录：`feedback/records/pui-fb-0486-home-section-open-scroll-anchor.json`
+- 范围：`component` / `miniprogram-home`、`collapsible`、`scroll-area`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：点击首页任一目录分区时，让页面在展开后滚动，使该分区标题处于 Navbar 下方相对靠上的阅读位置。
+- 实际问题：onCatalogSectionChange 只持久化并更新 activeCatalogSection，没有调用已有的 scheduleCatalogSectionScroll。
+- 决策：页面受控写回打开分区后等待显式传给 Collapsible 的同一 500ms 动效时长；把稳定 id 移到普通 view，实测视口和目标矩形后，按真实窗口宽度将 PUI space-step-24 的 48rpx 换算为 px，再回写 ScrollArea scrollTop；关闭时取消未执行任务并清空目标。
+- 理由：ScrollArea 内部原生 scroll-view 无法可靠跨自定义组件 Slot 解析 scrollIntoView，Collapsible after-open 在当前页面组合中也未稳定回传；标题机械贴顶又缺少阅读呼吸空间，因此改用公开 scrollTop、真实节点测量、同源明确时长和 48rpx Token 化顶部留白，不增加第二滚动上下文，也不影响返回栈阅读位置。
+
+AI 必须遵守：
+
+- 手动打开目录分区后等待与 Collapsible 显式相同的动效时长，再用视口与普通 view 锚点的实测矩形计算受控 scrollTop，并在标题上方保留按真实窗口换算的 48rpx 阅读留白。
+- 跨自定义组件 Slot 的 scrollIntoView 若在微信运行态无效，应使用同一 ScrollArea 的公开 scrollTop，不得创建第二滚动区。
+- 关闭分区必须取消未执行定位并清空目标。
+- 返回已有首页实例时继续以真实 scrollTop 为最高优先级。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-home.js`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram`
+- 真机/兼容风险：微信 iOS/Android 真机的 scroll-into-view 平滑时序、快速连续切换和 Collapsible 动画期间的位置合成仍需复核。
+
+## PUI-FB-0487 · Me 与安装一级页 Navbar 缺少一致的双 Slot 操作和外观入口
+
+- 原始记录：`feedback/records/pui-fb-0487-top-level-navbar-dual-slot-appearance.json`
+- 范围：`component` / `miniprogram-me`、`miniprogram-codepage`、`navbar`、`button`、`popup`、`dialog`、`config-provider`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：让 Me 页以客服和菜单、安装页以 Info 和菜单组成 Navbar 左侧双 Slot，并由菜单打开与首页一致的外观设置。
+- 实际问题：Me 页只有一个 small 客服 Slot Button；安装页 Navbar 无操作；两页都无法从当前一级页直接打开共享外观设置。
+- 决策：两页都在 Navbar 唯一 left Slot 中组合两个 extra-small/text/transparent/circle/icon-only PUI Button，使用共享 Flex 与紧密 gap。Me 客服保留 open-type=contact，菜单打开共享外观 Popup；安装 Info 打开单按钮 PUI Dialog，菜单打开同源外观 Popup。
+- 理由：字面 Slot 可保留客服 Button 的微信平台属性；两个紧凑圆形按钮能在 Navbar 的真实胶囊镜像轨内稳定排列。Popup、Dialog、AppearanceSettings 与 visualConfig 已提供完整能力，无需扩张 Navbar API或复制页面私有控件。
+
+AI 必须遵守：
+
+- Navbar 双操作若含 open-type 等平台属性，使用唯一 left Slot 组合两个紧凑 PUI IconButton，不得改成普通 leftBtn。
+- capsule=true 时不向 right Slot 投递业务操作。
+- 外观菜单必须复用共享 AppearanceSettings、Popup 和 visualConfig，不复制第二份开关或 Store。
+- Info 等图标入口必须连接真实 Dialog 或业务动作，不能做静态装饰。
+- Canvas 图表在微信浮层可见时应由页面卸载并在关闭后恢复，不能用 hidden 假设原生绘制层不会穿透。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`npm run site:build`
+- 验证：`npm run check`
+- 验证：`npm run pack:check`
+- 验证：`git diff --check`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram`
+- 验证：`微信开发者工具 build-npm`
+- 真机/兼容风险：pending-device：iOS/Android 真机的胶囊镜像宽度、两个 extra-small 命中区、safe-area 和读屏仍需复核。
+- 真机/兼容风险：pending-device：open-type=contact 依赖小程序后台客服配置，Node 与模拟器不能证明客服会话可用。
+
+## PUI-FB-0488 · Me 仪表盘移除冗余版头并增加三列真实数据摘要
+
+- 原始记录：`feedback/records/pui-fb-0488-me-dashboard-metric-strip.json`
+- 范围：`component` / `miniprogram`、`me-page`、`area-chart`、`card`、`style-utilities`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：精简 Me 页图表版头，横轴版本不显示冗余 v，在图表上方用三列展示真实数量，延长图表入场，并让服务 Cell Card 以较大标准间距紧跟仪表盘。
+- 实际问题：旧实现的 Card description、v 前缀和摘要缺口已修正，但图表仍以默认 500ms 入场，服务集合仍被 auto margin 推到底部并在两个 Surface 之间留下过多空白。
+- 决策：删除 Card description 和 componentStatusSummary；在唯一 Card Content 顶部用透明三等分 Grid 展示组件、样式、高级三项，组件/高级读取 component-status，样式读取 style-utilities-catalog；AreaChart 横轴 label 改为纯版本号并在 Me 页显式传入 duration=1000；服务 CellGroup 删除 margin-top:auto，只由父级 --pui-section-gap 与仪表盘分隔。
+- 理由：三列摘要回答当前规模，AreaChart 回答版本变化，信息层次更直接。统计继续来自生成型真相源，透明 Grid 不创建第二层 Surface；1000ms 是组件公开上限，能延长本页入场而不破坏全局 500ms 默认；标准 section gap 足够建立分区，又能让服务集合跟随仪表盘。
+
+AI 必须遵守：
+
+- 组件、高级和样式数量必须读取生成型 component-status 与 style-utilities-catalog，页面不得维护第二份数字。
+- 当前规模摘要和历史趋势分层表达，不用 Card description 重复同一组件总量。
+- 图表前的摘要使用同一 Surface 内透明等分 Grid，不为每个数字新建 Card、边框或阴影。
+- 单页需要更长 AreaChart 入场时使用公开 duration，最长 1000ms，不改共享默认值。
+- 服务集合跟随仪表盘时使用父级 section gap，删除历史 auto margin，不叠加私有间距。
+- AreaChart 原样显示 item.label；业务页决定是否保留版本前缀，并在 ariaLabel 中补足完整语义。
+- Me 是小程序应用页，消费层变化不复制 H5 业务壳；只有共享组件变化才同步 preview。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js && node scripts/test-area-chart.js && node scripts/test-card.js：通过`
+- 验证：`微信 compile_wxml pages/me/index.wxml：success=true / codeLength=37963`
+- 验证：`npm run feedback:generate && npm run feedback:check：通过，470 条 Ledger 记录`
+- 验证：`npm run site:build：通过；重新生成 562 个 Style Utilities、220 个图标、74 个发布组件目录与 6 个 catalog 产物`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过；真实工程 0.1.1、usingComponents 和微信 npm 产物均可解析`
+- 验证：`npm run pack:check：通过；0.1.1 为 559 files / 361.8kB`
+- 验证：`git diff --check && git -C miniprogram diff --check：通过`
+- 验证：`npm run check：precheck 与本次 Me/AreaChart/Card/页面/生成链均通过，随后被本轮未修改的 H5 Search search-clear 私有原生按钮设计门禁阻断`
+- 真机/兼容风险：iOS/Android 真机的 Canvas 字体、rpx、读屏与滑动仍为 pending-device。
+
+## PUI-FB-0489 · 首页展开目录分区未作为可配置外观 Surface
+
+- 原始记录：`feedback/records/pui-fb-0489-home-collapsible-open-surface-appearance.json`
+- 范围：`component` / `collapsible`、`config-provider`、`miniprogram-home`、`preview-site`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：首页目录分区被选中并展开后，容器应跟随统一外观设置的毛玻璃与阴影；关闭态不额外抬高视觉层级。
+- 实际问题：Collapsible 新增默认 false 的 shadow Prop；原生与 H5 都只在 shadow && open 时绘制 card 阴影，closed 始终为 none。首页和 Collapsible 独立页显式启用 shadow，阴影、毛玻璃、主题和圆角继续由 ConfigProvider/预览外观 Store 统一提供。
+- 决策：新增默认 false 的组件级 shadow Prop，并将阴影条件收敛为 shadow && open；首页和独立页显式开启。毛玻璃不新增第二个 Prop，继续消费 ConfigProvider 的有效共享 Token。
+- 理由：显式 Prop 避免所有 Collapsible 被全局阴影自动抬高；open 门控避免关闭标题行仍像独立卡片；复用现有玻璃 Token 能让主题、效果总闸门和持久化设置保持同源。
+
+AI 必须遵守：
+
+- 不要在页面外包私有容器模拟 Collapsible 的组件级 Surface。
+- Collapsible shadow 默认 false；只有 shadow && open 才能消费 card 阴影。
+- closed 状态必须保持 box-shadow:none，即使全局阴影打开。
+- 毛玻璃继续通过同一 ConfigProvider Token 边界生效，禁止增加页面私有模糊值。
+- H5 必须验证计算样式，不能只断言 has-shadow/is-open class 存在。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-collapsible.js`
+- 验证：`node scripts/test-appearance-contract-matrix.js`
+- 验证：`node scripts/test-miniprogram-home.js`
+- 验证：`npm run site:build`
+- 验证：`npm run example:install`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`npm run pack:check`
+- 验证：`git diff --check`
+- 真机/兼容风险：自动化工具不能穿透自定义组件宿主完成物理指针点按，组件内部 Trigger 的真实触摸命中仍需真机补验。
+- 真机/兼容风险：iOS/Android 真机的 WXSS 阴影合成、backdrop-filter 性能和滚动期间视觉仍为 pending-device。
+
+## PUI-FB-0490 · Indexes 长索引轨产生灰色滚动条并破坏触摸映射
+
+- 原始记录：`feedback/records/pui-fb-0490-indexes-index-rail-overflow-touch-coordinate.json`
+- 范围：`component` / `indexes`、`button`、`miniprogram`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Indexes 的 A–Z 长轨应完整、清楚且可连续滑动，侧栏不出现灰色滚动条，也不能裁掉当前索引。
+- 实际问题：修复前 26×36rpx 已超过可用约 640rpx，轨道只能内部滚动；可见灰线裁切活动项，触摸算法却仍按未滚动的整条比例取值。
+- 决策：侧栏高度由索引数量动态等分，每项以 36rpx 为上限；默认 680rpx 的可用 640rpx 完整容纳 A–Z，并彻底移除侧栏内部滚动。
+- 理由：无嵌套滚动的单一几何让视觉位置、触摸比例和当前态共享同一个真相源，也消除灰色系统滚动条。
+
+AI 必须遵守：
+
+- 默认 680rpx 必须完整容纳 A–Z，侧栏不得使用 overflow-y:auto。
+- 触摸命中必须读取真实 bar rect，并与同一动态 item geometry 对齐。
+- 不要只隐藏滚动条外观而保留未建模的内部滚动。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-indexes.js：通过`
+- 验证：`node --check indexes/indexes.js：通过`
+- 真机/兼容风险：iOS/Android 真机连续 touchmove、rpx 取整、字体放大和合成 click 仍为 pending-device。
+
+## PUI-FB-0491 · Indexes 按住拖动缺少当前索引放大提示
+
+- 原始记录：`feedback/records/pui-fb-0491-indexes-drag-preview-magnifier.json`
+- 范围：`component` / `indexes`、`miniprogram`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：用户长按并滑过 Indexes 时，应在轨道内侧看到放大的当前索引，手指遮住小字时仍能确认位置。
+- 实际问题：修复前没有放大提示节点和状态；用户只能依靠被手指遮挡的紧凑轨道判断当前索引。
+- 决策：将放大提示作为默认内部触摸反馈，不增加公共 Prop/Event/Slot/Method；hold 120ms 后出现，touchmove 立即出现，左右位置镜像。
+- 理由：这是侧栏手势的基础可见反馈，不应要求每个消费者重复配置；现有 select/change 已足够描述业务事件。
+
+AI 必须遵守：
+
+- 右侧轨道的提示放左侧，左侧轨道镜像到右侧。
+- 拖动立即显示，松手、取消、状态锁定与卸载必须关闭。
+- 提示必须 aria-hidden 且 pointer-events:none，不得截断手势。
+- 一个触摸手势不得再被合成 click 重复发布 select。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-indexes.js：通过`
+- 真机/兼容风险：iOS/Android 真机长按阈值、连续 move 频率、手指遮挡、合成 click 和读屏仍为 pending-device。
+
+## PUI-FB-0492 · Indexes 受控滚动回写被误判为再次定位
+
+- 原始记录：`feedback/records/pui-fb-0492-indexes-controlled-scroll-echo.json`
+- 范围：`component` / `indexes`、`miniprogram`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：用户直接滚动 Indexes 时，活动索引应跟随但不能抢回滚动位置或产生吸附。
+- 实际问题：旧实现没有记录 change 的来源回声，无法区分用户滚动回写和外部命令式受控更新。
+- 决策：增加内部 scroll echo 标记；同值父级回写只同步 active，不触发 scrollIntoView。外部不同值更新继续执行定位。
+- 理由：受控所有权需要父级回写，但回写不能改变原事件的物理滚动语义。
+
+AI 必须遵守：
+
+- 测试完整 scroll→change→父级 current→observer 链，不能只直接调用 onScroll。
+- scroll 回声只抑制同值回写；外部不同 current 仍须定位。
+- 程序滚动保护不能在首次经过目标组时提前结束。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-indexes.js：通过`
+- 真机/兼容风险：真机惯性滚动、setData/observer 调度时序和快速反向滚动仍为 pending-device。
+
+## PUI-FB-0493 · Indexes 独立页 Retry 只改文案没有恢复闭环
+
+- 原始记录：`feedback/records/pui-fb-0493-indexes-retry-parent-recovery-loop.json`
+- 范围：`component` / `indexes`、`miniprogram`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Indexes 加载失败后点击重新加载，应看到真实 loading，并由页面成功恢复内容或回到可重试失败态。
+- 实际问题：修复前没有 error/loading/items 三个受控真相源，也没有成功或失败分支；文案变化伪装成了重新加载。
+- 决策：由独立页维护 recoveryItems/loading/error；retry 后进入 loading，校验本地真实分组源并恢复，空数据则回到 error。组件保持纯请求事件。
+- 理由：这既展示了组件真实 API，也让成功与失败状态都能闭环，不把业务恢复伪造进共享组件。
+
+AI 必须遵守：
+
+- 禁止把 error 写死后只修改提示文案。
+- 组件不得在 retry 内部自动把 error 改成 success。
+- 页面恢复必须覆盖 loading、success、failure 和重复点击门禁。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-indexes.js：通过`
+- 验证：`node scripts/test-miniprogram-navigation-pages.js：通过`
+- 真机/兼容风险：弱性能设备 600ms loading 动画、页面卸载清理和读屏通知仍为 pending-device。
+
+## PUI-FB-0494 · Indexes 左轨与完整索引没有共享安全几何
+
+- 原始记录：`feedback/records/pui-fb-0494-indexes-dynamic-rail-safe-geometry.json`
+- 范围：`component` / `indexes`、`button`、`cell`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Indexes 在左侧轨和完整索引模式下，标题、条目、徽标与索引都应完整显示，不互相覆盖。
+- 实际问题：修复前左右避让只覆盖条目且写死单字符宽度，sticky 标题和完整索引没有统一几何真相源。
+- 决策：由 JS 生成动态 button/rail width CSS 变量，WXML、标题、条目和放大提示共同消费；左右位置只镜像同一几何。
+- 理由：单一 rail width 可避免不同结构分别维护魔法数，并让完整索引、标题和 Cell 状态同步。
+
+AI 必须遵守：
+
+- showFullIndex 不能继续锁死单字符 42rpx Button。
+- left/right 必须同时作用于 heading 和 entries。
+- 隐藏轨时清除条目避让，但标题保留正常内容 padding。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-indexes.js：通过`
+- 真机/兼容风险：超长索引、系统字体放大、rpx 取整和 sticky 标题组合仍需真机复核。
+
+## PUI-FB-0495 · Indexes disabled 同时剥夺只读滚动浏览
+
+- 原始记录：`feedback/records/pui-fb-0495-indexes-disabled-readable-scroll.json`
+- 范围：`component` / `indexes`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Indexes 禁用业务操作时，用户仍应能够滚动阅读固定高度内已有内容。
+- 实际问题：旧实现以根级 pointer-events:none 同时禁用所有业务操作和阅读滚动，长内容在固定高度下不可达。
+- 决策：disabled 只禁用索引轨、条目和状态 Action，scroll-view 保持可滚；JS 继续阻止活动值和事件变化。
+- 理由：固定高度集合中的滚动属于阅读能力，不应随业务选择一起被剥夺。
+
+AI 必须遵守：
+
+- 不要对含 scroll-view 的 disabled 集合根使用 pointer-events:none。
+- 保留物理滚动时仍必须阻止 current 变化和 change 事件。
+- 分别验收阅读可达性和业务锁定。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-indexes.js：通过`
+- 真机/兼容风险：真机 disabled opacity、滚动惯性、读屏禁用语义与内容可达性仍为 pending-device。
+
+## PUI-FB-0496 · Indexes 内部不透明层遮蔽根毛玻璃 Surface
+
+- 原始记录：`feedback/records/pui-fb-0496-indexes-frosted-surface-transparency.json`
+- 范围：`component` / `indexes`、`config-provider`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：Indexes 在毛玻璃、阴影和大圆角外观下仍应是一个完整集合 Surface，内部不能再铺一层不透明底遮住效果。
+- 实际问题：修复前根和三个内部大面积层同时绘制背景，毛玻璃无法透过正文或状态区域展示。
+- 决策：仅保留 Indexes 根为集合 Surface；body、entry、loading/error/empty 状态层透明。sticky heading 可保留语义 muted 分组条，放大提示作为临时浮层 Surface。
+- 理由：这让阴影、毛玻璃、边框和圆角由同一根统一控制，同时保留状态层和分组标题的可读性。
+
+AI 必须遵守：
+
+- 不能只检查根 class 或 CSS 变量；必须读取 body/state 的实际 background。
+- 连续 Cell 不获得独立 shadow、radius 或 blur。
+- 只有脱离内容流的放大提示可以作为第二个临时 Surface。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-indexes.js：通过`
+- 真机/兼容风险：iOS/Android backdrop-filter 支持、滚动合成性能、深色对比度和系统降透明设置仍为 pending-device。
+
+## PUI-FB-0497 · 组件详情页弱状态回显需要按语义分级而非全部替换为 DynamicMessage
+
+- 原始记录：`feedback/records/pui-fb-0497-component-page-feedback-dynamic-message-governance.json`
+- 范围：`global` / `miniprogram`、`component-page`、`dynamic-message`、`navigation-menu`、`toast`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 用户目标：把组件独立页中不明显的状态提示改成更清楚的真实反馈，同时避免每个开关、选择和展开动作都制造灵动通知。
+- 实际问题：修复前页面普遍依赖低对比内联状态文字，没有共享反馈宿主和调用入口，也没有阻止高频事件、重复 aria-live 或把 DynamicMessage 当 Toast 使用的合同。
+- 决策：新增只供小程序详情页使用的 component-page-feedback 宿主和 createComponentPage 调用入口；建立四级反馈合同；NavigationMenu 删除三处重复内联状态，仅在目录 error 真实恢复后显示稳定 key DynamicMessage。
+- 理由：分级能同时提高重要结果的可见性并减少重复信息；共享宿主复用公共 DynamicMessage 状态机，不扩张 npm API，也让未挂载和未命中的调用返回真实失败值。
+
+AI 必须遵守：
+
+- 组件视觉已经明确的展开、关闭、选中、开关和当前值直接删除重复反馈。
+- 字段错误、上传失败和持续限制必须留在对应控件附近。
+- 单次轻反馈使用 Toast；重要恢复、多阶段任务和需要 Action 的错误使用 DynamicMessage。
+- 页面必须先完成真实状态或数据回写，再显示 success。
+- DynamicMessage 宿主必须位于 ScrollArea 外，并通过 createComponentPage 返回真实 show、update、hide 结果。
+- 高频 input、change、changing、scroll 和 touchmove 不得逐次创建通知。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-page-feedback.js：通过`
+- 验证：`node scripts/test-miniprogram-navigation-pages.js：通过`
+- 验证：`npm run feedback:check：通过`
+- 验证：`npm run pack:check：通过，仍为未发布 0.1.1，559 files / 363.8 kB`
+- 验证：`相关 JS 语法检查与 git diff --check：通过`
+- 验证：`npm run check：执行到 H5 设计合同后被本轮未修改的 search-clear 私有 raw button 既有边界拦截`
+- 真机/兼容风险：iOS/Android 真机安全区、VoiceOver/TalkBack 单次播报和低端设备连续通知性能仍为 pending-device。
+- 真机/兼容风险：其余详情页的 75 个状态节点仍需按事件处理器逐项分类，当前决策禁止机械批量替换。
+
+## PUI-FB-0498 · DynamicMessage 状态装饰需要一束连续且不破坏 Surface 的流光
+
+- 原始记录：`feedback/records/pui-fb-0498-dynamic-message-rounded-edge-flow.json`
+- 范围：`component` / `dynamic-message`、`preview-site`、`miniprogram-advanced-page`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：删除与胶囊圆角不一致的左侧直条和整段边框换色，用一束对应主题色的流光连续经过顶部与右侧；动画结束后保持完成态干净，且不能遮挡或破坏主容器毛玻璃。
+- 实际问题：第一版是长期可见的满高竖向 accent；随后版本虽然改成圆角边缘，但用整条上边与右边的 border-color 分段变化模拟流动，用户仍无法感知一束连续移动的流光，也担心装饰层结束时覆盖主容器毛玻璃。
+- 决策：双端 edge-flow 改为 L 形裁切轨道与唯一 edge-beam 子节点。轨道只暴露顶部和右侧 6rpx/3px 区域，光束使用一张对角 linear-gradient 背景从 0 0 连续移动到 100% 100%，固定 1500ms 从顶部经右上角走向右侧。根 Surface 独立持有 background、backdrop-filter 与 box-shadow；装饰状态只切换光束 opacity/background-position，结束、关闭或低动效只清理 transient class。
+- 理由：单束渐变具有明确的空间位置和连续位移，用户能感知流动而不是整段边框换色。把 beam 作为 Surface 内部的装饰兄弟层并把内容提升到其上方，可同时保留圆角裁切、主题色、点击与毛玻璃合成；1500ms 计时继续独立于 500ms 组件进场。
+
+AI 必须遵守：
+
+- 不得恢复满高竖向 accent 或在 visible 完成态保留主题色边框。
+- 不得用整段上边、右边的 border-color 变化冒充流光；edge-flow 必须包含唯一 edge-beam，并只动画它的 background-position/opacity。
+- edge-flow 必须继承 Surface 圆角，从 expanding 开始以独立 transient 状态播放一次 1500ms；不得绑定 320ms panel phase。
+- 面板进入 visible 时不得中断或重启尚未完成的流光；1500ms 到期、关闭、卸载或低动效必须清理 transient 状态。
+- edge-flow 固定为小程序 6rpx、H5 3px；不得因视觉弱化退回难以识别的细线。
+- edge-flow 必须与状态 Icon 共用当前 PUI 语义色：loading 中性灰、info 信息蓝、success 成功绿、warning 警告橙、error 危险红；不得固定为单一颜色。
+- 浅色模式的黑底属于中性反色 Surface，不得误写成 primary 或随 primary 色板改变。
+- compact、collapsing、leave-compact 以及 1500ms transient 结束后的 visible 必须保持中性边框。
+- 流光只表达通知展开和主题，不得表达业务成功或替代状态 Icon。
+- edge-flow 必须 aria-hidden、pointer-events:none，不能改变布局或命中区。
+- 根 Surface 必须独立持有 background/backdrop-filter/box-shadow；流光开始、结束和关闭都不能改写或卸载这些效果。
+- reduceMotion 和系统低动效必须完全取消流光，不得压缩成闪烁。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-dynamic-message.js`
+- 验证：`node scripts/test-miniprogram-advanced-pages.js`
+- 验证：`npm run site:build`
+- 验证：`npm run example:install`
+- 验证：`npm run pack:check：通过，0.1.1 dry-run 为 559 files / 366.7 kB / shasum 33ba47f6c2a9f061b399faf923d4e34eb0d45952`
+- 验证：`npm run check：precheck 与 DynamicMessage 相关专项通过，完整 check 在既有首页 pageJson.enableShareTimeline 缺失断言停止`
+- 验证：`/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --port 25928 --project /Users/fanx/Documents/poemUI 小程序组件库/miniprogram：1176ms / warnings=[]`
+- 验证：`微信 compile_wxml / compile_wxss：通过`
+- 验证：`DynamicMessage 源码、dist、示例安装、真实 node_modules、miniprogram_npm 五路 JS/JSON/WXML/WXSS SHA-256 一致：a0a795ac / dacf45e8 / 76f41c0a / 29666c92`
+- 真机/兼容风险：最终 6rpx 单束渐变在微信模拟器与 iOS/Android 真机仍需复看实际强度，并确认 clip-path L 形轨道、background-position 合成帧率与圆角裁切。
+- 真机/兼容风险：VoiceOver/TalkBack 不应感知 aria-hidden 装饰层，仍需目标设备确认。
+- 真机/兼容风险：低端 Android 在毛玻璃、外阴影和边框流光同时合成时的帧率仍为 pending-device。
+
+## PUI-FB-0499 · Select 与 Picker 标题到选项内容重复叠加间距 Token
+
+- 原始记录：`feedback/records/pui-fb-0499-select-picker-title-option-spacing.json`
+- 范围：`component` / `select`、`picker`、`popup`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：Select 与 Picker 弹层标题应清晰归属下方选项，标题到第一组选项或滚轮之间保持克制、稳定的单一间距，不因全局等距模式重复放大。
+- 实际问题：修复前 Select 的结构空白为 section gap 36rpx + Content top padding 28rpx + Options top padding 28rpx，共 92rpx；Picker 为 36rpx + 28rpx。该空白来自 Token 叠层，不是标题字号、选项行高或演示页面间距。
+- 决策：Select 与 Picker 分别新增内部 --pui-*-title-options-gap，并通过 Popup custom-style 映射到 --pui-popup-section-gap：普通模式为 0，equalSpacing 为 --pui-surface-inset。Select Options padding 归零，由 Popup Content 统一提供四向 inset；Picker 的 visibleItemCount、itemHeight、滚轮 mask 和中心选中逻辑均保持不变。
+- 理由：标题与其直接标注的选择内容属于紧密单一分区，只需要一个面板 inset。让 normal/equal 模式分别由 Content padding 或 section gap 承担同一数值，可避免叠层并保持等距模式盒模型合同。
+
+AI 必须遵守：
+
+- 不得通过缩小全局 section gap 修复单个选择组件。
+- Select Options 在 Popup Content 内不得再次设置 panel padding。
+- Picker 标题间距问题不得通过减少 visibleItemCount、itemHeight 或移动中心选中项解决。
+- 普通模式与 equalSpacing 模式必须保持同一个可见 title-to-options inset，只允许间距所有权切换。
+- H5 最终同步时必须在 preview/app.js 和 preview/styles.css 保持同一结构，并在 390px 测试 light/dark/equalSpacing、展开与选择。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-select.js：通过`
+- 验证：`node scripts/test-picker.js：通过`
+- 验证：`node scripts/test-miniprogram-form-pages.js：通过`
+- 验证：`npm run miniprogram:build：通过，生成 74 个组件目录`
+- 验证：`npm run feedback:generate：通过，481 records`
+- 验证：`npm run feedback:check：通过，481 records`
+- 验证：`本地 tarball 安装到真实 miniprogram/node_modules 后 verify-install：通过`
+- 验证：`微信 build-npm：通过，1377ms，warnings=[]`
+- 验证：`Select / Picker 源码、dist、真实 node_modules、miniprogram_npm 四件套 SHA-256 一致；Picker template.wxml 四路一致`
+- 验证：`根仓 git diff --check：通过；嵌套 miniprogram 仓被本轮未修改的 pages/index/index.json:2 尾随空白阻断`
+- 真机/兼容风险：iOS/Android 真机的 Popup 自定义属性继承、rpx 取整、picker-view mask、惯性滚动、触摸命中和读屏仍为 pending-device。
+
+## PUI-FB-0500 · List 尾部追加条目瞬间撑开且 API 边界不清
+
+- 原始记录：`feedback/records/pui-fb-0500-list-appended-item-reveal.json`
+- 范围：`component` / `list`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：List 在父级真实追加条目后应有清楚但克制的展开过渡，同时公共 API 不因视觉瞬态变复杂。
+- 实际问题：共享 List 只对 content/state/footer 有过渡，items 增量没有进入态；独立页还传入了不存在的 retry-text。
+- 决策：复用 duration/easing/reduceMotion，只为 items 尾部增量增加内部 entering 标记与 CSS 动画，不新增公共 Prop 或 Event。
+- 理由：动画只表达父级写入后的视觉连续性，不应成为第二套业务状态机；现有三个动效 Prop 已足以调节。
+
+AI 必须遵守：
+
+- 首次渲染、同长度替换、移除和重复同步不得重播尾项进入动画。
+- load/retry 只发请求，动画不得被解释为请求成功。
+- 不要为内部视觉瞬态新增 expanded、animate 或完成事件。
+- useSlot 内容的节点和动效由消费者自行管理。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-list.js`
+- 验证：`node scripts/test-miniprogram-data-pages.js`
+- 验证：`npm run miniprogram:build`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`微信开发者工具 build-npm`
+- 真机/兼容风险：pending-device：iOS/Android 的批量节点动画合成、长文案高度、快速连续追加、滚动锚点、系统低动效和读屏仍需真机确认。
+
+## PUI-FB-0501 · SwipeCell 打开一侧时相反动作层从容器边缘露出
+
+- 原始记录：`feedback/records/pui-fb-0501-swipe-cell-opposite-action-leak.json`
+- 范围：`component` / `swipe-cell`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：SwipeCell 向一侧滑开时只能看到该侧操作，另一侧的颜色、边框和圆角不能从容器边缘露出。
+- 实际问题：旧 WXSS 在任一侧拖动或打开时同时把左右 action layer 设为 opacity:1 并着色，相反方向动作层仍位于组件边缘下方。
+- 决策：新增仅供内部渲染的 actionPosition，由 offset 的正负实时派生；WXML 对左右层分别挂 visible class，WXSS 只给 visible 层着色并开启 pointer events。公共 API 保持 6 Props、3 Events、3 Slots、0 Methods。
+- 理由：方向是已有位移状态的确定性派生，不需要新增公共 API；互斥显示同时修复视觉泄漏、隐藏侧误触和 aria-hidden 不一致。
+
+AI 必须遵守：
+
+- 同时存在 left/right 时，offset>0 只显示 left，offset<0 只显示 right，offset=0 两侧都隐藏。
+- 隐藏动作层必须同时不可见、不可点击并设置 aria-hidden，不能只依赖前景遮挡。
+- 拖动跨零时必须切换同侧可见性，不等待 dragend 或 opened 最终态。
+- H5 最终同步必须修改 preview/app.js 的 Pointer runtime 与 preview/styles.css，并增加跨零和双侧泄漏测试。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-swipe-cell.js`
+- 验证：`node scripts/test-miniprogram-data-pages.js`
+- 验证：`npm run feedback:generate && npm run feedback:check`
+- 验证：`npm run miniprogram:build`
+- 验证：`npm pack 后在 miniprogram 以 --no-save --package-lock=false 安装本地 tar`
+- 验证：`/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project miniprogram：1537ms，warnings=[]`
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-swipe-cell.js`
+- 验证：`git diff --check`
+- 真机/兼容风险：iOS/Android 真机的触摸连续帧、圆角抗锯齿、毛玻璃合成和系统手势竞争仍为 pending-device。
+
+## PUI-FB-0502 · Bubble 小程序折叠测量与受控回写导致展开状态失真
+
+- 原始记录：`feedback/records/pui-fb-0502-bubble-expanded-height-remeasurement.json`
+- 范围：`component` / `bubble`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：Bubble 点击展开时只沿首次实测高度单向展开，不能先缩回一次再展开。
+- 实际问题：旧实现不仅会丢失已测端点或在 H5 先绘制目标态，还让用户可见正文同时切换行裁剪布局与高度。第一次修复后，小程序仍依赖隐藏 line-clamp 节点和 CSS 变量间接高度，真实运行时会丢失展开入口；即使测量成功，受控 expanded 回写还会把 showToggle 重置为 false，导致展开后“收起”消失。
+- 决策：按内容几何 key 保存真实测量；小程序用 full 节点和 nowrap 单行探针取得完整高度与真实行高，以 行高×maxLines 计算折叠端点，不再查询隐藏 line-clamp。可见节点直接写入 max-height，不通过依赖 CSS 变量；几何未变化时同时保留已测高度和 showToggle，受控/非受控展开均只在同一节点的两个像素端点间过渡。H5 继续在首次绘制前固定旧端点，下一帧过渡到目标。
+- 理由：高度测量和 toggle 可见性都属于内容几何，不属于 expanded 状态。真实单行高度比隐藏 line-clamp 布局稳定；可见节点直接消费可插值属性，并在父级受控 echo 中保留几何派生状态，才能让入口和动画同时闭环。
+
+AI 必须遵守：
+
+- 内容几何测量的失效条件必须与交互状态分离；expanded 变化不得重置 collapsed/expanded 高度。
+- 受控父级 echo 不应触发重复测量，非受控状态切换不得连续提交两个 setData。
+- 异步测量必须携带 key，旧内容的迟到结果不得覆盖新内容。
+- H5 重建动画节点时必须在首次绘制前固定旧端点，再于下一帧写目标端点；不得先绘制目标态再追加 from keyframe。
+- 可见裁剪节点不能在动画中切换 display 或 line-clamp；只允许一个已测 max-height 属性参与过渡。
+- 小程序折叠端点应由真实单行高度乘 maxLines 得出，不应依赖隐藏 line-clamp 节点的布局结果。
+- 几何缓存命中时必须同时保留 showToggle 等派生状态；受控父级 echo 不能让展开/收起入口消失。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-bubble.js`
+- 验证：`npm run site:build`
+- 验证：`npm run example:install`
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-bubble.js`
+- 验证：`npm run feedback:check`
+- 验证：`npm run pack:check`
+- 验证：`git diff --check`
+- 真机/兼容风险：微信模拟器已实际完成展开与收起闭环，但未用帧级采样证明每一个合成帧单调；iOS/Android 真机的 selector query 时序、字体回流、rpx 取整、合成帧和系统低动效仍待验证。
+
+## PUI-FB-0503 · CountDown 缺少非闪烁的逐位数字滚动风格
+
+- 原始记录：`feedback/records/pui-fb-0503-countdown-digit-roll-animation.json`
+- 范围：`component` / `count-down`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：CountDown 除现有整段渐隐入场外，还要提供真正逐位滚动的数字风格，并以清楚 API 切换且不破坏计时合同。
+- 实际问题：旧实现只有整段 pulse，所有数字随格式化文本变化一起重播入场，无法表达逐位卷动。
+- 决策：新增单一 animation=pulse|roll Prop，默认 pulse；roll 只在 DD/HH/mm/ss 的变化位保留旧/新 glyph 并垂直滚动，SSS 直接刷新，计时、事件、Slot 与 Methods 不变。
+- 理由：一个展示枚举足以表达用户选择，同时保留现有消费者兼容；逐位模型复用同一 remaining/targetTime，避免创建平行状态机或让页面掩盖组件缺陷。
+
+AI 必须遵守：
+
+- animation 只允许 pulse/roll，默认与非法值均为 pulse；不要恢复 duration/easing 或新增动画完成事件。
+- roll 只给 DD/HH/mm/ss 的变化位保留旧/新 glyph，未变化位保持静止，SSS 直接更新。
+- 切换 animation 不得 reset、改变 remaining、重排 change/finish 或影响 start/pause/reset/getTime。
+- 单位必须继续位于固定数字 value 外；数字 reel 的 overflow 不能重新裁切 splitWithUnit。
+- H5 最终同步必须覆盖逐位前后帧、SSS、Slot、低动效、390px 深浅色和真实计时不中断。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-count-down.js`
+- 验证：`node scripts/test-miniprogram-data-pages.js`
+- 验证：`node scripts/test-miniprogram-component-pages.js`
+- 验证：`node scripts/test-miniprogram-component-page-quality.js`
+- 验证：`node --check count-down/count-down.js`
+- 验证：`npm run miniprogram:build`
+- 验证：`npm pack + miniprogram npm install --no-save --package-lock=false --ignore-scripts`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram`
+- 验证：`wechatwebdevtools cli build-npm --project miniprogram`
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-count-down.js`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`git diff --check -- count-down metadata/components.js miniprogram/pages/components/count-down scripts/test-count-down.js scripts/test-miniprogram-data-pages.js`
+- 真机/兼容风险：iOS/Android 真机的 rpx 字形裁切、动画合成、后台定时节流、50ms 毫秒刷新、系统低动效与辅助技术播报仍为 pending-device。
+
+## PUI-FB-0504 · DynamicMessage 需要组件私有阴影与毛玻璃覆盖
+
+- 原始记录：`feedback/records/pui-fb-0504-dynamic-message-local-surface-effects.json`
+- 范围：`component` / `dynamic-message`、`preview-site`、`miniprogram-advanced-page`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：DynamicMessage 除了继承全局外观，还要能用自己的一套开关单独控制阴影和毛玻璃，并保证流光结束后这些 Surface 效果仍然存在。
+- 实际问题：旧组件只能消费全局有效 Token，没有公开局部覆盖；H5 属性视图重建概览 DOM 时还会出现 retained data 与 hidden node 不一致。
+- 决策：新增 shadow/frostedGlass 两个 Boolean|null Prop，默认 null。原生与 H5 都生成 on/off/inherit 三态；true 使用 DynamicMessage 自有语义效果 Token，false 只清除当前 Surface，null 继续读取 ConfigProvider。小程序独立页提供两项 PUI Switch。H5 重新绑定 runtime 时若存在 dynamicCurrent，则复用同一内容恢复 visible 并继续停留计时，但不重播入场或 edge-flow。
+- 理由：三态同时满足全局统一、局部强调和局部抑制，不需要复制第二份全局 Store。恢复 retained current 使运行数据与 DOM 状态重新一致，也避免属性调试后按钮看似失效。
+
+AI 必须遵守：
+
+- 不得把 shadow/frostedGlass 改成默认 false；默认 null 保留 ConfigProvider 继承。
+- 局部开关只能改变当前 DynamicMessage Surface，不能写入 visualConfig 或改变其他组件。
+- edge-flow 只能动画自己的装饰节点，不能覆盖根 Surface 的 background/backdrop-filter/box-shadow。
+- H5 全局 shadow-off 的通用 reset 不能压过 DynamicMessage 显式 shadow=true；局部显式值优先于继承值。
+- 属性或预览 DOM 重建时，dynamicCurrent 数据与根节点可见阶段必须重新同步；不得保留 hidden 节点或重播流光。
+- 小程序独立页陈列必须复用 PUI CellGroup、Cell 与 Switch，不能用页面原生 checkbox。
+
+验证与遗留风险：
+
+- 验证：`node --check dynamic-message/dynamic-message.js`
+- 验证：`node --check miniprogram/pages/components/dynamic-message/index.js`
+- 验证：`node scripts/test-dynamic-message.js`
+- 验证：`node scripts/test-miniprogram-advanced-pages.js`
+- 验证：`node scripts/test-wxss-universal-selector-compatibility.js`
+- 验证：`npm run site:build：通过，生成 74 个发布组件目录`
+- 验证：`npm run check：precheck 与本组件前置门禁通过，随后被既有首页 enableShareTimeline 缺失断言阻断`
+- 验证：`npm run pack:check：通过，559 files / 366.7 kB / shasum 33ba47f6c2a9f061b399faf923d4e34eb0d45952`
+- 验证：`npm run example:install：通过，0 vulnerabilities`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：ok=true`
+- 验证：`wechatwebdevtools cli build-npm --port 25928 --project miniprogram：1176ms / warnings=[]`
+- 验证：`DynamicMessage 源码、dist、示例 node_modules、真实 node_modules、微信 miniprogram_npm 五路四件套 SHA-256 一致`
+- 真机/兼容风险：微信 iOS/Android 真机仍需确认 backdrop-filter 与局部强制阴影在全局关闭组合下的合成结果。
+- 真机/兼容风险：小程序 PUI Switch 触摸、rpx 阴影边界、样式隔离、低端 Android 毛玻璃帧率与读屏仍为 pending-device。
+- 真机/兼容风险：微信自动化桥接返回 Bad Request；_example 使用 touristappid，官方 build-npm 返回 code 10，均未伪报为运行通过。
+
+## PUI-FB-0505 · Skeleton 自定义 circle 被固定最小高度拉成椭圆
+
+- 原始记录：`feedback/records/pui-fb-0505-skeleton-circle-avatar-geometry.json`
+- 范围：`component` / `skeleton`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：Skeleton 的头像占位必须稳定显示为正圆，并继续通过现有 rowCol API 定义结构。
+- 实际问题：固定 96rpx 最小高度压过较小的 size 高度，使 circle 实际宽高不等；圆角还缺少元素自身 50% 的最终保证。
+- 决策：共享 Skeleton 的 circle part 改为 min-height:0 与 border-radius:50%，继续由 size 同时生成 width/height；不新增头像专用 Prop，也不修改页面 CSS。
+- 理由：默认 96rpx 已由 height 提供，不需要同值 min-height；允许 size 覆盖两轴并以 50% 由自身尺寸计算，能稳定得到正圆。现有 rowCol 已完整表达头像轮廓，无需扩张 API。
+
+AI 必须遵守：
+
+- circle 是几何类型；默认 height 不能再成为阻止较小 size 生效的 min-height，输入必须保持 width=height、flex 不收缩和 border-radius:50%。
+- 不得恢复 avatar/avatarShape/avatarSize；头像轮廓继续由 rowCol 的 circle + size 表达。
+- 独立页不得穿透或覆盖 Skeleton circle 样式。
+- H5 最终同步必须验证 preview circle 的计算宽高相等、border-radius=50%，并覆盖 largeRadius 与 390px。
+
+验证与遗留风险：
+
+- 验证：`npm run miniprogram:build：通过，生成 74 个组件目录`
+- 验证：`node scripts/test-skeleton.js：通过`
+- 验证：`node scripts/test-miniprogram-feedback-pages.js：通过`
+- 验证：`node scripts/test-miniprogram-component-pages.js：通过`
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-skeleton.js：通过`
+- 验证：`npm run feedback:generate && npm run feedback:check：通过，487 条记录`
+- 验证：`本地 npm pack、真实 miniprogram 安装与 verify-install：通过；559 files / 366.8 kB / shasum c14cbcd2972b1810f975eeb687c87b55b7c8aabb`
+- 验证：`微信开发者工具 build-npm：通过，321ms`
+- 真机/兼容风险：iOS/Android 真机的 rpx 取整、样式隔离、动画合成、系统低动效和读屏仍为 pending-device。
+
+## PUI-FB-0506 · 图表演示数据变化幅度过小导致动画不明显
+
+- 原始记录：`feedback/records/pui-fb-0506-chart-preview-high-variance-data.json`
+- 范围：`component` / `area-chart`、`bar-chart`、`waffle`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：让三个图表的初始形态和数据变化具有足够大的波动，使真实入场与数据更新动画一眼可辨。
+- 实际问题：BarChart 和 Waffle 旧页面只增加 1，视觉幅度过小；AreaChart 没有第二组数据；H5 三个概览都缺少真实数据切换入口。
+- 决策：三个演示统一使用页面拥有的初始态与高波动态，保持相同 item/segment key，父级回写 items 后调用既有 replay；H5 用保留 demo state 和全宽 PUI Button 镜像同义切换。
+- 理由：同 key 的大幅数据切换既能证明父级真实回写，也能让 Area 峰谷、Bar 长度和 Waffle 行数变化在 500ms 内清晰可见，不需要扩大公共 API 或延长动画。
+
+AI 必须遵守：
+
+- AreaChart 演示前后态同时包含明显峰谷与系列交叉。
+- BarChart 演示至少包含一组明显上升和一组明显下降，并共享同一比例。
+- Waffle 演示前后至少跨越多行点阵，保留总值与图例。
+- 数据切换由父级回写 items 后调用 replay，不增加组件级 demo Prop。
+- 同数据重播和数据切换后重播必须是两个可区分的真实操作。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-area-chart.js：通过`
+- 验证：`node scripts/test-bar-chart.js：通过`
+- 验证：`node scripts/test-waffle.js：通过`
+- 验证：`node scripts/test-miniprogram-advanced-pages.js：通过`
+- 验证：`npm run feedback:generate：通过，生成 488 条记录`
+- 验证：`npm run feedback:check：通过`
+- 验证：`npm run miniprogram:build：通过，生成 74 个组件目录`
+- 验证：`npm run site:build：通过，生成 488 条 Ledger、562 个样式类、220 个图标、74 个组件目录和 6 份目录产物`
+- 验证：`npm run check：专项与前置门禁通过；在既有 scripts/test-miniprogram-home.js:316 失败，enableShareTimeline 期望 true、实际 undefined，与本条图表修改无关`
+- 验证：`npm run pack:check：通过，559 个文件，366.7kB，shasum b717af3f5fc36550a4560697eb71d1e215ebea5e`
+- 真机/兼容风险：本轮仅在微信开发者工具实点 AreaChart；BarChart、Waffle 尚未在模拟器逐项实点，iOS/Android 真机的 Canvas 重绘、连续点击与系统低动效仍待验证。
 

@@ -10,7 +10,7 @@
   "acceptance": "accepted",
   "source": "battle",
   "reportedAt": "2026-07-19",
-  "updatedAt": "2026-07-19",
+  "updatedAt": "2026-07-29",
   "userGoal": "Avatar 应快速表达图片、Icon、文字或 Slot 头像，不把宿主点击、禁用状态、重复图片别名和可由全局 Token 管理的动效暴露成头像自身 API。",
   "environment": {
     "surfaces": ["wechat-component", "h5-preview", "api-reference", "example", "npm-dist"],
@@ -27,15 +27,15 @@
   "actual": "旧合同把图片来源、宿主交互、禁用门禁、加载诊断和私有动画配置混在同一组件内，基础用法和调用职责都不清晰。",
   "evidence": [
     {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求双方共有组件逐项参考 TDesign，精简不必要公开 API，并授权完整 battle 后自主连续验收。"},
-    {"kind": "file", "ref": "avatar/avatar.js", "note": "最终固定 11 Props，只公开 error；load 只更新内部绘制，根节点不再处理 tap。"},
+    {"kind": "file", "ref": "avatar/avatar.js", "note": "当前固定 13 Props，只公开 error；lazy、自动等待与 loading 强制态均在图片职责内，load 只更新内部绘制，根节点不处理 tap。"},
     {"kind": "file", "ref": "avatar/avatar.wxml", "note": "根固定 role=img，回退优先级为 Slot、Icon、文字，真实 image 负责 load/error。"},
-    {"kind": "test", "ref": "scripts/test-avatar.js", "note": "专项合同锁定 11 Props、1 Event、1 Slot、0 业务 Methods，并禁止恢复 image/clickable/disabled/duration/easing。"},
+    {"kind": "test", "ref": "scripts/test-avatar.js", "note": "专项合同锁定 13 Props、1 Event、1 Slot、0 业务 Methods；loading 只驱动 Avatar 内部 PUI Loading，并禁止恢复 image/clickable/disabled/duration/easing。"},
     {"kind": "browser", "ref": "http://127.0.0.1:4179/#/components/shadcn-avatar", "note": "真实页面确认 Avatar 本体内没有 button；组合操作由 PUI Button 回写为资料已打开，禁用宿主保持 disabled。"}
   ],
   "rootCause": "旧设计追求把头像资源、交互和动画细节全部配置化，没有先确定 Avatar 是纯展示叶子的稳定职责边界。",
   "decision": {
-    "outcome": "公开合同收敛为 src/text/alt/icon/shape/size/bordered/hideOnLoadFailed/useSlot/ariaLabel/reduceMotion 11 Props、error 1 Event、default 1 Slot、0 业务 Methods；删除 image/clickable/disabled/duration/easing 和 click/load。",
-    "rationale": "头像的独立用户任务是稳定展示身份；点击、禁用、loading、selected 和业务反馈属于宿主，固定 500ms/1ms 动效可避免重复入口并保持跨端一致。",
+    "outcome": "公开合同收敛为 src/text/alt/icon/shape/size/bordered/hideOnLoadFailed/lazy/loading/useSlot/ariaLabel/reduceMotion 13 Props、error 1 Event、default 1 Slot、0 业务 Methods；loading 只强制内部等待视觉，删除 image/clickable/disabled/duration/easing 和 click/load。",
+    "rationale": "头像的独立用户任务是稳定展示身份；图片资源 Loading 与 lazy 属于 Avatar 内部图片职责，宿主业务的点击、禁用、loading、selected 和反馈仍属于外层组件。",
     "alternativesRejected": [
       "机械复制 TDesign 的 badgeProps/imageProps 会让父组件透传子组件全量配置并形成第二套组合 API。",
       "保留 Avatar click/disabled 会让嵌套 Button 出现重复交互根和两套门禁。",
@@ -52,7 +52,7 @@
     "browser": [
       "真实输入 text=0 后预览和 WXML 都保留 0；键盘清空后回退为 ? 且 WXML 删除默认空 Prop。",
       "元素选择模式选中 Avatar 根后只显示 5 个内容字段和 6 个设置字段，未暴露宿主 click/disabled。",
-      "API 完整显示 11 Props、1 Event、1 Slot，不渲染 Methods。"
+      "API 完整显示 13 Props、1 Event、1 Slot，不渲染 Methods。"
     ],
     "deviceRisks": [
       "微信 image 解码、rpx 抗锯齿、Slot 字体基线、读屏图片语义和系统级低动效仍需合法 AppID 真机复核。",
@@ -62,7 +62,7 @@
   "ai": {
     "summary": "Avatar 是纯展示叶子，只负责图片与回退；交互、禁用和业务状态永远交给 Button、Cell 等宿主。",
     "rules": [
-      "禁止恢复 image 别名、clickable/disabled、Avatar 自身 click/load 或私有 duration/easing。",
+      "禁止恢复 image 别名、clickable/disabled、Avatar 自身 click/load 或私有 duration/easing；loading 只能驱动组件内部 PUI Loading。",
       "基础用法只写最小 Avatar WXML，不绑定 error；完整 error 只进入 API Events 或真实失败专项示例。",
       "需要 Badge 时使用外层组合，需要点击时使用 PUI Button/Cell 包裹，不新增重复透传 Prop。",
       "图片 load 只改变内部 opacity；只有 error 对消费者有独立处理价值。"

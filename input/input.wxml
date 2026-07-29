@@ -46,10 +46,14 @@
       bindconfirm="onConfirm"
     />
     <view
-      wx:if="{{(clearable && innerValue && interactive) || loading || suffix || suffixIcon}}"
+      wx:if="{{hasClear || loading || suffix || suffixIcon}}"
       class="pui-input__trailing"
     >
-      <view wx:if="{{clearable && innerValue && interactive}}" class="pui-input__clear-host">
+      <view
+        wx:if="{{hasClear}}"
+        class="pui-input__clear-host {{showClear ? 'pui-input__clear-host--visible' : 'pui-input__clear-host--hidden'}}"
+        aria-hidden="{{!showClear}}"
+      >
         <pui-button
           custom-class="pui-input__clear"
           theme="default"
@@ -58,6 +62,7 @@
           shape="square"
           icon="close-circle"
           aria-label="清空{{semanticLabel}}"
+          disabled="{{!showClear}}"
           reduce-motion="{{reduceMotion}}"
           color-scheme="{{colorScheme}}"
           catch:click="onClear"

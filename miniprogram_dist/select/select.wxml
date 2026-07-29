@@ -18,6 +18,7 @@
     card="{{true}}"
     show-header
     title="{{semanticLabel}}"
+    custom-style="--pui-popup-section-gap:var(--pui-select-title-options-gap);"
     duration="{{duration}}"
     reduce-motion="{{reduceMotion}}"
     aria-label="{{semanticLabel + '选项'}}"

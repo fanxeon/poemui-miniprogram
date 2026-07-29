@@ -60,4 +60,12 @@ H5 Pointer Events 镜像小程序 touch 方向判定、30% 阈值、数组操作
 
 ## 13. 2026-07-27 果味动作底板
 
-SwipeCell 外壳承担圆角和裁切，动作 wrapper 按 `default/primary/success/warning/danger` 着色，内部 PUI Button 必须 `surface="transparent"`。这样果味/毛玻璃不会透出多张按钮 Surface，见 `swipe-cell/`、`preview/*`、`PUI-FB-0435`。
+SwipeCell 外壳承担圆角和裁切；动作 wrapper 在静止关闭时必须透明、无边框和阴影，只在 dragging/opened 后按 `default/primary/success/warning/danger` 着色，内部 PUI Button 必须 `surface="transparent"`。这样果味/毛玻璃不会提前透出底层颜色。
+
+## 14. 2026-07-29 双侧动作层互斥
+
+左右动作同时存在时，可见性必须由实时位移方向决定：`offset > 0` 只显示并允许点击 left，`offset < 0` 只显示并允许点击 right，`offset = 0` 两侧都隐藏。拖动跨过零点时立即切换可见侧；不得用根级 `dragging/opened` 同时激活两侧，否则相反方向的语义色、边框或圆角会从半透明前景与容器边缘露出。该规则只约束内部展示态，不新增 Prop、Event 或 Method。
+
+小程序事实源为 `swipe-cell/swipe-cell.js` 的 `actionPosition`、WXML 的同侧 visible class 与 WXSS 的 `pointer-events` 门控。H5 后续统一同步时，`preview/app.js` 的 Pointer runtime 和 `preview/styles.css` 也必须按实时 translate 方向互斥显示两侧，并验证跨零拖动、深浅色、果味和 390px 无反向底板泄漏。
+
+本轮于 2026-07-29 重新联网核对 TDesign 官方页面、develop 仓库目录及固定 `tdesign-miniprogram@1.15.3` 的 `miniprogram_dist/swipe-cell/{props.js,type.d.ts,swipe-cell.js,swipe-cell.wxml,swipe-cell.wxs,swipe-cell.wxss}`。TDesign 固定包把左右动作放在 wrapper 两侧并随同一 wrapper 位移，使相反侧留在裁切区外；PoemUI 保留现有“动作层位于前景下方”的结构，但以方向互斥达到相同的单侧可见结果，不照搬其私有 WXS。

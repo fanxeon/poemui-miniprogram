@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0473",
+  "title": "Search 取消操作尺寸过大抢占主层级",
+  "scope": "component",
+  "components": ["search", "button"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "取消是搜索输入旁的次要退出动作，不应与搜索字段或主要操作争夺视觉层级。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": ["开启 showCancel 打开 Search 独立页；当前未提交方案虽改为 transparent/extra-small，但 Button 的 transparent 变体仍继承 extra-small 的 88rpx 最小宽度，取消实际占位仍为 44px。"],
+  "expected": "取消继续复用 PUI Button，但必须使用正式紧凑文字操作合同：默认两字取消宽度低于 44px 旧基线，并以 secondary 文字、medium 字重和透明 Surface 表达次要层级；自定义文案仍须在 390px 内有界。",
+  "actual": "transparent/extra-small 只把高度降到 64rpx，没有移除 88rpx 最小宽度；改成 text 后 Button 内部虽为 min-width:0，微信自定义组件宿主仍实际占 184px，auto/fit-content/min-content 均未收缩。此前 Ledger 将 44x32px 错记为已解决，用户复核后仍明确认为过大、主次不清。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户明确指出取消按钮过大、主次不分明。"},
+    {"kind": "file", "ref": "button/button.wxss", "note": "extra-small 定义 88rpx min-width；只有 text 变体正式覆盖为 min-width:0 并使用 space-xs 内距。"},
+    {"kind": "file", "ref": "search/search.js", "note": "按取消文案字符权重选择 compact/regular/wide/xwide 四级宿主宽度。"},
+    {"kind": "file", "ref": "search/search.wxml", "note": "取消改为 text/surface-transparent/extra-small PUI Button，区分宿主 class、内部 custom-class，并通过 content/aria-label 提供真实名称。"},
+    {"kind": "file", "ref": "search/search.wxss", "note": "宿主宽度固定为 68/104/144/176rpx 四级语义值；内部 Button 不再由父级覆盖内距、颜色或 Surface。"},
+    {"kind": "test", "ref": "scripts/test-search.js", "note": "专项锁定 PUI text Button 的真实紧凑几何合同与 H5 待同步位置。"}
+  ],
+  "rootCause": "此前只看到 transparent/extra-small 的外观和高度变化，却没有审计 Button 选择器与微信自定义组件宿主：transparent 不覆盖 88rpx min-width；text 虽把内部根归零，宿主仍按块级 flex 项占 184px。旧测试只断言属性字符串，没有锁定内部根与宿主两层计算几何。",
+  "decision": {
+    "outcome": "取消固定使用 PUI Button text/surface-transparent/extra-small；secondary tone 与 medium 字重通过 Button 公开 custom-style 变量传入，宿主按文案权重选择 68/104/144/176rpx 四级语义宽度。",
+    "rationale": "text 把 Button 内部普通最小宽度归零；四级宿主宽度绕开微信 auto intrinsic sizing 缺口并保留自定义 cancelText；extra-small 保持 64rpx 高度，surface-transparent 保证锁定态不出现第二层 Surface。",
+    "alternativesRejected": ["手写 text 点击区会绕过 PUI Button。", "transparent/extra-small 仍保留 88rpx 最小宽度，不能解决用户指出的占位问题。", "auto/fit-content/min-content 在微信运行时仍把宿主拉至 184px。", "页面 CSS 强制 Button 内部 min-width/padding 会掩盖共享合同并重新引入 !important。"]
+  },
+  "impact": {
+    "files": ["search/search.wxml", "search/search.wxss", "preview/app.js", "preview/styles.css", "scripts/test-search.js", "docs/components/SEARCH.md", "docs/COMPONENT_DETAIL_PAGE_UI_CHECKLIST_2026-07-28.md", "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md", "docs/TDESIGN_COMPONENT_ALIGNMENT.md", "feedback/records/pui-fb-0473-search-cancel-action-hierarchy.json"],
+    "dependencies": ["PUI Button", "PUI Input", "PUI spacing tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-search.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": ["node scripts/test-search.js：通过", "node scripts/test-miniprogram-form-pages.js：通过", "npm run miniprogram:build：生成 74 个组件目录", "node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：ok=true", "微信 DevTools build-npm：最终 cost=1187ms，warnings=[]", "npm run feedback:generate && npm run feedback:check：480 records，通过", "根仓与 miniprogram 嵌套仓 git diff --check：通过"],
+    "browser": [
+      "微信开发者工具 iPhone 12/13 (Pro) 390x844：旧 transparent/extra-small 内部最小宽度仍为 44px；改成 text 后内部 min-width=0，但宿主实际被拉至 184x33px，auto/fit-content/min-content 均未收缩。",
+      "最终默认取消命中 compact 宿主，宿主与真实 PUI Button 均为 35x33px；min-width=0、左右 padding=4px、font-size=13px、font-weight=500、secondary color，透明背景/边界，无 shadow/backdrop-filter；content/aria-label 使辅助树读作“取消”而非“按钮”。",
+      "实际点击输入并键入 Tabs 后，页面回写“准备查找 Tabs”；实际点击取消后 value 归空并回写“已取消搜索，显示完整目录”。组件只发 cancel，由页面消费者完成清空。",
+      "浅色标准、深色果味、深色边框开启三组计算样式下几何均为 35x33px；果味和边框不让取消获得独立 Surface。验收后恢复 light / shadow on / frost off / largeRadius on / bordered off。",
+      "清空开发者工具控制台后重跑输入 Tabs→取消，新增 0 error / 0 warning；清理前的基础库、Navbar 选择器与 IntersectionObserver 提示属于既有运行噪音。",
+      "H5 Chrome 390px 深色果味：取消计算样式为 26x32px、min-width=0、padding=0、透明背景，低于旧 44px 基线；输入字段继续占剩余宽度，document scrollWidth=clientWidth。取消只发布事件，受控值继续由消费者决定是否清空。"
+    ],
+    "deviceRisks": ["微信真机触摸命中、软键盘与长取消文案仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Search Cancel 是 text/surface-transparent/extra-small 的次要 PUI Button；默认宿主必须落到 compact 35px，透明不等于紧凑。",
+    "rules": ["判断层级必须同时审计内部根和自定义组件宿主计算几何；transparent 仍可能继承 Button 最小宽度。", "微信宿主的 auto/fit-content/min-content 不能未经实测当作内容收缩。", "不得用 small 或普通 transparent Button 承载紧凑取消。", "不得用原生文字点击区或页面 CSS 内部几何补丁替代 PUI Button。"],
+    "tags": ["search", "cancel", "button", "hierarchy", "h5-parity"]
+  }
+}

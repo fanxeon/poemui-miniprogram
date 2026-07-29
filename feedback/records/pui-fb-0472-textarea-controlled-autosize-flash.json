@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0472",
+  "title": "Textarea 受控回写期间 autosize 高度闪动",
+  "scope": "component",
+  "components": ["textarea"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Textarea 连续输入时高度稳定增长；用户明确要求完全删除输入区内 Clear，避免输入后结构变化。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "以 value 受控并开启 autosize 渲染 Textarea，在独立页连续输入跨行内容；旧 onInput 返回 previousValue，原生节点先回退旧文本，随后父级 setData 再写入新值。",
+    "移除旧值返回和 Clear 后继续输入跨行内容；原生 line-change 只单调增长，但父级 change→value 同值回写会再次触发组件 value observer 的完整 syncState/setData，把 value/controlStyle/auto-height/focus 绑定重交给原生 textarea。"
+  ],
+  "expected": "正常受控输入只发布 change，输入区宽度在输入前后保持稳定；Textarea 不内置 Clear，需要清空时由父级显式写回 value。",
+  "actual": "旧组件在原生输入已经完成 auto-height 测量后，又因父级同值 value echo 全量提交组件派生状态并重绑原生 value，造成可见高度回缩；Clear 已由用户复看排除为主因。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户在 Clear 完全删除后再次复看，确认高度仍会先增后减，否定 Clear 根因判断。"},
+    {"kind": "file", "ref": "textarea/textarea.js", "note": "onInput 正常受控输入返回 undefined，并删除 clearable/showClear/requestClear/onClear/clear()。"},
+    {"kind": "file", "ref": "textarea/textarea.wxml", "note": "删除 PUI Clear Button，Field 只在稳定 loading 状态预留右侧动作轨。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 删除 Textarea Clear DOM、属性、事件路由；静态 autosize 继续局部更新 rows/高度 Token。"},
+    {"kind": "test", "ref": "scripts/test-textarea.js", "note": "专项锁定 29 Props / 6 Events / 3 Slots / 3 Methods、无 Clear、逻辑值/原生值隔离、同值父级 echo 零额外 setData 及外部不同 value 正常重绑。"},
+    {"kind": "test", "ref": "miniprogram/pages/components/textarea/index.wxml", "note": "微信开发者工具 Nightly 2.02.2607282 在该真实页面输入六行：只有一次 {innerValue,count} 子组件补丁，父级同值回写没有 renderValue 补丁；30ms 连续采样 356 次，高度只从 87px 增至 126px，无回落。"},
+    {"kind": "browser", "ref": "https://tdesign.tencent.com/miniprogram/components/textarea", "note": "2026-07-28 联网复核 TDesign Mini Program Textarea 产品与 API 页面。"},
+    {"kind": "build", "ref": "tdesign-miniprogram@1.15.3:miniprogram_dist/textarea", "note": "固定解包读取 props.js、type.d.ts、textarea.js、textarea.wxml 与 textarea.wxss。"}
+  ],
+  "rootCause": "Clear 已由用户复看排除。根因是受控同值 echo：页面每次 change 都 setData(value)，旧组件 value observer 随即执行完整 syncState/setData，并把 value、controlStyle、auto-height 与焦点相关绑定重新提交给原生 textarea；它发生在原生 auto-height 已完成当前输入测量之后，使原生布局被二次初始化。line-change 只观察到 1 行/21px 到 6 行/126px 的单调事件，进一步证明下降不来自 line-change 业务处理，而来自其后的受控 WXML 属性重绑。",
+  "decision": {
+    "outcome": "保留 Clear API 清理，并在组件内把逻辑 innerValue 与原生 renderValue 分离：正常输入只差量更新逻辑值与计数；匹配当前原生草稿的父级 value echo 不产生第二次子组件 setData，只有真正外部不同 value 或字符截断才重写原生 textarea。",
+    "rationale": "TDesign 官方合同同样没有 Textarea Clear，因此删除 Clear 仍是合理 API 收敛；运行态补丁与高度采样证明，同值 echo 隔离后六行输入只增长一次且不会回落，同时外部不同值仍能正常重绑，组件受控语义没有被削弱。",
+    "alternativesRejected": ["关闭 autosize 会删除组件核心能力。", "在页面 debounce setData 会增加延迟并让所有消费者重复修复。", "只隐藏 Clear 视觉会保留死 API 与可被误用的状态链。"]
+  },
+  "impact": {
+    "files": ["textarea/textarea.js", "textarea/textarea.json", "textarea/textarea.wxml", "textarea/textarea.wxss", "miniprogram/pages/components/textarea/index.js", "miniprogram/pages/components/textarea/index.wxml", "preview/app.js", "preview/styles.css", "metadata/components.js", "scripts/test-textarea.js", "docs/components/TEXTAREA.md", "feedback/records/pui-fb-0472-textarea-controlled-autosize-flash.json"],
+    "dependencies": ["native textarea input return contract", "controlled parent write-back", "autosize", "public API compatibility"]
+  },
+  "verification": {
+    "tests": ["scripts/test-textarea.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": ["node scripts/test-textarea.js：通过（29/6/3/3，无 Clear；正常受控 input 只提交 innerValue/count，匹配父级 echo 零次额外子组件 setData，外部不同 value 更新 renderValue）", "node scripts/test-miniprogram-form-pages.js、node scripts/test-preview-native-control-boundaries.js：通过（独立页保留 textarea-primary 运行态锚点，H5 原生控件边界合法）", "npm run example:install、npm run pack:check：通过（559 files / 364.8kB / shasum 9f1481016543b05ca758a20833f0c1b046a4e3ff）", "微信 CLI build-npm：通过（932ms，warnings=[]）；源码、dist、真实 node_modules 与 miniprogram_npm 的 Textarea JS SHA-1 一致", "npm run feedback:check、根仓 git diff --check：通过；npm run check 在本轮未修改的首页 enableShareTimeline 基线断言停止，嵌套仓 git diff --check 被 pages/index/index.json:2 的既有尾随空白阻断"],
+    "browser": [
+      "H5 PreviewDevice 外框实际宽度 393px：自动增高实例真实输入 6 行后高度/scrollHeight 均为 146px、右内距 0px；内部 viewport clientWidth/scrollWidth=369/369，无横向溢出，console=[]。",
+      "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 Pro：从单行真实输入六行，组件只提交一次 innerValue/count，页面同值回写没有 renderValue 补丁；原生 line-change 为 lineCount=6/height=126。",
+      "同一次输入以 30ms 间隔采样 356 次原生 textarea 几何，高度只有 87px→126px 两个状态且无回落；父级随后写入不同值时 innerValue/renderValue/count 同步更新，外部受控写入仍然生效。"
+    ],
+    "deviceRisks": ["iOS/Android 真机软键盘、中文输入法 composition 与 autosize 仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Textarea 受控输入由原生节点持有当前草稿，同值父级 echo 不重绑 native value。",
+    "rules": ["正常受控 input 返回 undefined。", "逻辑 innerValue 与原生 renderValue 必须隔离；匹配当前草稿的父级 echo 不得产生第二次组件 setData。", "只有真实外部不同 value 或字符规整时更新原生 renderValue。", "Textarea 不公开 clearable/clear/clear()，清空由父级写回 value。", "不得用页面 debounce 掩盖组件输入闪动。"],
+    "tags": ["textarea", "controlled", "autosize", "setData", "input", "clear", "wechat"]
+  }
+}

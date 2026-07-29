@@ -113,6 +113,9 @@ const sourceGroups = [
     key: 'advanced',
     title: '高级',
     items: [
+      { id: 'area-chart', name: 'AreaChart 面积图', status: 'done', kind: 'component' },
+      { id: 'bar-chart', name: 'BarChart 条形图', status: 'done', kind: 'component' },
+      { id: 'waffle', name: 'Waffle 组件点阵图', status: 'done', kind: 'component' },
       { id: 'top-loading', name: 'TopLoading 顶部加载', status: 'done', kind: 'component' },
       { id: 'dynamic-message', name: 'DynamicMessage 灵动通知', status: 'done', kind: 'component' },
       { id: 'pull-refresh', name: 'PullRefresh 下拉刷新', status: 'done', kind: 'component' },
@@ -177,7 +180,7 @@ const availableComponentIds = new Set(
 
 // 外部 shadcn 名称只用来做对照，不应让一个已存在的 PoemUI 实现再出现
 // 第二个公开入口。四条旧链接由官网路由层迁移到下面的规范项。
-const duplicateCatalogAliasTaxonomyIds = new Set(['button', 'typography', 'direction']);
+const duplicateCatalogAliasTaxonomyIds = new Set(['button', 'typography', 'direction', 'chart']);
 
 const shadcnCatalogItems = shadcnComponents
   .filter((entry) => !duplicateCatalogAliasTaxonomyIds.has(entry.poem))
@@ -307,6 +310,9 @@ const navigationGroupByTaxonomyId = new Map([
   ['pull-refresh', 'advanced'],
   ['virtual-list', 'advanced'],
   ['watermark', 'advanced'],
+  ['area-chart', 'advanced'],
+  ['bar-chart', 'advanced'],
+  ['waffle', 'advanced'],
   ['chart', 'advanced'],
 ]);
 
@@ -494,6 +500,9 @@ const releaseComponentIds = new Set([
   'table',
   'swiper',
   'calendar',
+  'area-chart',
+  'bar-chart',
+  'waffle',
   'pull-refresh',
   'virtual-list',
   'sticky',
@@ -582,6 +591,9 @@ const componentSummaries = {
   loading: '展示任务正在处理。',
   'top-loading': '在当前卡片或内容表面顶边反馈请求进度。',
   'dynamic-message': '在页面顶部展示可原位更新的非模态实时通知。',
+  'area-chart': '用曲线与透明渐变展示连续趋势。',
+  'bar-chart': '用共享零基线比较分类数值与分段增量。',
+  waffle: '用圆润点阵表达总量、占比与新增单元。',
   result: '展示流程完成后的结果状态。',
 
   'dropdown-menu': '从触发项下方展开选项。',
@@ -590,7 +602,6 @@ const componentSummaries = {
   popup: '从屏幕边缘展开浮层内容。',
   'action-sheet': '从底部展示一组可选操作。',
   overlay: '遮罩当前页面以聚焦内容。',
-  'shadcn-chart': '以图表展示数据趋势。',
   'pull-refresh': '在组件内部滚动区下拉请求刷新。',
   'virtual-list': '高效渲染大量列表数据。',
   watermark: '在内容上绘制文本或图片水印。',
@@ -732,6 +743,7 @@ const details = {
       { key: 'iconPosition', label: 'icon-position', type: 'select', value: 'right', options: ['left', 'right'] },
       { key: 'theme', label: 'theme', type: 'select', value: 'default', options: ['default', 'primary', 'success', 'warning', 'danger'] },
       { key: 'bordered', label: 'bordered', type: 'boolean', value: true },
+      { key: 'shadow', label: 'shadow', type: 'boolean', value: true },
       { key: 'block', label: 'block', type: 'boolean', value: true },
       { key: 'disabled', label: 'disabled', type: 'boolean', value: false },
       { key: 'readonly', label: 'readonly', type: 'boolean', value: false },
@@ -899,7 +911,75 @@ const details = {
       { key: 'closable', label: 'closable', type: 'boolean', value: true },
       { key: 'duration', label: 'duration', type: 'range', value: 3000, min: 0, max: 60000, step: 100 },
       { key: 'safeArea', label: 'safe-area', type: 'boolean', value: true },
+      { key: 'shadow', label: 'shadow', type: 'nullable-boolean', value: null, apiType: 'boolean | null' },
+      { key: 'frostedGlass', label: 'frosted-glass', type: 'nullable-boolean', value: null, apiType: 'boolean | null' },
       { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
+  'area-chart': {
+    desc: '使用原生 Canvas 2D 绘制连续面积趋势；强调色描边保持清晰，填充沿竖向渐变到透明，H5 使用同数据合同的 SVG 镜像。',
+    path: 'poemui-miniprogram/area-chart/area-chart',
+    states: '自然/线性/阶梯曲线、叠加/堆叠、共享零基线、六种强调色、横向参考线、横轴、图例、默认入场与低动效',
+    props: [
+      { key: 'items', label: 'items', type: 'json', value: [
+        { key: 'jan', label: '1月', segments: [{ key: 'desktop', label: '桌面端', value: 186, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 80, theme: 'teal' }] },
+        { key: 'feb', label: '2月', segments: [{ key: 'desktop', label: '桌面端', value: 305, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 200, theme: 'teal' }] },
+        { key: 'mar', label: '3月', segments: [{ key: 'desktop', label: '桌面端', value: 237, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 120, theme: 'teal' }] },
+        { key: 'apr', label: '4月', segments: [{ key: 'desktop', label: '桌面端', value: 73, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 190, theme: 'teal' }] },
+        { key: 'may', label: '5月', segments: [{ key: 'desktop', label: '桌面端', value: 209, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 130, theme: 'teal' }] },
+        { key: 'jun', label: '6月', segments: [{ key: 'desktop', label: '桌面端', value: 214, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 140, theme: 'teal' }] },
+      ], apiType: 'AreaChartItem[]' },
+      { key: 'max', label: 'max', type: 'range', value: 0, min: 0, max: 1000, step: 10 },
+      { key: 'curve', label: 'curve', type: 'select', value: 'natural', options: ['natural', 'linear', 'step'] },
+      { key: 'stacked', label: 'stacked', type: 'boolean', value: false },
+      { key: 'size', label: 'size', type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+      { key: 'showGrid', label: 'show-grid', type: 'boolean', value: true },
+      { key: 'showXAxis', label: 'show-x-axis', type: 'boolean', value: true },
+      { key: 'showLegend', label: 'show-legend', type: 'boolean', value: true },
+      { key: 'showDots', label: 'show-dots', type: 'boolean', value: false },
+      { key: 'animated', label: 'animated', type: 'boolean', value: true },
+      { key: 'duration', label: 'duration', type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '访问趋势' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
+  'bar-chart': {
+    desc: '使用共享零基线比较分类数值和分段增量；由 WXML View、Flex/Grid 与语义渐变 Token 渲染，不依赖 Canvas。',
+    path: 'poemui-miniprogram/bar-chart/bar-chart',
+    states: '横向/纵向、堆叠/并列、共享最大值、六种强调色、图例、参考线、低动效',
+    props: [
+      { key: 'items', label: 'items', type: 'json', value: [{ key: 'form', label: '表单', segments: [{ key: 'existing', label: '已有', value: 19, theme: 'neutral' }, { key: 'added', label: '新增', value: 3, theme: 'violet' }] }], apiType: 'ChartItem[]' },
+      { key: 'orientation', label: 'orientation', type: 'select', value: 'horizontal', options: ['horizontal', 'vertical'] },
+      { key: 'mode', label: 'mode', type: 'select', value: 'stacked', options: ['stacked', 'grouped'] },
+      { key: 'max', label: 'max', type: 'range', value: 0, min: 0, max: 100, step: 1 },
+      { key: 'size', label: 'size', type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+      { key: 'showValue', label: 'show-value', type: 'boolean', value: true },
+      { key: 'showLegend', label: 'show-legend', type: 'boolean', value: true },
+      { key: 'showGrid', label: 'show-grid', type: 'boolean', value: false },
+      { key: 'animated', label: 'animated', type: 'boolean', value: true },
+      { key: 'duration', label: 'duration', type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '组件分类数量' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
+  waffle: {
+    desc: '用圆润点阵表达总量、占比和新增单元；超过渲染上限时显式展示每格代表的有效单位。',
+    path: 'poemui-miniprogram/waffle/waffle',
+    states: '4–12 列、圆润/圆形/方形、每格单位、最多 200 格、六种强调色、图例、低动效',
+    props: [
+      { key: 'items', label: 'items', type: 'json', value: [{ key: 'all', label: '组件总量', segments: [{ key: 'existing', label: '已有', value: 71, theme: 'neutral' }, { key: 'added', label: '新增', value: 3, theme: 'violet' }] }], apiType: 'ChartItem[]' },
+      { key: 'columns', label: 'columns', type: 'range', value: 10, min: 4, max: 12, step: 1 },
+      { key: 'groupColumns', label: 'group-columns', type: 'range', value: 0, min: 0, max: 12, step: 1 },
+      { key: 'shape', label: 'shape', type: 'select', value: 'rounded', options: ['rounded', 'circle', 'square'] },
+      { key: 'size', label: 'size', type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+      { key: 'unit', label: 'unit', type: 'range', value: 1, min: 1, max: 20, step: 1 },
+      { key: 'maxCells', label: 'max-cells', type: 'range', value: 100, min: 1, max: 200, step: 1 },
+      { key: 'showValue', label: 'show-value', type: 'boolean', value: true },
+      { key: 'showLegend', label: 'show-legend', type: 'boolean', value: true },
+      { key: 'animated', label: 'animated', type: 'boolean', value: true },
+      { key: 'duration', label: 'duration', type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '组件数量点阵' },
       { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
     ],
   },
@@ -942,6 +1022,9 @@ const details = {
 
 const componentCopy = {
   alert: ['语义提示块，支持内部 Icon、soft/tinted 外观、行内纵向对齐、受控/非受控显隐、关闭回写和默认 slot。', '主题、soft/tinted、纵向居中、受控关闭、低动效'],
+  'area-chart': ['以共享零基线展示连续趋势，原生 Canvas 2D 与 H5 SVG 消费同一数据合同，并提供渐变填充、默认入场与 replay()。', '自然/线性/阶梯、叠加/堆叠、渐变填充、默认入场、replay、低动效'],
+  'bar-chart': ['以共享零基线比较分类数量与分段增量，条形渐变保持方向感，并提供默认级联入场与 replay()。', '横向/纵向、堆叠/并列、共享零基线、默认入场、replay、低动效'],
+  waffle: ['以圆润渐变点阵表达总量、占比与新增单元，缩放时显式公开有效单位，并提供默认级联入场与 replay()。', '列数、形状、有效单位、渐变点阵、默认入场、replay、低动效'],
   'aspect-ratio': ['以 WXSS 百分比占位维持媒体、封面和嵌入内容的稳定比例；默认 slot 可组合 Icon、Tag 等内部组件。', '比例、边框、圆角、背景、溢出、平滑比例切换、低动效'],
   breadcrumb: ['可组合路径导航，支持受控/非受控值、current 兼容入口、内部 Button/Icon/Loading、前后缀 slot、状态优先级和低动效。', '受控/非受控、current 兼容、尺寸、换行、slot、loading/error/empty、事件'],
   card: ['内容分组容器，提供可显式保留的 header、content、footer 具名插槽、受控点击边界和低动效。', '具名插槽、边框、紧凑内距、分区、阴影、禁用、点击、低动效'],
@@ -958,11 +1041,11 @@ const componentCopy = {
   divider: ['内容分隔线，支持横竖布局、文字或默认 slot、对齐、虚线和语义边界。', '横向、纵向、content、Tag slot、对齐、虚线、语义'],
   badge: ['附着在对象旁的纯展示数量、短文字或红点标记；交互由宿主组件承担。', 'count、dot、上限/零值、右上角偏移、默认/count slot、主题变体'],
   bubble: ['只负责会话中的消息表面，支持七种变体、起止对齐、连续分组、受控展开、回应按钮、内容/回应 slot、真实触摸事件和低动效。', 'variant、align、group、reaction、展开/收起、slot、click/longpress、显隐生命周期'],
-  avatar: ['展示图片、内部图标、文本或显式 slot 回退头像；交互由外层 Button、Cell 等宿主承担。', '基础、图片与回退、尺寸与形状、组合用法'],
+  avatar: ['展示图片、内部图标、文本或显式 slot 回退头像；图片等待由组件内部处理，交互由外层 Button、Cell 等宿主承担。', '基础、懒加载、图片与回退、尺寸与形状、组合用法'],
   image: ['封装原生 image 的真实资源状态，提供安全尺寸、微信解码能力、覆盖 slot 与低动效；交互由外层宿主承担。', '基础、加载与失败、裁切模式、形状与覆盖内容'],
   grid: ['数据驱动的宫格操作入口，组合 Icon、Badge、Button、Loading 与 Empty，并提供真实点击和重试请求。', '基础、列数与间距、徽标与禁用、加载/空/错误、点击/重试'],
   input: ['单行文字输入控件，支持受控/非受控值、长度限制、状态提示、Icon/Slot 组合、清空、键盘确认和低动效。', '基础、状态提示、图标与清空、尺寸与类型、change/clear/enter'],
-  textarea: ['多行文本输入控件，支持受控/非受控值、字符上限、自动增高、状态提示、清空、键盘事件和低动效。', '基础、字符计数、自动增高、状态提示、清空、change/enter/line-change'],
+  textarea: ['多行文本输入控件，支持受控/非受控值、字符上限、自动增高、状态提示、键盘事件和低动效。', '基础、字符计数、自动增高、状态提示、change/enter/line-change'],
   switch: ['用于控制独立功能开启或关闭的二元输入，支持原始自定义值、文字/图标、三种尺寸和加载状态。', '基础、文字与图标、状态、尺寸、change'],
   checkbox: ['用于多选与全选的声明式复选控件，提供真实 CheckboxGroup、严格原始值和父级状态继承。', '单项/组、全选/半选、max、原始值、状态继承、slot、change'],
   radio: ['用于单选的声明式输入，提供独立 RadioGroup、严格原始值、父级状态继承与唯一 change。', '基础选择、方向与布局、状态、图标与内容、change'],
@@ -1000,7 +1083,7 @@ const componentCopy = {
 
 
   'swipe-cell': ['在列表项左右滑动后展示操作；内容与两侧操作都可由 Slot 组合。', '基础滑动、左右操作、opened、禁用、事件与低动效'],
-  'count-down': ['基于目标时间校正漂移的倒计时，支持声明式暂停、格式、毫秒、三种主题、自定义内容和低动效。', '基础、主题与尺寸、单位与毫秒、控制与自定义内容、change/finish、start/pause/reset/getTime'],
+  'count-down': ['基于目标时间校正漂移的倒计时，支持声明式暂停、格式、毫秒、渐隐或逐位滚动、自定义内容和低动效。', '基础、主题与尺寸、渐隐与数字滚动、单位与毫秒、控制与自定义内容、change/finish、start/pause/reset/getTime'],
   table: ['小屏结构化数据表格，支持局部滚动、固定列、受控选择、稳定排序与真实状态反馈。', '基础、边线与固定列、选择与排序、加载/空/错误、行列事件与实例方法'],
   swiper: ['基于微信原生 swiper 的数据驱动轮播，支持原始值受控回写、自动播放、统一 Navigation、内部状态组合、Generic 条目和低动效。', '受控/非受控、swiper、自动播放、Navigation、状态、Generic、事件、方法、低动效'],
   calendar: ['选择单日、日期范围或多个日期。', '单选、范围、多选、日期限制、行内与弹层、状态、低动效'],
@@ -1018,7 +1101,7 @@ const apiProps = {
   alert: ['theme', 'variant', 'title', 'description', 'closable', 'visible', 'defaultVisible', 'icon', 'showIcon', 'closeIcon', 'verticalAlign', 'center', 'duration', 'easing', 'reduceMotion'],
   'aspect-ratio': ['ratio', 'bordered', 'radius', 'background', 'overflow', 'duration', 'easing', 'reduceMotion'],
   'breadcrumb': ['items', 'value', 'defaultValue', 'current', 'separator', 'separatorIcon', 'showIcon', 'size', 'wrap', 'maxLabelLength', 'currentClickable', 'customPrefix', 'customSuffix', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
-  card: ['title', 'description', 'showHeader', 'bordered', 'padding', 'showFooter', 'headerBordered', 'footerBordered', 'shadow', 'clickable', 'disabled', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
+  card: ['title', 'description', 'showHeader', 'bordered', 'padding', 'showFooter', 'headerBordered', 'footerBordered', 'shadow', 'clickable', 'disabled', 'menuItems', 'menuIcon', 'menuVisible', 'defaultMenuVisible', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
 
   field: ['name', 'label', 'help', 'message', 'status', 'required', 'requiredMarkPosition', 'labelAlign', 'contentAlign', 'labelWidth', 'arrow', 'reduceMotion'],
   'input-otp': ['value', 'length', 'type', 'mask', 'focus', 'disabled', 'error', 'errorMessage'],
@@ -1039,15 +1122,15 @@ const apiProps = {
   tag: ['theme', 'variant', 'size', 'shape', 'content', 'icon', 'closable', 'disabled', 'maxWidth'],
   loading: ['delay', 'duration', 'fullscreen', 'indicator', 'inheritColor', 'layout', 'loading', 'pause', 'progress', 'reverse', 'size', 'text', 'theme', 'ariaLabel', 'reduceMotion'],
   'top-loading': ['state', 'progress', 'delay', 'minimumVisible', 'successDuration', 'duration', 'ariaLabel', 'reduceMotion'],
-  'dynamic-message': ['theme', 'title', 'message', 'icon', 'actionText', 'closable', 'duration', 'safeArea', 'ariaLabel', 'reduceMotion'],
+  'dynamic-message': ['theme', 'title', 'message', 'icon', 'actionText', 'closable', 'duration', 'safeArea', 'shadow', 'frostedGlass', 'ariaLabel', 'reduceMotion'],
   icon: ['name', 'size', 'color', 'ariaLabel'],
   divider: ['layout', 'align', 'content', 'showContent', 'dashed', 'decorative', 'ariaLabel'],
   badge: ['count', 'content', 'dot', 'maxCount', 'showZero', 'theme', 'variant', 'shape', 'size', 'color', 'offset', 'ariaLabel'],
-  avatar: ['src', 'text', 'alt', 'icon', 'shape', 'size', 'bordered', 'hideOnLoadFailed', 'useSlot', 'ariaLabel', 'reduceMotion'],
+  avatar: ['src', 'text', 'alt', 'icon', 'shape', 'size', 'bordered', 'hideOnLoadFailed', 'lazy', 'loading', 'useSlot', 'ariaLabel', 'reduceMotion'],
   image: ['src', 'mode', 'width', 'height', 'shape', 'lazy', 'webp', 'loading', 'error', 'text', 'showMenuByLongpress', 'showSlot', 'ariaLabel', 'reduceMotion'],
   grid: ['items', 'column', 'gutter', 'border', 'align', 'disabled', 'loading', 'error', 'loadingText', 'errorText', 'emptyText', 'retryText', 'ariaLabel', 'reduceMotion'],
-  input: ['value', 'defaultValue', 'name', 'label', 'placeholder', 'type', 'maxlength', 'maxcharacter', 'size', 'align', 'bordered', 'clearable', 'prefix', 'prefixIcon', 'suffix', 'suffixIcon', 'disabled', 'readonly', 'loading', 'focus', 'confirmType', 'status', 'tips', 'required', 'cursorSpacing', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'ariaLabel', 'reduceMotion'],
-  textarea: ['value', 'defaultValue', 'name', 'label', 'placeholder', 'maxlength', 'maxcharacter', 'autosize', 'indicator', 'bordered', 'size', 'clearable', 'disabled', 'readonly', 'loading', 'focus', 'status', 'tips', 'required', 'confirmType', 'showConfirmBar', 'cursorSpacing', 'selectionStart', 'selectionEnd', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'disableDefaultPadding', 'ariaLabel', 'reduceMotion'],
+  input: ['value', 'defaultValue', 'name', 'label', 'placeholder', 'type', 'maxlength', 'maxcharacter', 'size', 'align', 'bordered', 'clearable', 'clearTrigger', 'prefix', 'prefixIcon', 'suffix', 'suffixIcon', 'disabled', 'readonly', 'loading', 'focus', 'confirmType', 'status', 'tips', 'required', 'cursorSpacing', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'ariaLabel', 'reduceMotion'],
+  textarea: ['value', 'defaultValue', 'name', 'label', 'placeholder', 'maxlength', 'maxcharacter', 'autosize', 'indicator', 'bordered', 'size', 'disabled', 'readonly', 'loading', 'focus', 'status', 'tips', 'required', 'confirmType', 'showConfirmBar', 'cursorSpacing', 'selectionStart', 'selectionEnd', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'disableDefaultPadding', 'ariaLabel', 'reduceMotion'],
   switch: ['value', 'defaultValue', 'customValue', 'label', 'icon', 'size', 'disabled', 'readonly', 'loading', 'ariaLabel', 'reduceMotion'],
   checkbox: ['checked', 'defaultChecked', 'value', 'label', 'content', 'icon', 'indeterminate', 'checkAll', 'block', 'borderless', 'contentDisabled', 'disabled', 'readonly', 'name', 'placement', 'maxLabelRow', 'maxContentRow', 'ariaLabel', 'reduceMotion'],
   radio: ['checked', 'defaultChecked', 'value', 'label', 'content', 'icon', 'allowUncheck', 'block', 'borderless', 'contentDisabled', 'disabled', 'readonly', 'name', 'placement', 'maxLabelRow', 'maxContentRow', 'ariaLabel', 'reduceMotion'],
@@ -1060,9 +1143,12 @@ const apiProps = {
   rate: ['value', 'defaultValue', 'count', 'size', 'gap', 'color', 'allowHalf', 'showText', 'texts', 'disabled', 'readonly', 'ariaLabel', 'reduceMotion'],
   upload: ['files', 'defaultFiles', 'max', 'picker', 'mediaType', 'messageType', 'source', 'extensions', 'maxSize', 'addContent', 'addBtn', 'theme', 'columns', 'allowDuplicate', 'preview', 'removeBtn', 'customAdd', 'disabled', 'ariaLabel', 'reduceMotion'],
   toast: ['direction', 'duration', 'icon', 'message', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'theme', 'usingCustomNavbar', 'ariaLabel', 'reduceMotion'],
-  dialog: ['visible', 'actions', 'buttonLayout', 'cancelBtn', 'closeBtn', 'closeOnOverlayClick', 'confirmBtn', 'content', 'overlayProps', 'preventScrollThrough', 'showOverlay', 'title', 'usingCustomNavbar', 'zIndex', 'ariaLabel', 'reduceMotion'],
+  dialog: ['visible', 'actions', 'buttonLayout', 'cancelBtn', 'closeBtn', 'closeOnOverlayClick', 'confirmBtn', 'content', 'overlayProps', 'preventScrollThrough', 'showOverlay', 'showFooter', 'title', 'usingCustomNavbar', 'zIndex', 'ariaLabel', 'reduceMotion'],
   direction: ['direction', 'language', 'fallbackDirection', 'textAlign', 'display', 'content', 'useSlot', 'selectable', 'ariaLabel', 'duration', 'easing', 'reduceMotion', 'customClass', 'customStyle'],
   progress: ['percentage', 'theme', 'label', 'size', 'status', 'strokeWidth', 'color', 'trackColor', 'ariaLabel', 'reduceMotion'],
+  'area-chart': ['items', 'max', 'curve', 'stacked', 'size', 'showGrid', 'showXAxis', 'showLegend', 'showDots', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
+  'bar-chart': ['items', 'orientation', 'mode', 'max', 'size', 'showValue', 'showLegend', 'showGrid', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
+  waffle: ['items', 'columns', 'groupColumns', 'shape', 'size', 'unit', 'maxCells', 'showValue', 'showLegend', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
   skeleton: ['animation', 'delay', 'loading', 'rowCol', 'theme', 'ariaLabel', 'reduceMotion'],
   empty: ['description', 'icon', 'image', 'ariaLabel', 'reduceMotion'],
   'notice-bar': ['content', 'direction', 'interval', 'marquee', 'operation', 'prefixIcon', 'suffixIcon', 'theme', 'visible', 'defaultVisible', 'ariaLabel', 'reduceMotion'],
@@ -1077,9 +1163,9 @@ const apiProps = {
   sidebar: ['items', 'value', 'defaultValue', 'theme', 'bordered', 'width', 'height', 'showGroupTitle', 'sticky', 'stickyOffset', 'showIcon', 'showDescription', 'showBadge', 'clickable', 'readonly', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
   list: ['items', 'title', 'description', 'showHeader', 'customHeader', 'useSlot', 'showIcon', 'showDescription', 'showValue', 'showBadge', 'showArrow', 'clickable', 'bordered', 'divided', 'compact', 'showFooter', 'customFooter', 'customEmpty', 'disabled', 'loading', 'loadText', 'loadingText', 'finished', 'finishedText', 'error', 'errorText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
   collapse: ['items', 'value', 'defaultValue', 'theme', 'disabled', 'expandIcon', 'expandMutex', 'defaultExpandAll', 'customPanel', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
-  collapsible: ['open', 'defaultOpen', 'label', 'content', 'customTrigger', 'customContent', 'icon', 'expandIcon', 'iconPosition', 'theme', 'bordered', 'block', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
+  collapsible: ['open', 'defaultOpen', 'label', 'content', 'customTrigger', 'customContent', 'icon', 'expandIcon', 'iconPosition', 'theme', 'bordered', 'shadow', 'block', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
   'swipe-cell': ['disabled', 'left', 'opened', 'right', 'ariaLabel', 'reduceMotion'],
-  'count-down': ['time', 'autoStart', 'paused', 'content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit', 'ariaLabel', 'reduceMotion'],
+  'count-down': ['time', 'autoStart', 'paused', 'content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit', 'animation', 'ariaLabel', 'reduceMotion'],
   table: ['columns', 'data', 'rowKey', 'bordered', 'stripe', 'height', 'showHeader', 'emptyValue', 'selectable', 'selectedRowKeys', 'defaultSelectedRowKeys', 'multiple', 'selectOnRowClick', 'sortable', 'sort', 'defaultSort', 'customEmpty', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
   swiper: ['items', 'value', 'defaultValue', 'height', 'circular', 'autoplay', 'interval', 'duration', 'easingFunction', 'direction', 'previousMargin', 'nextMargin', 'displayMultipleItems', 'disableTouch', 'navigation', 'imageMode', 'customItem', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
   calendar: ['value', 'defaultValue', 'title', 'type', 'visible', 'defaultVisible', 'minDate', 'maxDate', 'disabledDates', 'disableWeekends', 'firstDayOfWeek', 'switchMode', 'showOutsideDays', 'allowSameDay', 'maxRange', 'maxMultiple', 'localeText', 'autoClose', 'usePopup', 'closeOnOverlayClick', 'disabled', 'readonly', 'loading', 'error', 'ariaLabel', 'reduceMotion'],
@@ -1176,6 +1262,12 @@ const apiPropGroups = {
       keys: ['duration', 'safeArea'],
     },
     {
+      id: 'surface-effects',
+      title: '容器外观',
+      description: 'shadow 与 frostedGlass 为通知 Surface 的局部覆盖；null 继承 ConfigProvider，true 强制开启，false 强制关闭。',
+      keys: ['shadow', 'frostedGlass'],
+    },
+    {
       id: 'accessibility',
       title: '语义与低动效',
       description: 'ariaLabel 命名整条通知；低动效不改变 retained node、队列、事件或关闭原因。',
@@ -1241,7 +1333,7 @@ const apiPropGroups = {
       id: 'content-and-actions',
       title: '内容与操作',
       description: 'title、content 与动作定义 Dialog 的可见内容；复杂正文和按钮使用具名 Slot 组合，不把请求状态塞进 Dialog。',
-      keys: ['title', 'content', 'actions', 'cancelBtn', 'confirmBtn', 'closeBtn', 'buttonLayout'],
+      keys: ['title', 'content', 'actions', 'cancelBtn', 'confirmBtn', 'closeBtn', 'showFooter', 'buttonLayout'],
     },
     {
       id: 'visibility-and-overlay',
@@ -1382,8 +1474,8 @@ const apiPropGroups = {
     {
       id: 'content',
       title: '内容与回退',
-      description: '优先传图片；失败或无图时再使用 Slot、Icon 或文字回退。',
-      keys: ['src', 'text', 'alt', 'icon', 'useSlot', 'hideOnLoadFailed', 'ariaLabel'],
+      description: '优先传图片；组件内部处理资源等待，失败或无图时再使用 Slot、Icon 或文字回退。',
+      keys: ['src', 'text', 'alt', 'icon', 'useSlot', 'hideOnLoadFailed', 'lazy', 'loading', 'ariaLabel'],
     },
     {
       id: 'appearance',
@@ -1450,8 +1542,8 @@ const apiPropGroups = {
     {
       id: 'display',
       title: '内容与显示',
-      description: '格式、主题、尺寸、单位和 Slot 只改变呈现，不改变目标时间与事件顺序。',
-      keys: ['content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit'],
+      description: '格式、主题、尺寸、单位、动效风格和 Slot 只改变呈现，不改变目标时间与事件顺序。',
+      keys: ['content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit', 'animation'],
     },
     {
       id: 'accessibility',
@@ -1554,8 +1646,8 @@ const apiPropGroups = {
     {
       id: 'state',
       title: '状态与交互',
-      description: 'status/tips 提供反馈；disabled、readonly、loading 阻断写入，clearable 使用 PUI Button 真实清空。',
-      keys: ['clearable', 'status', 'tips', 'disabled', 'readonly', 'loading'],
+      description: 'status/tips 提供反馈；disabled、readonly、loading 阻断写入。Textarea 不在输入区动态插入 Clear。',
+      keys: ['status', 'tips', 'disabled', 'readonly', 'loading'],
     },
     {
       id: 'platform',
@@ -1948,6 +2040,8 @@ const apiEvents = {
   ],
   card: [
     { name: 'click', detail: '{ source: "card" }', description: '仅 clickable=true 且 disabled=false 时点按 Card 内容区域触发；footer Slot 内 Button 的 click 独立处理。' },
+    { name: 'menu-visible-change', detail: '{ visible, trigger }', description: '更多菜单请求显隐时触发；受控模式等待父级回写 menuVisible。' },
+    { name: 'menu-select', detail: '{ index, item, value }', description: '选择可用菜单项时触发，随后只关闭菜单，不伪造业务成功。' },
   ],
   'notice-bar': [
     { name: 'change', detail: '{ current, source: "swiper" }', description: '仅 direction="vertical" 的 swiper 切换时触发；current 是当前条目索引。' },
@@ -2072,7 +2166,6 @@ const apiEvents = {
   ],
   textarea: [
     { name: 'change', detail: '{ value, previousValue, count, limit, countMode, truncated, source, controlled, name, detail }', description: '真实输入请求改变时触发；受控模式等待父级回写，不再重复发布 input。' },
-    { name: 'clear', detail: '同 change，source 为 clear 或 method-clear', description: '清空操作先触发；随后发布同一次 change。' },
     { name: 'focus', detail: '值详情 + 原生 detail', description: '原生 textarea 实际获得焦点时触发。' },
     { name: 'blur', detail: '值详情 + 原生 detail', description: '原生 textarea 实际失去焦点时触发。' },
     { name: 'enter', detail: '值详情 + 原生 detail', description: '点击微信键盘确认键时触发；不与 Form submit 混用。' },
@@ -2194,6 +2287,7 @@ const apiSlots = {
   card: [
     { name: 'default', description: 'Card 的主体内容；可组合 Cell、Tag、Button 等 PUI 组件。' },
     { name: 'header', description: '追加到标题和说明后的 Header 内容；无标题说明时需同时设置 showHeader。' },
+    { name: 'header-right', description: '固定 Header 右侧轨道；最多放三个紧凑 PUI 图标按钮，超出的业务操作应进入 menuItems。' },
     { name: 'footer', description: '仅 showFooter=true 时渲染；主要业务动作由调用方的 PUI Button 处理。' },
   ],
   'config-provider': [
@@ -2244,6 +2338,7 @@ const apiSlots = {
   ],
   dialog: [
     { name: 'top', description: 'Dialog Surface 顶部的消费者内容；不替代遮罩、显隐或动画。' },
+    { name: 'header-left', description: 'Header 左侧固定轨道；用于一个紧凑 PUI 图标按钮，并与右侧默认关闭按钮保持对称。' },
     { name: 'title', description: '追加在 title 文本后的标题内容；空左轨仍保留，标题保持几何居中。' },
     { name: 'content', description: '追加或替代正文内容；可组合 Cell、Badge、Loading、Empty 和 Button，由消费者管理请求状态。' },
     { name: 'middle', description: '正文与操作区之间的消费者内容。' },
@@ -2368,6 +2463,15 @@ const apiSlots = {
 };
 
 const apiMethods = {
+  'area-chart': [
+    { name: 'replay()', returns: 'void', description: '重播当前面积图的入场淡入；不改变 items、比例、主题或业务数据。' },
+  ],
+  'bar-chart': [
+    { name: 'replay()', returns: 'void', description: '从共享零基线重播当前条形的级联入场；不改变 items 或 scaleMax。' },
+  ],
+  waffle: [
+    { name: 'replay()', returns: 'void', description: '按当前点阵顺序重播缩放淡入；不改变数量、有效单位或主题。' },
+  ],
   toast: [
     { name: 'show(options?)', returns: 'void', description: '合并提供的 Toast Props，挂载并在下一帧进入；duration>0 时进入完成后安排自动 hide()。' },
     { name: 'hide()', returns: 'void', description: '取消等待计时并进入退场；节点卸载后触发 close。' },
@@ -2438,7 +2542,6 @@ const apiMethods = {
   textarea: [
     { name: 'focus()', returns: 'Boolean', description: '请求原生 textarea 聚焦；disabled、readonly 或 loading 时返回 false。' },
     { name: 'blur()', returns: 'Boolean', description: '请求原生 textarea 失焦，不改变当前值。' },
-    { name: 'clear()', returns: 'Object | false', description: '请求清空并按 clear → change 发布；不可交互或已经为空时返回 false。' },
     { name: 'getValue()', returns: 'String', description: '读取当前真实渲染值，不触发事件。' },
   ],
 };

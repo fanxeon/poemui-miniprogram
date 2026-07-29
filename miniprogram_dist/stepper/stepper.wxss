@@ -2,10 +2,12 @@
   --pui-stepper-button-track-size: 88rpx;
   position: relative;
   box-sizing: border-box;
-  display: inline-block;
+  display: inline-grid;
   width: var(--pui-stepper-control-width);
   height: var(--pui-stepper-button-track-size);
   max-width: 100%;
+  grid-template-columns: var(--pui-stepper-button-track-size) minmax(0, var(--pui-stepper-input-width)) var(--pui-stepper-button-track-size);
+  align-items: stretch;
   overflow: hidden;
   color: var(--pui-text-primary);
   background: var(--pui-bg-container);
@@ -27,9 +29,25 @@
 .pui-stepper--disabled { opacity: .5; }
 .pui-stepper--readonly { opacity: .72; }
 
+.pui-stepper__button-track,
+.pui-stepper__input-track {
+  box-sizing: border-box;
+  min-width: 0;
+  height: var(--pui-stepper-button-track-size);
+  overflow: hidden;
+}
+
+.pui-stepper__button-track {
+  width: var(--pui-stepper-button-track-size);
+}
+
+.pui-stepper__input-track {
+  display: flex;
+  width: var(--pui-stepper-input-width);
+  align-items: center;
+}
+
 .pui-stepper__button {
-  position: absolute;
-  top: 0;
   color: var(--pui-text-primary);
   background: transparent;
   border-color: transparent;
@@ -42,9 +60,8 @@
 }
 
 .pui-stepper__input {
-  position: absolute;
-  top: 50%;
-  left: var(--pui-stepper-button-track-size);
+  display: block;
+  flex: 1 1 auto;
   width: var(--pui-stepper-input-width);
   min-width: 0;
   max-width: 100%;
@@ -52,7 +69,6 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  transform: translateY(-50%);
 }
 
 .pui-stepper__input .pui-input__field {

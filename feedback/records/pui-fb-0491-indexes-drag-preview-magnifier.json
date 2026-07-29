@@ -1,0 +1,69 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0491",
+  "title": "Indexes 按住拖动缺少当前索引放大提示",
+  "scope": "component",
+  "components": ["indexes", "miniprogram"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "用户长按并滑过 Indexes 时，应在轨道内侧看到放大的当前索引，手指遮住小字时仍能确认位置。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "按住右侧索引并上下滑动。",
+    "旧组件只改变小号活动项和正文位置，手指覆盖轨道时没有独立反馈。",
+    "松手或取消也没有对应的放大状态生命周期。"
+  ],
+  "expected": "按住 120ms 或开始拖动后，在右轨左侧显示完整当前索引；左轨镜像到右侧。提示随命中更新，并在结束、取消、锁定状态或卸载时关闭。",
+  "actual": "修复前没有放大提示节点和状态；用户只能依靠被手指遮挡的紧凑轨道判断当前索引。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户新增了长按滑动时在左侧弹出放大当前选中索引的要求。"},
+    {"kind": "file", "ref": "indexes/indexes.js", "note": "新增 hold/move/show/end/cancel 生命周期、位置约束与触摸后 click 去重。"},
+    {"kind": "file", "ref": "indexes/indexes.wxml", "note": "增加 aria-hidden 的组件内部放大提示层。"},
+    {"kind": "file", "ref": "indexes/indexes.wxss", "note": "提示按左右轨镜像并消费共享玻璃、边框、圆角、阴影和动效 Token。"},
+    {"kind": "file", "ref": "https://www.npmjs.com/package/tdesign-miniprogram/v/1.15.3", "note": "重新下载固定参考包并读取 miniprogram_dist/indexes/indexes.wxml/indexes.wxss，触摸选择时显示位于侧栏内侧的 96rpx tips。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "覆盖中途文字更新、结束/取消隐藏、同项不重复与合成 click 去重。"}
+  ],
+  "rootCause": "PoemUI 只移植了侧栏定位与活动态，没有实现成熟 Indexes 在手指遮挡场景下的独立当前值反馈。",
+  "decision": {
+    "outcome": "将放大提示作为默认内部触摸反馈，不增加公共 Prop/Event/Slot/Method；hold 120ms 后出现，touchmove 立即出现，左右位置镜像。",
+    "rationale": "这是侧栏手势的基础可见反馈，不应要求每个消费者重复配置；现有 select/change 已足够描述业务事件。",
+    "alternativesRejected": [
+      "新增 showPreview Prop 会制造不必要的 API 分叉。",
+      "用 Toast 展示字母会离开组件边界并干扰页面反馈。",
+      "让页面监听 touch 自行绘制会复制组件内部坐标和状态机。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.js", "indexes/indexes.wxml", "indexes/indexes.wxss", "scripts/test-indexes.js", "docs/components/INDEXES.md"],
+    "dependencies": ["PUI appearance tokens", "TDesign Indexes interaction reference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["node scripts/test-indexes.js：通过"],
+    "browser": [
+      "微信开发者工具 390x844 实际拖动右轨使受控页面从 A 回写为 B，并显示 45x45px 的 B 提示；提示 rect 272..317px 位于轨道 336..365px 的内侧且完整落在 body 15..375px / 214..567px 内，截图 `/tmp/poemui-indexes-0.1.2-drag-preview.png`。",
+      "同一运行时调用真实 touch handler：按住 180ms 显示 P，touchend 与 touchcancel 均关闭提示。左轨镜像和完整索引由专项测试覆盖，仍待真机触摸复核。"
+    ],
+    "deviceRisks": ["iOS/Android 真机长按阈值、连续 move 频率、手指遮挡、合成 click 和读屏仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Indexes 的放大提示是内部手势反馈，不是新的业务 API。",
+    "rules": [
+      "右侧轨道的提示放左侧，左侧轨道镜像到右侧。",
+      "拖动立即显示，松手、取消、状态锁定与卸载必须关闭。",
+      "提示必须 aria-hidden 且 pointer-events:none，不得截断手势。",
+      "一个触摸手势不得再被合成 click 重复发布 select。"
+    ],
+    "tags": ["indexes", "drag", "magnifier", "touch", "feedback", "tdesign"]
+  }
+}
