@@ -314,12 +314,24 @@ function normalizeAnnouncement(announcement) {
   };
 }
 
+function compareVersionLabels(left, right) {
+  var leftParts = cleanText(left).replace(/^v/, '').split('.');
+  var rightParts = cleanText(right).replace(/^v/, '').split('.');
+  var length = Math.max(leftParts.length, rightParts.length);
+  for (var index = 0; index < length; index += 1) {
+    var difference = (Number(leftParts[index]) || 0) - (Number(rightParts[index]) || 0);
+    if (difference) return difference;
+  }
+  return 0;
+}
+
 function normalizeList(value) {
   if (!Array.isArray(value)) return [];
   return value.map(normalizeAnnouncement).filter(function onlyPublished(announcement) {
     return announcement && announcement.status === 'published';
   }).sort(function newestFirst(left, right) {
-    return right.date.localeCompare(left.date);
+    var dateOrder = right.date.localeCompare(left.date);
+    return dateOrder || compareVersionLabels(right.version, left.version);
   });
 }
 
