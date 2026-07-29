@@ -100,7 +100,6 @@ Component({
     indicator: { type: Boolean, value: false },
     bordered: { type: Boolean, value: true },
     size: { type: String, value: 'medium' },
-    clearable: { type: Boolean, value: false },
     disabled: { type: Boolean, value: false },
     readonly: { type: Boolean, value: false },
     loading: { type: Boolean, value: false },
@@ -122,6 +121,7 @@ Component({
   },
   data: {
     innerValue: '',
+    renderValue: '',
     count: 0,
     limitValue: -1,
     countMode: 'length',
@@ -143,12 +143,11 @@ Component({
     autoHeightValue: false,
     minRowsValue: 4,
     maxRowsValue: 8,
-    showClear: false,
     hasFeedback: false,
     resolvedDuration: 500
   },
   observers: {
-    'value,defaultValue,name,label,placeholder,maxlength,maxcharacter,autosize,indicator,bordered,size,clearable,disabled,readonly,loading,focus,status,tips,required,confirmType,showConfirmBar,cursorSpacing,selectionStart,selectionEnd,adjustPosition,holdKeyboard,confirmHold,disableDefaultPadding,ariaLabel,reduceMotion,colorScheme': function syncStateObserver() {
+    'value,defaultValue,name,label,placeholder,maxlength,maxcharacter,autosize,indicator,bordered,size,disabled,readonly,loading,focus,status,tips,required,confirmType,showConfirmBar,cursorSpacing,selectionStart,selectionEnd,adjustPosition,holdKeyboard,confirmHold,disableDefaultPadding,ariaLabel,reduceMotion,colorScheme': function syncStateObserver() {
       this.syncState();
     }
   },
@@ -158,8 +157,23 @@ Component({
     }
   },
   methods: {
+    setChangedData: function setChangedData(nextState, callback) {
+      var patch = {};
+      Object.keys(nextState).forEach(function collectChangedValue(key) {
+        if (this.data[key] !== nextState[key]) patch[key] = nextState[key];
+      }, this);
+      if (!Object.keys(patch).length) {
+        if (callback) callback.call(this);
+        return false;
+      }
+      this.setData(patch, callback);
+      return true;
+    },
     isControlled: function isControlled() {
       return hasValue(this.data.value);
+    },
+    currentValue: function currentValue() {
+      return this._nativeValue === undefined ? this.data.innerValue : this._nativeValue;
     },
     limits: function limits() {
       return {
@@ -180,6 +194,15 @@ Component({
         innerValue = textValue(this._lastControlledValue);
       }
       innerValue = normalizeText(innerValue, limits.maxlength, limits.maxcharacter);
+      var pendingNativeEcho = this._pendingNativeValue !== undefined && innerValue === this._pendingNativeValue;
+      var preserveNativeDraft = pendingNativeEcho || (
+        this.data.focused &&
+        this._nativeValue !== undefined &&
+        innerValue === this._nativeValue
+      );
+      var renderValue = preserveNativeDraft ? this.data.renderValue : innerValue;
+      this._nativeValue = innerValue;
+      if (pendingNativeEcho) this._pendingNativeValue = undefined;
       this._initialized = true;
       this._wasControlled = controlled;
 
@@ -209,8 +232,9 @@ Component({
       var motion = this.data.reduceMotion ? 1 : 500;
       var semanticLabel = (this.data.ariaLabel || (this.data.label === 'slot' ? '' : this.data.label) || this.data.placeholder || '文本域').trim() || '文本域';
 
-      this.setData({
+      this.setChangedData({
         innerValue: innerValue,
+        renderValue: renderValue,
         count: count,
         limitValue: limitValue,
         countMode: limits.maxcharacter >= 0 ? 'character' : 'length',
@@ -243,7 +267,6 @@ Component({
         autoHeightValue: autoHeight,
         minRowsValue: minRows,
         maxRowsValue: maxRows,
-        showClear: !!(this.data.clearable && innerValue && interactive),
         hasFeedback: !!(this.data.tips || showIndicator),
         resolvedDuration: motion
       });
@@ -266,20 +289,13 @@ Component({
     },
     requestValue: function requestValue(value, source, nativeDetail) {
       if (!this.data.interactive) return false;
-      var previousValue = this.data.innerValue;
+      var previousValue = this.currentValue();
       var detail = this.valueDetail(value, previousValue, source, nativeDetail);
-      if (!detail.controlled) {
-        this.setData({ innerValue: detail.value, count: detail.count, showClear: !!(this.data.clearable && detail.value) });
-      }
-      this.triggerEvent('change', detail);
-      return detail;
-    },
-    requestClear: function requestClear(source) {
-      if (!this.data.interactive || !this.data.innerValue) return false;
-      var previousValue = this.data.innerValue;
-      var detail = this.valueDetail('', previousValue, source || 'clear');
-      if (!detail.controlled) this.setData({ innerValue: '', count: 0, showClear: false });
-      this.triggerEvent('clear', detail);
+      this._nativeValue = detail.value;
+      if (detail.controlled) this._pendingNativeValue = detail.value;
+      var nextState = { innerValue: detail.value, count: detail.count };
+      if (detail.value !== textValue(value)) nextState.renderValue = detail.value;
+      this.setChangedData(nextState);
       this.triggerEvent('change', detail);
       return detail;
     },
@@ -289,37 +305,37 @@ Component({
       var rawValue = textValue(nativeDetail.value);
       var detail = this.requestValue(rawValue, 'input', nativeDetail);
       if (!detail) return this.data.innerValue;
-      if (detail.controlled) return detail.previousValue;
       if (detail.value !== rawValue) return detail.value;
       return undefined;
     },
-    onClear: function onClear() {
-      this.requestClear('clear');
-    },
     onFocus: function onFocus(event) {
       if (!this.data.interactive) return;
-      this.setData({ focused: true, methodFocus: false }, function afterFocusState() {
+      this.setChangedData({ focused: true, methodFocus: false }, function afterFocusState() {
         this.syncState();
-        this.triggerEvent('focus', this.valueDetail(this.data.innerValue, this.data.innerValue, 'focus', event && event.detail));
+        var value = this.currentValue();
+        this.triggerEvent('focus', this.valueDetail(value, value, 'focus', event && event.detail));
       });
     },
     onBlur: function onBlur(event) {
       var wasFocused = this.data.focused;
-      this.setData({ focused: false, methodFocus: false }, function afterBlurState() {
+      this.setChangedData({ focused: false, methodFocus: false }, function afterBlurState() {
         this.syncState();
         if (!wasFocused && !this.data.interactive) return;
-        this.triggerEvent('blur', this.valueDetail(this.data.innerValue, this.data.innerValue, 'blur', event && event.detail));
+        var value = this.currentValue();
+        this.triggerEvent('blur', this.valueDetail(value, value, 'blur', event && event.detail));
       });
     },
     onConfirm: function onConfirm(event) {
       if (!this.data.interactive) return;
       var nativeDetail = event && event.detail ? event.detail : {};
-      var value = hasValue(nativeDetail.value) ? nativeDetail.value : this.data.innerValue;
-      this.triggerEvent('enter', this.valueDetail(value, this.data.innerValue, 'enter', nativeDetail));
+      var currentValue = this.currentValue();
+      var value = hasValue(nativeDetail.value) ? nativeDetail.value : currentValue;
+      this.triggerEvent('enter', this.valueDetail(value, currentValue, 'enter', nativeDetail));
     },
     onLineChange: function onLineChange(event) {
       var nativeDetail = event && event.detail ? event.detail : {};
-      var detail = this.valueDetail(this.data.innerValue, this.data.innerValue, 'line-change', nativeDetail);
+      var value = this.currentValue();
+      var detail = this.valueDetail(value, value, 'line-change', nativeDetail);
       detail.lineCount = Number(nativeDetail.lineCount) || 0;
       detail.height = Number(nativeDetail.height) || 0;
       detail.heightRpx = Number(nativeDetail.heightRpx) || 0;
@@ -328,7 +344,7 @@ Component({
     onKeyboardHeightChange: function onKeyboardHeightChange(event) {
       var nativeDetail = event && event.detail ? event.detail : {};
       this.triggerEvent('keyboardheightchange', {
-        value: this.data.innerValue,
+        value: this.currentValue(),
         height: Number(nativeDetail.height) || 0,
         duration: Number(nativeDetail.duration) || 0,
         source: 'keyboard',
@@ -338,22 +354,19 @@ Component({
     },
     focus: function focus() {
       if (!this.data.interactive) return false;
-      this.setData({ methodFocus: true }, function afterMethodFocus() {
+      this.setChangedData({ methodFocus: true }, function afterMethodFocus() {
         this.syncState();
       });
       return true;
     },
     blur: function blur() {
-      this.setData({ methodFocus: false, focused: false }, function afterMethodBlur() {
+      this.setChangedData({ methodFocus: false, focused: false }, function afterMethodBlur() {
         this.syncState();
       });
       return true;
     },
-    clear: function clear(source) {
-      return this.requestClear(source || 'method-clear');
-    },
     getValue: function getValue() {
-      return this.data.innerValue;
+      return this.currentValue();
     }
   }
 });

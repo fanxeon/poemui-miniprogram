@@ -1,0 +1,108 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0479",
+  "title": "List 加载更多和重试没有父级响应",
+  "scope": "component",
+  "components": [
+    "list",
+    "loading",
+    "button"
+  ],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "点击加载更多或重试后看到加载动画和真实条目更新。",
+  "environment": {
+    "surfaces": [
+      "wechat-component-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "打开 List 独立页或 H5。",
+    "点击加载更多/重试。",
+    "旧演示只改事件文案，数据和状态不变。"
+  ],
+  "expected": "List 只发请求，演示父级回写 loading，完成后追加 items 并更新 finished/error。",
+  "actual": "事件有发出但页面不响应，视觉上像按钮失效。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/list/index.js",
+      "note": "500ms 父级加载与分批追加。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 父级同样回写 Props。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-list.js",
+      "note": "保留 List 本体不自动成功。"
+    }
+  ],
+  "rootCause": "共享 List 的请求边界正确，但两个演示消费者没有实现业务回写。",
+  "decision": {
+    "outcome": "不修改 List 自动状态机；修复小程序页和 H5 消费者真实响应。",
+    "rationale": "组件不伪造网络成功，演示又能闭环。",
+    "alternativesRejected": [
+      "在 List 内定时追加假数据会污染公共组件。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/components/list/index.js",
+      "miniprogram/pages/components/list/index.wxml",
+      "preview/app.js"
+    ],
+    "dependencies": [
+      "PUI List",
+      "PUI Loading"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-list.js"
+    ],
+    "commands": [
+      "node scripts/test-list.js"
+    ],
+    "browser": [
+      "微信开发者工具实际执行 5 条→loading=true→9 条/finished=true，状态文案同步更新。",
+      "H5 实点加载更多：9 条→单次“加载中”→11 条/没有更多了，PreviewDevice 横向溢出为 0。"
+    ],
+    "deviceRisks": [
+      "真机 Timer 与滚动位置待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "List 发请求，父级负责 loading/items/finished/error。",
+    "rules": [
+      "不得只更新事件文案。",
+      "不得在 List 内自动成功。"
+    ],
+    "tags": [
+      "list",
+      "load-more",
+      "retry",
+      "parent-writeback"
+    ]
+  }
+}

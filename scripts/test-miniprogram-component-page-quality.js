@@ -11,7 +11,7 @@ var GROUPS = {
   form: ['form', 'field', 'label', 'input', 'input-otp', 'textarea', 'search', 'checkbox', 'radio', 'switch', 'select', 'picker', 'combobox', 'slider', 'stepper', 'rate', 'calendar', 'date-time-picker', 'upload'],
   data: ['collapse', 'avatar', 'badge', 'bubble', 'card', 'cell', 'collapsible', 'count-down', 'image', 'list', 'swipe-cell', 'swiper', 'table', 'tag'],
   feedback: ['alert', 'dialog', 'empty', 'loading', 'notice-bar', 'progress', 'result', 'skeleton', 'toast'],
-  advanced: ['pull-refresh', 'virtual-list', 'watermark']
+  advanced: ['area-chart', 'bar-chart', 'waffle', 'pull-refresh', 'virtual-list', 'watermark']
 };
 var SCROLL_OWNERS = new Set(['scroll-area', 'pull-refresh', 'virtual-list']);
 var IDS = Object.keys(GROUPS).reduce(function flatten(result, group) {
@@ -28,7 +28,7 @@ function literalSectionCopy(wxml) {
     .join('');
 }
 
-assert.strictEqual(IDS.length, 59, '质量门禁必须完整覆盖 59 个小程序独立组件页');
+assert.strictEqual(IDS.length, 62, '质量门禁必须完整覆盖 62 个小程序独立组件页');
 assert.strictEqual(new Set(IDS).size, IDS.length, '质量门禁中的组件页面不得重复');
 
 IDS.forEach(function verifyPage(id) {

@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/components/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "PoemUI",
+    "navigationBarBackgroundColor": "#f6f7fb",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f6f7fb"
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0503",
+  "title": "CountDown 缺少非闪烁的逐位数字滚动风格",
+  "scope": "component",
+  "components": [
+    "count-down"
+  ],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "CountDown 除现有整段渐隐入场外，还要提供真正逐位滚动的数字风格，并以清楚 API 切换且不破坏计时合同。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "miniprogram-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "node",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "进入 CountDown 独立页并启动现有倒计时。",
+    "观察每秒变化：旧实现给整个 numeric value 重播 opacity 与 translateY 入场，没有保留旧数字，也无法只滚动发生变化的位。",
+    "现有 11 Props 没有可选择的数字变化风格，调用方只能接受类似闪烁的默认动效或误用页面 CSS。"
+  ],
+  "expected": "组件提供兼容默认与逐位 roll 两种明确风格；roll 只滚动真实变化位，切换风格不重置剩余时间，不新增第二计时状态、伪事件或可变动效参数。",
+  "actual": "旧实现只有整段 pulse，所有数字随格式化文本变化一起重播入场，无法表达逐位卷动。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务对话",
+      "note": "用户明确要求另一套数字滚动风格，不要现有闪烁感，并要求做好 API。"
+    },
+    {
+      "kind": "file",
+      "ref": "count-down/count-down.js",
+      "note": "animation 归一化为 pulse/roll；roll 比较前后数字并只标记变化位，SSS 直接刷新。"
+    },
+    {
+      "kind": "file",
+      "ref": "count-down/count-down.wxml",
+      "note": "roll 使用 value 内的 digits/reel/glyph，视觉 segments 对辅助技术隐藏并由根 timer label 提供当前值。"
+    },
+    {
+      "kind": "file",
+      "ref": "count-down/count-down.wxss",
+      "note": "数字盒裁切 reel，旧值到新值固定 translateY 0 到 -50%，单位继续位于盒外。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-count-down.js",
+      "note": "锁定 12 Props、pulse 兼容、roll 变化位、SSS 直更、非法回退与 1ms 低动效。"
+    }
+  ],
+  "rootCause": "旧 CountDown 把数字变化抽象为整个 value 的单帧入场 class，只保存当前格式化文本，没有旧/新数字位模型，因此只能造成整段透明度变化而不能实现真实卷轴。",
+  "decision": {
+    "outcome": "新增单一 animation=pulse|roll Prop，默认 pulse；roll 只在 DD/HH/mm/ss 的变化位保留旧/新 glyph 并垂直滚动，SSS 直接刷新，计时、事件、Slot 与 Methods 不变。",
+    "rationale": "一个展示枚举足以表达用户选择，同时保留现有消费者兼容；逐位模型复用同一 remaining/targetTime，避免创建平行状态机或让页面掩盖组件缺陷。",
+    "alternativesRejected": [
+      "把 roll 改成新的 theme：theme 已表达 default/round/square 数字盒外观，混入动效会形成笛卡尔组合歧义。",
+      "公开 duration/easing 或 flip 事件：调用方不需要第二套动效调参，也不能把动画完成误当倒计时完成。",
+      "默认直接替换为 roll：会无提示改变 0.1.1 消费者视觉，默认 pulse 更符合兼容边界。",
+      "在独立页复制两份时间或用页面 CSS 做卷轴：会产生漂移并让其他消费者继续缺少真实能力。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "count-down/count-down.js",
+      "count-down/count-down.wxml",
+      "count-down/count-down.wxss",
+      "metadata/components.js",
+      "miniprogram/pages/components/count-down/index.js",
+      "miniprogram/pages/components/count-down/index.wxml",
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/components-data.js",
+      "scripts/test-count-down.js",
+      "scripts/test-miniprogram-data-pages.js",
+      "docs/components/COUNTDOWN.md",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md",
+      "docs/COMPONENT_DETAIL_PAGE_UI_CHECKLIST_2026-07-28.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": [
+      "theme behavior",
+      "PUI Button",
+      "PUI motion tokens"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-count-down.js",
+      "scripts/test-miniprogram-data-pages.js",
+      "scripts/test-miniprogram-component-page-quality.js"
+    ],
+    "commands": [
+      "node scripts/test-count-down.js",
+      "node scripts/test-miniprogram-data-pages.js",
+      "node scripts/test-miniprogram-component-pages.js",
+      "node scripts/test-miniprogram-component-page-quality.js",
+      "node --check count-down/count-down.js",
+      "npm run miniprogram:build",
+      "npm pack + miniprogram npm install --no-save --package-lock=false --ignore-scripts",
+      "node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram",
+      "wechatwebdevtools cli build-npm --project miniprogram",
+      "PUI_VERIFY_DIST=1 node scripts/test-count-down.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "git diff --check -- count-down metadata/components.js miniprogram/pages/components/count-down scripts/test-count-down.js scripts/test-miniprogram-data-pages.js"
+    ],
+    "browser": [
+      "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 (Pro) 390px：roll 从 01:00 真实递减到 00:59；运行中切到 pulse 时剩余值继续到 00:46，再切回 roll 继续到 00:41，没有回到 01:00。",
+      "暂停后 00:35 连续 1.6 秒保持不变；深色模式重新运行由 00:35 继续递减，父级暂停/继续与展示风格回写闭环成立。",
+      "浅色、深色、shadow/frost/largeRadius/bordered 组合下数字、单位、圆形主题与双 Button 均无横向溢出或裁切；截图为 /tmp/poemui-countdown-390-light.jpeg 与 /tmp/poemui-countdown-390-dark.jpeg。",
+      "清空既有控制台记录后重新运行、暂停和切换，调试器最终 Errors=0 / Warnings=0。",
+      "H5 Chrome 390px 深色果味：属性切换 animation=roll 后根为 is-animation-roll，变化位只生成一个 reel；合成中间帧 animation-name=pui-count-down-preview-digit-roll-a 且 transform 非端点，document scrollWidth=clientWidth。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 rpx 字形裁切、动画合成、后台定时节流、50ms 毫秒刷新、系统低动效与辅助技术播报仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "CountDown 的滚动风格必须复用同一计时状态，只滚动真实变化位，不能用整段透明度或第二套时钟模拟。",
+    "rules": [
+      "animation 只允许 pulse/roll，默认与非法值均为 pulse；不要恢复 duration/easing 或新增动画完成事件。",
+      "roll 只给 DD/HH/mm/ss 的变化位保留旧/新 glyph，未变化位保持静止，SSS 直接更新。",
+      "切换 animation 不得 reset、改变 remaining、重排 change/finish 或影响 start/pause/reset/getTime。",
+      "单位必须继续位于固定数字 value 外；数字 reel 的 overflow 不能重新裁切 splitWithUnit。",
+      "H5 最终同步必须覆盖逐位前后帧、SSS、Slot、低动效、390px 深浅色和真实计时不中断。"
+    ],
+    "tags": [
+      "count-down",
+      "digit-roll",
+      "animation",
+      "api",
+      "motion"
+    ]
+  }
+}

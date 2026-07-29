@@ -69,10 +69,12 @@ Picker
 - 禁止 `display:none` 制造显隐瞬移，禁止对 `height:auto` 做 transition。
 - Popup 必须覆盖完整 PreviewDevice viewport；390px 下 Header 左右操作、标题、Classic 双列和状态可以换行或滚动，但不得产生页面级横向溢出。
 - Popup 模式固定使用 PUI Popup 的 card Surface、Header/Content/Footer 间距与 500ms/1ms 动效。`default` 使用 Popup Header 的三列几何，`classic` 使用 Footer；不得再用 Picker 私有 180ms 或页面私有标题栏。
+- Popup Header 标题到滚轮内容只允许一个 `--pui-surface-inset` 可见间距。普通模式由 Popup Content padding 提供，因此 Picker 将 Popup section gap 归零；`equalSpacing` 移除 Content 顶部 padding 后，Picker 才恢复一个 `--pui-surface-inset`。不得为了收紧标题距离修改 `visibleItemCount`、`itemHeight` 或选中项居中的滚轮合同。
 
 ## 7. H5 演示
 
 - H5 不再使用 `<select>` 冒充 Picker；必须镜像可点击、键盘、滚轮和 Pointer 拖动的多列滚轮。
+- 组件独立页与 H5 默认教学数据固定展示四个发布候选项；多列示例的首列也至少四项，使选中态、滚动和 Header 确认/取消在 390px 下可真实验收。这是演示合同，不改变 `columns` API 或可见项上限。
 - 概览固定分为“基础用法 / 多列与级联 / 状态与反馈 / 内联模式”。当前 Props 真实驱动第一组；其余为同源能力示例。
 - H5 受控 value/visible 在事件后执行真实父级回写；非受控状态保留在 Picker demo runtime，不建立第二份伪 Props。
 - 基础 WXML 只展示 columns/defaultValue/title/ariaLabel 等必要配置，零 `bind:*`。完整事件进入 API Events；专项事件示例只绑定当前业务需要的事件。
@@ -82,6 +84,7 @@ Picker
 
 - 固定参考 TDesign 1.15.3 Picker/PickerItem 的官方文档与 npm 安装包 `picker/props.js`、`picker-item/props.js`、类型、JS、WXML 和 WXSS。
 - 2026-07-27 再次访问官方 Picker 页面与仓库，并解包 `tdesign-miniprogram@1.15.3` 核对 `miniprogram_dist/picker/picker.wxml`、`template.wxml` 与 `picker.wxss`；参考其 Popup 承载滚轮与完整操作区的任务关系，但 PoemUI 的可见 Surface 必须遵守本项目 PUI Popup 三分区合同。
+- 2026-07-29 再次访问同一官方页面与仓库，并解包固定 `1.15.3` 的 `miniprogram_dist/picker/{props.js,type.d.ts,picker.js,picker.wxml,template.wxml,picker.wxss}`。固定源码的 `116rpx` Toolbar 后直接进入 Main，没有额外 section gap；PoemUI 因此只删除 Header→Content 的重复结构空白，保留默认 5 个可见项与选中项居中。TDesign 当前没有可用于简单单选的独立 Select 组件目录，PoemUI Select 继续沿用自身 Button + Popup 合同。
 - 借鉴 Popup/内联双形态、草稿确认、单列/多列/级联、值与显隐受控、可见项数和列高主干。
 - PoemUI 使用数据驱动 `columns`，不公开 PickerItem 子组件；微信小程序消费者无需为每列声明额外组件，级联重算由 Picker 统一负责。
 - `cancelBtn/confirmBtn/header/popupProps` 收敛为 `type/cancelText/confirmText/showHeader` 和固定 PUI Popup 合同，拒绝任意节点/任意 Popup Props 穿透破坏布局。

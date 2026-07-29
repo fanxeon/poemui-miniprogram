@@ -1,0 +1,66 @@
+<pui-config-provider use-global-config bind:themechange="onThemeChange">
+  <view class="page">
+    <view class="hero">
+      <view class="hero__title">PoemUI</view>
+      <view class="hero__desc">原生微信小程序组件库</view>
+    </view>
+
+    <view class="section">
+      <view class="section__title">全局视觉配置</view>
+      <pui-cell title="当前模式" value="{{actualTheme}}" description="每个页面根使用 use-global-config，共享同一 visualConfig Store" />
+      <view class="actions">
+        <pui-button theme="primary" size="small" bind:click="setLight">浅色</pui-button>
+        <pui-button theme="primary" variant="outline" size="small" bind:click="setDark">深色</pui-button>
+        <pui-button variant="text" size="small" bind:click="setAuto">跟随系统</pui-button>
+        <pui-button size="small" bind:click="toggleShadow">阴影 {{shadowText}}</pui-button>
+        <pui-button size="small" bind:click="toggleFrostedGlass">毛玻璃 {{frostedGlassText}}</pui-button>
+        <pui-button size="small" bind:click="toggleLargeRadius">大圆角 {{largeRadiusText}}</pui-button>
+        <pui-button size="small" bind:click="toggleBordered">边框 {{borderedText}}</pui-button>
+        <pui-button size="small" bind:click="toggleEffectsEnabled">装饰总开关 {{effectsEnabledText}}</pui-button>
+      </view>
+      <view class="actions">
+        <pui-button size="small" variant="outline" bind:click="applyStandardPreset">标准预设</pui-button>
+        <pui-button size="small" variant="outline" bind:click="applySoftPreset">柔和预设</pui-button>
+        <pui-button size="small" variant="outline" bind:click="applyGlassPreset">玻璃预设</pui-button>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section__title">按钮</view>
+      <pui-button theme="primary" block>主要按钮</pui-button>
+      <pui-button theme="danger" variant="outline" block>危险描边</pui-button>
+      <pui-button loading block>加载中</pui-button>
+      <pui-button disabled block>禁用按钮</pui-button>
+    </view>
+
+    <view class="section">
+      <view class="section__title">标签与加载</view>
+      <view class="tag-row">
+        <pui-tag theme="primary">Primary</pui-tag>
+        <pui-tag theme="success">Success</pui-tag>
+        <pui-tag theme="warning">Warning</pui-tag>
+        <pui-tag wx:if="{{tagVisible}}" theme="danger" closable bind:close="onTagClose">Danger</pui-tag>
+        <pui-button wx:else size="small" variant="outline" icon="refresh" bind:click="restoreTag">恢复标签</pui-button>
+      </view>
+      <view class="loading-row">
+        <pui-loading text="加载中" />
+        <pui-loading vertical text="同步中" />
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section__title">浮层与表单</view>
+      <pui-cell title="交互组件实机页" description="Input、Switch、Popup 和事件回写" value="打开" arrow clickable bind:click="openComponentPage" />
+      <pui-button theme="primary" block bind:click="openPopup">打开 Popup</pui-button>
+      <pui-cell title="Popup 状态" value="{{popupResult}}" />
+    </view>
+  </view>
+
+  <pui-popup
+    visible="{{popupVisible}}"
+    placement="bottom"
+    close-btn
+    content="ConfigProvider 的视觉配置会自动传入 Popup；关闭请求由页面回写。"
+    bind:visible-change="onPopupVisibleChange"
+  ></pui-popup>
+</pui-config-provider>

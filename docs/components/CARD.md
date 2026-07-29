@@ -13,13 +13,14 @@
 
 ## 2. 固定结构与区域
 
-- 根为一个 Card Surface；Header、Content、Footer 是同层的条件区域。Header 仅在 `showHeader || title || description` 时存在，Content 始终存在，Footer 仅在 `showFooter=true` 时存在。
-- Header 承载标题、说明与 `header` slot；Content 承载默认 slot；Footer 只承载 `footer` slot。未启用 Footer 时 H5 和 WXML 都不得保留“已关闭”等占位节点。
+- 根为一个 Card Surface；Header、Content、Footer 是同层的条件区域。Header 在标题、说明、右侧菜单或显式 Header 内容存在时渲染，Content 始终存在，Footer 仅在 `showFooter=true` 时存在。
+- Header 主轨承载标题、说明与 `header` Slot；固定右轨承载 `header-right` Slot（最多三个紧凑图标按钮）和可选 More 菜单；Content 承载默认 Slot；Footer 只承载 `footer` Slot。
 
 ## 3. PUI 组合与依赖
 
 - Card 内不私造业务操作；默认 slot 可组合真实 PUI Cell、Tag、Button、Icon 等组件。
 - Footer 的业务 Button 仍是调用方的 PUI Button；Card Footer 使用 `catchtap` 保留它独立的 click 边界，不把它误报为 Card click。
+- 内置 More 必须组合真实 PUI Popover，并固定使用视口定位；Card 只负责提供菜单内容，不能用卡片自身的圆角裁切边界截断浮层。
 
 ## 4. Token、间距与排版
 
@@ -30,7 +31,7 @@
 
 ## 5. 内容、Slot 与组合边界
 
-- 公开默认、`header`、`footer` 三个 Slot；空 Header/Footer 不用伪文案填充。
+- 公开默认、`header`、`header-right`、`footer` 四个 Slot；空 Header/Footer 不用伪文案填充。
 - 父级只负责 Slot 的内容与业务回写；Card 不得穿透改写子组件的尺寸、padding、圆角、禁用或事件。
 
 ## 6. 状态与优先级
@@ -41,7 +42,8 @@
 ## 7. 交互、受控边界与事件
 
 - 仅 `clickable && !disabled` 时根为 `role=button` 并发布一次 `click({ source: 'card' })`；否则是静态 `role=region`。
-- Card 没有受控/非受控值、实例方法或业务完成回调。Footer 的 Button click 属于调用方，不能借 H5 文案伪造成 Card 的保存成功。
+- Card 内容本身没有受控值或实例方法；更多菜单的 `menuVisible/defaultMenuVisible` 只控制通用菜单显隐，`menu-select` 只报告选择并关闭菜单，不代表业务完成。
+- More 菜单从右侧触发器向下优先展开，并复用 Popover 的视口碰撞判断；菜单允许越过 Card Surface 边界，但必须保持在当前屏幕可视范围内。
 
 ## 8. 可访问性
 
@@ -51,6 +53,7 @@
 ## 9. H5 预览与跨端一致性
 
 - H5 复用 Card 同一 Header/Content/Footer 条件与 PUI Cell、Tag、Button 镜像；Overview 仅显示可理解的内容和实际可操作的 Footer Button，不显示 slot 诊断或“Footer 已关闭”占位。
+- H5 的 More 菜单必须与小程序保持同样的非裁切结果；Card 镜像 Surface 不得以 `overflow:hidden` 吞掉菜单。默认三项菜单用于持续暴露这一回归边界。
 - Props 面板必须真实改变 border、normal/compact padding、Header/Footer 显隐、clickable/disabled、shadow、duration 与 reduceMotion。Card click 与 Footer Button click 的运行态必须分开。
 - H5 用 px 近似 rpx；原生 Footer 的 `catchtap`、Slot 投影、hover、读屏和样式隔离仍需真机确认。
 
@@ -64,6 +67,7 @@
 
 - 不得恢复 loading/error/empty/retry、submit/save/success Props 或 Events、实例方法、第二层 Card/Panel，或以提示文字冒充业务成功。
 - 不得在 `showFooter=false` 时保留 H5 占位 Footer；不得让全局 `.preview-stage` 通用阴影选择器覆盖 Card 的 `shadow=false`。
+- 不得把 More 菜单留在会被 Card 圆角或内容高度裁切的绝对定位层中，也不得靠减少菜单项掩盖裁切。
 - 不得用私有 px 间距替代 normal 14px/compact 10px 镜像 Token，也不得让 Footer 的 Button 冒泡触发 Card click。
 
 ## 12. 修改闭环

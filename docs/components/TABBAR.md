@@ -40,7 +40,7 @@ Tabbar wrapper
 
 - Surface、边界、阴影、毛玻璃、文字、禁用色、圆角和间距必须使用 PUI Token；H5 按 `1px≈2rpx` 镜像。
 - `shape="normal"` 是贴合设备 viewport 的透明导航布局：默认无背景、无外投影、无毛玻璃，且 `bordered=false` 时无顶边；不能因为阴影或毛玻璃全局开关获得面板材质。`shape="round"` 才是独立悬浮 Surface，消费 glass surface、border、floating shadow、frosted filter 与语义圆角；它们都保持受全局视觉配置控制。
-- 导航内容高度固定 112rpx / 56px，并公开为跨端语义 Token `--pui-tabbar-content-height`，供 BackTop 等屏幕浮动操作计算避让；它不是新的 Tabbar 高度 Prop。图标、标签和活动指示器在这一高度内垂直居中并保留标准 `space-xs` 内距。图标+标签项的活动指示器保持底部位置；显式 `label: ''` 的纯图标项把图标下移 `8rpx / 4px`、短横上收至底部 `40rpx / 20px`，形成居中的单一视觉组；消费者不得用页面 margin 或新增公开定位 Prop 覆盖。split 分隔使用 `56rpx / 28px` 的短线和专属低对比 Token，不得贯穿整高。round 使用标准页面内距和 xxlarge 圆角，不公开 height、floatingOffset、activeColor 或 inactiveColor 私有调参。
+- 导航内容高度固定 112rpx / 56px，并公开为跨端语义 Token `--pui-tabbar-content-height`，供 BackTop 等屏幕浮动操作计算避让；它不是新的 Tabbar 高度 Prop。图标、标签和活动指示器在这一高度内垂直居中并保留标准 `space-xs` 内距。当任意目的地存在文案时，整条 Tabbar 的所有活动短横都固定使用带文案基线，纯图标目的地不得单独上移短横；只有全部目的地都没有文案时，根才进入 `all-icon-only` 节奏，把所有图标下移 `8rpx / 4px`、短横统一上收至底部 `40rpx / 20px`。消费者不得用页面 margin 或新增公开定位 Prop 覆盖。split 分隔使用 `56rpx / 28px` 的短线和专属低对比 Token，不得贯穿整高。round 使用标准页面内距和 xxlarge 圆角，不公开 height、floatingOffset、activeColor 或 inactiveColor 私有调参。
 - Tabbar 内部 PUI Button 与其内容容器必须允许 Badge 的定位外扩可见；普通形态的根节点也不得裁切这一外扩区域。仅 `shape="round"` 的胶囊外轮廓可以裁切自身内容；不得用共享 Button 的 `overflow:hidden` 裁掉 badge=0、数字徽标或红点，也不得为规避裁切而删除标准 `space-xs` 内距、缩小 Badge、增加私有 padding 或降级成手写标记。
 - 动效固定为 `500ms + --pui-ease-standard`；`reduceMotion=true` 和系统低动效压缩为 1ms，不公开 duration/easing。
 - 目的地标签允许单行省略，因为它是可重复识别的次要导航标签；API 表格、事件 detail 和页面正文禁止省略。

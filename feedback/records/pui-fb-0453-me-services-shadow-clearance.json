@@ -1,17 +1,17 @@
 {
   "$schema": "../schema.json",
   "id": "PUI-FB-0453",
-  "title": "我的页服务 CellGroup 需要避让资料输入区的投影",
+  "title": "我的页服务 CellGroup 应消费剩余空间靠近底部",
   "scope": "component",
-  "components": ["miniprogram", "card", "input", "cell", "cell-group"],
+  "components": ["miniprogram", "card", "input", "cell", "cell-group", "scroll-area"],
   "type": "visual-layout",
   "severity": "medium",
   "status": "resolved",
-  "acceptance": "pending-user",
+  "acceptance": "accepted",
   "source": "user-report",
   "reportedAt": "2026-07-27",
-  "updatedAt": "2026-07-27",
-  "userGoal": "将“我的”页的服务 Cell 卡片下移，为资料区在阴影外观下留下足够空间。",
+  "updatedAt": "2026-07-28",
+  "userGoal": "在大头像两行资料卡下，让服务 CellGroup 利用页面剩余空间靠近底部，同时保证内容较高时仍能完整滚动。",
   "environment": {
     "surfaces": ["miniprogram me top-level page"],
     "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
@@ -20,43 +20,54 @@
   },
   "reproduction": [
     "打开 pages/me/index。",
-    "资料 Input 后的服务 CellGroup 只额外使用 --pui-content-gap。",
-    "当 Input 或上层 Surface 显示投影时，下一块不透明服务集合与投影的安全距离不足。"
+    "正文高度由 Navbar、Tabbar 和窗口实测得到，但内部内容根此前只按内容自然高度排列。",
+    "服务 CellGroup 使用固定 section margin，不能利用资料卡下方的动态剩余空间，也不能稳定贴近可用区底部。"
   ],
-  "expected": "资料编辑区与服务 CellGroup 保持语义分区间距，并在阴影开关变化时不改变布局或遮挡投影。",
-  "actual": "服务区仅使用内容组合间距，不能表达相邻独立 Surface 的安全距离。",
+  "expected": "正文至少填满实测 contentHeight；资料卡保持顶部自然流，服务 CellGroup 用 Flex 自动剩余空间靠近底部；内容超出时页面唯一 ScrollArea 继续滚动。",
+  "actual": "正文未绑定剩余高度，服务区仅使用固定 margin，短内容时底部留白无法被语义化分配。",
   "evidence": [
-    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求将 Cell 卡片下移，为阴影留出足够空间。"},
-    {"kind": "file", "ref": "miniprogram/pages/me/index.wxss", "note": "me-page__services 现使用 --pui-section-gap，正文固定 section gap 与它共同形成不随外观开关变化的安全距离。"},
-    {"kind": "test", "ref": "scripts/test-miniprogram-me-page.js", "note": "专项测试锁定服务 CellGroup 不得退回 --pui-content-gap。"}
+    {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求 CellGroup 底部对齐并注意页面剩余空间。"},
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户比较中段更新卡与双 CellGroup 重设计后，明确确认原布局效果更好并要求恢复。"},
+    {"kind": "file", "ref": "miniprogram/pages/me/index.wxml", "note": "me-page__content 以实测 contentHeight 作为 min-height。"},
+    {"kind": "file", "ref": "miniprogram/pages/me/index.wxss", "note": "服务区使用 margin-top:auto，移除资料区 4vh 魔法 padding。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-me-page.js", "note": "锁定剩余高度、自动底部对齐、唯一滚动与无视口魔法数。"}
   ],
-  "rootCause": "页面把资料输入区与独立服务集合误判为紧密内容组合，额外间距小于两块 Surface 的语义分区节奏。",
+  "rootCause": "页面已实测外壳剩余高度，却没有把该高度传给内部 Flex 内容根；固定 margin 只能表达最小距离，不能分配动态剩余空间。",
   "decision": {
-    "outcome": "保留正文的 --pui-section-gap，并将服务区自身 margin-top 从 --pui-content-gap 提升为 --pui-section-gap；两段标准 Token 间距共同避让投影，阴影关闭时也不收缩布局。",
-    "rationale": "资料编辑与服务入口是两个独立任务分区，使用已有 section Token 既避免阴影被覆盖，也不创建页面私有尺寸。",
+    "outcome": "将 contentHeight 作为正文 min-height，并让服务区 margin-top:auto；正文原有 section gap 继续承担最小分区距离，内容超过视口时自然增高并由唯一 ScrollArea 滚动。",
+    "rationale": "min-height 与 Flex 自动边距能同时满足短内容底部对齐和长内容滚动，不需要 fixed、absolute 或设备高度魔法数。",
     "alternativesRejected": [
-      "用固定 rpx margin 推开服务区：会制造页面私有魔法数。",
-      "关闭 Input 或 CellGroup 的阴影：掩盖 Surface 层级问题并破坏全局外观开关。",
-      "给每个 Cell 单独增加 margin：会破坏连续 CellGroup 的集合语义。"
+      "使用 fixed/absolute 把 CellGroup 钉在底部：会脱离滚动文档流并可能遮挡内容。",
+      "继续增加固定 rpx/vh margin：无法适配不同窗口、安全区和服务项高度。",
+      "为服务区增加第二个 ScrollArea：会制造同向滚动竞争。"
     ]
   },
   "impact": {
-    "files": ["miniprogram/pages/me/index.wxss", "scripts/test-miniprogram-me-page.js", "docs/MINIPROGRAM_ME_PAGE.md", "feedback/records/pui-fb-0421-miniprogram-me-account-services-page.json", "feedback/records/pui-fb-0453-me-services-shadow-clearance.json"],
-    "dependencies": ["PUI Input", "PUI CellGroup", "PUI spacing tokens", "visualConfig shadow preference"]
+    "files": ["miniprogram/pages/me/index.wxml", "miniprogram/pages/me/index.wxss", "scripts/test-miniprogram-me-page.js", "docs/MINIPROGRAM_ME_PAGE.md", "feedback/records/pui-fb-0453-me-services-shadow-clearance.json"],
+    "dependencies": ["PUI ScrollArea", "PUI CellGroup", "contentHeight layout measurement", "PUI spacing tokens"]
   },
   "verification": {
     "tests": ["scripts/test-miniprogram-me-page.js", "scripts/test-miniprogram-tabbar-pages.js"],
-    "commands": ["node scripts/test-miniprogram-me-page.js：通过。", "node scripts/test-miniprogram-tabbar-pages.js：通过。", "微信开发者工具 compile_wxss：通过。"],
-    "browser": ["微信开发者工具 iPhone 12/13 390px 默认 visualConfig（shadow=true）：资料 Input 下方与服务 CellGroup 之间保留完整空白，服务集合未覆盖投影；截图 /tmp/poemui-me-shadow-clearance-390.png。"],
-    "deviceRisks": ["默认阴影 390px 模拟器已验证；深色、毛玻璃与大圆角组合仍需在本页运行验证。", "iOS/Android 真机的投影渲染、安全区与惯性滚动仍未验证。"]
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过",
+      "微信 DevTools build-npm：1376ms，warnings=[]"
+    ],
+    "browser": [
+      "微信开发者工具 iPhone 12/13 390x844 量测：页面 390x844，正文 390x665（top=87），服务区 362x272（top=433，bottom=705），Tabbar top=752；底部 47px 继续留给 ScrollArea 渐变与安全间距，没有遮挡。",
+      "资料卡 top=101、服务区 top=433，正文 min-height=665 且服务区 margin-top:auto；截图 /tmp/poemui-me-large-avatar-bottom-services-390.png 确认短内容时服务集合靠近底部，仍处于唯一 ScrollArea 正常文档流。",
+      "2026-07-28 用户比较自然流重设计后明确选择原布局；热重载恢复单一五项 CellGroup，运行态确认 me-latest-update-card 不存在、me-update-announcement-cell 存在，几何仍为资料卡 362x153（top=101）与服务区 362x272（top=433），截图 /tmp/poemui-me-original-restored-390.png。"
+    ],
+    "deviceRisks": ["iOS/Android 真机的安全区、键盘抬升与惯性滚动仍未验证。"]
   },
   "ai": {
-    "summary": "资料编辑 Surface 后接独立 CellGroup 时，使用 section 间距而非内容组合间距，为投影保留稳定空间。",
+    "summary": "服务列表通过正文 min-height 与 Flex 自动边距使用剩余空间，不脱离唯一 ScrollArea。",
     "rules": [
-      "相邻独立任务分区优先使用 --pui-section-gap；--pui-content-gap 只用于同一分区内部组合。",
-      "阴影安全空间必须在 shadow 关闭时继续保留，不能依赖条件 margin。",
-      "连续 CellGroup 不拆成单行卡片，也不以页面私有 margin 修补投影。"
+      "一级页面已有实测 contentHeight 时，应把它传给内部内容根作为 min-height。",
+      "短内容底部对齐使用正常文档流的 Flex auto margin，不使用 fixed、absolute 或 vh 魔法数。",
+      "内容超高时必须由页面既有唯一 ScrollArea 滚动，不能新增同向滚动宿主。",
+      "PUI-FB-0459 删除头像昵称后仍保留服务区 margin-top:auto；不得借资料删除移动服务列表。"
     ],
-    "tags": ["miniprogram", "me", "cell-group", "input", "shadow", "spacing", "visual-layout"]
+    "tags": ["miniprogram", "me", "cell-group", "remaining-space", "bottom-align", "scroll-area"]
   }
 }

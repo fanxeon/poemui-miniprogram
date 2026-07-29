@@ -32,13 +32,16 @@ Steps region
 ## 3. PUI 组合与依赖
 
 - 每个可见步骤必须组合 PUI Button；item.icon、完成和错误状态使用 PUI Icon，其中完成固定为 `check`、错误固定为语义 `error-circle`，不得用裸字符或无语义的关闭符号替代。官网场景入口同样必须使用 PUI Icon；数字序号、dot 与连接线属于 Steps 自身进度语义，不能伪装为图标。
-- 小程序每个 Step 使用覆盖整项的透明 PUI Button 作为唯一真实交互层；indicator、copy 与 connector 由 Steps 自身的视觉 body 承接，不再放入 Button 默认 Slot。水平 connector 以每列中心连接，纵向 connector 以 `44rpx` indicator 的 `22rpx` 中心连接；三者必须基于同一个 item 原点，禁止让 Button 内部内容轨道改变连线坐标。
+- 小程序每个 Step 使用覆盖整项的透明 PUI Button 作为唯一真实交互层；indicator、copy 与 connector 由 Steps 自身的视觉 body 承接，不再放入 Button 默认 Slot。水平 connector 从指示器半径外再留一个连接间隙，纵向 connector 的 x 轴固定落在 `44rpx` indicator 的 `22rpx` 中心；三者必须基于同一个 item 原点，禁止让 Button 内部内容轨道改变连线坐标。
 - WXML 与 H5 不得手写另一套 Button、Icon 或字符图标；H5 必须调用 `buttonSample.defaultSlot` 与 `iconComponent`。
 - 不依赖 PUI Loading/Empty；业务状态不属于 Steps。
 
 ## 4. Token、间距与排版
 
 - 颜色、边界、间距、字号、行高和圆角必须使用 PUI Token；H5 按 `1px≈2rpx` 镜像。
+- Steps 内部几何别名固定为：默认指示器 `44rpx`、中心 `22rpx`、连接间隙 `16rpx`、纵向条目间隙 `12rpx`；H5 分别镜像为 `22px / 11px / 8px / 6px`。页面不得覆盖这些内部别名修正单个截图。
+- default 纵向线从“当前指示器底边 + 连接间隙”开始，到“下一指示器顶边 - 连接间隙”结束；dot 纵向线还必须计入自身 `20rpx` 尺寸和 `12rpx` offset。线宽通过 `translateX(-50%)` 精确居中到锚点，不能把完整 `44rpx` 尺寸当作中心坐标。
+- horizontal 与 vertical、default 与 dot 必须共用同一组中心/间隙语义；修复一个方向时，专项测试必须同时锁定四种组合及 H5 的半比例镜像。
 - 标题、内容与附加信息允许自然换行，不公开 `maxTitleLength`，不得通过组件 API 破坏原文。
 - 状态动效固定为 `500ms + --pui-ease-standard`；`reduceMotion=true` 和系统低动效压缩为 1ms，不公开 duration/easing。
 - 不对 `height:auto` 做 transition，不使用 `display:none` 制造状态瞬移，不重复播放入场动画。
@@ -107,6 +110,6 @@ Steps region
 
 真机仍需复核 rpx、横向手势、触摸反馈、样式隔离、系统低动效和目标基础库 ARIA 支持。任何不能满足本文的实现必须写入 Ledger，不得静默绕过。
 
-## 2026-07-27 连线几何
+## 2026-07-28 连线几何复核
 
-横向与纵向 connector 以指标垂直中心为锚点，并在数字/图标两侧保留 token 化间隙；线条不得直接贴住指标边缘。小程序与 H5 规则分别在 `steps/steps.wxss`、`preview/styles.css`，见 `PUI-FB-0427`。
+用户在微信 Steps 独立页再次指出纵向连线锚点错误。审计确认旧 WXSS 用 `left: var(--pui-space-step-22)`，把 `44rpx` 指示器的完整尺寸当成中心，连线实际落在右边缘；旧专项测试也错误地把这两个值视为同义而产生假通过。现在小程序与 H5 都使用组件内部中心、尺寸、连接间隙、条目间隙和 dot offset 别名，横纵/default/dot 四种组合按同一公式计算，测试同时做数值几何和源码公式校验。见 `PUI-FB-0427`。

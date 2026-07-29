@@ -23,12 +23,12 @@
 | Collapsible | `poemui-miniprogram/collapsible/collapsible` | `adapter` | `tap` | 独立原生 Collapsible 提供单触发器/单内容区、受控/非受控 open、trigger/default slot、实测高度动画、完整状态与实例方法；多面板仍由 Collapse/Accordion 承担。 |
 | Combobox | `poemui-miniprogram/combobox/combobox` | `adapter` | `input/tap` | 独立原生 Combobox 提供真实搜索过滤、受控选值/查询/显隐、单选/多选、分组、创建、状态、slot、完整事件方法和测量高度动画；普通 picker 继续由 Select 承担。 |
 | Date Picker | `poemui-miniprogram/date-time-picker/date-time-picker` | `adapter` | `tap` | DateTimePicker 直接组合 PUI Picker，提供年到秒精度、动态日期列、范围、步长、格式、值与显隐双受控、默认图标 Header / Classic 底部操作、Popup/内联和草稿确认；Calendar + Popover 继续承担可视月历与范围选择。 |
-| Dialog | `poemui-miniprogram/dialog/dialog` | `native` | `tap` | 原生 Dialog 提供 16 Props、受控显隐、Header/Content/Footer 三区、七个具名 slot、按钮 actions、遮罩滚动保护与 close()。请求状态由 content slot 组合 PUI Loading/Empty/Button 承担。 |
+| Dialog | `poemui-miniprogram/dialog/dialog` | `native` | `tap` | 原生 Dialog 提供 17 Props、受控显隐、Header/Content/Footer 三区、八个具名 slot、按钮 actions、遮罩滚动保护与 close()。header-left 可承载一个紧凑图标按钮，请求状态由 content slot 组合 PUI Loading/Empty/Button 承担。 |
 | Direction | `poemui-miniprogram/direction/direction` | `native` | `none` | 原生 Direction Provider 为子树提供 ltr/rtl/auto 阅读方向、语言解析、逻辑对齐、容器形态、默认 slot、完整解析/变更事件和实例查询；不会伪称旧物理 left/right 样式或所有图标会自动镜像。 |
 | Dropdown Menu | `poemui-miniprogram/dropdown-menu/dropdown-menu` | `adapter` | `tap` | 原生 DropdownMenu 以 8 Props 的筛选项数组承载单选/多选选项，提供受控选值、禁用项、遮罩关闭、默认/footer Slot、change/open/close/confirm/reset 与固定低动效；不承担业务状态、滚动控制或实例方法。 |
 | Empty | `poemui-miniprogram/empty/empty` | `adapter` | `none` | 原生 Empty 以 Image/Icon 提供图形与说明，image、description、action 由具名 Slot 组合；无组件事件、实例方法或内部业务操作。 |
 | Field | `poemui-miniprogram/field/field` | `native` | `none` | 透明字段布局容器，以12 Props和5 Slots组合标签、帮助、反馈、PUI Input与箭头；不伪造值、禁用、校验事件或 Form 关系。 |
-| Input | `poemui-miniprogram/input/input` | `adapter` | `input` | 原生 Input 提供 30 Props、受控/非受控文本、maxlength/maxcharacter、常用微信键盘参数、三档尺寸/对齐、前后缀与 Icon、七类 slot、四类状态、清空/焦点/确认事件和固定 500ms/1ms 低动效。 |
+| Input | `poemui-miniprogram/input/input` | `adapter` | `input` | 原生 Input 提供 31 Props、受控/非受控文本、maxlength/maxcharacter、聚焦/常驻清空策略、常用微信键盘参数、三档尺寸/对齐、前后缀与 Icon、七类 slot、四类状态、清空/焦点/确认事件和固定 500ms/1ms 低动效。 |
 | Input OTP | `poemui-miniprogram/input-otp/input-otp` | `native` | `input` | 多格验证码输入和 complete 事件。 |
 | Label | `poemui-miniprogram/label/label` | `native` | `none` | 表单标签、必填标记与默认 Slot 的透明组合根；不管理关联控件，也不公开事件或实例方法。 |
 | Navigation Menu | `poemui-miniprogram/navigation-menu/navigation-menu` | `adapter` | `tap` | 原生 NavigationMenu 以横向/纵向导航项和固定高度弹层提供链接集合、受控显隐/展开/选值、分组、钻取子菜单、真实微信导航回调、slot/generic、完整状态和低动效。 |

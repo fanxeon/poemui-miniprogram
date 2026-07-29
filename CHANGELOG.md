@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- 暂无。
+
+## 0.1.2
+
+- 新增 `AreaChart`、`BarChart` 与 `Waffle` 三项高级图表；小程序与 H5 共用数据、主题渐变、零基线和可重播入场语义。
+- 修正 Navbar、Sticky、NavigationMenu、Breadcrumb、Tabs、Tabbar、Steps 与 Indexes 的锚点、宽度、滚动和选中状态。
+- 完善 Picker、DateTimePicker、Select、Field、Input、Search、Stepper 与 Textarea 的 Header、圆角、间距、实机布局和受控输入稳定性。
+- 为 Avatar、Image、List、Card、Bubble、SwipeCell、CountDown、Skeleton、NoticeBar、Dialog 与 DynamicMessage 补齐加载、菜单、动画、遮罩和恢复闭环。
+- 安装页改为云端读取；“我的”页使用 AreaChart 展示公开 `0.1.0` 的 71 个组件到 `0.1.2` 的 74 个组件，并在图表上方展示组件、样式与高级组件真实数量。
+- 小程序首页保持返回滚动位置，展开分区跟随全局外观，高级分区增加 Premium 图标；组件详情页增加真实反馈入口。
+- `v0.1.2` 更新公告同步包内回退与共享云稳定文档；本版本直接从公共 `0.1.0` 升级，不伪造未发布的 `0.1.1` npm 版本。
+
+- Textarea 删除输入区内置 Clear，公开合同收敛为 29 Props、6 Events、3 Slots、3 Methods；逻辑 innerValue 与原生 renderValue 分离，匹配当前草稿的父级 value echo 不再二次重绑原生 textarea，真正不同的外部 value 才覆盖输入。业务清空由父级显式写回受控 value。
+
 - 2026-07-27：Style Utilities 从 530 扩展到 562 个选择器，新增 32 个精选色彩 utility。red、orange、amber、emerald、teal、blue、violet、pink 各提供文字、实色背景、柔和背景和边框四种直接 class；浅深色分别读取 Theme Token。H5 Color 增加 Accent 色板并从生成数据注入同名变量，不维护第二份色值。实色背景不隐式设置文字色，精选色不替代 success/warning/danger/info 业务语义。
 
 - 2026-07-25：修复 Icon Font 闭口圆形被填成实心的问题。生成器改用 nonzero 轮廓绕向，并在导出前归一化完整 360 度 Arc；当前 59 个圆环、头像头部和轨道节点恢复镂空，24 个省略号、Radio 中心点与锚点等语义点继续实心。新增全量轮廓拓扑门禁，H5 与小程序仍消费同一 WOFF2。

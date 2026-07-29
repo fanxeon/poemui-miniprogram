@@ -273,8 +273,8 @@ for (const action of [
   'stepper-plus',
 ]) {
   const rawIconButton = new RegExp(`<button[^>]*data-demo-action=["']${action}["']`);
-  const composedIconButton = new RegExp(`iconButtonSample\\(\\{[^\\n]*demoAction: ["']${action}["']`);
-  const composedInputClear = new RegExp(`inputControlSample\\(\\{[\\s\\S]{0,900}?clearAction: ["']${action}["']`);
+  const composedIconButton = new RegExp(`iconButtonSample\\(\\{[\\s\\S]{0,400}?demoAction:[^\\n]{0,80}["']${action}["']`);
+  const composedInputClear = new RegExp(`inputControlSample\\(\\{[\\s\\S]{0,900}?clearAction:[^\\n]{0,80}["']${action}["']`);
   if (rawIconButton.test(previewApp) || (!composedIconButton.test(previewApp) && !composedInputClear.test(previewApp))) {
     fail(`${action} must compose the reusable PUI Icon Button mirror instead of a private raw button.`);
   }
@@ -356,7 +356,7 @@ if (/<button\b[^>]*data-demo-action="indexes-item"/.test(previewApp)
   || !previewApp.includes("customClass: 'pui-indexes-preview__entry'")
   || !previewApp.includes('demoGroupIndex: group.groupIndex')
   || !previewApp.includes('badgeSample({ count: item.badge')
-  || !previewApp.includes("action === 'indexes-item'")
+  || !previewApp.includes("type === 'indexes-item'")
   || !previewApp.includes("action.dataset.activationSource || 'tap'")) {
   fail('Indexes entries must compose Cell/Badge/Icon helpers with semantic keyboard activation and no raw button or glyph arrow.');
 }

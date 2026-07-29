@@ -4,6 +4,7 @@
   style="{{customStyle}} {{rootStyle}}"
   role="img"
   aria-label="{{semanticLabel}}"
+  aria-busy="{{showLoading}}"
 >
   <view wx:if="{{useSlot}}" class="pui-avatar__fallback pui-avatar__slot"><slot /></view>
   <view wx:elif="{{icon}}" class="pui-avatar__fallback"><pui-icon name="{{icon}}" size="{{iconSize}}" /></view>
@@ -12,8 +13,13 @@
     wx:if="{{displaySrc && !imageFailed}}"
     class="pui-avatar__image {{imageLoaded ? 'pui-avatar__image--loaded' : ''}}"
     src="{{displaySrc}}"
+    data-src="{{displaySrc}}"
     mode="aspectFill"
+    lazy-load="{{lazy}}"
     bindload="onImageLoad"
     binderror="onImageError"
   />
+  <view wx:if="{{showLoading}}" class="pui-avatar__loading">
+    <pui-loading loading size="{{iconSize}}rpx" text="" aria-label="{{semanticLabel}}加载中" reduce-motion="{{reduceMotion}}" />
+  </view>
 </view>

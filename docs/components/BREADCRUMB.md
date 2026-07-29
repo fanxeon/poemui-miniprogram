@@ -15,7 +15,7 @@ Breadcrumb(navigation)
 └─ content：prefix Slot + 内部横向 ScrollView 路径列表 + suffix Slot
 ```
 
-- 状态优先级为 `error > loading > content > empty`；nowrap 横滚只属于内部 ScrollView。
+- 状态优先级为 `error > loading > content > empty`；`wrap=false` 是默认值，优先让整条路径在内部单行展示，空间不足时只允许内部 ScrollView 横滚。调用方显式开启 `wrap` 才进入多行路径。
 - 路径项使用 PUI Button，分隔符只作不可交互装饰。
 
 ## 3. PUI 组合与依赖
@@ -26,6 +26,7 @@ Breadcrumb(navigation)
 ## 4. Token、间距与排版
 
 - 字号、高度、分隔符、间距、圆角、颜色和 500ms/1ms 动效均消费 PUI Token。
+- 错误态固定使用“状态图标 / 可换行消息 / Retry”三轨布局；消息占剩余宽度，Retry 保持右侧可见且与消息垂直对齐，禁止让按钮挤入文案或漂到路径中间。
 - `maxLabelLength` 是主动内容截断；状态、错误和 API 文字不得借省略号隐藏。
 
 ## 5. 内容、Slot 与组合边界

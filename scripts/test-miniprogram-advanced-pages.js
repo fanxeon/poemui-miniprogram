@@ -2,13 +2,16 @@
 
 require('./test-top-loading');
 require('./test-dynamic-message');
+require('./test-area-chart');
+require('./test-bar-chart');
+require('./test-waffle');
 
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 var vm = require('vm');
 var ROOT = path.resolve(__dirname, '..');
-var pages = ['top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'];
+var pages = ['area-chart', 'bar-chart', 'waffle', 'top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'];
 function read(relativePath) { return fs.readFileSync(path.join(ROOT, relativePath), 'utf8'); }
 function load(name) {
   var page;
@@ -66,6 +69,32 @@ assert.strictEqual(watermark.data.watermarkLayout, 'hexagonal', 'Watermark 布�
 watermark.onToggleWatermarkMove();
 assert.strictEqual(watermark.data.watermarkMovable, true, 'Watermark 移动状态必须由页面回写');
 
+var barChart = load('bar-chart');
+barChart.onToggleChartData();
+assert.strictEqual(barChart.data.highVariance, true, 'BarChart 示例必须由父级真实回写高波动态');
+assert.strictEqual(barChart.data.chartItems[0].segments[0].value, 48, 'BarChart 高波动态必须显著改变条形长度');
+assert.strictEqual(barChart.data.chartItems[1].segments[0].value, 12, 'BarChart 高波动态必须同时包含明显下降');
+barChart.onToggleChartMode();
+assert.strictEqual(barChart.data.chartMode, 'grouped', 'BarChart 示例必须由父级切换布局模式');
+
+var waffle = load('waffle');
+waffle.onToggleWaffleData();
+assert.strictEqual(waffle.data.highVariance, true, 'Waffle 示例必须由父级真实回写高波动态');
+assert.strictEqual(waffle.data.waffleItems[0].segments[0].value, 62, 'Waffle 高波动态必须显著增加点阵数量');
+assert.strictEqual(waffle.data.waffleItems[0].segments[1].value, 24, 'Waffle 高波动态必须保持分段变化可辨认');
+waffle.onToggleWaffleShape();
+assert.strictEqual(waffle.data.waffleShape, 'circle', 'Waffle 示例必须由父级切换单元形状');
+
+var areaChart = load('area-chart');
+areaChart.onToggleData();
+assert.strictEqual(areaChart.data.highVariance, true, 'AreaChart 示例必须由父级真实回写高波动态');
+assert.strictEqual(areaChart.data.trendItems[0].segments[0].value, 310, 'AreaChart 高波动态必须显著改变首个数据点');
+assert.strictEqual(areaChart.data.trendItems[1].segments[0].value, 88, 'AreaChart 高波动态必须形成明显峰谷');
+areaChart.onToggleCurve();
+assert.strictEqual(areaChart.data.curve, 'linear', 'AreaChart 示例必须由父级切换曲线');
+areaChart.onToggleStacked();
+assert.strictEqual(areaChart.data.stacked, true, 'AreaChart 示例必须由父级切换堆叠模式');
+
 var topLoading = load('top-loading');
 topLoading.clearProgressTimer = function () { this._progressTimer = null; };
 topLoading.onStartUnknown();
@@ -79,9 +108,14 @@ assert.strictEqual(topLoading.data.taskState, 'idle', 'TopLoading 失败或取�
 var dynamicWxml = read('miniprogram/pages/components/dynamic-message/index.wxml');
 var dynamicJs = read('miniprogram/pages/components/dynamic-message/index.js');
 assert.ok(dynamicWxml.indexOf('<pui-dynamic-message') !== -1, 'DynamicMessage 页面必须使用真实组件');
+assert.ok(dynamicWxml.indexOf('id="dynamic-message-start"') !== -1, 'DynamicMessage 页面必须提供稳定的真实触发入口用于运行态 battle');
 assert.ok(dynamicWxml.indexOf('bind:action="onNotificationAction"') !== -1 && dynamicWxml.indexOf('bind:close="onNotificationClose"') !== -1, 'DynamicMessage 页面必须承接真实事件');
 assert.ok(dynamicJs.indexOf("selectComponent('#dynamic-message')") !== -1, 'DynamicMessage 页面必须调用真实实例');
 assert.ok(dynamicJs.indexOf(".update('component-build'") !== -1, 'DynamicMessage 页面必须展示同 key 原位更新');
 assert.ok(dynamicJs.indexOf("key = 'queue-' + Date.now()") !== -1, 'DynamicMessage 页面必须展示不同 key 队列');
+assert.ok(dynamicWxml.indexOf('<pui-cell-group aria-label="DynamicMessage 外观设置">') !== -1, 'DynamicMessage 页面必须用 CellGroup 陈列私有外观设置');
+assert.ok(dynamicWxml.indexOf('shadow="{{messageShadow}}"') !== -1 && dynamicWxml.indexOf('frosted-glass="{{messageFrostedGlass}}"') !== -1, 'DynamicMessage 页面必须把私有阴影与毛玻璃开关传给真实组件');
+assert.ok(dynamicWxml.indexOf('<pui-switch slot="right" value="{{messageShadow}}"') !== -1 && dynamicWxml.indexOf('<pui-switch slot="right" value="{{messageFrostedGlass}}"') !== -1, 'DynamicMessage 页面必须复用 PUI Switch');
+assert.ok(dynamicJs.indexOf('onMessageShadowChange') !== -1 && dynamicJs.indexOf('onMessageFrostedGlassChange') !== -1, 'DynamicMessage 页面必须真实回写私有外观 Props');
 
 console.log('miniprogram advanced page contract tests passed');

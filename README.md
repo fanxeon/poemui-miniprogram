@@ -2,8 +2,8 @@
 
 PoemUI 是面向微信小程序原生开发的 UI 组件库，目标是通过 npm 安装、按需引入组件，并内置深浅色主题能力。工程结构和使用方式对标 `tdesign-miniprogram`：开发者安装包后，在页面 JSON 的 `usingComponents` 中指向包内组件路径。
 
-> **受限 Beta / 发布状态（2026-07-28）**
-> 当前公开版本为 `poemui-miniprogram@0.1.0`，源码位于
+> **受限 Beta / 发布状态（2026-07-29）**
+> 当前公开版本为 `poemui-miniprogram@0.1.2`，源码位于
 > [fanxeon/poemui-miniprogram](https://github.com/fanxeon/poemui-miniprogram)。
 > 本地 tarball、构建成功或代码中的包名仍不能替代 Registry 回读和微信
 > `build-npm`；完整稳定性与授权边界见 [受限 Beta 公告](docs/PUBLIC_BETA_NOTICE.md)。
@@ -15,7 +15,7 @@ PoemUI 是面向微信小程序原生开发的 UI 组件库，目标是通过 np
 固定版本安装：
 
 ```bash
-npm i poemui-miniprogram@0.1.0 -S --production
+npm i poemui-miniprogram@0.1.2 -S --production
 ```
 
 安装后在微信开发者工具中执行：
@@ -133,7 +133,8 @@ visualConfig.setEffectsEnabled(false); // 暂停装饰效果，不删除单项�
 
 ## 组件范围
 
-当前 npm 包内包含 `71` 个可按需引入的小程序组件目录，分为明确的发布层级：
+当前 npm 包内包含 `74` 个可按需引入的小程序组件目录；这里指当前工作树。
+公开 Registry `poemui-miniprogram@0.1.0` 是不可变的 71 组件历史版本；当前 `0.1.2` 包含 74 个组件。组件分为明确的发布层级：
 
 - `done`：API 与主要交互稳定，具有独立 WXML、WXSS、JS 实现、可传参数、事件与官网交互预览。
 - `beta`：具有真实原生实现与受控发布边界，升级时仍可能出现非破坏性调整。
@@ -156,7 +157,7 @@ Icon 内置 17 类、220 个 `PoemUI Roundline` 单色 SVG 设计真相源；其
 
 `pui-date-time-picker` 直接组合 PUI Picker，提供年到秒精度、动态月末与闰年、范围、步长、格式、值与显隐双受控、Popup/内联、确认/取消和低动效；可视月历与范围面板继续由 `Calendar + Popover` 组合。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
 
-`pui-card` 支持 header/content/footer 具名 slot、`showHeader`、统一分区内距、可点击/禁用边界与低动效；Card `click` 和 footer 内子 Button 的 `click` 保持独立，不会互相伪造。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
+`pui-card` 支持默认内容与 header/header-right/footer 具名 Slot；固定右侧轨最多承载三个紧凑操作，未提供 `header-right` 且 `menuItems` 非空时使用默认 `more-horizontal` 圆形图标按钮打开 PUI Popover 菜单。`menuVisible` 支持受控/非受控模式，`menu-select` 只回传选择，不伪造业务成功。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md) 与 [CARD.md](./docs/components/CARD.md)。
 
 `pui-divider` 提供横竖线、对齐、虚线、语义标签和 `showContent` 默认 slot；它可与 `Tag`、`Icon` 等内部组件组合，并在窄屏安全截断长文字。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
 
@@ -170,7 +171,7 @@ Icon 内置 17 类、220 个 `PoemUI Roundline` 单色 SVG 设计真相源；其
 
 `pui-combobox` 是独立可搜索组合输入，不复用 picker Select：支持 value/query/visible 三重受控、单选/多选、分组、创建、Tag 移除、上限、三类 slot、完整状态/事件/方法和 selector query 高度动画；retry、创建与 footer 操作均不伪造业务成功。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
 
-`pui-avatar` 支持 `src/image` 图片、Icon/文本/默认 slot 回退，以及真实 `load`、`error`、`click` 事件；图片加载淡入、失败回退或淡出隐藏均受 0–500ms 低动效契约约束。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
+`pui-avatar` 是纯展示叶子：支持 `src` 图片、Icon/文本/默认 Slot 回退、显式 `loading` 与真实 `error` 事件；加载态复用 PUI Loading，图片加载淡入、失败回退或淡出隐藏均遵守固定动效/低动效合同。点击行为由外层 PUI Button 或 Cell 承担。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md) 与 [AVATAR.md](./docs/components/AVATAR.md)。
 
 `pui-image` 以原生资源生命周期提供 loading、loaded、error 和 empty，过滤 width/height 内联样式，支持覆盖 slot、长按菜单、真实 `load` / `error` / `click` 及低动效；H5 预览不再用手工切换伪造图片状态。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
 
@@ -196,7 +197,7 @@ Icon 内置 17 类、220 个 `PoemUI Roundline` 单色 SVG 设计真相源；其
 
 `pui-popover` 是相对默认 Slot 触发元素定位的非模态气泡层，支持受控/非受控显隐、12 向定位、六种主题、箭头、外部点击关闭、default/content Slot、fixed 测量与 500ms/低动效；业务 Loading、Empty、错误、重试和操作由消费者组合。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
 
-`pui-dialog` 是唯一的 Dialog 对话框入口：提供 40 个真实 Props，支持受控/非受控显隐、默认/数组/slot 动作、Header/Content/Footer 三区、header-left/title/content/actions 四类组合、loading/error/empty、完整进退场事件和 `0–500ms` 动画；`confirmLoading` 会锁定用户退出以防重复操作。Props、事件与方法见 [COMPONENT_API.md](./docs/COMPONENT_API.md)，不可破坏的结构与设计规则见 [Dialog 组件语义合同](./docs/components/DIALOG.md)。所有组件合同的建立与迁移规则见 [组件语义合同索引](./docs/components/README.md)，新 Agent 可使用 [新会话启动提示词](./docs/NEW_SESSION_PROMPT.md)。
+`pui-dialog` 是唯一的 Dialog 对话框入口：公开 17 Props、5 Events、8 个具名 Slots 与 `close()`，以 Popup Surface 承载紧凑 Header、可滚动 Content 和一/二列全宽 Footer。Header 左侧可组合一个 `icon-only` PUI 圆形按钮，右侧默认提供 default Close；确认、动作和内容中的 Loading/Empty 均由父级真实回写，不在 Dialog 内伪造成功。Props、事件与方法见 [COMPONENT_API.md](./docs/COMPONENT_API.md)，不可破坏的结构与设计规则见 [Dialog 组件语义合同](./docs/components/DIALOG.md)。
 
 `pui-direction` 是真实的子树阅读方向 Provider：支持 ltr/rtl/auto、显式/系统语言解析、fallback、逻辑文本对齐、四种容器形态、slot/content、完整解析生命周期与实例方法；它不会假装自动迁移旧物理 left/right 样式或翻转方向性图标。完整契约见 [COMPONENT_API.md](./docs/COMPONENT_API.md)。
 

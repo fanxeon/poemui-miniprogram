@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0475",
+  "title": "Stepper 自定义组件宿主绝对定位在真机只显示加号",
+  "scope": "component",
+  "components": ["stepper", "button", "input"],
+  "type": "visual-layout",
+  "severity": "critical",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Stepper 在微信真机稳定显示减号、数值输入和加号，三段顺序与 H5 一致。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "在微信真机打开 Stepper 独立页。",
+    "旧 WXML 将三个自定义组件宿主全部 absolute 定位并通过 custom-style 交换左右轨。",
+    "真机反馈只有加号可见，减号和中间数值没有展示。"
+  ],
+  "expected": "WXML 物理顺序即 minus/value/plus；三个包装轨参与同一 Grid，PUI Button/Input 宿主在各自轨内占满。",
+  "actual": "旧结构没有真实布局轨，依赖 custom component 宿主 absolute left/right/top 与覆盖顺序，真机解析后出现节点丢失/覆盖。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户提供真机现象：除加号外均未展示。"},
+    {"kind": "file", "ref": "stepper/stepper.wxml", "note": "改为 button-track/input-track/button-track 物理结构，内部 PUI 宿主占满轨道。"},
+    {"kind": "file", "ref": "stepper/stepper.wxss", "note": "根改为 inline-grid，列宽由 Button track 与 inputWidth Token 决定。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 镜像同步相同 minus/value/plus 包装顺序。"},
+    {"kind": "test", "ref": "scripts/test-stepper.js", "note": "专项禁止 absolute 自定义组件宿主并锁定三轨结构。"}
+  ],
+  "rootCause": "为规避自定义组件宿主流式宽度，旧合同选择了 absolute custom-style；多个组件宿主脱离流且依赖覆盖/左右互换，在真机 WebView 的宿主尺寸解析中不稳定。",
+  "decision": {
+    "outcome": "Stepper 根使用 inline-grid；WXML 按 minus/input/plus 放置三个普通 view 轨，PUI Button/Input 通过宿主 style 与 custom-style 同时占满自己的物理轨；移除绝对定位。",
+    "rationale": "物理 DOM 顺序和 Grid 轨道不依赖跨组件选择器或宿主坐标计算，真机可见性更稳定。",
+    "alternativesRejected": [
+      "继续调整 absolute z-index 仍依赖真机宿主实现。",
+      "用字符 + / - 和原生 input 会绕过 PUI Button/Input。",
+      "只修独立页无法修复 npm 消费者。"
+    ]
+  },
+  "impact": {
+    "files": ["stepper/stepper.wxml", "stepper/stepper.wxss", "preview/app.js", "preview/styles.css", "scripts/test-stepper.js", "docs/components/STEPPER.md", "feedback/records/pui-fb-0475-stepper-physical-three-track-device-layout.json"],
+    "dependencies": ["PUI Button", "PUI Input", "WeChat custom component host layout", "miniprogram_dist", "build-npm"]
+  },
+  "verification": {
+    "tests": ["scripts/test-stepper.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": ["node scripts/test-miniprogram-form-pages.js：通过", "node scripts/test-stepper.js：通过", "npm run example:install：通过", "微信 DevTools CLI build-npm：cost=1146ms，warnings=[]"],
+    "browser": [
+      "H5 390px：Stepper 根计算 grid-template-columns=44px 60px 44px，三 Track rect 连续为44/60/44px；Minus、Input、Plus 均 visibility=visible/opacity=1，点击 Plus 从2到3、输入7成功，document 375/375。",
+      "微信开发者工具 iPhone 12/13 Pro 390x844：pages/components/stepper/index 三个示例均显示 Minus、数值、Plus；核心示例点击 Plus 后输入值从1到2，页面状态回写“数量已调整为 2”。"
+    ],
+    "deviceRisks": ["本次修复由用户真机失败触发，但修改后的 iOS/Android 真机三轨显示尚未复测，必须保持 pending-device。"]
+  },
+  "ai": {
+    "summary": "Stepper 的三个自定义组件必须位于真实 Grid 包装轨中，不能靠 absolute 宿主坐标交换顺序。",
+    "rules": [
+      "WXML 顺序固定 minus/value/plus。",
+      "三个宿主各自占满物理轨，根宽由 Button track + inputWidth 计算。",
+      "不得用字符控件或页面补丁替代 PUI Button/Input。"
+    ],
+    "tags": ["stepper", "wechat-device", "grid", "custom-component-host", "button", "input", "h5-parity"]
+  }
+}

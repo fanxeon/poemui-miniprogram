@@ -1,0 +1,40 @@
+# 组件独立页 UI 修缮 Checklist（2026-07-28）
+
+> 范围：只处理本轮用户点名的 11 项。每项必须依次完成共享组件、小程序独立页、H5 镜像、合同/Ledger、专项测试与 390px 交互验收；真机未实际执行时保持 `pending-device`。
+
+| # | 组件 | 用户问题 | 组件源码 | 小程序页 | H5 | 合同 / Ledger | 交互验收 | 当前状态 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Steps | 纵向连接线锚点不正确 | 已复核中心/间隙公式 | 已复核真实组件页 | 已同步 | PUI-FB-0427 | H5 量测连接线相对相邻圆标边缘各留 8px；DevTools 390px 截图复核 | 已验收；pending-device |
+| 2 | NavigationMenu | 水平入口不能在“全部压缩”与“全部横滚”间硬选；整块 Button 被裁半；双栏尾轨、Panel 阴影与 Header Close 几何漂移 | 0.1.2 已增加真实 host、自适应 `208rpx` 最小轨、独立 viewport 裁切；vertical 完成态归零、16px 阴影间距、suffix 右尾轨和 10px 等距 Close | horizontal 3 项等宽、5 项真实局部滚动；vertical 5 项完整，Badge/Indicator 右对齐 | 旧版已验；0.1.2 新规则待统一同步 | PUI-FB-0467 | DevTools 390px：horizontal 3×117.328px；5×108px 并真实滚至 188px；vertical rail→Panel=16px，suffix 右边一致，Close Header 上/右=10.5/10px，浅/深色与关闭/重开回写通过 | 小程序 0.1.2 已复验；H5 待同步；pending-device |
+| 3 | Breadcrumb | 默认排版应尽量单行；错误态重新加载按钮位置不正确 | 已完成，错误态真实启用三列 Grid | 页面闭环 error→loading→content | 已完成 | PUI-FB-0468 | H5 三轨 20/148/63px；DevTools 点击重新加载并完成恢复 | 已验收；pending-device |
+| 4 | Tabbar | 混合文案时所有活动短横应共用固定位置；全无文案时才切换另一位置 | 已完成 | 复用共享组件 | 已完成 | PUI-FB-0469 | H5 混合/全图标两组基线量测；DevTools 点击纯图标项并切换全图标数据 | 已验收；pending-device |
+| 5 | Indexes | 选中态裁切、字形未在圆内居中、失败态底距；0.1.2 回归发现长轨灰线、拖动无放大提示、受控滚动回声、左轨/完整索引避让与 disabled 滚读缺口 | 0.1.2 已改动态无滚动条轨、内侧放大提示、scroll 回声隔离与唯一 Surface；索引项移除通用 Button，语义交互根、`line-height:1` 字形、动态正圆和 `x=.5px / y=.25px` 字体光学补偿共同收口 | Retry 已改为 error→loading→content/failure 父级闭环 | 旧版完成；0.1.2 新语义待统一同步 | 更新 0268/0269/0270/0409/0428/0470；新增 0490–0496 | Node 覆盖 A–Z 首中尾命中、提示/去重、scroll 回声、恢复链和索引项中心合同；DevTools 390×844 实测 262px 轨完整容纳 14 项且无滚动条，最终正圆与 B 墨迹两轴残差不超过 0.3px，拖动 A→B 显示 45px 内侧提示，错误态 Retry 底距 39.5px，实点恢复为 14 组；深色果味根为半透明 Surface + blur(13px)，body/entry/state 透明，清理后控制台 0 warning/error | 小程序 0.1.2 已复验；H5 待同步；pending-device |
+| 6 | Field | 嵌入 Input 缺少左右内距和圆角 | 已完成 | 复用真实 PUI Input | 已完成，补全果味覆盖优先级 | PUI-FB-0471 | H5 深色/果味计算样式；DevTools 输入 Tabs，并实测浅色→深色→恢复浅色 | 已验收；pending-device |
+| 7 | Textarea | 受控输入时高度先增后减；删除 Clear 后仍复现 | 已将逻辑 `innerValue` 与原生 `renderValue` 分离，正常输入只差量写逻辑值/计数；匹配原生草稿的父级 echo 不再触发第二次子组件 `setData` | 页面继续真实执行 change→value 回写，不做 debounce；主示例增加稳定自动化锚点 | Clear 已删除；现有 `control.value !== snapshot.value` 守卫与小程序同值不重绑语义一致 | PUI-FB-0472（resolved / pending-user） | DevTools Nightly / iPhone 12/13 Pro：真实输入 6 行，组件只有一次 `{innerValue,count}` 补丁，父级同值回写无 `renderValue` 补丁；30ms 采样 356 次，高度只从 87px→126px，无回落；外部不同 value 仍会重写 `renderValue` | 模拟器已修复并复验；pending-user；pending-device |
+| 8 | Search | 取消按钮过大、主次不清；44px 旧修复仍抢占层级 | text / surface-transparent / extra-small；四级宿主宽度，默认 compact 实测 35×33px | 实点 Tabs→cancel，父级真实清空并回写完整目录状态 | 待最终汇总同步 `buttonSample` 与计算几何 | 更新 PUI-FB-0473 | DevTools 390px：light、dark fruit、border-on 均 35×33px 且无 Surface；清控制台后复跑 0 error / 0 warning | 小程序 0.1.2 已复验；H5 待同步；pending-device |
+| 9 | Select / Picker | 独立页与 H5 候选项各展示 4 个；Popup 标题到选项/滚轮间距过大 | 小程序已收口为普通/等距均恰好一个 Surface inset；Select 删除 Options 重复 padding；Picker 保留 5 行与中心选中 | 候选项保持 4 个；Select 选择与 Picker 拖动+确认真实回写 | 候选项旧版已完成；0.1.2 间距待最终统一同步 | PUI-FB-0474、PUI-FB-0499 | DevTools 390px 浅/深/等距通过；Select 回写候选版、Picker 回写开发版；Errors=0，既有 warnings 单列 | 小程序 0.1.2 已复验；H5 待同步；pending-device |
+| 10 | Stepper | 真机除加号外的减号与数值未显示 | 已完成物理三轨 | 复用共享组件 | 已同步结构 | PUI-FB-0475 | H5 44/60/44px 三轨；DevTools 三控件可见并点击 1→2 | 已验收；pending-device |
+| 11 | 跨项回归 | 390px、深浅色、果味、滚动、失败恢复、控制台 | — | DevTools 390×844 与 Field 深浅色切换已完成 | H5 390px、light/dark/fruit 已完成 | 0427、0467–0475 | H5 console=[]；DevTools 问题面板 0、调试控制台为空；真机未执行 | 模拟器与 H5 完成；pending-device |
+
+## 第二批组件级修缮 Checklist
+
+| # | 组件 | 用户问题 | 共享组件 / API | 小程序独立页 | H5 | 合同 / Ledger | 当前状态 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 12 | Avatar | 资源加载态被错误交给页面控制，H5 未绑定真实 load/error | 新增 lazy，并让自动等待与 loading 强制态都使用内部 PUI Loading + aria-busy；主题变化不重置资源状态，旧 src 事件不得覆盖新资源 | 页面展示真实 COS 头像、持续内部 Loading 和失败回退，不再提供“结束加载”伪操作；双操作保持标准两列 | H5 真实 img load/error、缓存完成检查、lazy/eager 与强制 Loading 同步 | PUI-FB-0476 | 本轮专项已更新；浏览器/DevTools 已验证，真机待用户确认 |
+| 13 | Card | 固定右 Slot 最多三个；默认 More 下拉菜单；0.1.2 复看发现菜单被 Card 圆角裁切，只露出白色窄片 | More 保持 PUI Button + PUI Popover，并强制 `fixed` 视口定位，不缩减菜单项规避问题 | DevTools 390px 三项完整展示；真实点击“标记复核”后菜单关闭，父级显示对应选择结果 | 默认同步三项；菜单高 130px、内容 `128/128px`，底部越过 Card 7.5px 仍三段可命中，无横向溢出；浅/深果味通过 | PUI-FB-0477（更新） | 本地小程序/H5 已复验；pending-user；pending-device |
+| 14 | Image | 加载态 / 懒加载 | 复核并保留既有 loading/lazy/load/error | 模拟器真实资源 load 回写，模拟错误与恢复均生效 | 真实 `img loading=lazy` | PUI-FB-0478 | 已验收；pending-device |
+| 15 | List | 加载更多无响应；0.1.2 追加成功后条目仍瞬间撑开 | List 继续只发布 load/retry；复用 duration/easing/reduceMotion，只让既有列表尾部新增 items 展开，不新增 expanded/animate/完成事件 | 页面父级真实执行 5→loading→9/finished；error Footer Retry 真实恢复为 9/finished | 旧加载闭环已验；0.1.2 尾项展开待最终汇总同步 `preview/app.js` / `preview/styles.css` | PUI-FB-0479、PUI-FB-0500 | DevTools 390px 浅/深及 shadow/frost/largeRadius/bordered 组合通过，Errors=0；H5 待同步；pending-device |
+| 16 | Bubble | 展开操作应右下对齐；四行以上正文点击展开不能先缩回，也不能丢失展开/收起入口 | toggle 使用满宽轨道与 block PUI Button；full + nowrap 单行探针计算端点；可见正文直接动画像素 `max-height`；受控 echo 保留已测 `showToggle` | 专项锁定单行探针、直接高度、缓存和 toggle 保留；微信 Nightly / iPhone 12/13 Pro 默认一行与“展开”可见，实点展开后四行以上正文和“收起”持续存在，再次收起恢复一行与“展开”，状态回写闭环，Errors=0 | H5 新 DOM 首帧锁定旧端点、下一帧单向到目标。390px 深色 500ms 展开 `80→100px`（75帧）、收起 `100→80px`（75帧），浅色展开 `80→100px`（70帧），错误方向帧均为 0，document `375/375`，console 0 | PUI-FB-0480 / PUI-FB-0502 | resolved / pending-user；模拟器未逐帧采样，iOS/Android pending-device |
+| 17 | SwipeCell | 毛玻璃提前透出底色；打开一侧时另一侧动作圆角从容器边缘露出 | 关闭透明无边框阴影；动作层按实时位移方向互斥，跨零立即切换 | 390px 浅色与深色果味完成左右/跨零；只有同侧动作可见，禁用不滑，0 errors | H5 当前仍用根级 open/drag 同时激活两侧，留待 0.1.2 汇总同步与 390px 复验 | PUI-FB-0481 / PUI-FB-0501 | 小程序已验收；pending-user / pending-device |
+| 18 | CountDown | 时分秒错位、裁切；新增非闪烁的数字滚动风格并收口 API | 固定数字 value 与外部单位分离；新增 `animation=pulse/roll`，roll 只滚变化的 DD/HH/mm/ss 位，SSS 直更，不新增动效时长或计时事件 | 独立页默认 roll，可在同一计时器运行中切换 pulse/roll，暂停/继续与 finish 仍由页面真实回写 | 单位分离旧版已完成；roll 待最终同步 `preview/app.js` / `preview/styles.css` / metadata helper 与 390px 复验 | PUI-FB-0482、PUI-FB-0503 | Node、安装产物与四路哈希通过；DevTools 390px 实测 `01:00→00:59`，运行中 roll→pulse→roll 继续到 `00:46/00:41` 不重置，暂停 `00:35` 保持；浅/深及 shadow/frost/largeRadius/bordered 可读，清理后 0 error / 0 warning；pending-device |
+| 19 | NoticeBar | Close 层级与语义染色；default/base 关闭按钮产生第二层 Surface | primary/success/warning/danger；右侧 transparent / icon-only / small / circle Close，保留命中区但无独立底色 | DevTools 390px 浅/深/深色果味无第二层底；浅色与果味实点 Close→父级隐藏→重新显示闭环 | 旧语义色已验；transparent Button 配置、样式与 390px 点击待 0.1.2 最终汇总同步 | 更新 PUI-FB-0483 | 小程序 0.1.2 已复验；H5 待同步；pending-user；pending-device |
+| 20 | Dialog | Header/Content/Footer、内距与全宽 Footer 不正确 | 17 Props / 8 Slots；两侧 icon-only 圆形按钮；一/二列 Footer；清除 Popup 重复 padding | 模拟器实际打开并截图；Close 事件使父级 visible true→false；双列 Footer 完整 | H5 Overlay=391×620；Header 36/158/36；Footer 116/116、gap 14px | PUI-FB-0484 | 已验收；pending-device |
+| 21 | AreaChart / BarChart / Waffle | 重播动画无反应 | 先提交复位帧，再跨帧进入 | 三页真实实例均实测 `entered: true→false→true` | 三个 Replay 入口均实际点击，最终恢复 entered，无控制台错误 | PUI-FB-0485 | 已验收；pending-device |
+| 22 | Skeleton | 头像轮廓不是正圆 | 清除固定 `96rpx` 最小高度，`type="circle"` 允许 size 等轴覆盖并固定 `border-radius:50%`；API 不变 | 继续以 `rowCol + size` 复用真实 Skeleton，无页面 CSS | 最终汇总同步 `preview/styles.css` 最小高度/圆形几何与 `preview/app.js` size 宽高测试 | PUI-FB-0505 | 小程序完成：DevTools 390px 浅/深色、largeRadius 开关及 loading 往返通过；H5 待同步；pending-device |
+
+## 门禁结果
+
+- 12 组组件专项、4 组小程序页面专项、`npm run feedback:check`、根仓与小程序仓 `git diff --check`：通过。
+- `npm run site:build`、`npm run example:install`、微信 DevTools `build-npm`（`warnings=[]`）、`npm run pack:check`：通过；包为 559 files / 361.8kB。
+- H5 支持的 393px 与更窄 375px 设备均无横向溢出，深色果味和浅色语义样式均实测；H5 控制台为空。
+- `npm run check` 的 precheck 与当前批次所在的组件、目录、页面、包结构检查均通过；全量主 check 继续在本轮未修改的 Search H5 私有 `search-clear` 原生按钮边界停止。该既有基线与本轮结果分开记录。

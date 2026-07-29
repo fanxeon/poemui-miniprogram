@@ -16,23 +16,27 @@ const contractIndex = read('docs/components/README.md');
 const example = read('_example/miniprogram/pages/components/index.wxml');
 const metadata = require(path.join(root, 'metadata/components.js'));
 
-assert.deepStrictEqual(metadata.apiProps.card, ['title', 'description', 'showHeader', 'bordered', 'padding', 'showFooter', 'headerBordered', 'footerBordered', 'shadow', 'clickable', 'disabled', 'ariaLabel', 'duration', 'easing', 'reduceMotion']);
-assert.deepStrictEqual(metadata.apiEvents.card.map((event) => event.name), ['click']);
-assert.deepStrictEqual(metadata.apiSlots.card.map((slot) => slot.name), ['default', 'header', 'footer']);
+assert.deepStrictEqual(metadata.apiProps.card, ['title', 'description', 'showHeader', 'bordered', 'padding', 'showFooter', 'headerBordered', 'footerBordered', 'shadow', 'clickable', 'disabled', 'menuItems', 'menuIcon', 'menuVisible', 'defaultMenuVisible', 'ariaLabel', 'duration', 'easing', 'reduceMotion']);
+assert.deepStrictEqual(metadata.apiEvents.card.map((event) => event.name), ['click', 'menu-visible-change', 'menu-select']);
+assert.deepStrictEqual(metadata.apiSlots.card.map((slot) => slot.name), ['default', 'header', 'header-right', 'footer']);
 assert(wxml.includes('role="{{clickable ? \'button\' : \'region\'}}"'));
 assert(wxml.includes('catchtap="onFooterTap"'), 'Footer must stop Card tap bubbling for slotted actions');
+assert(wxml.includes("icon=\"{{menuIcon || 'more-horizontal'}}\"") && wxml.includes('icon-only'), 'Card default More trigger must use the registered PUI icon and fixed icon-button geometry');
+assert(wxml.includes('fixed="{{true}}"'), 'Card More must use fixed Popover positioning so the menu is not clipped by the Card surface');
 assert(wxss.includes('.pui-card__header,\n.pui-card__content,\n.pui-card__footer { padding: var(--pui-card-inset); }'));
 assert(wxss.includes('.pui-card--compact .pui-card__header,\n.pui-card--compact .pui-card__content,\n.pui-card--compact .pui-card__footer { padding: var(--pui-panel-padding-compact); }'));
 assert(preview.includes('function cardShowcase(props, demo)'));
 assert(preview.includes("const footer = props.showFooter\n    ?"));
 assert(!preview.includes('pui-card-showcase__slot-note'), 'H5 must not invent a footer-closed placeholder absent from WXML');
 assert(preview.includes('pui-card-showcase__details') && preview.includes('组件状态与恢复路径已列入检查'), 'Card click must reveal a real parent-controlled inspection result rather than a diagnostic event label');
-assert(preview.includes('待用户确认'), 'Card 演示必须呈现真实的发布前状态，而不是 slot 工程术语');
+assert(preview.includes('card-menu-toggle'), 'Card H5 mirrors the built-in More menu');
+assert(preview.includes("{ label: '分享清单', value: 'share', icon: 'share' }"), 'Card H5 keeps the three-item menu used by the independent page so clipping regressions stay visible');
 assert(preview.includes('上一个发布批次'), 'Card 演示必须同时给出不可操作但可阅读的归档记录');
 assert(preview.includes('demo.cardSaved = !demo.cardSaved;'), 'Footer Button must write a reversible parent state without claiming persistence');
 assert(preview.includes("action === 'card-tap' && previewIdFor(state.current) === 'card' && (event.key === 'Enter' || event.key === ' ')"), 'H5 role=button Card must retain Enter/Space activation');
 assert(previewCss.includes('.pui-card-showcase--compact footer { padding: var(--pui-preview-panel-padding-compact); }'));
 assert(previewCss.includes('.pui-card-showcase footer { padding: var(--pui-preview-panel-padding); }'));
+assert(previewCss.includes('.pui-card-showcase {\n  overflow: visible;'), 'Card H5 surface must not clip its More menu');
 assert(previewCss.includes('body .app-shell[data-page-mode] .preview-stage .pui-card-showcase.has-shadow {\n  box-shadow: var(--preview-shadow-card);\n}'));
 assert(previewCss.includes('body .app-shell[data-page-mode] .preview-stage .pui-card-showcase {\n  background-color: var(--preview-surface);\n  border-color: var(--preview-border);\n  box-shadow: none;'));
 assert(previewCss.includes('transition-duration: var(--pui-card-duration, 500ms);'), 'Card preview must retain the published duration/reduceMotion contract after global appearance rules');
@@ -43,7 +47,7 @@ assert(example.includes('<pui-card title="Card 具名 slot 与点击边界"'));
 
 let definition;
 vm.runInNewContext(source, { Component(value) { definition = value; }, require() { return {}; } });
-assert(definition && Object.keys(definition.properties).length === 15);
+assert(definition && Object.keys(definition.properties).length === 19);
 function create(overrides = {}) {
   const defaults = Object.fromEntries(Object.entries(definition.properties).map(([key, value]) => [key, value.value]));
   const events = [];
@@ -60,6 +64,7 @@ function create(overrides = {}) {
 
 const defaults = create();
 assert(defaults.instance.data.rootClass.includes('pui-card--normal'));
+assert.strictEqual(defaults.instance.data.menuIcon, 'more-horizontal');
 assert(!defaults.instance.data.rootClass.includes('pui-card--shadow'));
 assert(defaults.instance.data.rootStyle.includes('transition-duration:500ms'));
 const card = create({ padding: 'compact', shadow: true, clickable: true, duration: 2000 });

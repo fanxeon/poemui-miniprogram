@@ -88,7 +88,7 @@ assert.ok(wxml.indexOf('content="{{currentVersion}}"') !== -1 && wxml.indexOf("a
 assert.ok(pageJs.indexOf("var poemuiVersion = require('poemui-miniprogram/version');") !== -1 && pageJs.indexOf("currentVersion: 'v' + poemuiVersion") !== -1, '首页版本必须读取 npm 轻量 version 子入口，不能加载组件总入口或维护第二份版本字符串');
 assert.ok(distVersionSource.indexOf('module.exports = ' + JSON.stringify(packageVersion)) !== -1, '发布 version 子入口必须由 package.json.version 生成');
 assert.ok(wxml.indexOf('class="home-brand__stanza">月下成行</text>') !== -1, '首页版头必须保留月下成行品牌语义');
-assert.ok(wxml.indexOf('class="home-brand__description">原生小程序组件库，按需组合。</text>') !== -1, '首页版头必须明确组件库定位');
+assert.ok(wxml.indexOf('class="home-brand__description">面向 AI 的原生小程序组件库。</text>') !== -1, '首页版头必须明确面向 AI 的原生组件库定位');
 assert.ok(wxml.indexOf('src="{{brandMark}}"') !== -1 && wxml.indexOf('width="144rpx"') !== -1 && wxml.indexOf('height="144rpx"') !== -1, '首页版头必须通过更紧凑的 PUI Image 呈现完整月下成行标记');
 assert.ok(wxml.indexOf('catalogSummary.componentCount') !== -1 && wxml.indexOf('catalogSummary.guideCount') !== -1, '首页目录统计必须读取同一份目录数据');
 assert.ok(pageJs.indexOf('function makeCatalogSummary()') !== -1 && pageJs.indexOf('function brandMarkForTheme(theme)') !== -1, '首页必须从目录真相源生成统计信息并按真实主题选择透明底品牌标记');
@@ -104,7 +104,17 @@ assert.ok(
 assert.ok(wxml.indexOf('activeCatalogSection === section.key') !== -1, '首页分区必须由单一活动状态受控');
 assert.ok(wxml.indexOf('data-section="{{section.key}}"') !== -1, '首页分区必须传递互斥状态键');
 assert.ok(wxml.indexOf('scroll-into-view="{{homeScrollIntoView}}"') !== -1, '首页必须通过 ScrollArea 公开 API 恢复上次分区位置');
-assert.ok(wxml.indexOf('id="home-section-{{section.key}}"') !== -1, '每个首页分区必须提供稳定滚动锚点');
+assert.ok(wxml.indexOf('<view id="home-section-{{section.key}}" class="home-components">') !== -1, '每个首页分区必须在 ScrollArea Slot 内提供可被原生 scroll-view 识别的 view 锚点');
+assert.ok(wxml.indexOf('<pui-collapsible\n                id="home-section-{{section.key}}"') === -1, '滚动锚点不得只挂在自定义组件宿主上');
+assert.ok(wxml.indexOf('duration="{{catalogSectionMotionDuration}}"') !== -1, '首页必须向 Collapsible 显式传递与定位等待相同的动效时长');
+assert.ok(/<pui-collapsible[\s\S]*?open="\{\{activeCatalogSection === section\.key\}\}"[\s\S]*?\n\s+shadow(?:\s|\n)/.test(wxml), '首页分区必须通过 Collapsible 公共 shadow 能力让唯一展开 Surface 跟随外观设置');
+assert.ok(pageJs.indexOf('var HOME_CATALOG_SECTION_MOTION_DURATION = 500;') !== -1, '首页分区定位必须复用 Collapsible 的明确 500ms 动效时长');
+assert.ok(pageJs.indexOf('var HOME_CATALOG_SECTION_TOP_OFFSET_RPX = 48;') !== -1, '首页分区标题必须保留 PUI 48rpx 顶部阅读留白');
+assert.ok(pageJs.indexOf('this.scheduleCatalogSectionScroll(section, HOME_CATALOG_SECTION_MOTION_DURATION);') !== -1, '用户打开分区后必须等待互斥开合完成再测量标题位置');
+assert.ok(pageJs.indexOf("query.select('.home-scroll-row').boundingClientRect();") !== -1, '首页分区滚动必须测量真实 ScrollArea 视口');
+assert.ok(pageJs.indexOf("query.select('#home-section-' + section).boundingClientRect();") !== -1, '首页分区滚动必须测量真实标题锚点');
+assert.ok(pageJs.indexOf('HOME_CATALOG_SECTION_TOP_OFFSET_RPX * Math.max(0, Number(getWindowWidth()) || 0) / 750') !== -1, '首页分区顶部留白必须按真实窗口宽度将 48rpx 转为 px');
+assert.ok(pageJs.indexOf('currentScrollTop + Number(sectionRect.top) - Number(viewportRect.top) - topOffsetPx') !== -1, '首页分区滚动必须基于当前真实位置与顶部留白计算目标 scrollTop');
 assert.ok(pageJs.indexOf("hasPremiumIcon: true") !== -1, '高级分区必须提供单一数据标记，避免 WXML 内联比较造成 Slot 组合漂移');
 assert.ok(wxml.indexOf('custom-trigger="{{section.hasPremiumIcon}}"') !== -1, '高级分区必须通过 Collapsible 真实 trigger Slot 承载专属标题组合');
 assert.ok(wxml.indexOf('wx:if="{{section.hasPremiumIcon}}" slot="trigger"') !== -1, '高级图标 Slot 必须与同一数据标记联动');
@@ -284,7 +294,7 @@ assert.ok(wxss.indexOf('padding: var(--pui-panel-padding) var(--pui-space-step-2
 var catalogStylesStart = wxss.indexOf('.home-brand__catalog {');
 var catalogStyles = wxss.slice(catalogStylesStart, wxss.indexOf('}', catalogStylesStart));
 assert.ok(catalogStyles.indexOf('margin-top:') === -1, '目录统计必须紧接产品描述，不能额外制造纵向留白');
-assert.ok(wxss.indexOf('.home-brand {') < wxss.indexOf('.home-components {'), '首页版头样式必须与目录样式分离，不能覆盖 Collapsible');
+assert.ok(wxss.indexOf('.home-brand {') < wxss.indexOf('.home-components,'), '首页版头样式必须与目录样式分离，不能覆盖 Collapsible');
 assert.ok(wxss.indexOf('.home-brand {\n  --home-brand-muted: var(--pui-text-secondary);') !== -1, '首页版头必须先定义同主题的辅助文字 Token');
 var overlayContentStart = wxss.indexOf('.home-search-overlay__content');
 var overlayContentStyles = wxss.slice(overlayContentStart, wxss.indexOf('}', overlayContentStart));
@@ -306,8 +316,8 @@ assert.strictEqual(pageJson.usingComponents['pui-tabbar'], 'poemui-miniprogram/t
 assert.strictEqual(pageJson.enableShareTimeline, true, '首页必须显式开启朋友圈分享');
 assert.strictEqual(
   pagePackage.dependencies['poemui-miniprogram'],
-  '0.1.0',
-  '真实产品小程序必须固定消费已发布的公共 poemui-miniprogram@0.1.0，不能退回本地 file:..'
+  packageVersion,
+  '真实产品小程序必须固定消费当前发布版本，不能退回本地 file:..'
 );
 assert.ok(appJs.indexOf("require('poemui-miniprogram/common/utils/visual-config')") !== -1, 'App 必须通过 npm 包路径恢复 visualConfig');
 assert.strictEqual(appJson.renderer, undefined, '当前小程序只支持默认 WebView，不能启用 Skyline renderer');
@@ -383,7 +393,7 @@ var backgroundPreferenceMock = {
 };
 var sandbox = {
   wx: {
-    getWindowInfo: function () { return { windowHeight: 812 }; },
+    getWindowInfo: function () { return { windowHeight: 812, windowWidth: 390 }; },
     onWindowResize: function () {},
     offWindowResize: function () {},
     navigateTo: function (options) { navigations.push(options); },
@@ -391,7 +401,7 @@ var sandbox = {
     setStorageSync: function (key, value) { storage[key] = value; }
   },
   require: function (request) {
-    if (request === 'poemui-miniprogram/version') return '0.1.0';
+    if (request === 'poemui-miniprogram/version') return packageVersion;
     if (request === 'poemui-miniprogram/common/utils/visual-config') return visualConfigMock;
     if (request === '../../common/utils/page-background-preference') return backgroundPreferenceMock;
     if (request === '../../common/utils/tabbar-navigation') return tabbarNavigationMock;
@@ -409,7 +419,7 @@ var sandbox = {
 };
 vm.runInNewContext(pageJs, sandbox, { filename: 'miniprogram/pages/index/index.js' });
 assert.ok(capturedPage, '首页必须注册 Page');
-assert.strictEqual(capturedPage.data.currentVersion, 'v0.1.0', '首页运行态版本必须保留 v 前缀');
+assert.strictEqual(capturedPage.data.currentVersion, 'v' + packageVersion, '首页运行态版本必须读取当前包版本并保留 v 前缀');
 capturedPage.data = Object.assign({}, capturedPage.data);
 capturedPage.setData = function (next) { Object.assign(capturedPage.data, next); };
 capturedPage.onLoad();
@@ -430,6 +440,21 @@ assert.strictEqual(manuallyCancelledAutoExpandTimer.cleared, true, '用户先切
 manuallyCancelledAutoExpandTimer.callback();
 assert.strictEqual(capturedPage.data.activeCatalogSection, 'basic', '已手动选择基础组件后不得被自动浮层覆盖');
 assert.strictEqual(storage['poemui.home.activeCatalogSection'], 'basic', '用户打开的分区必须写入本地记忆');
+capturedPage._homeScrollTop = 240;
+capturedPage.setData({ homeScrollTop: 240 });
+capturedPage.createSelectorQuery = function () {
+  var query = {
+    select: function () { return query; },
+    boundingClientRect: function () { return query; },
+    exec: function (callback) { callback([{ top: 120 }, { top: 420 }]); }
+  };
+  return query;
+};
+var manualSectionScrollTimer = timers.filter(function (timer) { return timer.delay === 500 && !timer.cleared; }).pop();
+assert.ok(manualSectionScrollTimer, '用户打开分区后必须等待 Collapsible 动效完成再安排 ScrollArea 定位');
+manualSectionScrollTimer.callback();
+assert.strictEqual(capturedPage.data.homeScrollTop, 515, '打开分区后必须用实测坐标把对应标题定位到 ScrollArea 顶部以下 48rpx');
+assert.strictEqual(capturedPage.data.homeScrollIntoView, '', '实测 scrollTop 定位不得残留跨组件 Slot 不可靠的 scrollIntoView 目标');
 capturedPage._catalogSectionInteracted = false;
 capturedPage._overlayAutoExpandTimer = null;
 capturedPage.setData({ activeCatalogSection: '' });
@@ -476,8 +501,8 @@ assert.strictEqual(capturedPage.data.searchOptions.length, 0, 'Overlay 进入期
 timers[timers.length - 1].callback();
 assert.strictEqual(capturedPage.data.searchComboboxVisible, true, 'Overlay 进入结束后才展开 Combobox');
 assert.strictEqual(capturedPage.data.searchInputFocus, true, 'Overlay 进入后聚焦独立 Search');
-assert.strictEqual(capturedPage.data.searchOptions.length, 76, '首页搜索打开后必须展示全部 71 个组件和 5 个规范页');
-['Button', 'Divider', 'Icon', 'ConfigProvider', 'AspectRatio', 'Direction', 'Grid', 'ScrollArea', 'Sticky', 'Navbar', 'NavigationMenu', 'Tabs', 'Breadcrumb', 'Tabbar', 'Steps', 'BackTop', 'Indexes', 'SideBar', 'Alert', 'Empty', 'Loading', 'NoticeBar', 'Progress', 'Result', 'Skeleton', 'Toast', 'Dialog', 'Popup', 'Popover', 'Sheet', 'ActionSheet', 'DropdownMenu', 'Overlay', 'PullRefresh', 'VirtualList', 'Watermark', 'Avatar', 'Badge', 'Card', 'Image', 'Tag', 'Cell', 'List', 'Collapse', 'Collapsible', 'Bubble', 'SwipeCell', 'CountDown', 'Swiper', 'Table', 'Form', 'Field', 'Label', 'Input', 'InputOTP', 'Textarea', 'Search', 'Checkbox', 'Radio', 'Switch', 'Select', 'Picker', 'Combobox', 'Slider', 'Stepper', 'Rate', 'Calendar', 'DateTimePicker', 'Upload', '开始使用', '主题 Token', '颜色', '间距', '字体排版'].forEach(function (name) {
+assert.strictEqual(capturedPage.data.searchOptions.length, 79, '首页搜索打开后必须展示全部 74 个组件和 5 个规范页');
+['Button', 'Divider', 'Icon', 'ConfigProvider', 'AspectRatio', 'Direction', 'Grid', 'ScrollArea', 'Sticky', 'Navbar', 'NavigationMenu', 'Tabs', 'Breadcrumb', 'Tabbar', 'Steps', 'BackTop', 'Indexes', 'SideBar', 'Alert', 'Empty', 'Loading', 'NoticeBar', 'Progress', 'Result', 'Skeleton', 'Toast', 'Dialog', 'Popup', 'Popover', 'Sheet', 'ActionSheet', 'DropdownMenu', 'Overlay', 'AreaChart', 'BarChart', 'Waffle', 'PullRefresh', 'VirtualList', 'Watermark', 'Avatar', 'Badge', 'Card', 'Image', 'Tag', 'Cell', 'List', 'Collapse', 'Collapsible', 'Bubble', 'SwipeCell', 'CountDown', 'Swiper', 'Table', 'Form', 'Field', 'Label', 'Input', 'InputOTP', 'Textarea', 'Search', 'Checkbox', 'Radio', 'Switch', 'Select', 'Picker', 'Combobox', 'Slider', 'Stepper', 'Rate', 'Calendar', 'DateTimePicker', 'Upload', '开始使用', '主题 Token', '颜色', '间距', '字体排版'].forEach(function (name) {
   assert.ok(capturedPage.data.searchOptions.some(function (option) { return option.label === name; }), '搜索候选缺少真实组件 ' + name);
 });
 assert.ok(capturedPage.data.searchOptions.some(function (option) { return option.label === '开始使用' && option.description.indexOf('规范 ·') === 0; }), '搜索结果必须将规范页与组件区分');
@@ -526,9 +551,13 @@ capturedPage.onCatalogSectionChange({ currentTarget: { dataset: { section: 'over
 assert.strictEqual(capturedPage.data.activeCatalogSection, 'overlay', '打开浮层分区必须关闭基础组件分区');
 capturedPage.onCatalogSectionChange({ currentTarget: { dataset: { section: 'basic' } }, detail: { open: true } });
 assert.strictEqual(capturedPage.data.activeCatalogSection, 'basic', '打开基础组件分区必须关闭浮层分区');
+var pendingBasicSectionScrollTimer = timers.filter(function (timer) { return timer.delay === 500 && !timer.cleared; }).pop();
 capturedPage.onCatalogSectionChange({ currentTarget: { dataset: { section: 'basic' } }, detail: { open: false } });
 assert.strictEqual(capturedPage.data.activeCatalogSection, '', '关闭当前分区后允许所有分区收起');
-capturedPage.setData({ homeScrollTop: 736, homeScrollIntoView: 'home-section-basic' });
+assert.strictEqual(pendingBasicSectionScrollTimer.cleared, true, '关闭分区时必须取消尚未执行的锚点定位');
+assert.strictEqual(capturedPage.data.homeScrollIntoView, '', '关闭分区后不得保留会抢占阅读位置的锚点');
+capturedPage.onHomeScroll({ detail: { scrollTop: 736 } });
+capturedPage.setData({ homeScrollIntoView: 'home-section-basic' });
 capturedPage.onHide();
 capturedPage.setData({ homeScrollTop: 0, homeScrollIntoView: 'home-section-navigation' });
 capturedPage.onShow();

@@ -1,5 +1,8 @@
 {
   "component": true,
   "styleIsolation": "shared",
-  "usingComponents": {}
+  "usingComponents": {
+    "pui-button": "../button/button",
+    "pui-popover": "../popover/popover"
+  }
 }

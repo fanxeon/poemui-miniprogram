@@ -33,8 +33,9 @@ pui-skeleton（透明布局根）
 
 ## 4. Token、间距与排版
 
-- 小程序使用 `--pui-space-step-8`、`--pui-radius-small/medium/round`、`--pui-bg-muted`、`--pui-duration-normal` 与 `--pui-ease-standard`。
+- 小程序使用 `--pui-space-step-8`、`--pui-radius-small/medium`、`--pui-bg-muted`、`--pui-duration-normal` 与 `--pui-ease-standard`。
 - 行与同行 part 的间距统一为 8rpx；不公开私有 row/column gap Props。
+- `rowCol` 的 `type="circle"` 是几何不变量：默认宽高为 `96rpx`，但 `min-height:0` 必须允许 `size` 同时覆盖两轴；禁止用默认 `96rpx` 最小高度把较小的自定义圆拉成椭圆。圆角固定为 `50%`，不依赖跨组件继承的圆角 Token，也不随 `largeRadius` 改成圆角方块。
 - 占位颜色只使用中性弱背景；它没有自身卡片背景、边框、阴影或排版文案。
 - 交叉淡入固定 500ms，`reduceMotion` 为 1ms；循环动效只使用全局 normal duration，绝不超过 1000ms。
 
@@ -67,6 +68,7 @@ pui-skeleton（透明布局根）
 ## 9. H5 预览与跨端一致性
 
 - H5 与 WXML 同步 `loading`、`delay`、7 个公开 Props、安全 rowCol、四种 theme、三种 animation、默认 Slot 和固定 500ms/1ms 动效。
+- 0.1.2 已把 `preview/styles.css` 的 `.pui-skeleton-preview__part--circle` 同步为 `min-height:0`、等宽高与 `border-radius:50%`，并由 `preview/app.js` 的 `skeletonPreviewRows()` 让 `size` 生成同一宽高。390px 深色果味下 `72rpx` 自定义尺寸实测为 `36×36px` 正圆。
 - 官网按“基础用法 / 占位布局 / 主题与动效 / 内容回显”分区；基础 WXML 仅为 `<pui-skeleton />`，零 `bind:*`。
 - 标准概览使用 `PreviewDevice` 的 `shadow-safe` 父布局。Skeleton 根透明，Slot 内真实 PUI 组件自身决定 Surface；不得用页面私有 margin 或卡片壳补阴影。
 - 浏览器以 px 近似 rpx（1px≈2rpx）；微信的 WXML slot 投影、rpx 合成、读屏和系统低动效仍须真机确认，H5 不伪造这些平台结果。
@@ -91,4 +93,4 @@ pui-skeleton（透明布局根）
 3. 浏览器实际验证 loading 往返、delay 取消、theme/animation/rowCol/低动效、默认 Slot、light/dark、全部视觉开关和 390px；记录源码、dist、示例安装与微信产物的差异。
 4. 更新 Skeleton 的 Feedback Ledger。真机必须保留 rpx、动画合成、复杂 Slot、读屏、样式隔离和系统低动效风险，不能因 H5 或构建通过而删除。
 
-本次对照依据为 2026-07-20 在线访问的 [TDesign Skeleton 页面](https://tdesign.tencent.com/miniprogram/components/skeleton)、[官方仓库](https://github.com/Tencent/tdesign-miniprogram) 与固定 `tdesign-miniprogram@1.15.3` 包内 `miniprogram_dist/skeleton/{props.js,type.d.ts,skeleton.js,skeleton.wxml,skeleton.wxss}`。
+本次对照依据为 2026-07-29 再次在线访问的 [TDesign Skeleton 页面](https://tdesign.tencent.com/miniprogram/components/skeleton)、[官方组件源码](https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/skeleton) 与重新解包的固定 `tdesign-miniprogram@1.15.3`。实际读取 `miniprogram_dist/skeleton/{props.js,type.d.ts,skeleton.js,skeleton.wxml,skeleton.wxss}`；固定源码的 circle 最终 fallback 为 `50%`，本合同只采用其圆形几何语义，不恢复 TDesign 的额外样式字段或 PoemUI 已删除的头像 Props。

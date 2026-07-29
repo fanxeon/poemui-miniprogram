@@ -108,7 +108,8 @@
     "summary": "DynamicMessage 是单实例 retained island；进场先出现 Icon/Loading + 标题胶囊，再长成完整面板，退场反向；同 key 原位更新，不同 key 排队，所有结果和关闭原因必须来自真实状态。",
     "rules": [
       "进场必须是 compact 180ms 后 expanding 320ms；退场必须先 collapsing 320ms 再 leave-compact 180ms。",
-      "compact 只显示 PUI Icon/Loading 与 title；message、Action、Close 和 accent 只能在完整面板阶段出现。",
+      "compact 只显示 PUI Icon/Loading 与 title；message、Action、Close 只能在完整面板阶段出现。主题 edge flow 从 expanding 开始独立播放一次 1500ms，可短暂跨入 visible，但不得中断重启或形成常驻彩边。",
+      "edge flow 与状态 Icon 共用当前 PUI 语义色：loading 中性灰、info 信息蓝、success 成功绿、warning 警告橙、error 危险红；不得固定为单一颜色。",
       "不得用单段 scale 缩放标题正文，不得 transition height:auto 或用 display:none 制造瞬移。",
       "同 key 更新不得销毁当前节点或重播完整入场。",
       "消费者未传 icon 时主题变化必须同步刷新默认 PUI Icon。",

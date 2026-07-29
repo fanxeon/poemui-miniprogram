@@ -78,7 +78,7 @@
 
 ## 自动验收入口
 
-`scripts/test-miniprogram-component-page-quality.js` 对以上 59 页逐页检查真实组件挂载、页面壳、滚动所有权、空分区、原生控件和通用标题退化。各分区专项测试继续验证真实值回写和关键交互：
+`scripts/test-miniprogram-component-page-quality.js` 对以上 61 页逐页检查真实组件挂载、页面壳、滚动所有权、空分区、原生控件和通用标题退化。各分区专项测试继续验证真实值回写和关键交互：
 
 ```sh
 node scripts/test-miniprogram-component-page-quality.js
@@ -90,9 +90,9 @@ node scripts/test-miniprogram-feedback-pages.js
 node scripts/test-miniprogram-advanced-pages.js
 ```
 
-## 非独立小程序页
+## 数据图形页
 
-`shadcn-chart` 当前是 H5 文档型示例，不在小程序首页目录、`app.json` 或 `miniprogram/pages/components/` 中。此处明确保留为非小程序页面例外，不创建静态假路由冒充迁移完成。
+旧 `shadcn-chart` H5 研究入口已经退出公开目录。AreaChart、BarChart 与 Waffle 均有原生组件、独立小程序路由、H5 真实镜像、合同与专项测试；AreaChart 小程序使用真实 Canvas 2D、H5 使用同数据合同 SVG，BarChart/Waffle 使用真实 View/Grid/DOM。三者必须使用真实 `items` 渲染，不得用静态图片、Canvas 空壳或仅 H5 页面冒充迁移完成。
 
 ## 尚需设备确认
 

@@ -1,0 +1,137 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0502",
+  "title": "Bubble 小程序折叠测量与受控回写导致展开状态失真",
+  "scope": "component",
+  "components": [
+    "bubble"
+  ],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "Bubble 点击展开时只沿首次实测高度单向展开，不能先缩回一次再展开。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开 Bubble 独立页，点击长消息右下角的“展开”。",
+    "页面按 change 回写受控 expanded 后，组件再次执行 syncState；旧实现会清空 measureStyle，先回退到 2400rpx 估算高度，再由 selector query 写回真实像素高度。",
+    "在 H5 属性页把 max-lines 从 3 调到 4，返回概览点击展开；旧镜像先重建为 expanded DOM，随后才追加从 collapsed 开始的 keyframe，视觉上先回收再展开。",
+    "进一步检查共享小程序 WXSS：可见正文还会在 collapsed/expanded 状态间同时切换 display、-webkit-line-clamp 与 max-height，平台会先按新的裁剪布局重排，再执行高度过渡。",
+    "修正可见 line-clamp 后在微信开发者工具真实打开 Bubble 页：隐藏 clamped 节点没有可靠提供折叠高度，页面初次没有“展开”入口；改成单行探针后入口恢复，但第一次受控展开又因 syncState 重置 showToggle 而丢失“收起”入口。"
+  ],
+  "expected": "首次测量完成后，同一内容的展开与收起始终复用同一组真实 collapsed/expanded 高度，只播放一次单调动画。",
+  "actual": "旧实现不仅会丢失已测端点或在 H5 先绘制目标态，还让用户可见正文同时切换行裁剪布局与高度。第一次修复后，小程序仍依赖隐藏 line-clamp 节点和 CSS 变量间接高度，真实运行时会丢失展开入口；即使测量成功，受控 expanded 回写还会把 showToggle 重置为 false，导致展开后“收起”消失。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "bubble/bubble.js",
+      "note": "旧 syncState 无条件写入 measureStyle 空字符串，并在 scheduleMeasure 中再次查询高度。"
+    },
+    {
+      "kind": "file",
+      "ref": "bubble/bubble.wxss",
+      "note": "旧可见 collapsed selector 同时设置 display:-webkit-box、-webkit-line-clamp 和 max-height，展开时会改变布局模型。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 Bubble battle",
+      "note": "用户观察到展开时高度有一丝闪动，并进一步指出像是重新判断。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/bubble",
+      "note": "用户复看发现 max-lines=4 时仍会先收起再展开；根因为展开 DOM 先绘制、keyframe 后追加，首轮逐帧采样漏掉点击后的同步首帧。"
+    },
+    {
+      "kind": "browser",
+      "ref": "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 Pro / pages/components/bubble/index",
+      "note": "真实小程序先复现默认态没有展开入口，首次改用单行探针后又复现展开正文成功但收起入口消失；受控父级回写会重置 showToggle。"
+    }
+  ],
+  "rootCause": "根因由五层叠加：小程序测量结果原本没有独立生命周期，expanded 变化会清空已提交高度且非受控路径二次提交；H5 renderStage 先输出 expanded DOM、runtime 才追加 from collapsed 动画；用户可见正文曾切换 display/line-clamp/max-height；小程序隐藏 clamped 节点和 CSS 自定义属性间接高度在真实渲染层没有稳定给出折叠端点；最后，受控父级回写再次执行 syncState 时无条件把已测 showToggle 重置为 false，而几何缓存又阻止重新测量，导致收起入口永久消失。",
+  "decision": {
+    "outcome": "按内容几何 key 保存真实测量；小程序用 full 节点和 nowrap 单行探针取得完整高度与真实行高，以 行高×maxLines 计算折叠端点，不再查询隐藏 line-clamp。可见节点直接写入 max-height，不通过依赖 CSS 变量；几何未变化时同时保留已测高度和 showToggle，受控/非受控展开均只在同一节点的两个像素端点间过渡。H5 继续在首次绘制前固定旧端点，下一帧过渡到目标。",
+    "rationale": "高度测量和 toggle 可见性都属于内容几何，不属于 expanded 状态。真实单行高度比隐藏 line-clamp 布局稳定；可见节点直接消费可插值属性，并在父级受控 echo 中保留几何派生状态，才能让入口和动画同时闭环。",
+    "alternativesRejected": [
+      "缩短或关闭动画只能掩盖跳动，不能消除重复目标。",
+      "固定写死展开高度会破坏长文本、字体和响应式宽度。",
+      "保留 keyframe 并增加延迟仍会暴露目标态首帧，不能修正绘制顺序。",
+      "继续在可见正文使用 line-clamp，即使缓存高度也仍会改变布局模型，不能保证单调动画。",
+      "继续查询隐藏 clamped 节点或通过 CSS 变量间接传递高度，真实微信渲染层已证明会让展开入口缺失。",
+      "每次受控回写重新测量会重新引入用户指出的二次判断和高度闪动。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "bubble/bubble.js",
+      "bubble/bubble.wxml",
+      "bubble/bubble.wxss",
+      "miniprogram/pages/components/bubble/index.wxml",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-bubble.js",
+      "docs/components/BUBBLE.md"
+    ],
+    "dependencies": []
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-bubble.js"
+    ],
+    "commands": [
+      "node scripts/test-bubble.js",
+      "npm run site:build",
+      "npm run example:install",
+      "PUI_VERIFY_DIST=1 node scripts/test-bubble.js",
+      "npm run feedback:check",
+      "npm run pack:check",
+      "git diff --check"
+    ],
+    "browser": [
+      "首轮 H5 390px 采样遗漏点击后的同步首帧；用户在 max-lines=4 复看仍观察到先收起再展开，原验收证据作废并重新验收。",
+      "H5 390px 深色果味、max-lines=4、默认 500ms：75 帧展开从 80px 单调到 100px，75 帧收起从 100px 单调到 80px，双向错误方向帧均为 0。",
+      "H5 390px 浅色果味、max-lines=4、默认 500ms：70 帧展开从 80px 单调到 100px，反向帧为 0，document clientWidth/scrollWidth=375/375；可见正文计算样式为 display:block、空 line-clamp、transition=max-height, opacity，console 无 warning/error；验收后恢复深色果味与收起态。",
+      "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 Pro：构建 npm 302ms 完成；Bubble 默认态为一行正文并显示“展开”，真实点击后完整展示四行以上正文、按钮持续为“收起”、页面回写“长消息已展开”，再次点击恢复一行、“展开”和“长消息已收起”。调试器 Errors=0；11 条 warning 为自动热重载、Navbar 既有 selector、长文本 user-select 建议和 IntersectionObserver 性能提示，不是 Bubble 运行错误。"
+    ],
+    "deviceRisks": [
+      "微信模拟器已实际完成展开与收起闭环，但未用帧级采样证明每一个合成帧单调；iOS/Android 真机的 selector query 时序、字体回流、rpx 取整、合成帧和系统低动效仍待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "Bubble 小程序以 full 加单行探针测量几何，可见正文直接动画 max-height，并在受控回写时保留 toggle。",
+    "rules": [
+      "内容几何测量的失效条件必须与交互状态分离；expanded 变化不得重置 collapsed/expanded 高度。",
+      "受控父级 echo 不应触发重复测量，非受控状态切换不得连续提交两个 setData。",
+      "异步测量必须携带 key，旧内容的迟到结果不得覆盖新内容。",
+      "H5 重建动画节点时必须在首次绘制前固定旧端点，再于下一帧写目标端点；不得先绘制目标态再追加 from keyframe。",
+      "可见裁剪节点不能在动画中切换 display 或 line-clamp；只允许一个已测 max-height 属性参与过渡。",
+      "小程序折叠端点应由真实单行高度乘 maxLines 得出，不应依赖隐藏 line-clamp 节点的布局结果。",
+      "几何缓存命中时必须同时保留 showToggle 等派生状态；受控父级 echo 不能让展开/收起入口消失。"
+    ],
+    "tags": [
+      "bubble",
+      "measurement",
+      "controlled-state",
+      "motion"
+    ]
+  }
+}

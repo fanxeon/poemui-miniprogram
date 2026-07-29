@@ -19,38 +19,42 @@
   >
     <view class="pui-navigation-menu__triggers" role="menubar">
       <block wx:for="{{rootItems}}" wx:key="key">
-        <navigation-trigger
-          wx:if="{{customTrigger}}"
-          item="{{item.raw}}"
-          value="{{item.value}}"
-          active="{{item.selected}}"
-          expanded="{{item.expanded}}"
-          disabled="{{disabled || item.disabled}}"
-          loading="{{item.loading}}"
-          data-index="{{index}}"
-          bind:click="onRootTap"
-        />
-        <pui-button
-          wx:else
-          custom-class="pui-navigation-menu__trigger {{item.selected ? 'pui-navigation-menu__trigger--selected' : ''}} {{item.expanded ? 'pui-navigation-menu__trigger--expanded' : ''}}"
-          content="{{item.label}}"
-          icon="{{showIcon ? item.icon : ''}}"
-          theme="{{item.theme}}"
-          variant="text"
-          size="{{normalizedSize}}"
-          shape="round"
-          loading="{{item.loading}}"
-          disabled="{{disabled || item.disabled}}"
-          aria-label="{{item.label}}"
-          reduce-motion="{{reduceMotion}}"
-          data-index="{{index}}"
-          bind:click="onRootTap"
-        >
-          <view slot="suffix" class="pui-navigation-menu__trigger-suffix">
-            <pui-badge wx:if="{{showBadge && (item.badgeDot || item.badge !== null)}}" count="{{item.badge}}" dot="{{item.badgeDot}}" show-zero size="small" theme="{{item.theme}}" />
-            <pui-icon wx:if="{{showIndicator && item.hasChildren}}" custom-class="pui-navigation-menu__indicator {{item.expanded ? 'pui-navigation-menu__indicator--expanded' : ''}}" name="{{indicatorIcon}}" size="26" />
-          </view>
-        </pui-button>
+        <view class="pui-navigation-menu__trigger-host">
+          <navigation-trigger
+            wx:if="{{customTrigger}}"
+            class="pui-navigation-menu__trigger-component"
+            item="{{item.raw}}"
+            value="{{item.value}}"
+            active="{{item.selected}}"
+            expanded="{{item.expanded}}"
+            disabled="{{disabled || item.disabled}}"
+            loading="{{item.loading}}"
+            data-index="{{index}}"
+            bind:click="onRootTap"
+          />
+          <pui-button
+            wx:else
+            class="pui-navigation-menu__trigger-component"
+            custom-class="pui-navigation-menu__trigger {{item.selected ? 'pui-navigation-menu__trigger--selected' : ''}} {{item.expanded ? 'pui-navigation-menu__trigger--expanded' : ''}}"
+            content="{{item.label}}"
+            icon="{{showIcon ? item.icon : ''}}"
+            theme="{{item.theme}}"
+            variant="text"
+            size="{{normalizedSize}}"
+            shape="round"
+            loading="{{item.loading}}"
+            disabled="{{disabled || item.disabled}}"
+            aria-label="{{item.label}}"
+            reduce-motion="{{reduceMotion}}"
+            data-index="{{index}}"
+            bind:click="onRootTap"
+          >
+            <view slot="suffix" class="pui-navigation-menu__trigger-suffix">
+              <pui-badge wx:if="{{showBadge && (item.badgeDot || item.badge !== null)}}" count="{{item.badge}}" dot="{{item.badgeDot}}" show-zero size="small" theme="{{item.theme}}" />
+              <pui-icon wx:if="{{showIndicator && item.hasChildren}}" custom-class="pui-navigation-menu__indicator {{item.expanded ? 'pui-navigation-menu__indicator--expanded' : ''}}" name="{{indicatorIcon}}" size="26" />
+            </view>
+          </pui-button>
+        </view>
       </block>
     </view>
   </scroll-view>
@@ -66,6 +70,7 @@
           <view wx:if="{{!canBack}}" class="pui-navigation-menu__header-spacer" aria-hidden="true"></view>
           <pui-button
             wx:else
+            class="pui-navigation-menu__header-control pui-navigation-menu__header-control--back"
             custom-class="pui-navigation-menu__header-action"
             custom-style="--pui-button-size:56rpx;"
             variant="base"
@@ -83,6 +88,7 @@
             <view wx:if="{{showDescription && currentDescription}}" class="pui-navigation-menu__description">{{currentDescription}}</view>
           </view>
           <pui-button
+            class="pui-navigation-menu__header-control pui-navigation-menu__header-control--close"
             custom-class="pui-navigation-menu__header-action"
             custom-style="--pui-button-size:56rpx;"
             variant="base"

@@ -4,6 +4,7 @@ var MAX_TIME = 31536000000;
 var SIZES = ['small', 'medium', 'large'];
 var THEMES = ['default', 'round', 'square'];
 var CONTENT_MODES = ['default', 'slot'];
+var ANIMATIONS = ['pulse', 'roll'];
 
 function clampTime(value) {
   var time = Number(value);
@@ -70,6 +71,30 @@ function formattedText(segments) {
   return segments.map(function mapSegment(item) { return item.value + (item.unit || ''); }).join('');
 }
 
+function digitModels(segment, previousSegment, animation, animate, motionIndex) {
+  var value = String(segment.value);
+  var previousValue = previousSegment && previousSegment.numeric && previousSegment.token === segment.token
+    ? String(previousSegment.value)
+    : value;
+  while (previousValue.length < value.length) previousValue = ' ' + previousValue;
+  var previousDigits = previousValue.slice(-value.length).split('');
+  return value.split('').map(function mapDigit(digit, index) {
+    var previous = previousDigits[index];
+    var rolling = animation === 'roll'
+      && segment.token !== 'SSS'
+      && !!animate
+      && previous !== ' '
+      && previous !== digit;
+    return {
+      key: 'digit-' + index,
+      value: digit,
+      previous: rolling ? previous : digit,
+      rolling: rolling,
+      motionClass: rolling ? 'pui-count-down__digit-reel--motion-' + (motionIndex % 2 ? 'a' : 'b') : '',
+    };
+  });
+}
+
 Component({
   behaviors: [themeBehavior],
   options: { styleIsolation: 'shared' },
@@ -83,6 +108,7 @@ Component({
     size: { type: String, value: 'medium' },
     theme: { type: String, value: 'default' },
     splitWithUnit: { type: Boolean, value: false },
+    animation: { type: String, value: 'pulse' },
     ariaLabel: { type: String, value: '倒计时' },
     reduceMotion: { type: Boolean, value: false },
   },
@@ -97,6 +123,7 @@ Component({
     rootClass: 'pui-count-down',
     rootStyle: '',
     motionClass: '',
+    animationMode: 'pulse',
   },
   observers: {
     time: function onTimeChange() {
@@ -116,7 +143,7 @@ Component({
       if (!this._ready || !value || this.data.paused || this._hasStarted || this.data.remaining <= 0) return;
       this._start();
     },
-    'content,format,millisecond,size,theme,splitWithUnit,reduceMotion,colorScheme': function refresh() {
+    'content,format,millisecond,size,theme,splitWithUnit,animation,reduceMotion,colorScheme': function refresh() {
       if (!this._ready) return;
       this.renderTime(false);
       if (this.data.running) this.scheduleTick();
@@ -165,17 +192,26 @@ Component({
       var size = normalizeEnum(this.data.size, SIZES, 'medium');
       var theme = normalizeEnum(this.data.theme, THEMES, 'default');
       var contentMode = normalizeEnum(this.data.content, CONTENT_MODES, 'default');
+      var animation = normalizeEnum(this.data.animation, ANIMATIONS, 'pulse');
       var state = this.rootState();
       var segments = buildSegments(this.displayTime(this.data.remaining), this.data.format, this.data.splitWithUnit);
       var nextFormatted = formattedText(segments);
-      var shouldAnimate = !!animate && this._lastFormatted !== undefined && this._lastFormatted !== nextFormatted && !this.data.reduceMotion;
+      var shouldAnimate = !!animate && this._lastFormatted !== undefined && this._lastFormatted !== nextFormatted;
       if (shouldAnimate) this._motionIndex = (this._motionIndex || 0) + 1;
+      var previousSegments = this.data.segments || [];
+      var motionIndex = this._motionIndex || 0;
+      segments = segments.map(function mapSegment(segment, index) {
+        if (!segment.numeric) return segment;
+        segment.digits = digitModels(segment, previousSegments[index], animation, shouldAnimate, motionIndex);
+        return segment;
+      });
       var classes = [
         'pui-count-down',
         this.getColorSchemeClass(),
         'pui-count-down--' + size,
         'pui-count-down--' + theme,
         'pui-count-down--' + state,
+        'pui-count-down--animation-' + animation,
         contentMode === 'slot' ? 'pui-count-down--slot' : '',
       ];
       this._lastFormatted = nextFormatted;
@@ -187,7 +223,8 @@ Component({
         contentMode: contentMode,
         rootClass: classes.filter(Boolean).join(' '),
         rootStyle: '--pui-count-down-duration:' + (this.data.reduceMotion ? 1 : 500) + 'ms;',
-        motionClass: shouldAnimate ? 'pui-count-down__value--motion-' + (this._motionIndex % 2 ? 'a' : 'b') : '',
+        motionClass: shouldAnimate && animation === 'pulse' ? 'pui-count-down__value--motion-' + (motionIndex % 2 ? 'a' : 'b') : '',
+        animationMode: animation,
       });
     },
     emitChange: function emitChange(time) {

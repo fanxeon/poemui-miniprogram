@@ -58,12 +58,33 @@ var codexJs = read('miniprogram/pages/codex/index.js');
   ['pui-loading', 'poemui-miniprogram/loading/loading'],
   ['pui-top-loading', 'poemui-miniprogram/top-loading/top-loading'],
   ['pui-button', 'poemui-miniprogram/button/button'],
+  ['pui-popup', 'poemui-miniprogram/popup/popup'],
+  ['pui-dialog', 'poemui-miniprogram/dialog/dialog'],
+  ['appearance-settings', '/components/appearance-settings/appearance-settings'],
   ['component-page-section', '/components/component-page-section/component-page-section'],
   ['code-snippet', '/components/code-snippet/code-snippet']
 ].forEach(function (entry) {
   assert.strictEqual(codexJson.usingComponents[entry[0]], entry[1], '安装页面必须组合 ' + entry[0]);
 });
 assert.ok(codexWxml.indexOf('title="安装"') !== -1, '安装页必须提供唯一 Navbar 标题');
+var codexNavbarBlock = codexWxml.slice(codexWxml.indexOf('<pui-navbar'), codexWxml.indexOf('</pui-navbar>') + '</pui-navbar>'.length);
+assert.ok(codexNavbarBlock.indexOf('slot="left"') !== -1 && codexNavbarBlock.indexOf('pui-gap-xxs') !== -1, '安装页 Navbar 必须使用共享间距类承载左侧双 Slot 操作');
+[
+  'id="codex-info"',
+  'icon="info-circle"',
+  'bind:click="onOpenInfo"',
+  'id="codex-appearance-menu"',
+  'icon="menu"',
+  'bind:click="onOpenAppearance"'
+].forEach(function (fragment) {
+  assert.ok(codexNavbarBlock.indexOf(fragment) !== -1, '安装页 Navbar 双操作缺少：' + fragment);
+});
+assert.strictEqual((codexNavbarBlock.match(/<pui-button/g) || []).length, 2, '安装页 Navbar 左 Slot 必须只包含 Info 与菜单');
+assert.ok(codexWxml.indexOf('id="codex-info-dialog"') !== -1 && codexWxml.indexOf('visible="{{infoDialogVisible}}"') !== -1 && codexWxml.indexOf('confirm-btn="{{infoDialogConfirmBtn}}"') !== -1, 'Info 操作必须打开受控 PUI Dialog');
+var codexAppearancePopup = codexWxml.slice(codexWxml.indexOf('id="codex-appearance-popup"'), codexWxml.indexOf('id="codex-tabbar"'));
+['visible="{{appearancePopupVisible}}"', 'title="外观"', 'blur-overlay', 'slot="header-left"', 'icon="refresh"', '<appearance-settings />', 'bind:visible-change="onAppearancePopupVisibleChange"'].forEach(function (fragment) {
+  assert.ok(codexAppearancePopup.indexOf(fragment) !== -1, '安装页外观 Popup 缺少首页同源结构：' + fragment);
+});
 assert.ok(codexWxml.indexOf('title="{{codePage.quickStart.title}}"') !== -1 && codexWxml.indexOf('title="{{codePage.skillSection.title}}"') !== -1, 'Codex 页必须从云端 page 文档读取快速开始和 AI Skill 分区');
 assert.ok(codexWxml.indexOf('wx:for="{{codePage.quickStart.snippets}}"') !== -1 && codexWxml.indexOf('id="codex-snippet-{{item.id}}"') !== -1, '快速开始必须从云端 snippets 渲染稳定可复制代码区');
 assert.ok(codexWxml.indexOf('wx:for="{{skills}}"') !== -1 && codexWxml.indexOf('<pui-icon name="{{item.icon}}"') !== -1, '已发布 Skill 必须从云端数据渲染 PUI Card 与 PUI Icon');
@@ -80,6 +101,8 @@ var capturedCodexPage;
 var codexNavigationCalls = [];
 var backgroundListener;
 var codePageLoadCalls = 0;
+var codexBackgroundSetCalls = [];
+var codexVisualConfigResetCalls = [];
 vm.runInNewContext(codexJs, {
   Page: function (definition) { capturedCodexPage = definition; },
   setTimeout: function () { return 1; },
@@ -102,6 +125,9 @@ vm.runInNewContext(codexJs, {
       return {
         get: function () { return false; },
         restore: function () {},
+        set: function (value, options) {
+          codexBackgroundSetCalls.push({ value: value, options: options });
+        },
         subscribe: function (listener) {
           backgroundListener = listener;
           return function () {};
@@ -116,6 +142,13 @@ vm.runInNewContext(codexJs, {
         }
       };
     }
+    if (request === 'poemui-miniprogram/common/utils/visual-config') {
+      return {
+        reset: function (options) {
+          codexVisualConfigResetCalls.push(options);
+        }
+      };
+    }
     throw new Error('unexpected Codex page require ' + request);
   }
 }, { filename: 'miniprogram/pages/codex/index.js' });
@@ -127,6 +160,18 @@ assert.strictEqual(capturedCodexPage.data.backgroundGradientEnabled, true, 'Code
 assert.strictEqual(codePageLoadCalls, 1, 'Codex 页面首次载入必须真实请求云端内容');
 capturedCodexPage.onRetryCodePage();
 assert.strictEqual(codePageLoadCalls, 2, 'Codex 页面重试必须再次真实请求云端内容');
+capturedCodexPage.onOpenInfo();
+assert.strictEqual(capturedCodexPage.data.infoDialogVisible, true, 'Info 操作必须打开受控说明 Dialog');
+assert.strictEqual(capturedCodexPage.data.appearancePopupVisible, false, '打开 Info 时不得叠加外观 Popup');
+capturedCodexPage.onOpenAppearance();
+assert.strictEqual(capturedCodexPage.data.infoDialogVisible, false, '打开外观设置时必须关闭 Info Dialog');
+assert.strictEqual(capturedCodexPage.data.appearancePopupVisible, true, '菜单操作必须打开受控外观 Popup');
+capturedCodexPage.onAppearancePopupVisibleChange({ detail: { visible: false, trigger: 'overlay' } });
+assert.strictEqual(capturedCodexPage.data.appearancePopupVisible, false, '外观 Popup 关闭请求必须由页面回写');
+capturedCodexPage.onResetAppearance();
+assert.strictEqual(codexBackgroundSetCalls[0].value, false, '安装页恢复默认必须同步关闭页面渐变');
+assert.strictEqual(codexBackgroundSetCalls[0].options.source, 'miniprogram-codepage:appearance-reset', '安装页渐变重置必须记录调用来源');
+assert.strictEqual(codexVisualConfigResetCalls[0].source, 'miniprogram-codepage:appearance-reset', '安装页恢复默认必须调用共享 visualConfig');
 capturedCodexPage.onTabChange({ detail: { value: 'home' } });
 assert.deepStrictEqual(codexNavigationCalls, [{ value: 'home', activeTab: 'codex' }], 'Codex 页必须发起真实返回首页路由');
 

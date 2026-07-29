@@ -89,7 +89,7 @@ Component({
   data: {
     rootClass: '',
     rootStyle: '',
-    measureStyle: '',
+    clipStyle: '',
     displayContent: '',
     bubbleLabel: '消息气泡',
     bubbleAriaLive: 'off',
@@ -141,7 +141,7 @@ Component({
         visible: !!this.data.rendered && this.data.phase !== 'leaving' && this.data.phase !== 'hidden'
       };
     },
-    syncState: function syncState(initial) {
+    syncState: function syncState(initial, nextInternalExpanded) {
       var displayContent = normalizeContent(this.data.content, this.data.text);
       var variant = normalizeEnum(this.data.variant, ['default', 'secondary', 'muted', 'tinted', 'outline', 'ghost', 'destructive'], 'default');
       var align = normalizeEnum(this.data.align, ['start', 'end'], 'start');
@@ -159,8 +159,24 @@ Component({
         this.data.expandedState = controlled ? !!this.data.expanded : !!this.data.defaultExpanded;
       } else if (controlled) {
         this.data.expandedState = !!this.data.expanded;
+      } else if (typeof nextInternalExpanded === 'boolean') {
+        this.data.expandedState = nextInternalExpanded;
       }
       var expandedState = !!this.data.expandedState;
+      var measureKey = [displayContent, maxLines, variant, !!this.data.collapsible, !!this.data.customContent].join('\u0001');
+      var preserveMeasurement = this._bubbleMeasureKey === measureKey;
+      if (!preserveMeasurement) {
+        this._bubbleMeasuredKey = '';
+        this._bubbleCollapsedHeight = '';
+        this._bubbleExpandedHeight = '';
+      }
+      this._bubbleMeasureKey = measureKey;
+      var collapsedHeight = preserveMeasurement && this._bubbleCollapsedHeight
+        ? this._bubbleCollapsedHeight
+        : (maxLines * 40) + 'rpx';
+      var expandedHeight = preserveMeasurement && this._bubbleExpandedHeight
+        ? this._bubbleExpandedHeight
+        : '2400rpx';
       var hasReactions = !!this.data.customReactions || reactionItems.length > 0;
       var shouldShow = !!this.data.visible && (!!this.data.customContent || !!displayContent);
       var semantic = String(this.data.ariaLabel || '').trim() || displayContent || (this.data.customContent ? '自定义消息气泡' : '消息气泡');
@@ -183,11 +199,9 @@ Component({
         rootStyle: [
           '--pui-bubble-duration:' + duration + 'ms',
           '--pui-bubble-ease:' + easing,
-          '--pui-bubble-lines:' + maxLines,
-          '--pui-bubble-collapsed-height:' + (maxLines * 40) + 'rpx',
-          '--pui-bubble-expanded-height:2400rpx'
+          '--pui-bubble-lines:' + maxLines
         ].join(';') + ';',
-        measureStyle: '',
+        clipStyle: 'max-height:' + (expandedState ? expandedHeight : collapsedHeight) + ';',
         displayContent: displayContent,
         bubbleLabel: semantic,
         bubbleAriaLive: ariaLive,
@@ -197,7 +211,10 @@ Component({
         hasReactions: hasReactions,
         expandedState: expandedState,
         normalizedMaxLines: maxLines,
-        showToggle: !!this.data.collapsible && !!this.data.customContent,
+        showToggle: !!this.data.collapsible && (
+          !!this.data.customContent
+          || (preserveMeasurement && !!this.data.showToggle)
+        ),
         desiredVisible: shouldShow,
         interactive: !!this.data.clickable && !this.data.disabled,
         motionDuration: duration
@@ -253,6 +270,7 @@ Component({
     },
     scheduleMeasure: function scheduleMeasure() {
       if (!this._bubbleMounted || !this.data.rendered || !this.data.collapsible || this.data.customContent) return;
+      if (this._bubbleMeasuredKey === this._bubbleMeasureKey) return;
       if (this._bubbleMeasureTimer) clearTimeout(this._bubbleMeasureTimer);
       var component = this;
       this._bubbleMeasureTimer = setTimeout(function measureLater() {
@@ -263,18 +281,24 @@ Component({
     measureContent: function measureContent() {
       if (!this.createSelectorQuery || !this.data.collapsible || this.data.customContent || !this.data.rendered) return;
       var component = this;
+      var measureKey = this._bubbleMeasureKey;
       var query = this.createSelectorQuery();
       query.select('.pui-bubble__measure--full').boundingClientRect();
-      query.select('.pui-bubble__measure--clamped').boundingClientRect();
+      query.select('.pui-bubble__measure--line').boundingClientRect();
       query.exec(function onMeasured(rects) {
         var full = rects && rects[0];
-        var clamped = rects && rects[1];
-        if (!full || !clamped || !component._bubbleMounted) return;
+        var line = rects && rects[1];
+        if (!full || !line || !component._bubbleMounted || component._bubbleMeasureKey !== measureKey) return;
         var fullHeight = Math.max(0, Math.ceil(Number(full.height) || 0));
-        var collapsedHeight = Math.max(0, Math.ceil(Number(clamped.height) || 0));
+        var lineHeight = Math.max(0, Math.ceil(Number(line.height) || 0));
+        if (!fullHeight || !lineHeight) return;
+        var collapsedHeight = Math.min(fullHeight, lineHeight * component.data.normalizedMaxLines);
+        component._bubbleCollapsedHeight = collapsedHeight + 'px';
+        component._bubbleExpandedHeight = (fullHeight + 1) + 'px';
+        component._bubbleMeasuredKey = measureKey;
         component.setData({
           showToggle: fullHeight > collapsedHeight + 1,
-          measureStyle: '--pui-bubble-collapsed-height:' + collapsedHeight + 'px;--pui-bubble-expanded-height:' + (fullHeight + 1) + 'px;'
+          clipStyle: 'max-height:' + (component.data.expandedState ? component._bubbleExpandedHeight : component._bubbleCollapsedHeight) + ';'
         });
       });
     },
@@ -294,8 +318,7 @@ Component({
       this.triggerEvent('change', detail);
       this.triggerEvent(next ? 'expand' : 'collapse', detail);
       if (!controlled) {
-        this.setData({ expandedState: next });
-        this.syncState(false);
+        this.syncState(false, next);
       }
     },
     onToggleTap: function onToggleTap() {

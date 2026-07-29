@@ -1,0 +1,55 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0474",
+  "title": "Select 与 Picker 独立页候选过少不足以验收展开层",
+  "scope": "component",
+  "components": ["select", "picker"],
+  "type": "design-decision",
+  "severity": "low",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Select 与 Picker 的演示各提供四个候选项，能真实观察选中、禁用、滚动和弹层空间。",
+  "environment": {
+    "surfaces": ["wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": ["打开 Select 或 Picker 独立页，旧发布通道只有两个候选，无法充分判断菜单/滚轮展开空间和连续选中效果。"],
+  "expected": "独立页与 H5 默认数据均提供四个明确发布通道，仍复用真实 Select/Picker API 和父级值回写。",
+  "actual": "小程序页只有稳定版/预览版两项；H5 Picker 基础数据也不足四项。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户要求 Select/Picker 演示候选增加到四个。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/select/index.js", "note": "页面数据改为稳定、候选、测试、开发四个发布通道。"},
+    {"kind": "file", "ref": "miniprogram/pages/components/picker/index.js", "note": "Picker 页面四项滚轮并真实映射选择标签。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 Select 保持四项，Picker 基础与多列首列均达到四项。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-form-pages.js", "note": "独立页专项断言四项与父级回写。"}
+  ],
+  "rootCause": "旧演示仅覆盖最小两项选择，满足 API 调用但不足以暴露展开层高度、选中圆角和滚轮连续候选的视觉问题。",
+  "decision": {
+    "outcome": "统一使用四个发布通道作为 Select/Picker 独立页教学数据，并让 H5 默认镜像具备四项；API 不变。",
+    "rationale": "增加真实数据密度即可提高验收覆盖，不需要扩展组件 API。",
+    "alternativesRejected": ["复制四个静态文案不会验证真实选择。", "增加公开 minOptions 会把演示需求误做成组件限制。"]
+  },
+  "impact": {
+    "files": ["miniprogram/pages/components/select/index.js", "miniprogram/pages/components/select/index.wxml", "miniprogram/pages/components/picker/index.js", "miniprogram/pages/components/picker/index.wxml", "preview/app.js", "scripts/test-select.js", "scripts/test-picker.js", "scripts/test-miniprogram-form-pages.js", "docs/components/SELECT.md", "docs/components/PICKER.md", "feedback/records/pui-fb-0474-select-picker-four-option-demo.json"],
+    "dependencies": ["PUI Select", "PUI Picker", "controlled page write-back"]
+  },
+  "verification": {
+    "tests": ["scripts/test-select.js", "scripts/test-picker.js", "scripts/test-miniprogram-form-pages.js"],
+    "commands": ["node scripts/test-select.js：通过", "node scripts/test-picker.js：通过", "node scripts/test-miniprogram-form-pages.js：通过", "npm run example:install：通过", "微信 DevTools CLI build-npm：cost=1146ms，warnings=[]"],
+    "browser": [
+      "H5 390px：Select 展开显示4项并选中 Card 后 Trigger 真实回写；Picker 默认 Header 打开后显示稳定版/候选版/测试版/开发版4项，选择候选版并确认后 Trigger 与状态真实回写，document 375/375。",
+      "微信开发者工具 iPhone 12/13 Pro 390x844：Select 展开稳定版/候选版/测试版/开发版4项并点击候选版回写；Picker 默认三槽 Header 为左 Check / 中标题 / 右 Close，滚轮显示4项，拖动到候选版并点击左上确认后页面回写当前选择。"
+    ],
+    "deviceRisks": ["微信真机 Popup 层级、滚轮惯性和触摸选择仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "选择组件的教学数据应足够覆盖真实展开层，但不把演示数量写成 API 限制。",
+    "rules": ["候选项必须进入真实 options/columns。", "页面选择后必须真实回写 value 和标签。"],
+    "tags": ["select", "picker", "demo", "options", "controlled", "h5-parity"]
+  }
+}

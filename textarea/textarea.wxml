@@ -17,12 +17,12 @@
     </view>
   </view>
 
-  <view class="pui-textarea__field {{showClear || loading ? 'pui-textarea__field--with-action' : ''}}">
+  <view class="pui-textarea__field {{loading ? 'pui-textarea__field--with-action' : ''}}">
     <textarea
       class="pui-textarea__control"
       style="{{controlStyle}}"
       name="{{name}}"
-      value="{{innerValue}}"
+      value="{{renderValue}}"
       placeholder="{{placeholder}}"
       maxlength="{{maxlengthValue}}"
       auto-height="{{autoHeightValue}}"
@@ -47,21 +47,6 @@
       bindlinechange="onLineChange"
       bindkeyboardheightchange="onKeyboardHeightChange"
     />
-    <view class="pui-textarea__clear-wrap {{showClear ? 'pui-textarea__action--active' : ''}}" aria-hidden="{{!showClear}}">
-      <pui-button
-        custom-class="pui-textarea__clear"
-        theme="default"
-        variant="text"
-        size="extra-small"
-        shape="square"
-        icon="close-circle"
-        aria-label="清空{{semanticLabel}}"
-        disabled="{{!showClear}}"
-        reduce-motion="{{reduceMotion}}"
-        color-scheme="{{colorScheme}}"
-        catch:click="onClear"
-      />
-    </view>
     <view class="pui-textarea__loading-wrap {{loading ? 'pui-textarea__action--active' : ''}}" aria-hidden="{{!loading}}">
       <pui-loading loading="{{loading}}" size="28rpx" text="" aria-label="{{semanticLabel}}加载中" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
     </view>

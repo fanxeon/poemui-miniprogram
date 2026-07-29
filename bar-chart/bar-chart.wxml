@@ -1,0 +1,29 @@
+<view class="{{rootClass}} {{entered ? 'pui-bar-chart--entered' : ''}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="img" aria-label="{{semanticLabel}}">
+  <view wx:if="{{empty}}" class="pui-bar-chart__empty">暂无数据</view>
+  <view wx:else class="pui-bar-chart__plot">
+    <view wx:if="{{showGrid && orientation === 'horizontal'}}" class="pui-bar-chart__scale" aria-hidden="true">
+      <text>0</text>
+      <text>{{scaleMax}}</text>
+    </view>
+    <view wx:for="{{chartItems}}" wx:key="key" class="pui-bar-chart__item" style="{{item.style}}">
+      <view class="pui-bar-chart__heading">
+        <text class="pui-bar-chart__label">{{item.label}}</text>
+        <text wx:if="{{showValue}}" class="pui-bar-chart__value">{{item.valueText}}</text>
+      </view>
+      <view class="pui-bar-chart__tracks">
+        <view wx:if="{{mode === 'stacked'}}" class="pui-bar-chart__track">
+          <view wx:for="{{item.segments}}" wx:for-item="segment" wx:key="key" class="pui-bar-chart__segment pui-chart-theme--{{segment.theme}}" style="{{segment.style}}" aria-hidden="true"></view>
+        </view>
+        <block wx:else>
+          <view wx:for="{{item.segments}}" wx:for-item="segment" wx:key="key" class="pui-bar-chart__group">
+            <text class="pui-bar-chart__segment-label">{{segment.label}}</text>
+            <view class="pui-bar-chart__track"><view class="pui-bar-chart__segment pui-chart-theme--{{segment.theme}}" style="{{segment.style}}" aria-hidden="true"></view></view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{showLegend && legend.length}}" class="pui-chart-legend" aria-hidden="true">
+    <view wx:for="{{legend}}" wx:key="key" class="pui-chart-legend__item"><view class="pui-chart-legend__swatch pui-chart-theme--{{item.theme}}"></view><text>{{item.label}}</text></view>
+  </view>
+</view>

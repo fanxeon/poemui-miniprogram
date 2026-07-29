@@ -6,7 +6,8 @@
     value="{{innerValue}}"
     placeholder="{{placeholder}}"
     prefix-icon="search"
-    clearable="{{showClear}}"
+    clearable="{{clearable}}"
+    clear-trigger="{{normalizedClearTrigger}}"
     bordered="{{true}}"
     align="{{center ? 'center' : 'left'}}"
     maxlength="{{nativeMaxlength}}"
@@ -23,6 +24,19 @@
     bind:blur="onBlur"
     bind:enter="onSearch"
   />
-  <pui-button wx:if="{{showCancel}}" custom-class="pui-search__cancel" variant="text" size="small" disabled="{{disabled || readonly}}" bind:click="onCancel">{{cancelText}}</pui-button>
+  <pui-button
+    wx:if="{{showCancel}}"
+    id="search-cancel-action"
+    class="{{cancelHostClass}}"
+    custom-class="pui-search__cancel"
+    custom-style="--pui-button-tone:var(--pui-text-secondary);font-weight:var(--pui-font-weight-medium);"
+    variant="text"
+    surface="transparent"
+    size="extra-small"
+    content="{{cancelText}}"
+    aria-label="{{cancelText}}"
+    disabled="{{disabled || readonly}}"
+    bind:click="onCancel"
+  />
   <slot></slot>
 </view>

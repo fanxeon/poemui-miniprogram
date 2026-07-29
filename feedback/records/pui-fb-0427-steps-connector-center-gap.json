@@ -1,4 +1,113 @@
 {
-  "$schema":"../schema.json","id":"PUI-FB-0427","title":"Steps 连线未留出图标中心两侧间距","scope":"component","components":["steps"],"type":"visual-layout","severity":"medium","status":"resolved","acceptance":"pending-user","source":"user-report","reportedAt":"2026-07-27","updatedAt":"2026-07-27",
-  "userGoal":"步骤 1、2、3 的连线位于图标垂直中心且两端保留视觉间距。","environment":{"surfaces":["wechat-component","h5-preview"],"platforms":["wechat-miniprogram","browser"],"viewports":["390px"],"themes":["light","dark"]},"reproduction":["查看横向和纵向 Steps 的数字图标。"],"expected":"连线穿过圆形指示器中心轴但不贴边相接。","actual":"连线锚点沿用旧尺寸，视觉上直接连接图标。","evidence":[{"kind":"file","ref":"steps/steps.wxss","note":"连线以指标中心为锚点并使用 step-30 留白。"},{"kind":"file","ref":"preview/styles.css","note":"H5 同步中心轴和间距。"},{"kind":"test","ref":"scripts/test-steps.js","note":"Steps 专项合同通过。"}],"rootCause":"连线计算仅按 item 宽度定位，未表达指标外缘安全间距。","decision":{"outcome":"水平和垂直连线均从指标中心偏移后的安全点开始与结束。","rationale":"数字指标保持独立可读，连线只表达步骤关系。","alternativesRejected":["把图标尺寸缩小会降低触摸和可读性。"]},"impact":{"files":["steps/steps.wxss","preview/styles.css"],"dependencies":["spacing tokens"]},"verification":{"tests":["scripts/test-steps.js"],"commands":["node scripts/test-steps.js"],"browser":["390px 连线视觉实测待本轮执行。"],"deviceRisks":["不同字体与 rpx 回流仍需真机确认。"]},"ai":{"summary":"Steps 连线按指标中心轴定位并预留外缘间隙。","rules":["不要让 connector 直接贴住数字图标。"],"tags":["steps","connector","geometry"]}
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0427",
+  "title": "Steps 纵向连线把完整指示器尺寸误作中心锚点",
+  "scope": "component",
+  "components": ["steps"],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-27",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Steps 的纵向连线必须精确落在指示器中心，并在当前与下一指示器外缘之间保留相等间隙。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开小程序 Steps 独立页，查看“纵向步骤”第一项与第二项之间的连接线。",
+    "修复前连线位于圆形指示器右侧，不在 44rpx 指示器的 22rpx 中心轴上。",
+    "运行旧 scripts/test-steps.js 仍会通过几何断言，因为测试把 step-22 的 44rpx 错误解释为中心。"
+  ],
+  "expected": "default 与 dot 的横纵连线都使用组件内部中心、尺寸和连接间隙语义；纵向 x 轴位于指示器中心，起止点分别距当前与下一指示器外缘一个连接间隙，小程序与 H5 保持 1px≈2rpx 镜像。",
+  "actual": "小程序旧规则以 left=step-22 把 44rpx 完整尺寸作为中心，纵向线落在右边缘；H5 虽使用 11px 中心，但纵向起止与小程序使用不同魔法数，旧测试没有校验真实数值关系。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前任务对话",
+      "note": "用户明确指出 Steps 纵向连线锚点不正确。"
+    },
+    {
+      "kind": "file",
+      "ref": "steps/steps.wxss",
+      "note": "修复前纵向 line 使用 left:var(--pui-space-step-22)，而 theme 中 step-22=44rpx、step-11=22rpx。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-steps.js",
+      "note": "旧断言把 top/left 出现 step-22 当成中心正确；新断言读取真实 Token 数值并校验中心、前后间隙、dot 与跨端比例。"
+    },
+    {
+      "kind": "browser",
+      "ref": "/tmp/poemui-steps-vertical-anchor-fixed-390.jpeg",
+      "note": "既有微信开发者工具实例热重载到 390x844 Steps 独立页，纵向连线已回到圆形指示器中心并保留两端间隙。"
+    },
+    {
+      "kind": "file",
+      "ref": "https://www.npmjs.com/package/tdesign-miniprogram",
+      "note": "固定参考 tdesign-miniprogram 1.15.3 的 step-item.wxss，以 circle-size/2 为纵向 x 锚点并从 circle-size+16rpx 起线。"
+    }
+  ],
+  "rootCause": "实现混淆了指示器完整尺寸和中心半径：44rpx 被直接写入纵向 left；随后专项测试只检查错误 Token 字符串是否存在，没有读取 Token 数值或验证线段与相邻指示器的几何关系，因此回归被伪装成已解决。",
+  "decision": {
+    "outcome": "Steps 根声明 indicator size/center、connector gap、vertical item gap、dot size/center/offset 内部别名；default/dot 与 horizontal/vertical 统一按指示器外缘加减连接间隙，纵向线以 translateX(-50%) 抵消线宽。H5 使用同名半比例别名与公式。",
+    "rationale": "把几何关系表达为可复用语义并让测试验证数值关系，能同时消除错误锚点、两端 gap 漂移和小程序/H5 魔法数分叉。",
+    "alternativesRejected": [
+      "只把纵向 left 从 44rpx 改成 22rpx，仍会保留起止边界、dot 和 H5 的另一套魔法数。",
+      "在 Steps 独立页覆盖 left/top 只能修截图，安装端组件仍然错误。",
+      "继续用字符串存在性断言不能证明 Token 数值代表中心或前后间隙对称。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "steps/steps.wxss",
+      "preview/styles.css",
+      "scripts/test-steps.js",
+      "docs/components/STEPS.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "docs/COMPONENT_RULES_INDEX.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0427-steps-connector-center-gap.json"
+    ],
+    "dependencies": ["PUI spacing tokens", "Steps H5 mirror", "miniprogram_dist", "example install", "WeChat build-npm"]
+  },
+  "verification": {
+    "tests": ["scripts/test-steps.js", "scripts/test-design-contracts.js", "scripts/test-preview-css-token-contract.js"],
+    "commands": [
+      "node scripts/test-steps.js：通过，验证真实 Token 数值、default/dot 横纵公式、对称 gap、跨端 1px≈2rpx 与五份安装产物一致性。",
+      "npm run miniprogram:build：通过，生成 71 个组件目录。",
+      "npm run example:install：通过，H5 构建与本地 tarball 示例安装完成。",
+      "微信 CLI build-npm --project miniprogram：通过，使用当前 AppID，耗时 1275ms、warnings=[]。",
+      "Steps 源码、miniprogram_dist、_example/node_modules、miniprogram/node_modules、miniprogram_npm 五份 WXSS SHA-256 均为 4fa7f8a6c98c64db23e8969e31110a311f5d43293b9f16450c4537788a6272d5。",
+      "node scripts/test-preview-css-token-contract.js：通过。",
+      "node scripts/test-non-elevated-shadow-semantics.js：通过。",
+      "npm run feedback:generate && npm run feedback:check：通过，生成并校验 440 条记录。",
+      "npm run pack:check：通过，0.1.0 dry-run 为 545 files / 348.3kB tarball / 1.7MB unpacked。",
+      "npm run check：Steps 之前的 precheck 全部通过，完整 check 被本次未修改且 HEAD 内已不一致的首页版头断言 scripts/test-miniprogram-home.js:91 阻断；页面真实文案为“面向 AI 的原生小程序组件库。”，测试仍要求旧文案“原生小程序组件库，按需组合。”。"
+    ],
+    "browser": [
+      "H5 390x844 深浅色实测：前两条纵向连接线相对指示器中心 anchorDelta=0px，startGap=8px、endGap=8px，document scrollWidth/clientWidth=375/375，无横向溢出，控制台 warn/error=[]。",
+      "既有微信开发者工具 iPhone 12/13 Pro 390x844、基础库 3.17.0 热重载到 pages/components/steps/index；截图确认纵向线穿过圆形指示器中心，并在指示器前后保留断点间隙。全程未重启、关闭或重新打开开发者工具。"
+    ],
+    "deviceRisks": [
+      "微信开发者工具已完成 390px 视觉复核；自动化 SelectorQuery 不能穿透组件内部，因此没有把静态公式伪报为小程序运行态 px 量测。",
+      "仓库完整 check 存在本次范围外的首页版头文案基线断言漂移，未越界修改首页或其测试。",
+      "iOS/Android 真机的 1rpx 抗锯齿、rpx 舍入、系统字体回流、触摸与读屏仍需复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Steps connector 必须用指示器半径作为中心锚点，并以结构公式校验当前与下一指示器的对称间隙。",
+    "rules": [
+      "不得把完整 indicator size 直接写入纵向 left；默认 44rpx 指示器的中心是 22rpx。",
+      "default/dot、horizontal/vertical 必须共享中心、尺寸和 connector gap 语义，H5 按半比例镜像。",
+      "几何测试必须读取 Token 数值并验证中心和线段端点，不能只检查某个 Token 字符串存在。",
+      "页面不得覆盖 Steps connector 坐标；所有修复必须进入组件、H5 镜像、合同和分发产物。"
+    ],
+    "tags": ["steps", "connector", "vertical", "anchor", "geometry", "regression", "cross-platform"]
+  }
 }

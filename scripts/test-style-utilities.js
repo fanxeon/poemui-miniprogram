@@ -11,6 +11,7 @@ const publicEntry = read('theme/utilities.wxss');
 const preview = read('preview/app.js');
 const previewStyles = read('preview/styles.css');
 const previewHtml = read('preview/index.html');
+const packageVersion = JSON.parse(read('package.json')).version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const generatedPreviewData = read('preview/style-utilities-data.js');
 const generatedPreviewCss = read('preview/style-utilities.css');
 const guide = read('docs/STYLE_UTILITIES.md');
@@ -166,10 +167,10 @@ assert(previewStyles.includes('overflow-y: visible'), 'the app shell keeps page 
 assert(previewStyles.includes('@media (min-width: 1181px)'));
 assert(previewStyles.includes('@media (max-width: 760px)'));
 assert(previewStyles.includes('.pui-text-cut,'));
-assert(/styles\.css\?v=0\.1\.0-\d{8}-\d+/.test(previewHtml));
-assert(/app\.js\?v=0\.1\.0-\d{8}-\d+/.test(previewHtml));
-assert(/style-utilities-data\.js\?v=0\.1\.0-\d{8}-\d+/.test(previewHtml), 'H5 must load the generated utility preview semantics before app.js');
-assert(/style-utilities\.css\?v=0\.1\.0-\d{8}-\d+/.test(previewHtml), 'H5 must load the scoped CSS generated from the published utility source');
+assert(new RegExp(`styles\\.css\\?v=${packageVersion}-\\d{8}-\\d+`).test(previewHtml));
+assert(new RegExp(`app\\.js\\?v=${packageVersion}-\\d{8}-\\d+`).test(previewHtml));
+assert(new RegExp(`style-utilities-data\\.js\\?v=${packageVersion}-\\d{8}-\\d+`).test(previewHtml), 'H5 must load the generated utility preview semantics before app.js');
+assert(new RegExp(`style-utilities\\.css\\?v=${packageVersion}-\\d{8}-\\d+`).test(previewHtml), 'H5 must load the scoped CSS generated from the published utility source');
 
 assert(guide.includes('当前共 562 个选择器'));
 assert(guide.includes('## 精选强调色'));

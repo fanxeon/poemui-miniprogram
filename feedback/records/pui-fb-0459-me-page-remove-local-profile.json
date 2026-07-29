@@ -1,0 +1,116 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0459",
+  "title": "第四 Tab 不是用户中心并应移除本地头像昵称资料链",
+  "scope": "component",
+  "components": ["miniprogram", "tabbar", "cell", "cell-group", "navbar"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "第四 Tab 不是用户中心，因此先彻底删除头像和昵称，但保持服务列表原来的靠下位置，后续再讨论接入真实组件状态仪表盘。",
+  "environment": {
+    "surfaces": ["miniprogram tabbar", "me top-level page"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/me/index。",
+    "页面顶部仍渲染大头像、昵称 Input、Clear 与保存操作，并加载本地 user-profile Store。",
+    "该一级目的地没有登录或用户中心业务，身份资料与页面后续组件状态仪表盘方向冲突。"
+  ],
+  "expected": "页面不注册、不渲染也不读取 Card、Avatar、Input 或 user-profile 身份资料链；授权、订单、公告、隐私、关于诗上与 Navbar 客服保持可用；服务 CellGroup 继续位于原来的靠下位置。",
+  "actual": "资料卡、Avatar、昵称 Input、保存事件、本地 Store 和对应样式仍存在；服务列表的位置依赖同一正文 Flex 布局。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前任务对话",
+      "note": "用户明确判断该页不是用户中心，要求先删除头像昵称，同时明确服务列表位置不要改变，未来将讨论组件状态仪表盘。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "当前页面只保留服务 CellGroup、平台入口、Dialog、公告 Popup、Tabbar 与 Toast；资料 Card、Avatar 和昵称 Input 已删除。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.js",
+      "note": "user-profile require、昵称 data、恢复、编辑、校验和保存事件已删除，其他真实平台链路未改变。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/utils/",
+      "note": "目录中不再保留失去全部消费者的 user-profile Store；删除由页面专项测试反向锁定。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "专项测试反向锁定资料组件、状态、事件、Store 和样式不能回归，同时锁定服务区继续使用 margin-top:auto。"
+    }
+  ],
+  "rootCause": "页面最初按账户页方向实现昵称资料，后续产品定位已经转向组件状态与服务信息；旧资料链没有真实认证价值，却持续占据首屏和本地状态。",
+  "decision": {
+    "outcome": "删除页面资料 Card、Avatar、昵称 Input、suffix 保存按钮、全部昵称状态与事件、身份资料样式和 user-profile Store；保留服务列表 margin-top:auto。本记录取代 PUI-FB-0421 与 PUI-FB-0452 中关于保留昵称资料的当前产品规则，并保留 PUI-FB-0453 的服务区靠下几何。后续 PUI-FB-0464 已建立真实 metadata 统计源并只恢复一张组件状态 Card；该 Card 不是身份资料壳，不推翻本记录的用户中心禁令。",
+    "rationale": "彻底删除失去产品职责的身份链路比隐藏节点更安全；保持服务区原位可避免本次删除造成页面跳变，并为下一轮真实仪表盘规划保留上方空间。",
+    "alternativesRejected": [
+      "只隐藏资料卡但保留 Store 和事件：仍会形成死代码和后续误恢复来源。",
+      "删除资料后把服务列表移动到顶部：违背用户明确要求，也提前改变下一轮仪表盘布局边界。",
+      "立即补静态仪表盘占位：没有真实组件状态源和口径，会制造 fake success。",
+      "主动清除设备上的历史 poemui-user-profile 键：超出页面删除范围且会造成不必要的破坏性写入。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/me/index.json",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.wxss",
+      "miniprogram/common/utils/",
+      "miniprogram/common/services/update-announcements.js",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_RULES_INDEX.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["PUI ConfigProvider", "PUI Navbar", "PUI ScrollArea", "PUI CellGroup", "PUI Dialog", "PUI Popup", "PUI Tabbar"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-me-page.js", "scripts/test-miniprogram-tabbar-pages.js"],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过",
+      "node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过，0.1.0 包、页面组件路径与微信 npm 产物均可解析",
+      "npm run feedback:generate && npm run feedback:check：通过，生成并校验 441 条记录",
+      "微信 CLI build-npm --project miniprogram：通过，AppID wx23aa017375535746，cost=1150ms，warnings=[]",
+      "npm run site:build：通过，71 个组件目录、562 个工具类与 220 个图标同步生成",
+      "npm run pack:check：通过，0.1.0 dry-run 为 545 files / 348.3kB tarball / 1.7MB unpacked",
+      "npm run check：precheck 全部通过，完整 check 被本次未修改且 HEAD 内已漂移的首页版头文案断言 scripts/test-miniprogram-home.js:91 阻断"
+    ],
+    "browser": [
+      "既有微信开发者工具实例热重载到 pages/me/index，窗口 390x844、contentHeight=665px；页面 data 不再包含 nickname、avatarText 等资料状态。",
+      "运行态 SelectorQuery：#me-profile-card=null、#me-nickname-input=null；服务区仍为 left=14/top=433/362x272px，Tabbar top=752px，与删除前已验收服务区几何一致。",
+      "可访问树只包含 Navbar 客服、五个服务 Cell 与 Tabbar，不存在头像、昵称或资料编辑操作；截图 /tmp/poemui-me-profile-removed-services-preserved-390.png。"
+    ],
+    "deviceRisks": [
+      "未来组件状态仪表盘的状态源、指标口径、刷新机制和异常态尚未规划，本次未实现。",
+      "仓库完整 check 仍存在本次范围外的首页版头文案基线断言漂移。",
+      "iOS/Android 真机的安全区、惯性滚动、平台跳转和读屏仍未验证。"
+    ]
+  },
+  "ai": {
+    "summary": "第四 Tab 不是用户中心：不得恢复头像、昵称或本地资料 Store；服务区保持靠下，仪表盘必须等待真实状态源。",
+    "rules": [
+      "pages/me/index 不注册或渲染 Avatar、Input 或 Card 作为身份资料，也不读取 poemui-user-profile；PUI-FB-0464 允许唯一组件状态 Card。",
+      "删除身份资料不得移动服务 CellGroup；继续用正文 Flex 与 margin-top:auto 保持原位置。",
+      "组件状态仪表盘未建立真实状态源、指标和失败边界前，不得放静态占位或假数据；PUI-FB-0464 建立生成型 metadata 统计源后，此前的未就绪风险已被替代。",
+      "后续若引入登录，必须另建服务端身份合同，不能恢复本地昵称 Store 冒充认证。"
+    ],
+    "tags": ["miniprogram", "me", "dashboard", "profile-removal", "avatar", "nickname", "service-position"]
+  }
+}

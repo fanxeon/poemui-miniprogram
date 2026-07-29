@@ -34,7 +34,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 
 ## 4. Token、间距与排版
 
-- 根、Trigger 和 Content 使用已有 Collapsible 语义 Token；`bordered` 只控制中性边界，不以外投影替代分隔或状态边界。
+- 根、Trigger 和 Content 使用已有 Collapsible 语义 Token；`bordered` 只控制中性边界。`shadow=true` 只授权展开态消费 `--pui-shadow-card`，关闭态始终无外投影。
 - Trigger 与 Content 的关系使用 `--pui-section-gap` 语义；内部内容组合按 `16rpx / 8px`，紧密图标文字按 `8rpx / 4px`，不得由页面私有 margin 堆出开合空白。
 - 动效只使用 `--pui-collapsible-duration` 与 `--pui-collapsible-easing`：默认 `500ms`，最大 `1000ms`，`reduceMotion=true` 固定 `1ms`；禁止对 `height:auto` 写 transition。
 - `theme` 仅接受 default/primary/success/warning/danger，`iconPosition` 仅接受 left/right；非法值回退 default/right。
@@ -75,7 +75,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 ## 10. 响应式、主题与视觉配置
 
 - 390px 下 Trigger、正文和 Retry 必须可换行、可点击且页面无横向溢出；Content 不能超出 PreviewDevice。
-- light/dark 由主题 Token 提供文本、容器和边界；阴影、毛玻璃、大圆角、边框与渐变只影响真实 PUI Surface，不能令透明布局根新增卡片或让开合几何跳变。
+- light/dark 由主题 Token 提供文本、容器和边界；毛玻璃始终由 ConfigProvider 的有效 Token 决定。`shadow=true` 时只有展开态消费同一有效阴影 Token，关闭阴影或 `effectsEnabled=false` 后归零且不改变开合几何。
 - `bordered=false` 保留盒模型与焦点、错误、选中边界；`reduceMotion` 只改变时长，不改变组件尺寸、状态或事件顺序。
 
 ## 11. 明确禁止
@@ -95,4 +95,4 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 
 ## 13. 等距与阴影资格
 
-Collapsible 在 `equalSpacing` 时将展开内容四向 inset 映射到 `--pui-surface-inset`；Trigger 和内容内部组合保持原有微间距。它属于连续内容集合根，不具备全局外投影资格：`shadow` 开启时根仍为 `box-shadow:none`；自身可消费毛玻璃背景，但不得由此叠加第二层 Surface。
+Collapsible 在 `equalSpacing` 时将展开内容四向 inset 映射到 `--pui-surface-inset`；Trigger 和内容内部组合保持原有微间距。默认 `shadow=false`，关闭态始终保持连续内容集合根的扁平语义；调用方显式传入 `shadow=true` 后，仅展开态成为可提升 Surface 并消费 `--pui-shadow-card`。毛玻璃继续由根消费 `--pui-glass-surface / --pui-frosted-filter`，两项效果均由 ConfigProvider 的有效外观 Token 控制，页面不得再包第二层 Surface。

@@ -1,6 +1,6 @@
-<view class="{{rootClass}} {{customClass}}" style="{{rootStyle}};{{customStyle}}" role="region" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}">
+<view class="{{rootClass}} {{customClass}}" style="{{rootStyle}};{{customStyle}}" role="region" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}" aria-busy="{{loading}}" aria-invalid="{{error}}">
   <view class="pui-indexes__body">
-    <scroll-view class="pui-indexes__scroll {{stateType === 'content' ? 'pui-indexes__scroll--active' : 'pui-indexes__scroll--inactive'}}" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="{{!reduceMotion}}" bindscroll="onScroll" aria-label="{{semanticLabel}}内容">
+    <scroll-view class="pui-indexes__scroll {{stateType === 'content' ? 'pui-indexes__scroll--active' : 'pui-indexes__scroll--inactive'}}" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="{{!reduceMotion}}" bindscroll="onScroll" bindtouchstart="onContentTouchStart" aria-label="{{semanticLabel}}内容" aria-hidden="{{stateType !== 'content'}}">
       <view wx:for="{{groups}}" wx:key="id" id="{{item.id}}" class="pui-indexes__group {{item.disabled ? 'pui-indexes__group--disabled' : ''}}">
         <view class="pui-indexes__heading {{sticky ? 'pui-indexes__heading--sticky' : ''}}"><text>{{item.title}}</text></view>
         <view class="pui-indexes__entries">
@@ -13,21 +13,27 @@
       </view>
     </scroll-view>
 
-    <view class="pui-indexes__bar {{navigation.length ? 'pui-indexes__bar--active' : 'pui-indexes__bar--inactive'}}" role="navigation" aria-label="索引导航" catchtouchstart="onIndexTouchStart" catchtouchmove="onIndexTouchMove" catchtouchend="onIndexTouchEnd" catchtouchcancel="onIndexTouchEnd">
+    <view class="pui-indexes__bar {{navigation.length && stateType === 'content' ? 'pui-indexes__bar--active' : 'pui-indexes__bar--inactive'}}" role="navigation" aria-label="索引导航" aria-hidden="{{stateType !== 'content' || !navigation.length}}" catchtouchstart="onIndexTouchStart" catchtouchmove="onIndexTouchMove" catchtouchend="onIndexTouchEnd" catchtouchcancel="onIndexTouchCancel">
       <view wx:for="{{navigation}}" wx:key="groupIndex" class="pui-indexes__bar-item-wrap {{item.active ? 'pui-indexes__bar-item-wrap--active' : ''}}">
-        <pui-button custom-class="pui-indexes__bar-item" custom-style="width:42rpx;min-width:42rpx;height:36rpx;min-height:36rpx;padding:0;color:inherit;line-height:36rpx;" theme="default" variant="text" surface="transparent" size="small" content="{{item.display}}" disabled="{{disabled || loading || error || item.disabled}}" aria-label="定位到{{item.title}}" color-scheme="{{colorScheme}}" data-group-index="{{item.groupIndex}}" bind:click="onIndexClick" />
+        <view class="pui-indexes__bar-item" role="button" aria-label="定位到{{item.title}}" aria-disabled="{{disabled || loading || error || item.disabled}}" data-group-index="{{item.groupIndex}}" bindtap="onIndexClick">
+          <text class="pui-indexes__bar-label">{{item.display}}</text>
+        </view>
       </view>
+    </view>
+
+    <view class="pui-indexes__index-preview {{indexPreviewVisible ? 'pui-indexes__index-preview--active' : ''}}" style="{{indexPreviewStyle}}" aria-hidden="true">
+      <text>{{indexPreviewText}}</text>
     </view>
 
     <view class="pui-indexes__state {{stateType === 'loading' ? 'pui-indexes__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'loading'}}">
       <pui-loading loading="{{stateType === 'loading'}}" size="36rpx" text="{{loadingText}}" reduce-motion="{{reduceMotion}}" color-scheme="{{colorScheme}}" />
     </view>
     <view class="pui-indexes__state pui-indexes__state--error {{stateType === 'error' ? 'pui-indexes__state--active' : ''}}" role="alert" aria-hidden="{{stateType !== 'error'}}">
-      <pui-empty custom-class="pui-indexes__empty" description="{{errorText}}" icon="error-circle" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
-      <pui-button wx:if="{{retryText}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled || stateType !== 'error'}}" bind:click="onRetry">{{retryText}}</pui-button>
+      <pui-empty id="pui-indexes-error-empty" custom-class="pui-indexes__empty" description="{{errorText}}" icon="{{errorIcon}}" aria-label="{{errorText}}" reduce-motion="{{reduceMotion}}" />
+      <pui-button id="pui-indexes-retry" wx:if="{{retryText}}" theme="danger" variant="outline" size="small" icon="refresh" disabled="{{disabled || stateType !== 'error'}}" bind:click="onRetry">{{retryText}}</pui-button>
     </view>
     <view class="pui-indexes__state {{stateType === 'empty' ? 'pui-indexes__state--active' : ''}}" role="status" aria-hidden="{{stateType !== 'empty'}}">
-      <pui-empty custom-class="pui-indexes__empty" description="{{emptyText}}" icon="inbox" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" />
+      <pui-empty custom-class="pui-indexes__empty" description="{{emptyText}}" icon="{{emptyIcon}}" aria-label="{{emptyText}}" reduce-motion="{{reduceMotion}}" />
     </view>
   </view>
 </view>

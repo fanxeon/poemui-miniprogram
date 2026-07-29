@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0470",
+  "title": "Indexes 当前索引被光学位移裁切且错误态缺少底部安全区",
+  "scope": "component",
+  "components": ["indexes"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "索引选中态完整展示并让文字严格居中，加载失败的恢复区在底部保留足够间距。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "PreviewDevice 390px"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "在 Indexes 右侧索引轨选择任一字母；首轮虽然删除 translate 与 active scale，但通用 PUI Button 仍继承整项 line-height，字形基线落在选中底板下半部。",
+    "在真实独立页切换 error=true、height=360；即使状态层已有底部 padding，默认 PUI Empty 的 192rpx 图形仍把 Retry 挤到组件底边。"
+  ],
+  "expected": "索引字形使用独立 unit line box，与动态项高正圆共同锚定同一个双轴中心；错误态在 360rpx 组件内完整容纳紧凑 Empty、Retry 和底部 Token 安全区。",
+  "actual": "旧规则先以 translateY 和 scale 做光学校正，首轮删除后仍保留通用 Button；Button 的整项 line-height 继续把字形基线压向活动底板下方。错误态首轮只增加底部 padding，却没有计算 192rpx Empty 图形与按钮的总高度。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户指出选中态截断、未居中和失败态底部间距不足。"},
+    {"kind": "user-report", "ref": "2026-07-28 Indexes 居中复验", "note": "用户再次指出索引文字仍未居中，并提出索引项无需套通用 Button。"},
+    {"kind": "browser", "ref": "/tmp/poemui-indexes-center-before-crop.png", "note": "微信开发者工具 390px 修复前放大截图显示活动 A 字形落在底板下半部。"},
+    {"kind": "browser", "ref": "/tmp/poemui-indexes-center-after-b.png", "note": "移除索引项通用 Button 后正圆几何成立，但像素量测仍发现 B 墨迹中心向左、向上不足 1px。"},
+    {"kind": "browser", "ref": "/tmp/poemui-indexes-center-final-b-verified.png", "note": "390×844 iPhone 12/13 Pro 运行时最终截图；缩放输出中正圆墨迹中心约 16.3/18.7，B 墨迹中心约 16.4/18.4，两轴残差均不超过 0.3px。"},
+    {"kind": "browser", "ref": "/tmp/poemui-indexes-error.png", "note": "0.1.2 修复前 390x844 真实独立页截图证明 Retry 与 360rpx body 底边几乎没有安全距。"},
+    {"kind": "file", "ref": "indexes/indexes.wxml", "note": "错误与空态向真实 PUI Empty 传入 88rpx 紧凑图形配置。"},
+    {"kind": "file", "ref": "indexes/indexes.wxss", "note": "保留组件自有底部安全距，移除嵌入 Empty 的第二层 padding；活动内容轨继续几何居中。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "专项锁定无光学位移、紧凑图形组合和组件层 Retry 所有权。"}
+  ],
+  "rootCause": "侧栏本身已是连续触摸交互根，却为每个字母再套通用 PUI Button。其内部 loading/icon/content/suffix 结构和继承整项高度的 line box 让字形视觉基线低于包装中心；选中背景又铺满较宽命中轨，形成非正圆。移除 Button 后几何中心已经一致，但微信系统字体的可见笔画中心仍比行盒中心向左、向上约 1px，需与布局几何分开处理。错误态首轮只看 padding 字符串，没有把 Empty 默认 192rpx 图形、说明、gap、按钮和上下 padding 的真实总高度纳入 360rpx 约束。",
+  "decision": {
+    "outcome": "索引项改为 Indexes 自身的语义 view 交互根，文字使用 line-height:1 的独立节点；选中底板按动态项高生成正圆并与文字共同锚定 50%/50%。文字再统一消费 x=.5px / y=.25px 的语义光学补偿，使系统字体墨迹中心对齐正圆但不移动圆或命中区；rpx 在 390px 模拟器中发生取整，同值双轴补偿仍会纵向过量。错误态保留 space-xl + space-normal 底距，同时把嵌入 PUI Empty 图形收敛为 88rpx 并删除第二层 padding。",
+    "rationale": "索引连续手势属于组件自身交互语义，不需要通用 Button；去除无关内部结构后，字形、正圆和命中轨可以共享同一几何中心。压缩组件内部图形而不是继续堆 padding，才能让 360rpx 有界状态真实容纳全部内容。",
+    "alternativesRejected": ["继续微调 translate 数值无法覆盖不同字号和真机 rpx。", "继续套通用 Button 会保留不属于索引轨的 line box 与组合结构。", "页面加 padding 会让安装端仍然错误。", "只断言 padding 存在已经被真实截图证明是假阳性。"]
+  },
+  "impact": {
+    "files": ["indexes/indexes.wxml", "indexes/indexes.wxss", "scripts/test-indexes.js", "docs/components/INDEXES.md", "feedback/records/pui-fb-0470-indexes-active-center-error-gap.json"],
+    "dependencies": ["PUI Button", "PUI Empty", "PUI spacing tokens"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["node scripts/test-indexes.js：通过", "node scripts/test-miniprogram-navigation-pages.js：通过"],
+    "browser": [
+      "旧 H5 390px 的活动包装与 content 几何居中证据仍有效，但 0.1.2 动态长轨和紧凑错误态尚未同步 H5。",
+      "微信开发者工具 390x844 修复前截图 `/tmp/poemui-indexes-error.png` 已推翻旧的底部安全距验收；错误 body 修复后高 187px、Retry 底边距 39.5px，截图 `/tmp/poemui-indexes-0.1.2-error-gap.png`。",
+      "居中复验先由 `/tmp/poemui-indexes-center-before-crop.png` 确认通用 Button 中 A 字形偏下；移除 Button 后又以像素边界确认几何中心与墨迹中心仍存在不足 1px 的差异。最终 `x=.5px / y=.25px` 光学补偿在 390×844 iPhone 12/13 Pro 运行时把 B 与正圆两轴残差压到不超过 0.3px，证据 `/tmp/poemui-indexes-center-final-b-verified.png`。"
+    ],
+    "deviceRisks": ["微信真机长按滑动命中、字形抗锯齿与底部安全区仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "Indexes 自身的索引交互根、字形和动态正圆共享真实几何中心，错误恢复区按全部子组件的实际高度设计。",
+    "rules": ["索引文字不得依赖通用 Button 的整行 line-height；布局几何居中与系统字体墨迹光学补偿必须分开，统一补偿不得作用于圆或命中区。", "组件自身连续手势命中点使用语义交互根；真正的 Retry 操作继续复用 PUI Button。", "错误态间距属于组件，不由页面补。", "状态布局验收必须量测 Empty、Button 和 body 边界，不能只匹配 padding 字符串。"],
+    "tags": ["indexes", "active", "centering", "error", "spacing", "h5-parity"]
+  }
+}

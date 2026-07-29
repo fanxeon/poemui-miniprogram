@@ -60,6 +60,7 @@ const normalizeItems = (items, motion) => {
       disabled: Boolean(item.disabled),
       loading: Boolean(item.loading),
       index,
+      entering: Boolean(motion.revealFrom >= 0 && index >= motion.revealFrom),
       loadingProps: {
         size: 'small',
         ariaLabel: `${title}加载中`,
@@ -145,7 +146,17 @@ Component({
       const reduceMotion = Boolean(this.properties.reduceMotion);
       const duration = reduceMotion ? 1 : clamp(this.properties.duration, 0, 1000, 500);
       const easing = EASINGS.includes(this.properties.easing) ? this.properties.easing : 'ease-out';
-      const normalizedItems = normalizeItems(this.properties.items, { duration, easing, reduceMotion });
+      const itemCount = Array.isArray(this.properties.items) ? this.properties.items.length : 0;
+      const revealFrom = Number.isInteger(this._itemCount) && this._itemCount > 0 && itemCount > this._itemCount
+        ? this._itemCount
+        : -1;
+      const normalizedItems = normalizeItems(this.properties.items, {
+        duration,
+        easing,
+        reduceMotion,
+        revealFrom,
+      });
+      this._itemCount = itemCount;
       const hasContent = Boolean(this.properties.useSlot || normalizedItems.length);
       const stateType = hasContent
         ? 'content'

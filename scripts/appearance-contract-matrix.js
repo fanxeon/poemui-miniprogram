@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * The 74 entries are the PUI roots that the real miniprogram WXML currently
+ * The entries are the PUI roots that the real miniprogram WXML currently
  * renders. Input is now also a standalone page root; the composed rule below
  * additionally governs its embedded use inside Search and Combobox.
  * A value of false means that the global preference must not add that effect
@@ -10,8 +10,10 @@
 const appearanceContracts = Object.freeze({
   'action-sheet': { surface: 'edge-attached', shadow: 'edge-bottom', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
   alert: { surface: 'inline-surface', shadow: 'none', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },
+  'area-chart': { surface: 'display-leaf', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   'aspect-ratio': { surface: 'layout', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   avatar: { surface: 'leaf', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: false, equalSpacing: false, gradient: false },
+  'bar-chart': { surface: 'display-leaf', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   'back-top': { surface: 'detached-surface', shadow: 'floating', frostedGlass: true, largeRadius: true, bordered: false, equalSpacing: false, gradient: false },
   badge: { surface: 'leaf', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: false, equalSpacing: false, gradient: false },
   breadcrumb: { surface: 'navigation-control', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: false, equalSpacing: false, gradient: false },
@@ -24,7 +26,7 @@ const appearanceContracts = Object.freeze({
   checkbox: { surface: 'control-surface', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: true, equalSpacing: false, gradient: false },
   'checkbox-group': { surface: 'layout', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   collapse: { surface: 'collection-root', shadow: 'none', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
-  collapsible: { surface: 'collection-root', shadow: 'none', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
+  collapsible: { surface: 'expandable-surface', shadow: 'card', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
   combobox: { surface: 'anchored-surface', shadow: 'floating', frostedGlass: true, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
   'config-provider': { surface: 'provider', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
   'count-down': { surface: 'leaf', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
@@ -83,6 +85,7 @@ const appearanceContracts = Object.freeze({
   upload: { surface: 'collection-root', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
   'virtual-list': { surface: 'collection-root', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: true, equalSpacing: true, gradient: false },
   watermark: { surface: 'layout', shadow: 'none', frostedGlass: false, largeRadius: false, bordered: false, equalSpacing: false, gradient: false },
+  waffle: { surface: 'display-leaf', shadow: 'none', frostedGlass: false, largeRadius: true, bordered: false, equalSpacing: false, gradient: false },
 });
 
 const composedAppearanceContracts = Object.freeze({

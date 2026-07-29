@@ -6,9 +6,21 @@
   aria-live="polite"
 >
   <view wx:if="{{contentMode === 'slot'}}" class="pui-count-down__slot"><slot></slot></view>
-  <view wx:else class="pui-count-down__segments">
+  <view wx:else class="pui-count-down__segments" aria-hidden="true">
     <view wx:for="{{segments}}" wx:key="key" class="pui-count-down__part {{item.numeric ? 'pui-count-down__part--numeric' : 'pui-count-down__part--split'}}">
-      <text class="{{item.numeric ? motionClass : ''}}">{{item.value}}</text>
+      <view wx:if="{{item.numeric}}" class="pui-count-down__value {{motionClass}}">
+        <view wx:if="{{animationMode === 'roll'}}" class="pui-count-down__digits">
+          <view wx:for="{{item.digits}}" wx:for-item="digit" wx:key="key" class="pui-count-down__digit">
+            <view wx:if="{{digit.rolling}}" class="pui-count-down__digit-reel {{digit.motionClass}}">
+              <text class="pui-count-down__digit-glyph">{{digit.previous}}</text>
+              <text class="pui-count-down__digit-glyph">{{digit.value}}</text>
+            </view>
+            <text wx:else class="pui-count-down__digit-glyph">{{digit.value}}</text>
+          </view>
+        </view>
+        <text wx:else>{{item.value}}</text>
+      </view>
+      <text wx:elif="{{!item.numeric}}">{{item.value}}</text>
       <text wx:if="{{item.unit}}" class="pui-count-down__unit">{{item.unit}}</text>
     </view>
   </view>

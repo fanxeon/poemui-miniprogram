@@ -17,7 +17,7 @@ assert(definition, 'Input component definition must be registered');
 
 const PROPS = [
   'value', 'defaultValue', 'name', 'label', 'placeholder', 'type', 'maxlength', 'maxcharacter',
-  'size', 'align', 'bordered', 'clearable', 'prefix', 'prefixIcon', 'suffix', 'suffixIcon',
+  'size', 'align', 'bordered', 'clearable', 'clearTrigger', 'prefix', 'prefixIcon', 'suffix', 'suffixIcon',
   'disabled', 'readonly', 'loading', 'focus', 'confirmType', 'status', 'tips', 'required',
   'cursorSpacing', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'ariaLabel', 'reduceMotion',
 ];
@@ -37,7 +37,7 @@ function create(overrides) {
   return { instance, events };
 }
 
-assert.deepStrictEqual(Object.keys(definition.properties), PROPS, 'Input publishes the exact 30-Prop contract');
+assert.deepStrictEqual(Object.keys(definition.properties), PROPS, 'Input publishes the exact 31-Prop contract');
 ['password:', 'error:', 'invalid:', 'errorMessage:', 'customLabel:', 'customPrefix:', 'customSuffix:', 'customExtra:', 'setValue:'].forEach((removed) => {
   assert(!source.includes(removed), `Input keeps removed API out: ${removed}`);
 });
@@ -50,6 +50,8 @@ assert.strictEqual(defaults.instance.data.inputPassword, false);
 assert.strictEqual(defaults.instance.data.confirmTypeValue, 'done');
 assert.strictEqual(defaults.instance.data.nativeMaxlength, -1);
 assert.strictEqual(defaults.instance.data.interactive, true);
+assert.strictEqual(defaults.instance.data.normalizedClearTrigger, 'focus');
+assert.strictEqual(defaults.instance.data.showClear, false);
 assert(defaults.instance.data.rootClass.includes('pui-input--medium'));
 assert(defaults.instance.data.rootClass.includes('pui-input--status-default'));
 assert(defaults.instance.data.rootStyle.includes('--pui-input-duration:500ms'));
@@ -85,11 +87,23 @@ controlled.instance.syncState();
 assert.strictEqual(controlled.instance.data.innerValue, 'parent latest', 'controlled-to-uncontrolled preserves the latest rendered controlled value');
 
 const clear = create({ value: null, defaultValue: 'clear me', clearable: true });
+assert.strictEqual(clear.instance.data.hasClear, true, 'a non-empty clearable Input reserves the clear action track before focus');
+assert.strictEqual(clear.instance.data.showClear, false, 'default clear trigger hides the action before native focus');
+clear.instance.setData({ focused: true });
+clear.instance.syncState();
+assert.strictEqual(clear.instance.data.showClear, true, 'default clear trigger reveals the action after native focus');
 clear.instance.onClear();
 assert.strictEqual(clear.instance.data.innerValue, '');
+assert.strictEqual(clear.instance.data.hasClear, false);
 assert.deepStrictEqual(clear.events.map((event) => event.name), ['clear', 'change']);
 assert.strictEqual(clear.events[0].detail.previousValue, 'clear me');
 assert.strictEqual(clear.events[0].detail.source, 'clear');
+clear.instance.setData({ focused: false });
+clear.instance.syncState();
+assert.strictEqual(clear.instance.data.showClear, false, 'clear action hides again after the native input loses focus');
+
+const alwaysClear = create({ defaultValue: 'always visible', clearable: true, clearTrigger: 'always' });
+assert.strictEqual(alwaysClear.instance.data.showClear, true, 'clearTrigger=always preserves the explicit always-visible strategy for composed controls');
 
 const controlledClear = create({ value: 'locked', defaultValue: 'fallback' });
 controlledClear.instance.onClear();
@@ -148,7 +162,7 @@ assert.strictEqual(clearDetail.source, 'method-clear');
 assert.deepStrictEqual(methods.events.map((event) => event.name), ['clear', 'change']);
 
 const boundaries = create({
-  type: 'unsupported', confirmType: 'unsupported', maxlength: -99, maxcharacter: -2, size: 'huge', align: 'end', status: 'danger', reduceMotion: true,
+  type: 'unsupported', confirmType: 'unsupported', clearTrigger: 'hover', maxlength: -99, maxcharacter: -2, size: 'huge', align: 'end', status: 'danger', reduceMotion: true,
 });
 assert.strictEqual(boundaries.instance.data.inputType, 'text');
 assert.strictEqual(boundaries.instance.data.confirmTypeValue, 'done');
@@ -156,6 +170,7 @@ assert.strictEqual(boundaries.instance.data.nativeMaxlength, -1);
 assert(boundaries.instance.data.rootClass.includes('pui-input--medium'));
 assert(boundaries.instance.data.rootClass.includes('pui-input--align-left'));
 assert(boundaries.instance.data.rootClass.includes('pui-input--status-default'));
+assert.strictEqual(boundaries.instance.data.normalizedClearTrigger, 'focus');
 assert(boundaries.instance.data.rootStyle.includes('--pui-input-duration:1ms'));
 
 const password = create({ type: 'password', status: 'error', tips: '密码错误' });
@@ -185,11 +200,15 @@ assert.strictEqual((wxml.match(/<input\b/g) || []).length, 1, 'Input intentional
 assert(!/<button\b/.test(wxml), 'Input composes PoemUI Button instead of a raw clear button');
 assert(wxss.includes('flex: 1 1 0;') && wxss.includes('width: 0;') && wxss.includes('max-width: 100%;'), 'native input must shrink within its Field so trailing actions retain their edge');
 assert(wxml.includes('class="pui-input__trailing"'), 'Clear, loading, suffix and suffix-icon share one optional trailing track');
-assert(wxml.includes('class="pui-input__clear-host"') && wxml.includes('class="pui-input__loading-host"'), 'nested PUI components use shrink-wrapped hosts inside the trailing flex track');
+assert(wxml.includes('wx:if="{{hasClear || loading || suffix || suffixIcon}}"'), 'Input reserves its trailing track while a clear action can become visible');
+assert(wxml.includes('wx:if="{{hasClear}}"') && wxml.includes("showClear ? 'pui-input__clear-host--visible' : 'pui-input__clear-host--hidden'"), 'Input preserves clear geometry and only changes visibility at the component-level trigger boundary');
+assert(wxml.includes('disabled="{{!showClear}}"') && wxml.includes('aria-hidden="{{!showClear}}"'), 'a visually hidden clear action must also leave the interactive and accessibility trees');
+assert(wxml.includes('pui-input__clear-host') && wxml.includes('class="pui-input__loading-host"'), 'nested PUI components use shrink-wrapped hosts inside the trailing flex track');
 assert(/\.pui-input__trailing\s*\{[^}]*margin-left:\s*auto;/.test(wxss), 'the trailing track must occupy the Field edge');
 assert(/\.pui-input__trailing\s*\{[^}]*gap:\s*var\(--pui-space-sm\);/.test(wxss), 'Clear and suffix action use the control-internal gap');
 assert(/\.pui-input__clear-host,[\s\S]*?\.pui-input__loading-host\s*\{[^}]*flex:\s*0 0 auto;/.test(wxss), 'nested trailing PUI component hosts remain unshrinkable without filling the Field');
 assert(wxss.includes('--pui-input-action-size: var(--pui-space-step-32);') && wxss.includes('width: var(--pui-input-action-size);'), 'Clear host mirrors the selected extra-small icon Button size instead of stretching as a custom-component host');
+assert(/\.pui-input__clear-host--hidden\s*\{[^}]*pointer-events:\s*none;[^}]*opacity:\s*0;[^}]*visibility:\s*hidden;/.test(wxss), 'a blurred focus-trigger clear action keeps geometry but cannot receive input');
 ['pui-button', 'pui-icon', 'pui-loading'].forEach((name) => assert(json.usingComponents[name], `${name} is declared`));
 ['name="label"', 'name="prefix"', 'name="prefix-icon"', 'name="suffix"', 'name="suffix-icon"', 'name="tips"', 'name="extra"'].forEach((slot) => assert(wxml.includes(slot), `Input exposes ${slot}`));
 ['cursor-spacing="{{cursorSpacing}}"', 'adjust-position="{{adjustPosition}}"', 'hold-keyboard="{{holdKeyboard}}"', 'confirm-hold="{{confirmHold}}"'].forEach((attr) => assert(wxml.includes(attr), `Input maps ${attr}`));
@@ -206,7 +225,7 @@ assert(!/\.pui-input__control\s*\{[^}]*color:\s*inherit/s.test(wxss), 'native in
 assert(wxss.includes('.pui-input--status-success'));
 assert(wxss.includes('.pui-input--status-warning'));
 assert(wxss.includes('.pui-input--status-error'));
-assert.strictEqual(metadata.apiProps.input.length, 30);
+assert.strictEqual(metadata.apiProps.input.length, 31);
 assert.strictEqual(metadata.apiEvents.input.length, 5);
 assert.strictEqual(metadata.apiSlots.input.length, 7);
 assert.strictEqual(metadata.apiMethods.input.length, 4);
@@ -227,23 +246,25 @@ assert(!previewStyles.includes('.pui-input-state-grid'));
 assert(!previewStyles.includes('.pui-input-showcase__methods'));
 assert(previewStyles.includes('.pui-input-preview__control input {\n  flex: 1 1 0;\n  width: 0;'), 'H5 input geometry mirrors the shrinkable native input track');
 assert(preview.includes('class="pui-input-preview__trailing"'), 'H5 helper and Input mirror expose the same trailing track');
+assert(preview.includes("const clearTrigger = ['focus', 'always'].includes(props.clearTrigger) ? props.clearTrigger : 'focus';"), 'H5 Input defaults clear visibility to native focus');
 assert(preview.includes('class="pui-input-preview__clear-host"') && preview.includes('class="pui-input-preview__loading-host"'), 'H5 mirrors the nested PUI component host boundaries');
 assert(/\.pui-input-preview__trailing\s*\{[^}]*margin-left:\s*auto;/.test(previewStyles), 'H5 trailing track mirrors the native edge placement');
 assert(preview.includes("iconButtonSample({ icon: 'check', ariaLabel: '保存输入内容' })"), 'H5 suffix Slot demonstrates a shared PUI icon action');
 assert(preview.includes("defaultValue: 'PoemUI', label: 'slot', prefix: 'slot', prefixIcon: 'slot', suffix: 'slot', clearable: true"), 'H5 overview verifies clear and suffix action together');
 assert(previewStyles.includes('.pui-input-showcase > .pui-showcase-section + .pui-showcase-section'));
 assert(previewStyles.includes('.pui-input-preview--status-error'));
+assert(previewStyles.includes('.pui-input-preview--clear-focus:not(:focus-within) .pui-input-preview__clear-host'), 'H5 hides the Input clear action until the field owns focus');
 const genericSurface = previewStyles.slice(previewStyles.indexOf('.pui-field,'), previewStyles.indexOf('.pui-switch {'));
 assert(!genericSurface.includes('.pui-input-preview,'), 'Input root remains transparent so only its inner field owns the Surface');
 assert(previewStyles.includes('.pui-input-preview--status-error:focus-within .pui-input-preview__control'), 'error status remains visible while focused');
 assert(preview.includes("if (compatId === 'input')"));
 assert(preview.includes('普通输入只发出 change，清空顺序固定为 clear → change'));
 
-assert(api.includes('Input：TDesign 对照后的 30 Props'));
+assert(api.includes('Input：TDesign 对照后的 31 Props'));
 assert(api.includes('`clear → change`'));
 assert(/\d+\. Input 的 H5 镜像/.test(compatibility));
 assert(compatibility.includes('固定 500ms/1ms'));
-assert(contract.includes('30 Props / 5 Events / 7 Slots / 4 Methods'));
+assert(contract.includes('31 Props / 5 Events / 7 Slots / 4 Methods'));
 assert(contract.includes('TDesign Mini Program 1.15.3'));
 assert(shadcn.includes("['Input', 'input', 'adapter', 'input'"));
 assert(shadcn.includes('30 Props、受控/非受控文本'));

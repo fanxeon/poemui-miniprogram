@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0462",
+  "title": "BarChart 条件循环 WXML 阻断微信页面编译",
+  "scope": "component",
+  "components": ["bar-chart", "miniprogram", "npm-dist"],
+  "type": "compatibility",
+  "severity": "critical",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "BarChart 发布到小程序 npm 产物后必须能被微信基础库 3.17.0 正常编译和使用。",
+  "environment": {
+    "surfaces": ["bar-chart", "miniprogram_dist", "miniprogram_npm", "component-page"],
+    "platforms": ["wechat-devtools-webview", "wechat-miniprogram"],
+    "viewports": ["390px", "WXML compiler"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在实际 miniprogram 工程安装当前本地 PoemUI 包并执行微信构建 npm。",
+    "进入引用 `poemui-miniprogram/bar-chart/bar-chart` 的 BarChart 独立页。",
+    "微信 WXML 编译器读取 grouped 分支的 `<view wx:else wx:for=\"{{item.segments}}\">`。"
+  ],
+  "expected": "stacked 与 grouped 分支继续互斥，BarChart 页面和发布 npm WXML 均可由微信基础库 3.17.0 编译。",
+  "actual": "微信开发者工具 2.02.2607272 报 `Bad attr wx:else` 与 `wx:if not found`，错误定位到 miniprogram_npm 的 bar-chart.wxml 第 13 行，页面无法编译。",
+  "evidence": [
+    {"kind": "user-report", "ref": "2026-07-28 当前任务对话", "note": "用户提供微信开发者工具完整 WXML 编译错误、文件路径、行号及基础库版本。"},
+    {"kind": "file", "ref": "bar-chart/bar-chart.wxml", "note": "修复前 grouped 循环节点同时声明 wx:else 与 wx:for；修复后由 block wx:else 包裹。"},
+    {"kind": "test", "ref": "scripts/test-bar-chart.js", "note": "组件专项锁定无实体 else wrapper 和同节点条件循环禁令。"},
+    {"kind": "test", "ref": "scripts/test-wxml-conditional-loop-compatibility.js", "note": "全库扫描所有非生成 WXML，阻止相同结构进入其他组件或页面。"},
+    {"kind": "build", "ref": "微信开发者工具 build-npm + simulator_open_page", "note": "现有开发者工具实例构建 npm 为 warnings=[]，随后普通编译成功打开 BarChart 独立页。"}
+  ],
+  "rootCause": "BarChart 把 `wx:else` 与 `wx:for` 放在同一 view；微信 WXML 编译器不会把该节点识别为前一个 `wx:if` 的合法紧邻分支。已有 Swiper 规则只被组件专项覆盖，没有形成全库 WXML 门禁。",
+  "decision": {
+    "outcome": "使用不生成真实布局节点的 `<block wx:else>` 包裹 grouped segment 循环，并把禁止同节点 `wx:else + wx:for` 的扫描接入 precheck/check。",
+    "rationale": "保留分支互斥、循环数据、渲染节点和 H5 几何，同时从唯一源码阻止编译错误再次进入 dist 与微信 npm 产物。",
+    "alternativesRejected": [
+      "手改 miniprogram_npm：下一次构建 npm 会被覆盖，并破坏源码与发布产物唯一真相源。",
+      "新增实体 view 包裹：会无意义改变 Flex/Grid 布局层级。",
+      "只修 BarChart 专项：无法防止同一兼容错误在其他组件第三次出现。"
+    ]
+  },
+  "impact": {
+    "files": ["bar-chart/bar-chart.wxml", "scripts/test-bar-chart.js", "scripts/test-wxml-conditional-loop-compatibility.js", "scripts/test-wxss-universal-selector-compatibility.js", "docs/components/BAR-CHART.md", "docs/UI_DESIGN_CONTRACT.md", "docs/COMPONENT_RULES_INDEX.md", "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"],
+    "dependencies": ["微信 WXML 编译器", "miniprogram_dist", "微信开发者工具构建 npm", "H5 DOM parity"]
+  },
+  "verification": {
+    "tests": ["scripts/test-bar-chart.js", "scripts/test-wxml-conditional-loop-compatibility.js", "scripts/test-feedback-ledger.js"],
+    "commands": ["node scripts/test-bar-chart.js", "node scripts/test-wxml-conditional-loop-compatibility.js", "npm run feedback:generate", "npm run feedback:check", "npm run site:build", "npm run example:install", "npm run pack:check", "微信开发者工具构建 npm", "微信开发者工具普通编译"],
+    "browser": [
+      "H5 BarChart 保留既有 grouped/stacked DOM 与样式；本次只收紧小程序模板控制结构。",
+      "微信开发者工具现有实例在 build-npm warnings=[] 后普通编译成功打开 pages/components/bar-chart/index。"
+    ],
+    "deviceRisks": ["实际上传仍需由用户复核；iOS/Android 真机图表可读性不由本次编译修复替代。"]
+  },
+  "ai": {
+    "summary": "微信发布 WXML 不允许同一节点组合 wx:else 与 wx:for；兼容规则必须全库扫描而非只写入单组件测试。",
+    "rules": [
+      "循环 else 分支必须用紧邻前序 wx:if 的 block wx:else 包裹，或写成完整互斥 wx:if。",
+      "仅用于模板控制的 wrapper 使用 block，禁止增加会改变布局的实体 view。",
+      "编译问题必须从组件源修复并重建 dist、安装包与微信 npm 产物，禁止手改 miniprogram_npm。",
+      "构建 npm 复制成功不等于 WXML 页面编译成功，必须继续执行普通编译或真实页面加载。"
+    ],
+    "tags": ["bar-chart", "wxml", "wx-else", "wx-for", "wechat-compiler", "miniprogram-npm", "compatibility-gate"]
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0505",
+  "title": "Skeleton 自定义 circle 被固定最小高度拉成椭圆",
+  "scope": "component",
+  "components": [
+    "skeleton"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "Skeleton 的头像占位必须稳定显示为正圆，并继续通过现有 rowCol API 定义结构。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "miniprogram-page",
+      "npm-dist",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "node",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "进入 Skeleton 小程序独立页，查看“头像与段落轮廓”的第一个 circle part。",
+    "独立页通过 size=72rpx 同时写入 width/height，但旧 `.pui-skeleton__part--circle` 仍固定 min-height=96rpx，计算盒模型被拉成 72×96rpx；圆角还只写为继承的 var(--pui-radius-round)。"
+  ],
+  "expected": "rowCol 的 type=circle 在默认 96rpx 和自定义 size 下都保持等宽高与 50% 圆角，不受 largeRadius 或跨组件 Token 可用性影响。",
+  "actual": "固定 96rpx 最小高度压过较小的 size 高度，使 circle 实际宽高不等；圆角还缺少元素自身 50% 的最终保证。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前 Skeleton Battle",
+      "note": "用户明确指出 Skeleton 的头像不圆。"
+    },
+    {
+      "kind": "file",
+      "ref": "skeleton/skeleton.wxss",
+      "note": "circle part 用 min-height:0 允许 size 覆盖两轴，保持不可收缩，并把几何圆角固定为 50%。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/skeleton/index.js",
+      "note": "独立页继续用 rowCol 的 type=circle 与 size=72rpx，不增加页面私有样式。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://tdesign.tencent.com/miniprogram/components/skeleton",
+      "note": "2026-07-29 复核官方 Skeleton 对 rowCol circle 的公开结构语义。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/skeleton",
+      "note": "2026-07-29 复核官方组件目录，并以固定 npm 包而非 develop 分支决定可复现细节。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-skeleton.js",
+      "note": "专项锁定 circle 的 96rpx 默认宽高、min-height=0、flex 不收缩、50% 圆角，并禁止较小 size 再被拉成长轴。"
+    }
+  ],
+  "rootCause": "circle 把 96rpx 默认高度同时写成不可下降的 min-height，破坏了 rowCol.size 的等轴覆盖；圆形几何又完全依赖继承 Token。",
+  "decision": {
+    "outcome": "共享 Skeleton 的 circle part 改为 min-height:0 与 border-radius:50%，继续由 size 同时生成 width/height；不新增头像专用 Prop，也不修改页面 CSS。",
+    "rationale": "默认 96rpx 已由 height 提供，不需要同值 min-height；允许 size 覆盖两轴并以 50% 由自身尺寸计算，能稳定得到正圆。现有 rowCol 已完整表达头像轮廓，无需扩张 API。",
+    "alternativesRejected": [
+      "在小程序页面给头像占位补圆角：会掩盖共享组件缺陷，其他消费者仍错误。",
+      "恢复 avatar/avatarShape/avatarSize：会建立与 rowCol 重复的 API，并推翻已接受的公开合同。",
+      "只改圆角而保留 min-height=96rpx：72rpx 等较小 size 仍会得到椭圆。",
+      "只给 var(--pui-radius-round) 增加大数 fallback：不能修复宽高不等，且仍把 circle 几何错误绑定到主题 Token。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "skeleton/skeleton.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-skeleton.js",
+      "scripts/test-miniprogram-feedback-pages.js",
+      "docs/components/SKELETON.md",
+      "docs/TDESIGN_COMPONENT_ALIGNMENT.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md",
+      "docs/COMPONENT_DETAIL_PAGE_UI_CHECKLIST_2026-07-28.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": [
+      "rowCol normalization",
+      "ConfigProvider largeRadius",
+      "miniprogram npm build"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-skeleton.js",
+      "scripts/test-miniprogram-feedback-pages.js",
+      "scripts/test-miniprogram-component-pages.js"
+    ],
+    "commands": [
+      "npm run miniprogram:build：通过，生成 74 个组件目录",
+      "node scripts/test-skeleton.js：通过",
+      "node scripts/test-miniprogram-feedback-pages.js：通过",
+      "node scripts/test-miniprogram-component-pages.js：通过",
+      "PUI_VERIFY_DIST=1 node scripts/test-skeleton.js：通过",
+      "npm run feedback:generate && npm run feedback:check：通过，487 条记录",
+      "本地 npm pack、真实 miniprogram 安装与 verify-install：通过；559 files / 366.8 kB / shasum c14cbcd2972b1810f975eeb687c87b55b7c8aabb",
+      "微信开发者工具 build-npm：通过，321ms"
+    ],
+    "browser": [
+      "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 (Pro) 390px：浅色、深色、深色关闭 largeRadius 时 72rpx circle 均为正圆；截图 /tmp/poemui-skeleton-circle-light-390.png、/tmp/poemui-skeleton-circle-dark-390.png、/tmp/poemui-skeleton-circle-dark-standard-radius-390.png。",
+      "页面按钮实际完成 loading → content → loading 双向父级回写；调试器 Errors=0，5 条 warning 为灰度基础库、既有 Navbar selector、ScrollArea IntersectionObserver 与开发工具资源预加载，没有 Skeleton 新告警。",
+      "JS/JSON/WXML/WXSS 在源码、miniprogram_dist、真实 node_modules 与 miniprogram_npm 四路 SHA-256 一致。",
+      "H5 Chrome 390px 深色果味：rowCol 使用 size=72rpx 时 circle 计算几何为 36x36px、min-height=0、border-radius=50%，document scrollWidth=clientWidth。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 rpx 取整、样式隔离、动画合成、系统低动效和读屏仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "Skeleton 的 type=circle 必须允许 size 同时覆盖两轴，并由 50% 保证圆形，不能被默认最小高度拉成椭圆。",
+    "rules": [
+      "circle 是几何类型；默认 height 不能再成为阻止较小 size 生效的 min-height，输入必须保持 width=height、flex 不收缩和 border-radius:50%。",
+      "不得恢复 avatar/avatarShape/avatarSize；头像轮廓继续由 rowCol 的 circle + size 表达。",
+      "独立页不得穿透或覆盖 Skeleton circle 样式。",
+      "H5 最终同步必须验证 preview circle 的计算宽高相等、border-radius=50%，并覆盖 largeRadius 与 390px。"
+    ],
+    "tags": [
+      "skeleton",
+      "circle",
+      "avatar",
+      "geometry",
+      "row-col",
+      "style-isolation"
+    ]
+  }
+}

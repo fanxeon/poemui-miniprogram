@@ -1,0 +1,122 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0484",
+  "title": "Dialog 未正确复用 Popup 三分区并出现双重内距",
+  "scope": "component",
+  "components": [
+    "dialog",
+    "popup",
+    "button",
+    "overlay"
+  ],
+  "type": "api-contract",
+  "severity": "critical",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Dialog Header/Content/Footer 与 Popup 同构：左附加操作、中间标题、右默认 Close，Footer 一/二列全宽且等距。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "wechat-component-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "打开 Dialog。",
+    "旧 Popup Content padding 与 Dialog 自身 padding 叠加。",
+    "左轨为空且 Close 为 text；空 Footer 仍存在。"
+  ],
+  "expected": "唯一 Surface、三轨 Header、默认圆形 Close、可选 header-left、按动作数挂载一/二列 Footer。",
+  "actual": "总体内距过大，Header 能力不足，Footer 可能错位或幽灵占位。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "dialog/dialog.wxml",
+      "note": "header-left/默认 Close/hasFooter。"
+    },
+    {
+      "kind": "file",
+      "ref": "dialog/dialog.wxss",
+      "note": "清除 Popup Content 重复 padding。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 三轨与全宽 Footer。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dialog.js",
+      "note": "锁定 17 Props、8 Slots。"
+    }
+  ],
+  "rootCause": "Dialog 嵌套 Popup 后仍让两层同时承担 Content inset，且旧 API 禁止左 Header 操作。",
+  "decision": {
+    "outcome": "新增 showFooter/header-left，closeBtn 默认 true；最多两个内建 actions，Footer 按数量全宽；Popup 只提供 Surface。",
+    "rationale": "统一三段结构、间距 Token 和可访问操作。",
+    "alternativesRejected": [
+      "页面私有 CSS 无法修复公共 API 与 H5。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "dialog/dialog.js",
+      "dialog/dialog.wxml",
+      "dialog/dialog.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "AGENTS.md",
+      "docs/UI_DESIGN_CONTRACT.md"
+    ],
+    "dependencies": [
+      "PUI Popup",
+      "PUI Button",
+      "Overlay"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-dialog.js"
+    ],
+    "commands": [
+      "node scripts/test-dialog.js"
+    ],
+    "browser": [
+      "微信开发者工具本地 0.1.1 npm 重建后实际打开：左右 icon-only 圆形按钮、标题居中、双列 Footer 完整；Close 事件使父级 visible true→false。",
+      "H5 实测 Overlay=391×620，Header 列=36/158/36，Body padding=0 14 14，Footer 两列=116/116、gap=14px、无横向溢出。"
+    ],
+    "deviceRisks": [
+      "真机 Slot 投影、长内容滚动和 Overlay 毛玻璃待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "Dialog 只拥有一个 Popup Surface，内部是紧凑三轨 Header、滚动 Content、全宽 Footer。",
+    "rules": [
+      "header-left 只放一个紧凑图标按钮。",
+      "单按钮 Footer 满宽。",
+      "请求状态留在 content Slot。"
+    ],
+    "tags": [
+      "dialog",
+      "popup",
+      "header",
+      "footer",
+      "spacing"
+    ]
+  }
+}

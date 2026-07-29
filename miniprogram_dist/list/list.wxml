@@ -21,7 +21,12 @@
     <view class="pui-list__content {{stateType === 'content' ? 'pui-list__content--active' : 'pui-list__content--inactive'}}">
       <slot wx:if="{{useSlot}}"></slot>
       <block wx:else>
-        <view wx:for="{{normalizedItems}}" wx:key="id" class="pui-list__item-wrap" role="listitem">
+        <view
+          wx:for="{{normalizedItems}}"
+          wx:key="id"
+          class="pui-list__item-wrap {{item.entering ? 'pui-list__item-wrap--entering' : ''}}"
+          role="listitem"
+        >
           <pui-cell
             custom-class="pui-list__item {{item.disabled ? 'pui-list__item--disabled' : ''}} {{item.loading ? 'pui-list__item--loading' : ''}}"
             title="{{item.title}}"
@@ -106,6 +111,6 @@
       reduce-motion="{{reduceMotion}}"
       color-scheme="{{colorScheme}}"
       bind:click="onFooterTap"
-    >{{footerText}}</pui-button>
+    >{{footerState === 'loading' ? '' : footerText}}</pui-button>
   </view>
 </view>

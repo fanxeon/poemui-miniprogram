@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0495",
+  "title": "Indexes disabled 同时剥夺只读滚动浏览",
+  "scope": "component",
+  "components": ["indexes"],
+  "type": "accessibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "Indexes 禁用业务操作时，用户仍应能够滚动阅读固定高度内已有内容。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "给有多组内容的 Indexes 设置 disabled=true。",
+    "尝试滚动固定高度正文。",
+    "旧 WXSS 对整个 body 设置 pointer-events:none，scroll-view 也无法接收阅读手势。"
+  ],
+  "expected": "disabled 阻止 select/change/item-click/retry 和索引轨命中，但保留正文物理滚动；滚动不得改变 current 或发布事件。",
+  "actual": "旧实现以根级 pointer-events:none 同时禁用所有业务操作和阅读滚动，长内容在固定高度下不可达。",
+  "evidence": [
+    {"kind": "file", "ref": "indexes/indexes.wxss", "note": "删除 disabled body 阻断，只锁定轨道、条目和状态操作层。"},
+    {"kind": "file", "ref": "indexes/indexes.js", "note": "onScroll 仍记录 scrollTop，但 disabled 时不请求活动分组。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "锁定 disabled 无业务事件且保留实际 scrollTop 记录。"}
+  ],
+  "rootCause": "旧 disabled 样式把交互锁定等同于整个组件禁用指针，没有区分内容阅读手势和业务动作。",
+  "decision": {
+    "outcome": "disabled 只禁用索引轨、条目和状态 Action，scroll-view 保持可滚；JS 继续阻止活动值和事件变化。",
+    "rationale": "固定高度集合中的滚动属于阅读能力，不应随业务选择一起被剥夺。",
+    "alternativesRejected": [
+      "继续阻止整个 body 会让视口外内容不可访问。",
+      "把 disabled 改成 readonly 会改变既有 API 语义。",
+      "让页面另做只读列表会复制组件。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.js", "indexes/indexes.wxss", "scripts/test-indexes.js", "docs/components/INDEXES.md"],
+    "dependencies": ["scroll-view", "disabled semantics"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["node scripts/test-indexes.js：通过"],
+    "browser": ["微信开发者工具已验证普通内容的真实物理滚动；disabled 下保留 scroll-view、记录 scrollTop 且不发布业务事件由专项运行测试锁定，disabled 真机惯性仍待设备复核。"],
+    "deviceRisks": ["真机 disabled opacity、滚动惯性、读屏禁用语义与内容可达性仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "disabled 锁定业务动作，不等于禁止阅读固定高度内的其余内容。",
+    "rules": [
+      "不要对含 scroll-view 的 disabled 集合根使用 pointer-events:none。",
+      "保留物理滚动时仍必须阻止 current 变化和 change 事件。",
+      "分别验收阅读可达性和业务锁定。"
+    ],
+    "tags": ["indexes", "disabled", "scroll", "read-only", "accessibility"]
+  }
+}

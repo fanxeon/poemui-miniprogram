@@ -1,16 +1,16 @@
 {
   "$schema": "../schema.json",
   "id": "PUI-FB-0270",
-  "title": "Indexes Cell 被固定侧栏预留区挤窄",
+  "title": "历史决定：Indexes Cell 满宽覆盖方案已被安全轨取代",
   "scope": "component",
   "components": ["indexes", "cell", "preview-site"],
   "type": "visual-layout",
   "severity": "medium",
-  "status": "resolved",
-  "acceptance": "pending-user",
+  "status": "wont-fix",
+  "acceptance": "not-required",
   "source": "user-report",
   "reportedAt": "2026-07-23",
-  "updatedAt": "2026-07-23",
+  "updatedAt": "2026-07-28",
   "userGoal": "Indexes 内的 Cell 应撑满内容列，固定索引栏作为浮层存在，不应额外压缩列表宽度。",
   "environment": {
     "surfaces": ["h5-preview", "native-source"],
@@ -23,8 +23,8 @@
     "固定侧栏已改为浮层后，滚动容器仍保留 32px 的右侧 padding，Cell 宽度从内容列中被额外扣除。",
     "用户指出 Cell 应该满宽。"
   ],
-  "expected": "Cell 充满 Indexes 内容列；侧栏独立浮动并保留自己的点击命中区，不参与列表布局宽度计算。",
-  "actual": "修复前 H5 PreviewDevice 中 Cell 为 279px，而滚动内容列为 322px，右侧存在 32px 预留空白。",
+  "expected": "本条保留页面 fixed 时的历史满宽诉求；当前合同要求 Cell 充满扣除动态索引安全轨后的内容列，Badge、箭头和标题不能落到字母按钮下面。",
+  "actual": "移除全部预留曾让 Cell 视觉更宽，但后续 390px battle 证明右侧 Badge/操作会进入有界索引轨；当前实现重新建立动态安全轨。",
   "evidence": [
     {
       "kind": "user-report",
@@ -55,14 +55,25 @@
       "kind": "file",
       "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/indexes",
       "note": "TDesign 1.15.3 使用 fixed sidebar + slot 内容结构，侧栏不作为内容列布局项。"
+    },
+    {
+      "kind": "file",
+      "ref": "feedback/records/pui-fb-0409-indexes-long-list-and-active-letter.json",
+      "note": "后续真实独立页 battle 证明有界轨必须拥有内容安全距。"
+    },
+    {
+      "kind": "file",
+      "ref": "feedback/records/pui-fb-0494-indexes-dynamic-rail-safe-geometry.json",
+      "note": "0.1.2 由动态 rail width 同时约束标题和条目。"
     }
   ],
-  "rootCause": "固定侧栏仍沿用原先 absolute 侧栏的内容避让 padding，导致 Cell 宽度被错误扣除。",
+  "rootCause": "本条基于页面 fixed 侧栏前提，把任何内容预留都视为错误；该前提被后续组件内有界轨决定取代。",
   "decision": {
-    "outcome": "移除 Indexes 滚动容器针对左右侧栏的 32px padding，让 Cell 撑满内容列；侧栏继续作为独立 fixed/PreviewDevice bounded 浮层。",
-    "rationale": "fixed 浮层不应改变内容列盒模型；视觉遮挡风险由侧栏自身的独立命中区承担，而不是把所有 Cell 压窄。",
+    "outcome": "本条的零预留方案不再作为当前实现；Cell 改为充满扣除动态 rail-width + normal gap 后的安全内容列，sticky heading 使用同一避让。",
+    "rationale": "组件内有界轨与内容共享同一平面，必须显式保护 Badge、箭头、标题和触摸命中区；动态宽度只扣除真实轨道，不恢复固定 32px 魔法数。",
     "alternativesRejected": [
-      "继续为滚动容器保留 padding 会让 Cell 看起来不是满宽。",
+      "继续零预留会让内容被索引按钮覆盖。",
+      "固定 56rpx 预留无法覆盖 showFullIndex。",
       "给每个 Cell 增加私有宽度和 margin 会破坏 Cell 的通用布局合同。"
     ]
   },
@@ -82,10 +93,11 @@
     ]
   },
   "ai": {
-    "summary": "固定浮层不应通过滚动容器 padding 改变 Cell 的内容列宽度。",
+    "summary": "本条零预留方案已被动态安全轨取代；当前 Cell 满宽是指充满安全内容列。",
     "rules": [
-      "先区分浮层命中区和内容布局区；fixed sidebar 不应成为列表的 grid/flex 子项。",
-      "Cell 满宽指充满内容列，同时保留 PreviewDevice 和滚动条的真实安全边界。"
+      "读取本条时必须同时读取 PUI-FB-0409/0494，禁止删除当前动态安全轨。",
+      "Cell 满宽指充满扣除真实索引轨后的安全内容列。",
+      "标题和条目必须消费同一个 rail-width，不能各写一套 padding。"
     ],
     "tags": ["indexes", "cell", "full-width", "fixed-sidebar", "preview-parity"]
   }

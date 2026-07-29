@@ -1,16 +1,16 @@
 {
   "$schema": "../schema.json",
   "id": "PUI-FB-0269",
-  "title": "Indexes 默认侧栏未按页面 fixed 浮动",
+  "title": "历史决定：Indexes 页面 fixed 侧栏已被有界组件轨取代",
   "scope": "component",
   "components": ["indexes", "preview-site"],
   "type": "preview-parity",
   "severity": "high",
-  "status": "resolved",
-  "acceptance": "pending-user",
+  "status": "wont-fix",
+  "acceptance": "not-required",
   "source": "user-report",
   "reportedAt": "2026-07-23",
-  "updatedAt": "2026-07-23",
+  "updatedAt": "2026-07-28",
   "userGoal": "Indexes 默认索引入口应固定浮动在页面视口中央，内容滚动时侧栏保持可见且不随列表内容流移动。",
   "environment": {
     "surfaces": ["h5-preview", "preview-device", "native-source"],
@@ -24,8 +24,8 @@
     "对照 TDesign 1.15.3 固定包，Indexes sidebar 使用 position:fixed、right、top:50% 和 translateY(-50%)。",
     "用户明确要求默认 fixed 浮动在页面上。"
   ],
-  "expected": "真实小程序侧栏默认 fixed 垂直居中于页面视口；H5 预览在 PreviewDevice 内模拟同一视觉语义，不能让页面级 fixed 越出设备边界。",
-  "actual": "原生侧栏仅 absolute 在组件卡片内部；H5 也按组件根绝对定位，未记录真实页面 fixed 语义。",
+  "expected": "本条保留 2026-07-23 的历史诉求；当前合同以 PUI-FB-0409 和 0.1.2 battle 为准，侧栏必须在 Indexes 自身有界 body 内持续可见，不能占用页面 Navbar 或后续内容。",
+  "actual": "页面级 fixed 曾短暂实现，但与 PoemUI 的嵌入式固定高度、多个组件同页和 PreviewDevice 边界冲突；当前共享源码已恢复组件内 absolute 有界轨。",
   "evidence": [
     {
       "kind": "user-report",
@@ -51,16 +51,26 @@
       "kind": "test",
       "ref": "scripts/test-indexes.js",
       "note": "专项断言锁定原生 fixed、top 50% 与 H5 PreviewDevice 边界模拟。"
+    },
+    {
+      "kind": "file",
+      "ref": "feedback/records/pui-fb-0409-indexes-long-list-and-active-letter.json",
+      "note": "后续用户 battle 明确采用组件 body 内有界轨，并让内容避让轨道。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md",
+      "note": "0.1.2 继续以有界动态轨为当前发布合同。"
     }
   ],
-  "rootCause": "PoemUI 初版把 TDesign 页面级 sidebar 改成了组件内部 absolute，以适配嵌入式固定高度；但没有同时保留页面 fixed 的默认语义。",
+  "rootCause": "本条把 TDesign 的页面级 slot/anchor 用法直接映射到 PoemUI 数据驱动的嵌入式 fixed-height 组件，没有充分考虑同页多个实例、Navbar、安全区和 PreviewDevice 裁切。",
   "decision": {
-    "outcome": "原生 pui-indexes__bar 改为 fixed、top:50%、左右边界和垂直居中；H5 保持 absolute 但改为 PreviewDevice 内 top:50% 的边界受限 fixed 视觉镜像。",
-    "rationale": "小程序必须复现页面级可持续可见的 Indexes 入口，官网则不能让 fixed 逃出手机预览设备；两端在各自运行时保留同一产品语义。",
+    "outcome": "本条的页面 fixed 方案不再作为当前实现；由 PUI-FB-0409 与 0.1.2 动态轨决定取代：侧栏 absolute 定位于组件 body、垂直居中并被根裁切。",
+    "rationale": "有界轨才能保证独立组件可组合、不会占用 Navbar 或其他实例；长轨通过动态几何解决，不再依赖页面 fixed。",
     "alternativesRejected": [
-      "继续 absolute 会让侧栏随页面滚动离开，直接违背用户目标。",
-      "H5 直接使用浏览器 position:fixed 会跑出 PreviewDevice 并遮挡官网其他内容。",
-      "新增 fixed Prop 会把本应固定的默认产品语义变成不必要的 API 分叉。"
+      "继续页面 fixed 会让组件越出自己的固定高度和遮挡页面级 UI。",
+      "新增 fixed Prop 会制造两套难以跨端验收的定位合同。",
+      "只在 H5 模拟有界、原生仍页面 fixed 会保留语义漂移。"
     ]
   },
   "impact": {
@@ -79,11 +89,11 @@
     ]
   },
   "ai": {
-    "summary": "TDesign Indexes 的 sidebar 默认是页面 fixed；嵌入式 H5 预览只能在 PreviewDevice 内做同语义边界模拟。",
+    "summary": "本条是已被后续 battle 取代的历史页面 fixed 决定；当前 Indexes 使用组件内有界轨。",
     "rules": [
-      "对照 TDesign 时要分别确认 sidebar 和 anchor 的定位语义，不能把页面 fixed 简化成组件 absolute。",
-      "小程序 fixed 组件必须检查页面滚动、安全区和 touch 命中，H5 fixed 预览必须检查设备裁切。",
-      "固定定位改变属于 API/预览合同变化，必须同步原生 WXSS、H5 CSS、专项测试、Ledger 和产物。"
+      "读取本条时必须同时读取 PUI-FB-0409 和 docs/components/INDEXES.md，禁止恢复页面 fixed。",
+      "TDesign 页面级结构只能作为参考，PoemUI 嵌入式组件的边界以当前合同为准。",
+      "长轨密度由动态 item geometry 解决，不用 fixed 或嵌套滚动逃避。"
     ],
     "tags": ["indexes", "fixed", "sidebar", "tdesign", "preview-parity"]
   }

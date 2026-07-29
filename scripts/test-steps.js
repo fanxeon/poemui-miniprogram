@@ -109,6 +109,7 @@ assert(motion.instance.data.rootStyle.includes('1ms'), 'reduceMotion compresses 
 
 const wxml = fs.readFileSync(path.join(root, 'steps/steps.wxml'), 'utf8');
 const wxss = fs.readFileSync(path.join(root, 'steps/steps.wxss'), 'utf8');
+const themeWxss = fs.readFileSync(path.join(root, 'common/style/theme.wxss'), 'utf8');
 const json = JSON.parse(fs.readFileSync(path.join(root, 'steps/steps.json'), 'utf8'));
 const metadata = require(path.join(root, 'metadata/components.js'));
 const preview = fs.readFileSync(path.join(root, 'preview/app.js'), 'utf8');
@@ -118,6 +119,56 @@ const exampleJs = fs.readFileSync(path.join(root, '_example/miniprogram/pages/co
 const api = fs.readFileSync(path.join(root, 'docs/COMPONENT_API.md'), 'utf8');
 const compatibility = fs.readFileSync(path.join(root, 'docs/H5_PREVIEW_COMPATIBILITY.md'), 'utf8');
 const alignment = fs.readFileSync(path.join(root, 'docs/TDESIGN_COMPONENT_ALIGNMENT.md'), 'utf8');
+const compactWxss = wxss.replace(/\s+/g, ' ');
+const compactPreviewStyles = previewStyles.replace(/\s+/g, ' ');
+
+function readUnitToken(sourceText, tokenName, unit) {
+  const match = sourceText.match(new RegExp(`--${tokenName}:\\s*(-?\\d+(?:\\.\\d+)?)${unit};`));
+  assert(match, `${tokenName} must be declared in ${unit}`);
+  return Number(match[1]);
+}
+
+const nativeGeometry = {
+  indicatorSize: readUnitToken(themeWxss, 'pui-space-step-22', 'rpx'),
+  indicatorCenter: readUnitToken(themeWxss, 'pui-space-step-11', 'rpx'),
+  connectorGap: readUnitToken(themeWxss, 'pui-space-step-8', 'rpx'),
+  itemGap: readUnitToken(themeWxss, 'pui-space-step-6', 'rpx'),
+  dotSize: readUnitToken(themeWxss, 'pui-space-step-10', 'rpx'),
+  dotCenter: readUnitToken(themeWxss, 'pui-space-step-5', 'rpx'),
+  dotOffset: readUnitToken(themeWxss, 'pui-space-step-6', 'rpx'),
+  itemMinHeight: 88,
+};
+const h5Geometry = {
+  indicatorSize: readUnitToken(previewStyles, 'pui-preview-space-step-22', 'px'),
+  indicatorCenter: readUnitToken(previewStyles, 'pui-preview-space-step-11', 'px'),
+  connectorGap: readUnitToken(previewStyles, 'pui-preview-space-step-8', 'px'),
+  itemGap: readUnitToken(previewStyles, 'pui-preview-space-step-6', 'px'),
+  dotSize: readUnitToken(previewStyles, 'pui-preview-space-step-10', 'px'),
+  dotCenter: readUnitToken(previewStyles, 'pui-preview-space-step-5', 'px'),
+  dotOffset: readUnitToken(previewStyles, 'pui-preview-space-step-6', 'px'),
+  itemMinHeight: 48,
+};
+
+function assertConnectorGeometry(geometry, scaleName) {
+  assert.strictEqual(geometry.indicatorCenter * 2, geometry.indicatorSize, `${scaleName} default connector x anchor must be the indicator center`);
+  assert.strictEqual(geometry.dotCenter * 2, geometry.dotSize, `${scaleName} dot connector radius must match the dot`);
+  const itemStart = geometry.itemMinHeight + geometry.itemGap;
+  const defaultLineStart = geometry.indicatorSize + geometry.connectorGap;
+  const defaultLineEnd = geometry.itemMinHeight - (geometry.connectorGap - geometry.itemGap);
+  assert.strictEqual(defaultLineStart - geometry.indicatorSize, geometry.connectorGap, `${scaleName} default connector must leave a gap after the current indicator`);
+  assert.strictEqual(itemStart - defaultLineEnd, geometry.connectorGap, `${scaleName} default connector must leave a gap before the next indicator`);
+  const dotLineStart = geometry.dotOffset + geometry.dotSize + geometry.connectorGap;
+  const dotLineEnd = geometry.itemMinHeight
+    - (geometry.connectorGap - geometry.itemGap - geometry.dotOffset);
+  const nextDotStart = itemStart + geometry.dotOffset;
+  assert.strictEqual(dotLineStart - geometry.dotOffset - geometry.dotSize, geometry.connectorGap, `${scaleName} dot connector must leave a gap after the current dot`);
+  assert.strictEqual(nextDotStart - dotLineEnd, geometry.connectorGap, `${scaleName} dot connector must leave a gap before the next dot`);
+}
+
+assertConnectorGeometry(nativeGeometry, 'native');
+assertConnectorGeometry(h5Geometry, 'H5');
+['indicatorSize', 'indicatorCenter', 'connectorGap', 'itemGap', 'dotSize', 'dotCenter', 'dotOffset']
+  .forEach((key) => assert.strictEqual(nativeGeometry[key], h5Geometry[key] * 2, `${key} must keep the 1px≈2rpx mirror`));
 
 assert(wxml.includes('wx:if="{{normalizedItems.length}}"'), 'empty items do not render a fake shell');
 assert(wxml.includes('<pui-button'));
@@ -136,7 +187,14 @@ assert(!/transition\s*:[^;]*\bheight\b/.test(wxss), 'Steps does not transition h
 assert(!/\b(?:[5-9]\d\d|[1-9]\d{3,})ms\b/.test(wxss), 'Steps CSS has no motion longer than 500ms');
 assert(!wxss.includes('text-overflow: ellipsis'));
 assert(wxss.includes('.pui-steps__body') && wxss.includes('width: 100%;'), 'Steps visual body must fill the measured item track so indicators and connector lines share one geometry');
-assert(wxss.includes('top: var(--pui-space-step-22);') && wxss.includes('left: var(--pui-space-step-22);'), 'Steps default connector must align to the 44rpx indicator center');
+assert(compactWxss.includes('--pui-steps-indicator-size: var(--pui-space-step-22);'));
+assert(compactWxss.includes('--pui-steps-indicator-center: var(--pui-space-step-11);'));
+assert(compactWxss.includes('--pui-steps-connector-gap: var(--pui-space-step-8);'));
+assert(compactWxss.includes('right: calc(-50% + var(--pui-steps-indicator-center) + var(--pui-steps-connector-gap)); left: calc(50% + var(--pui-steps-indicator-center) + var(--pui-steps-connector-gap));'), 'Steps horizontal connector must start one radius plus the shared gap from each indicator center');
+assert(compactWxss.includes('top: calc(var(--pui-steps-indicator-size) + var(--pui-steps-connector-gap)); right: auto; bottom: calc(var(--pui-steps-connector-gap) - var(--pui-steps-vertical-item-gap)); left: var(--pui-steps-indicator-center);'), 'Steps vertical connector must use the indicator center and symmetric endpoint gaps');
+assert(compactWxss.includes('transform: translateX(-50%);'), 'Steps vertical connector line width must be centered on the anchor');
+assert(compactWxss.includes('top: calc(var(--pui-steps-dot-offset) + var(--pui-steps-dot-size) + var(--pui-steps-connector-gap)); bottom: calc(var(--pui-steps-connector-gap) - var(--pui-steps-vertical-item-gap) - var(--pui-steps-dot-offset));'), 'Steps dot connector must use the dot box instead of the default indicator edge');
+assert(!compactWxss.includes('left: var(--pui-space-step-22);'), 'Steps must not anchor the vertical connector at the 44rpx indicator edge');
 assert(wxss.includes('.pui-steps--vertical .pui-steps__body') && wxss.includes('flex-direction: row;'), 'Steps vertical layout must compose indicator and copy in one aligned row');
 
 assert.deepStrictEqual(metadata.apiProps.steps, PUBLIC_PROPS);
@@ -172,7 +230,9 @@ assert(!previewStyles.includes('.pui-steps-scenario__tab > .pui-button-preview__
 assert(previewStyles.includes('.pui-steps-scenario__tab.is-active {\n  color: var(--surface-solid);\n  background: var(--text);'), 'Steps scenario selection must remain visually unmistakable');
 assert(previewStyles.includes('.pui-steps-scenario__tab.pui-button-preview.is-active.pui-button--text {\n  color: var(--surface-solid);\n  background: var(--text);'), 'Steps active scenario must override the shared text Button transparent background');
 assert(previewStyles.includes('.pui-steps-preview .pui-steps-preview__button.pui-button-preview'));
-assert(wxss.includes('right: calc(-50% + var(--pui-space-step-30));') && wxss.includes('left: calc(50% + var(--pui-space-step-30));'), 'Steps connector must leave an indicator-centered gap');
+assert(compactPreviewStyles.includes('--pui-steps-indicator-center: var(--pui-preview-space-step-11);'));
+assert(compactPreviewStyles.includes('top: calc(var(--pui-steps-indicator-size) + var(--pui-steps-connector-gap)); right: auto; bottom: calc(var(--pui-steps-connector-gap) - var(--pui-steps-vertical-item-gap)); left: var(--pui-steps-indicator-center);'), 'H5 vertical connector must mirror the native anchor and endpoint gaps');
+assert(compactPreviewStyles.includes('top: calc(var(--pui-steps-dot-offset) + var(--pui-steps-dot-size) + var(--pui-steps-connector-gap)); bottom: calc(var(--pui-steps-connector-gap) - var(--pui-steps-vertical-item-gap) - var(--pui-steps-dot-offset));'), 'H5 dot connector must mirror the native dot geometry');
 assert(previewStyles.includes('.pui-steps-preview.is-reduced-motion'));
 assert(!previewStyles.includes('.pui-steps-preview__state'));
 assert(!previewStyles.includes('.pui-steps-preview__footer'));

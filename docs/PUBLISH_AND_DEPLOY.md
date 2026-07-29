@@ -19,7 +19,7 @@ npm install
 npm run prepublishOnly
 ```
 
-该流程会生成官网目录和 `miniprogram_dist/` 小程序运行时目录，校验 71 个组件四件套、公开 Props 与真实 `properties` 对齐，并检查最终 tarball 内容。通过后，由具备 npm 发布权限的账号执行：
+该流程会生成官网目录和 `miniprogram_dist/` 小程序运行时目录，按 metadata 当前清单校验组件四件套、公开 Props 与真实 `properties` 对齐，并检查最终 tarball 内容。当前发布候选为 `0.1.2`，包含 74 个组件；已经发布到 npm Registry 的 `0.1.0` 历史快照仍是 71 个，`0.1.1` 未曾发布。`0.1.2` 在完成发布动作与 Registry 回读前只能称为“发布候选”，不能以源码版本或公告冒充公共包已经发布，也不能移动或重写既有 `v0.1.0` 事实。通过后，由具备 npm 发布权限的账号执行：
 
 ```bash
 npm login

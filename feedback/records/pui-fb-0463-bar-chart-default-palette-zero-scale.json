@@ -1,0 +1,115 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0463",
+  "title": "BarChart 默认配色缺少层次且零基线不可见",
+  "scope": "component",
+  "components": ["bar-chart", "theme-tokens", "preview-site"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "BarChart 使用更协调的默认配色，并让图表基线明确从 0 开始。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview", "component-page"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390px", "PreviewDevice 622px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在 BarChart 省略 segment theme，使用组件默认数据展示多个分类。",
+    "默认回退将首段渲染为 Neutral，后续段渲染为 Violet，大面积灰色缺少数据区分层次。",
+    "打开 showGrid 后只有参考线背景，没有可见的 0 与共享上限端点，零基线只能从内部比例公式推断。"
+  ],
+  "expected": "组件省略主题时提供协调且跨主题清晰的默认序列；显式主题继续优先；showGrid 横向图表可见 0 与共享上限，且所有分类仍共享同一比例。",
+  "actual": "默认色主要是 Neutral/Violet，分类层次弱；共享零基线虽然数学成立，但 UI 没有端点标识。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前任务对话",
+      "note": "用户明确不满意 BarChart 默认配色，并要求基线按照 0 开始。"
+    },
+    {
+      "kind": "file",
+      "ref": "bar-chart/bar-chart.js",
+      "note": "BarChart 调用共享归一化时传入 Blue/Teal/Violet 默认序列，合法显式主题仍由数据优先。"
+    },
+    {
+      "kind": "file",
+      "ref": "bar-chart/bar-chart.wxml",
+      "note": "横向 showGrid 分支在真实比例轨后渲染 0 与 scaleMax 两个端点。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 镜像使用同一默认序列和可见 0/max 端点。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-bar-chart.js",
+      "note": "专项测试锁定单段循环、多段 Blue/Teal、显式主题优先和小程序/H5 0/max 同步。"
+    }
+  ],
+  "rootCause": "共享 Chart 数据工具原本只有面向所有图表的 Neutral/Violet 通用回退，BarChart 没有自己的分类默认序列；showGrid 也只负责背景参考线，没有把已存在的 scaleMax 和零起点暴露到可见结构。",
+  "decision": {
+    "outcome": "共享工具新增可选内部 palette；BarChart 固定传入 Blue/Teal/Violet，单段分类按 item 索引循环，多段按 segment 索引循环，显式合法 theme 始终优先。横向 showGrid 新增真实 0/max 端点；Waffle 通用回退不变。H5 同名镜像。",
+    "rationale": "Blue 与 Teal 在浅深色均有清晰层次，Violet 作为第三强调色保留扩展；组件内部默认序列可避免页面私有配色，同时不破坏调用方主题和 Waffle 既有行为。端点直接读取同一 scaleMax，不建立第二套比例。",
+    "alternativesRejected": [
+      "在 Me 页手写颜色：只修一个消费页面，其他 BarChart 仍会回归旧默认。",
+      "直接修改共享通用回退：会无意改变 Waffle 及其他共享数据消费者。",
+      "只写“基线 0”说明文字：不能证明图形比例轨真实从 0 开始。",
+      "新增完整坐标轴组件：超出轻量只读展示叶子范围，并增加不必要几何。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/utils/chart-data.js",
+      "bar-chart/bar-chart.js",
+      "bar-chart/bar-chart.wxml",
+      "bar-chart/bar-chart.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/components/bar-chart/index.js",
+      "miniprogram/pages/components/bar-chart/index.wxml",
+      "scripts/test-bar-chart.js",
+      "docs/components/BAR-CHART.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_RULES_INDEX.md"
+    ],
+    "dependencies": ["Chart theme tokens", "shared chart data normalization", "PreviewDevice"]
+  },
+  "verification": {
+    "tests": ["scripts/test-bar-chart.js", "scripts/test-miniprogram-advanced-pages.js"],
+    "commands": [
+      "node scripts/test-bar-chart.js：通过",
+      "node scripts/test-miniprogram-advanced-pages.js：通过",
+      "npm run feedback:generate && npm run feedback:check：通过，446 条 Ledger 记录",
+      "npm run site:build：通过，73 个组件目录与 6 个 catalog 产物完成生成",
+      "npm run example:install：通过，本地 tarball 已安装到示例工程",
+      "npm run pack:check：通过，0.1.0 dry-run 为 554 files / 354.0kB tarball / 1.7MB unpacked",
+      "微信开发者工具 build-npm：通过，cost=921ms，warnings=[]"
+    ],
+    "browser": [
+      "H5 390px 横向实例真实显示 0/19；浅色 Blue/Teal 终点为 #2563eb/#0d9488，深色为 #60a5fa/#2dd4bf；根为透明、0px border、none shadow。",
+      "H5 document/body 和 PreviewDevice viewport 均无横向溢出，控制台 warning/error=0；测试后恢复原深色偏好并关闭外观菜单。",
+      "微信开发者工具 390x844 Me 页浅色与临时深色截图均显示九类 Blue/Teal/Violet 循环和 0/19 端点；截图 /tmp/poemui-me-bar-chart-390.png、/tmp/poemui-me-bar-chart-dark-390.png。",
+      "BarChart JS、WXML 与 chart-data helper 在源码、miniprogram_dist、本地 tarball 安装和微信 miniprogram_npm 四路 SHA-256 分别一致为 375b3c9e...、e35d15c9...、d5b5002e...。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 Blue/Teal/Violet 色差、渐变抗锯齿、大字体标签和读屏顺序仍需验证。"
+    ]
+  },
+  "ai": {
+    "summary": "BarChart 默认色和零基线属于组件合同，消费页面不得私自补色或伪造比例标签。",
+    "rules": [
+      "省略主题时 BarChart 使用 Blue/Teal/Violet；合法显式 theme 始终优先。",
+      "单段分类按 item 索引轮换，多段按 segment 索引分配；Waffle 通用回退不得被联动修改。",
+      "showGrid 横向端点必须读取同一 0/scaleMax 真相源，不能创建页面私有坐标。",
+      "小程序、H5、独立页、合同和专项测试必须同步默认序列与端点结构。"
+    ],
+    "tags": ["bar-chart", "palette", "blue", "teal", "zero-baseline", "show-grid", "h5-parity"]
+  }
+}

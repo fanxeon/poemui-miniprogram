@@ -27,6 +27,7 @@ const CURATED_UTILITY_COLOR_TOKENS = CURATED_UTILITY_HUES.flatMap((hue) => [
 const typographyTokenData = componentData.typographyTokens || {};
 const spacingTokenData = componentData.spacingTokens || {};
 const previewWorkspaceAsset = './assets/poemui-workspace.png';
+const avatarRealProfileSource = 'https://lg-1sobdtqg-1254094290.cos.ap-shanghai.myqcloud.com/user_img/QX_girl.png';
 
 const iconData = window.POEMUI_ICON_DATA || { categories: [], icons: [] };
 const styleUtilityPreviewByName = new Map(styleUtilitiesData.items.map((item) => [item.name, item]));
@@ -208,11 +209,11 @@ const legacyComponentCopy = {
   divider: ['用于分割内容区块，支持文字和虚线状态。', '横向、文字、虚线'],
   cell: ['用于列表信息、入口与轻量选择，支持内容组合、受控状态和真实微信导航。', '单行、多行、媒体、选择、禁用、只读、加载、导航、slot、低动效'],
   badge: ['附着在内容上的数量或红点提示，也可作为独立状态标记。', '数量、红点、上限、主题变体、默认/count slot、自动独立形态'],
-  avatar: ['用于展示用户头像、缩写和组合头像；交互由外层组件承担。', '基础、图片与回退、尺寸与形状、组合用法'],
+  avatar: ['用于展示用户头像、缩写和组合头像；图片等待由组件内部处理，交互由外层组件承担。', '基础、懒加载、图片与回退、尺寸与形状、组合用法'],
   image: ['以原生 image 事件驱动 loading、loaded、error 和 empty，并支持安全尺寸、微信解码能力与覆盖 slot；交互由外层宿主承担。', '基础、加载与失败、裁切模式、形状与覆盖内容'],
   grid: ['用于组织快捷操作与功能入口。', '基础、列数与间距、徽标与禁用、加载/空/错误、点击/重试'],
   input: ['原生单行输入控件，支持受控/非受控值、微信键盘参数、尺寸/对齐、Icon/slot、清空、焦点、加载和错误状态。', '受控/非受控、键盘参数、尺寸/对齐、Icon/slot、事件方法、低动效'],
-  textarea: ['多行文本输入控件，支持受控/非受控值、字符上限、自动增高、状态提示、清空、键盘事件和低动效。', '基础、字符计数、自动增高、状态提示、清空、change/enter/line-change'],
+  textarea: ['多行文本输入控件，支持受控/非受控值、字符上限、自动增高、状态提示、键盘事件和低动效。', '基础、字符计数、自动增高、状态提示、change/enter/line-change'],
   switch: ['用于控制独立功能开启或关闭的二元输入，支持原始自定义值、文字/图标、三种尺寸和加载状态。', '基础、文字与图标、状态、尺寸、change'],
   checkbox: ['用于多选与全选的声明式复选控件，提供真实 CheckboxGroup、严格原始值和父级状态继承。', '单项/组、全选/半选、max、原始值、状态继承、slot、change'],
   radio: ['用于互斥选择的声明式单选控件，提供独立 RadioGroup、严格原始值与父级状态继承。', '单项/组、受控、原始值、状态继承、slot、change'],
@@ -227,6 +228,8 @@ const legacyComponentCopy = {
   toast: ['以 show(options) / hide() 呈现单条短时反馈，支持主题、位置、遮罩和低动效。', '基础、主题、方向与位置、遮罩、自动关闭、低动效'],
   dialog: ['用于确认、选择或承载关键内容的受控模态对话框。', '受控显隐、按钮与 actions、具名 slot、遮罩关闭、低动效'],
   progress: ['展示任务的确定完成进度，提供线形、饱满线形与环形三种表达。', '基础、形态、状态与颜色、label Slot'],
+  'bar-chart': ['用共享零基线比较分类数值与分段增量。', '横向/纵向、堆叠/并列、图例、参考线、低动效'],
+  waffle: ['用圆润点阵表达总量、占比和新增单元。', '列数、单元形状、缩放单位、图例、低动效'],
   skeleton: ['加载占位，支持安全行列、延迟显示、默认内容回显和低动效。', '基础用法、布局、主题和动效、内容回显'],
   empty: ['可组合空状态，支持内部 Image/Icon/Button、自定义图形和操作 slot、真实图片失败回退、完整操作详情、边界规整、语义和低动效。', 'Image/Icon/Button 组合、具名 slot、图片错误回退、load/error/action、边界、低动效'],
   'notice-bar': ['用于页面内持续展示公告，支持横向跑马、纵向轮播、四个内容区域和受控显隐。', '基础用法、主题、滚动、内容区域、受控显隐'],
@@ -262,11 +265,11 @@ const legacyApiPropsByComponent = {
   icon: ['name', 'size', 'color', 'ariaLabel'],
   divider: ['layout', 'align', 'content', 'showContent', 'dashed', 'decorative', 'ariaLabel'],
   badge: ['count', 'content', 'dot', 'maxCount', 'showZero', 'theme', 'variant', 'shape', 'size', 'color', 'offset', 'ariaLabel'],
-  avatar: ['src', 'text', 'alt', 'icon', 'shape', 'size', 'bordered', 'hideOnLoadFailed', 'useSlot', 'ariaLabel', 'reduceMotion'],
+  avatar: ['src', 'text', 'alt', 'icon', 'shape', 'size', 'bordered', 'hideOnLoadFailed', 'lazy', 'loading', 'useSlot', 'ariaLabel', 'reduceMotion'],
   image: ['src', 'mode', 'width', 'height', 'shape', 'lazy', 'webp', 'loading', 'error', 'text', 'showMenuByLongpress', 'showSlot', 'ariaLabel', 'reduceMotion'],
   grid: ['items', 'column', 'gutter', 'border', 'align', 'disabled', 'loading', 'error', 'loadingText', 'errorText', 'emptyText', 'retryText', 'ariaLabel', 'reduceMotion'],
-  input: ['value', 'defaultValue', 'name', 'label', 'placeholder', 'type', 'maxlength', 'maxcharacter', 'size', 'align', 'bordered', 'clearable', 'prefix', 'prefixIcon', 'suffix', 'suffixIcon', 'disabled', 'readonly', 'loading', 'focus', 'confirmType', 'status', 'tips', 'required', 'cursorSpacing', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'ariaLabel', 'reduceMotion'],
-  textarea: ['value', 'defaultValue', 'name', 'label', 'placeholder', 'maxlength', 'maxcharacter', 'autosize', 'indicator', 'bordered', 'size', 'clearable', 'disabled', 'readonly', 'loading', 'focus', 'status', 'tips', 'required', 'confirmType', 'showConfirmBar', 'cursorSpacing', 'selectionStart', 'selectionEnd', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'disableDefaultPadding', 'ariaLabel', 'reduceMotion'],
+  input: ['value', 'defaultValue', 'name', 'label', 'placeholder', 'type', 'maxlength', 'maxcharacter', 'size', 'align', 'bordered', 'clearable', 'clearTrigger', 'prefix', 'prefixIcon', 'suffix', 'suffixIcon', 'disabled', 'readonly', 'loading', 'focus', 'confirmType', 'status', 'tips', 'required', 'cursorSpacing', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'ariaLabel', 'reduceMotion'],
+  textarea: ['value', 'defaultValue', 'name', 'label', 'placeholder', 'maxlength', 'maxcharacter', 'autosize', 'indicator', 'bordered', 'size', 'disabled', 'readonly', 'loading', 'focus', 'status', 'tips', 'required', 'confirmType', 'showConfirmBar', 'cursorSpacing', 'selectionStart', 'selectionEnd', 'adjustPosition', 'holdKeyboard', 'confirmHold', 'disableDefaultPadding', 'ariaLabel', 'reduceMotion'],
   switch: ['value', 'defaultValue', 'customValue', 'label', 'icon', 'size', 'disabled', 'readonly', 'loading', 'ariaLabel', 'reduceMotion'],
   checkbox: ['checked', 'defaultChecked', 'value', 'label', 'content', 'icon', 'indeterminate', 'checkAll', 'block', 'borderless', 'contentDisabled', 'disabled', 'readonly', 'name', 'placement', 'maxLabelRow', 'maxContentRow', 'ariaLabel', 'reduceMotion'],
   radio: ['checked', 'defaultChecked', 'value', 'label', 'content', 'icon', 'allowUncheck', 'block', 'borderless', 'contentDisabled', 'disabled', 'readonly', 'name', 'placement', 'maxLabelRow', 'maxContentRow', 'ariaLabel', 'reduceMotion'],
@@ -294,9 +297,9 @@ const legacyApiPropsByComponent = {
   sidebar: ['items', 'value', 'defaultValue', 'theme', 'bordered', 'width', 'height', 'showGroupTitle', 'sticky', 'stickyOffset', 'showIcon', 'showDescription', 'showBadge', 'clickable', 'readonly', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
   list: ['items', 'title', 'description', 'showHeader', 'customHeader', 'useSlot', 'showIcon', 'showDescription', 'showValue', 'showBadge', 'showArrow', 'clickable', 'bordered', 'divided', 'compact', 'showFooter', 'customFooter', 'customEmpty', 'disabled', 'loading', 'loadText', 'loadingText', 'finished', 'finishedText', 'error', 'errorText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
   collapse: ['items', 'value', 'defaultValue', 'theme', 'disabled', 'expandIcon', 'expandMutex', 'defaultExpandAll', 'customPanel', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
-  collapsible: ['open', 'defaultOpen', 'label', 'content', 'customTrigger', 'customContent', 'icon', 'expandIcon', 'iconPosition', 'theme', 'bordered', 'block', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
+  collapsible: ['open', 'defaultOpen', 'label', 'content', 'customTrigger', 'customContent', 'icon', 'expandIcon', 'iconPosition', 'theme', 'bordered', 'shadow', 'block', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
   'swipe-cell': ['disabled', 'left', 'opened', 'right', 'ariaLabel', 'reduceMotion'],
-  'count-down': ['time', 'autoStart', 'paused', 'content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit', 'ariaLabel', 'reduceMotion'],
+  'count-down': ['time', 'autoStart', 'paused', 'content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit', 'animation', 'ariaLabel', 'reduceMotion'],
   table: ['columns', 'data', 'rowKey', 'bordered', 'stripe', 'height', 'showHeader', 'emptyValue', 'selectable', 'selectedRowKeys', 'defaultSelectedRowKeys', 'multiple', 'selectOnRowClick', 'sortable', 'sort', 'defaultSort', 'customEmpty', 'disabled', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'reduceMotion'],
   calendar: ['value', 'defaultValue', 'title', 'type', 'visible', 'defaultVisible', 'minDate', 'maxDate', 'disabledDates', 'disableWeekends', 'firstDayOfWeek', 'switchMode', 'showOutsideDays', 'allowSameDay', 'maxRange', 'maxMultiple', 'localeText', 'autoClose', 'usePopup', 'closeOnOverlayClick', 'disabled', 'readonly', 'loading', 'error', 'ariaLabel', 'reduceMotion'],
   popup: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'contentScrollable', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'],
@@ -354,7 +357,7 @@ const propDefaultValues = {
   type: 'text',
 };
 
-const countDownSourceDefaults = Object.freeze({ time: 0, autoStart: true, paused: false, content: 'default', format: 'HH:mm:ss', millisecond: false, size: 'medium', theme: 'default', splitWithUnit: false, ariaLabel: '倒计时', reduceMotion: false });
+const countDownSourceDefaults = Object.freeze({ time: 0, autoStart: true, paused: false, content: 'default', format: 'HH:mm:ss', millisecond: false, size: 'medium', theme: 'default', splitWithUnit: false, animation: 'pulse', ariaLabel: '倒计时', reduceMotion: false });
 const tableSourceDefaults = Object.freeze({
   columns: [], data: [], rowKey: 'id', bordered: true, stripe: false, height: 0, showHeader: true, emptyValue: '—',
   selectable: false, selectedRowKeys: null, defaultSelectedRowKeys: [], multiple: true, selectOnRowClick: false,
@@ -381,11 +384,11 @@ const componentPropDefaults = {
   alert: { theme: 'default', variant: 'soft', title: '更新提示', description: '组件目录已同步到官网。', closable: true, visible: null, defaultVisible: true, icon: '', showIcon: true, closeIcon: 'close', verticalAlign: 'top', center: false, duration: 500, easing: 'standard', reduceMotion: false },
   'aspect-ratio': { ratio: '16 / 9', bordered: true, radius: 'medium', background: '', overflow: true, duration: 500, easing: 'standard', reduceMotion: false },
   sticky: { container: null, disabled: false, offsetTop: 0, zIndex: 99 },
-  breadcrumb: { items: [{ label: '首页', value: 'home', icon: 'home' }, { label: '组件', value: 'components', icon: 'component' }, { label: '导航', value: 'navigation', icon: 'command' }, { label: 'Breadcrumb', value: 'breadcrumb', icon: 'file-text' }], value: 'breadcrumb', defaultValue: null, current: -1, separator: '/', separatorIcon: 'chevron-right', showIcon: true, size: 'medium', wrap: true, maxLabelLength: 0, currentClickable: false, customPrefix: true, customSuffix: true, disabled: false, loading: false, loadingText: '路径加载中', error: false, errorText: '路径加载失败', retryText: '重试', emptyText: '暂无路径', ariaLabel: '组件路径', duration: 500, easing: 'standard', reduceMotion: false },
-  card: { title: '发布检查清单', description: '用于聚合相关内容和操作。', showHeader: false, bordered: true, padding: 'normal', showFooter: true, headerBordered: true, footerBordered: true, shadow: false, clickable: false, disabled: false, ariaLabel: '发布检查清单', duration: 500, easing: 'standard', reduceMotion: false },
+  breadcrumb: { items: [{ label: '首页', value: 'home', icon: 'home' }, { label: '组件', value: 'components', icon: 'component' }, { label: '导航', value: 'navigation', icon: 'command' }, { label: 'Breadcrumb', value: 'breadcrumb', icon: 'file-text' }], value: 'breadcrumb', defaultValue: null, current: -1, separator: '/', separatorIcon: 'chevron-right', showIcon: true, size: 'medium', wrap: false, maxLabelLength: 0, currentClickable: false, customPrefix: true, customSuffix: true, disabled: false, loading: false, loadingText: '路径加载中', error: false, errorText: '路径加载失败', retryText: '重试', emptyText: '暂无路径', ariaLabel: '组件路径', duration: 500, easing: 'standard', reduceMotion: false },
+  card: { title: '发布检查清单', description: '用于聚合相关内容和操作。', showHeader: false, bordered: true, padding: 'normal', showFooter: true, headerBordered: true, footerBordered: true, shadow: false, clickable: false, disabled: false, ariaLabel: '发布检查清单', duration: 500, easing: 'standard', reduceMotion: false, menuItems: [{ label: '标记复核', value: 'review', icon: 'check' }, { label: '分享清单', value: 'share', icon: 'share' }, { label: '归档', value: 'archive', icon: 'archive' }], menuIcon: 'more-horizontal', menuVisible: null, defaultMenuVisible: false },
   divider: { layout: 'horizontal', align: 'center', content: '', showContent: false, dashed: false, decorative: true, ariaLabel: '分隔线' },
   badge: { count: 0, content: '', dot: false, maxCount: 99, showZero: false, theme: 'danger', variant: 'solid', shape: 'circle', size: 'medium', color: '', offset: [0, 0], ariaLabel: '' },
-  avatar: { src: '', text: '', alt: '', icon: '', shape: 'circle', size: 'medium', bordered: false, hideOnLoadFailed: false, useSlot: false, ariaLabel: '', reduceMotion: false },
+  avatar: { src: '', text: '', alt: '', icon: '', shape: 'circle', size: 'medium', bordered: false, hideOnLoadFailed: false, lazy: false, loading: false, useSlot: false, ariaLabel: '', reduceMotion: false },
   image: { src: '', mode: 'aspectFill', width: '', height: '', shape: 'rectangle', lazy: false, webp: false, loading: false, error: false, text: '', showMenuByLongpress: false, showSlot: false, ariaLabel: '', reduceMotion: false },
   tag: { theme: 'default', variant: 'light', size: 'medium', shape: 'square', content: '', icon: '', closable: false, disabled: false, maxWidth: '' },
   grid: { items: [], column: 4, gutter: 0, border: true, align: 'center', disabled: false, loading: false, error: false, loadingText: '加载中', errorText: '加载失败', emptyText: '暂无入口', retryText: '重试', ariaLabel: '宫格导航', reduceMotion: false },
@@ -395,7 +398,7 @@ const componentPropDefaults = {
   dialog: {
     visible: false, title: '确认发布组件？', content: '确认后由页面处理业务结果，Dialog 不伪造发布成功。', actions: [], buttonLayout: 'horizontal',
     cancelBtn: '取消', closeBtn: true, closeOnOverlayClick: false, confirmBtn: { content: '确认发布', theme: 'primary' }, overlayProps: {},
-    preventScrollThrough: true, showOverlay: true, usingCustomNavbar: false, zIndex: 11500, ariaLabel: '组件发布确认对话框', reduceMotion: false,
+    preventScrollThrough: true, showOverlay: true, showFooter: false, usingCustomNavbar: false, zIndex: 11500, ariaLabel: '组件发布确认对话框', reduceMotion: false,
   },
   direction: {
     direction: 'ltr', language: 'zh-CN', fallbackDirection: 'ltr', textAlign: 'start', display: 'block',
@@ -403,6 +406,33 @@ const componentPropDefaults = {
     duration: 500, easing: 'standard', reduceMotion: false, customClass: '', customStyle: '',
   },
   progress: { percentage: 64, theme: 'line', label: true, size: 160, status: 'active', strokeWidth: 12, color: '', trackColor: '', ariaLabel: '发布进度', reduceMotion: false },
+  'area-chart': {
+    items: [
+      { key: 'jan', label: '1月', segments: [{ key: 'desktop', label: '桌面端', value: 72, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 220, theme: 'teal' }] },
+      { key: 'feb', label: '2月', segments: [{ key: 'desktop', label: '桌面端', value: 320, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 58, theme: 'teal' }] },
+      { key: 'mar', label: '3月', segments: [{ key: 'desktop', label: '桌面端', value: 96, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 278, theme: 'teal' }] },
+      { key: 'apr', label: '4月', segments: [{ key: 'desktop', label: '桌面端', value: 350, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 76, theme: 'teal' }] },
+      { key: 'may', label: '5月', segments: [{ key: 'desktop', label: '桌面端', value: 128, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 306, theme: 'teal' }] },
+      { key: 'jun', label: '6月', segments: [{ key: 'desktop', label: '桌面端', value: 286, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 112, theme: 'teal' }] },
+    ],
+    max: 0, curve: 'natural', stacked: false, size: 'medium', showGrid: true, showXAxis: true,
+    showLegend: true, showDots: false, animated: true, duration: 500, ariaLabel: '访问趋势', reduceMotion: false,
+  },
+  'bar-chart': {
+    items: [
+      { key: 'foundation', label: '基础', segments: [{ key: 'existing', label: '已有', value: 8 }, { key: 'added', label: '本次新增', value: 2 }] },
+      { key: 'form', label: '表单', segments: [{ key: 'existing', label: '已有', value: 38 }, { key: 'added', label: '本次新增', value: 6 }] },
+      { key: 'data', label: '数据展示', segments: [{ key: 'existing', label: '已有', value: 18 }, { key: 'added', label: '本次新增', value: 26 }] },
+      { key: 'advanced', label: '高级', segments: [{ key: 'existing', label: '已有', value: 52 }, { key: 'added', label: '本次新增', value: 8 }] },
+    ],
+    orientation: 'horizontal', mode: 'stacked', max: 0, size: 'medium', showValue: true, showLegend: true, showGrid: true,
+    animated: true, duration: 500, ariaLabel: '组件分类数量', reduceMotion: false,
+  },
+  waffle: {
+    items: [{ key: 'components', label: '组件总量', segments: [{ key: 'existing', label: '已有', value: 24, theme: 'neutral' }, { key: 'added', label: '本次新增', value: 8, theme: 'violet' }] }],
+    columns: 10, groupColumns: 0, shape: 'rounded', size: 'medium', unit: 1, maxCells: 100, showValue: true, showLegend: true,
+    animated: true, duration: 500, ariaLabel: '组件数量点阵', reduceMotion: false,
+  },
   input: {
     value: null, defaultValue: '', name: '', label: '', placeholder: '请输入内容', type: 'text', maxlength: -1, maxcharacter: -1,
     size: 'medium', align: 'left', bordered: true, clearable: false, prefix: '', prefixIcon: '', suffix: '', suffixIcon: '',
@@ -507,6 +537,7 @@ const componentPropDefaults = {
     iconPosition: 'right',
     theme: 'default',
     bordered: true,
+    shadow: true,
     block: true,
     disabled: false,
     readonly: false,
@@ -587,6 +618,7 @@ const componentPropDefaults = {
     size: 'medium',
     theme: 'default',
     splitWithUnit: false,
+    animation: 'pulse',
     ariaLabel: '倒计时',
     reduceMotion: false,
   },
@@ -690,12 +722,12 @@ const componentPropDefaults = {
   overlay: { visible: false, backgroundColor: '', blur: false, duration: 500, preventScrollThrough: true, usingCustomNavbar: false, zIndex: 11000, ariaLabel: '关闭遮罩', reduceMotion: false },
   skeleton: { animation: 'none', delay: 0, loading: true, rowCol: [{ width: '42%', height: '30rpx' }, [{ width: '58%', height: '26rpx' }, { width: '30%', height: '26rpx' }], { width: '76%', height: '26rpx' }], theme: 'text', ariaLabel: '组件内容加载中', reduceMotion: false },
   empty: { description: '暂无组件数据', icon: 'inbox', image: '', ariaLabel: '组件列表空状态', reduceMotion: false },
-  'notice-bar': { content: '组件目录、API 文档与发布产物已经同步，请继续完成微信端交互复核。', direction: 'horizontal', interval: 2000, marquee: { speed: 50, loop: -1, delay: 400 }, operation: '查看详情', prefixIcon: true, suffixIcon: 'close', theme: 'info', visible: null, defaultVisible: true, ariaLabel: '组件目录更新通知', reduceMotion: false },
+  'notice-bar': { content: '组件目录、API 文档与发布产物已经同步，请继续完成微信端交互复核。', direction: 'horizontal', interval: 2000, marquee: { speed: 50, loop: -1, delay: 400 }, operation: '查看详情', prefixIcon: true, suffixIcon: 'close', theme: 'primary', visible: null, defaultVisible: true, ariaLabel: '组件目录更新通知', reduceMotion: false },
   result: { description: '组件源码、预览和 npm 包已完成同步。', icon: true, image: '', theme: 'success', title: '发布检查通过', ariaLabel: '组件发布结果', reduceMotion: false },
   popover: { visible: null, defaultVisible: false, content: '这是相对触发元素显示的轻量说明。', placement: 'top', showArrow: true, theme: 'dark', closeOnClickOutside: true, fixed: false, ariaLabel: '组件说明气泡层', reduceMotion: false },
   'scroll-area': { height: '320rpx', scrollTop: 0, scrollIntoView: '', gradientOverlay: true, gradientOverlayColor: '', gradientOverlaySize: 'md', contentPaddingBottom: '10vh', ariaLabel: '组件滚动内容' },
   select: { options: [{ label: 'Button', value: 'button' }, { label: 'Card', value: 'card' }, { label: 'Select', value: 'select' }, { label: 'Popover', value: 'popover', disabled: true }], value: 'button', defaultValue: '', placeholder: '请选择组件', disabled: false, readonly: false },
-  picker: { columns: [{ label: '基础组件', value: 'basic', children: [{ label: 'Button', value: 'button', icon: 'component' }, { label: 'Icon', value: 0, icon: 'spark' }] }, { label: '表单组件', value: 'input', children: [{ label: 'Input', value: 'input' }, { label: 'Picker', value: false }, { label: '停用项', value: '', disabled: true }] }], value: null, defaultValue: ['basic', 0], visible: null, defaultVisible: false, title: '选择组件', type: 'default', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, closeOnOverlayClick: true, autoClose: true, keys: {}, visibleItemCount: 5, itemHeight: 80, disabled: false, readonly: false, loading: false, loadingText: '选项加载中', error: false, errorText: '选项加载失败', retryText: '重试', emptyText: '暂无可选项', ariaLabel: '组件滚轮选择器', reduceMotion: false },
+  picker: { columns: [{ label: '稳定版', value: 'stable' }, { label: '候选版', value: 'candidate' }, { label: '测试版', value: 'beta' }, { label: '开发版', value: 'canary' }], value: null, defaultValue: ['stable'], visible: null, defaultVisible: false, title: '发布通道', type: 'default', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, closeOnOverlayClick: true, autoClose: true, keys: {}, visibleItemCount: 5, itemHeight: 80, disabled: false, readonly: false, loading: false, loadingText: '选项加载中', error: false, errorText: '选项加载失败', retryText: '重试', emptyText: '暂无可选项', ariaLabel: '发布通道滚轮选择器', reduceMotion: false },
   'date-time-picker': { value: null, defaultValue: '2026-07-15 09:30', visible: null, defaultVisible: false, mode: ['date', 'minute'], start: '2026-01-01 00:00', end: '2026-12-31 23:59', format: 'YYYY-MM-DD HH:mm', steps: { minute: 15 }, showWeek: true, title: '选择发布时间', type: 'default', cancelText: '取消', confirmText: '确定', showHeader: true, usePopup: true, autoClose: true, closeOnOverlayClick: true, disabled: false, readonly: false, ariaLabel: '发布时间选择器', reduceMotion: false },
   rate: { value: null, defaultValue: 3.5, count: 5, size: 40, gap: 8, color: '', allowHalf: true, showText: true, texts: ['很差', '一般', '不错', '很好', '极好'], disabled: false, readonly: false, ariaLabel: '组件评分', reduceMotion: false },
   upload: { files: null, defaultFiles: [], max: 3, picker: 'media', mediaType: ['image'], messageType: 'all', source: '', extensions: [], maxSize: 0, addContent: '添加附件', addBtn: true, theme: 'list', columns: 3, allowDuplicate: false, preview: true, removeBtn: true, customAdd: false, disabled: false, ariaLabel: '附件选择', reduceMotion: false },
@@ -811,7 +843,7 @@ const releasePropDefinitions = {
   },
   'notice-bar': {
     content: { type: 'json', apiType: 'String | String[]', value: '组件目录、API 文档与发布产物已经同步，请继续完成微信端交互复核。' }, direction: { type: 'select', value: 'horizontal', options: ['horizontal', 'vertical'] }, interval: { type: 'range', value: 2000, min: 0, max: 10000, step: 100 }, marquee: { type: 'json', apiType: 'Boolean | { speed?: number; loop?: number; delay?: number }', value: { speed: 50, loop: -1, delay: 400 } },
-    operation: { type: 'text', value: '查看详情' }, prefixIcon: { type: 'json', apiType: 'Boolean | String | { name: String }', value: true }, suffixIcon: { type: 'json', apiType: 'String | { name: String } | null', value: 'close' }, theme: { type: 'select', value: 'info', options: ['info', 'success', 'warning', 'error'] }, visible: { type: 'nullable-boolean', value: null }, defaultVisible: { type: 'boolean', value: true }, ariaLabel: { type: 'text', value: '组件目录更新通知' }, reduceMotion: { type: 'boolean', value: false },
+    operation: { type: 'text', value: '查看详情' }, prefixIcon: { type: 'json', apiType: 'Boolean | String | { name: String }', value: true }, suffixIcon: { type: 'json', apiType: 'String | { name: String } | null', value: 'close' }, theme: { type: 'select', value: 'primary', options: ['primary', 'success', 'warning', 'danger'] }, visible: { type: 'nullable-boolean', value: null }, defaultVisible: { type: 'boolean', value: true }, ariaLabel: { type: 'text', value: '组件目录更新通知' }, reduceMotion: { type: 'boolean', value: false },
   },
   icon: {
     name: { type: 'text', value: 'spark' }, size: { type: 'range', value: 44, min: 8, max: 256, step: 4 }, color: { type: 'text', value: '' }, ariaLabel: { type: 'text', value: 'PoemUI 图标' },
@@ -828,7 +860,7 @@ const releasePropDefinitions = {
   },
   breadcrumb: {
     items: { type: 'json', value: componentPropDefaults.breadcrumb.items }, value: { type: 'json', value: 'breadcrumb' }, defaultValue: { type: 'json', value: null }, current: { type: 'range', value: -1, min: -1, max: 8 }, separator: { type: 'text', value: '/' }, separatorIcon: { type: 'text', value: 'chevron-right' }, showIcon: { type: 'boolean', value: true },
-    size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] }, wrap: { type: 'boolean', value: true }, maxLabelLength: { type: 'range', value: 0, min: 0, max: 24, step: 1 }, currentClickable: { type: 'boolean', value: false }, customPrefix: { type: 'boolean', value: true }, customSuffix: { type: 'boolean', value: true }, disabled: { type: 'boolean', value: false },
+    size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] }, wrap: { type: 'boolean', value: false }, maxLabelLength: { type: 'range', value: 0, min: 0, max: 24, step: 1 }, currentClickable: { type: 'boolean', value: false }, customPrefix: { type: 'boolean', value: true }, customSuffix: { type: 'boolean', value: true }, disabled: { type: 'boolean', value: false },
     loading: { type: 'boolean', value: false }, loadingText: { type: 'text', value: '路径加载中' }, error: { type: 'boolean', value: false }, errorText: { type: 'text', value: '路径加载失败' }, retryText: { type: 'text', value: '重试' }, emptyText: { type: 'text', value: '暂无路径' }, ariaLabel: { type: 'text', value: '组件路径' }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 10 }, easing: { type: 'select', value: 'standard', options: ['standard', 'ease', 'linear', 'ease-in', 'ease-out', 'ease-in-out'] }, reduceMotion: { type: 'boolean', value: false },
   },
 
@@ -840,7 +872,7 @@ const releasePropDefinitions = {
   },
   card: {
     title: { type: 'text', value: '发布检查清单' }, description: { type: 'text', value: '用于聚合相关内容和操作。' },
-    showHeader: { type: 'boolean', value: false }, bordered: { type: 'boolean', value: true }, padding: { type: 'select', value: 'normal', options: ['normal', 'compact'] }, showFooter: { type: 'boolean', value: true }, headerBordered: { type: 'boolean', value: true }, footerBordered: { type: 'boolean', value: true }, shadow: { type: 'boolean', value: false }, clickable: { type: 'boolean', value: false }, disabled: { type: 'boolean', value: false }, ariaLabel: { type: 'text', value: '发布检查清单' }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 10 }, easing: { type: 'select', value: 'standard', options: ['standard', 'ease', 'linear', 'ease-in', 'ease-out', 'ease-in-out'] }, reduceMotion: { type: 'boolean', value: false },
+    showHeader: { type: 'boolean', value: false }, bordered: { type: 'boolean', value: true }, padding: { type: 'select', value: 'normal', options: ['normal', 'compact'] }, showFooter: { type: 'boolean', value: true }, headerBordered: { type: 'boolean', value: true }, footerBordered: { type: 'boolean', value: true }, shadow: { type: 'boolean', value: false }, clickable: { type: 'boolean', value: false }, disabled: { type: 'boolean', value: false }, menuItems: { type: 'json', apiType: 'CardMenuItem[]', value: componentPropDefaults.card.menuItems }, menuIcon: { type: 'text', value: 'more-horizontal' }, menuVisible: { type: 'json', apiType: 'boolean | null', value: null }, defaultMenuVisible: { type: 'boolean', value: false }, ariaLabel: { type: 'text', value: '发布检查清单' }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 10 }, easing: { type: 'select', value: 'standard', options: ['standard', 'ease', 'linear', 'ease-in', 'ease-out', 'ease-in-out'] }, reduceMotion: { type: 'boolean', value: false },
   },
   divider: {
     layout: { type: 'select', value: 'horizontal', options: ['horizontal', 'vertical'] }, align: { type: 'select', value: 'center', options: ['left', 'center', 'right'] },
@@ -855,7 +887,7 @@ const releasePropDefinitions = {
   avatar: {
     src: { type: 'text', value: '' }, text: { type: 'text', value: 'P' }, alt: { type: 'text', value: '' }, icon: { type: 'text', value: '' },
     shape: { type: 'select', value: 'circle', options: ['circle', 'round', 'square'] }, size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
-    bordered: { type: 'boolean', value: false }, hideOnLoadFailed: { type: 'boolean', value: false }, useSlot: { type: 'boolean', value: false },
+    bordered: { type: 'boolean', value: false }, hideOnLoadFailed: { type: 'boolean', value: false }, lazy: { type: 'boolean', value: false }, loading: { type: 'boolean', value: false }, useSlot: { type: 'boolean', value: false },
     ariaLabel: { type: 'text', value: '' }, reduceMotion: { type: 'boolean', value: false },
   },
   image: {
@@ -907,7 +939,7 @@ const releasePropDefinitions = {
   collapsible: {
     open: { type: 'nullable-boolean', value: null }, defaultOpen: { type: 'boolean', value: true }, label: { type: 'text', value: '发布设置' }, content: { type: 'text', value: '调整圆角、阴影和动效后，再执行完整发布门禁。' },
     customTrigger: { type: 'boolean', value: false }, customContent: { type: 'boolean', value: true }, icon: { type: 'text', value: 'command' }, expandIcon: { type: 'boolean', value: true }, iconPosition: { type: 'select', value: 'right', options: ['left', 'right'] },
-    theme: { type: 'select', value: 'default', options: ['default', 'primary', 'success', 'warning', 'danger'] }, bordered: { type: 'boolean', value: true }, block: { type: 'boolean', value: true }, disabled: { type: 'boolean', value: false }, readonly: { type: 'boolean', value: false },
+    theme: { type: 'select', value: 'default', options: ['default', 'primary', 'success', 'warning', 'danger'] }, bordered: { type: 'boolean', value: true }, shadow: { type: 'boolean', value: true }, block: { type: 'boolean', value: true }, disabled: { type: 'boolean', value: false }, readonly: { type: 'boolean', value: false },
     loading: { type: 'boolean', value: false }, loadingText: { type: 'text', value: '设置加载中…' }, error: { type: 'boolean', value: false }, errorText: { type: 'text', value: '设置加载失败' }, retryText: { type: 'text', value: '重试' }, emptyText: { type: 'text', value: '暂无设置' },
     ariaLabel: { type: 'text', value: '发布设置折叠区' }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 10 }, easing: { type: 'select', value: 'standard', options: ['standard', 'ease', 'linear', 'ease-in', 'ease-out', 'ease-in-out'] }, reduceMotion: { type: 'boolean', value: false },
   },
@@ -932,7 +964,7 @@ const releasePropDefinitions = {
     disabled: { type: 'boolean', value: false }, ariaLabel: { type: 'text', value: '待处理消息操作' }, reduceMotion: { type: 'boolean', value: false },
   },
   'count-down': {
-    time: { type: 'range', value: 150000, min: 0, max: 31536000000, step: 1000 }, autoStart: { type: 'boolean', value: true }, paused: { type: 'boolean', value: false }, content: { type: 'select', value: 'default', options: ['default', 'slot'] }, format: { type: 'select', value: 'HH:mm:ss', options: ['ss', 'mm:ss', 'HH:mm:ss', 'DD:HH:mm:ss', 'HH:mm:ss.SSS'] }, millisecond: { type: 'boolean', value: false }, size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] }, theme: { type: 'select', value: 'default', options: ['default', 'round', 'square'] }, splitWithUnit: { type: 'boolean', value: false }, ariaLabel: { type: 'text', value: '倒计时' }, reduceMotion: { type: 'boolean', value: false },
+    time: { type: 'range', value: 150000, min: 0, max: 31536000000, step: 1000 }, autoStart: { type: 'boolean', value: true }, paused: { type: 'boolean', value: false }, content: { type: 'select', value: 'default', options: ['default', 'slot'] }, format: { type: 'select', value: 'HH:mm:ss', options: ['ss', 'mm:ss', 'HH:mm:ss', 'DD:HH:mm:ss', 'HH:mm:ss.SSS'] }, millisecond: { type: 'boolean', value: false }, size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] }, theme: { type: 'select', value: 'default', options: ['default', 'round', 'square'] }, splitWithUnit: { type: 'boolean', value: false }, animation: { type: 'select', value: 'pulse', options: ['pulse', 'roll'] }, ariaLabel: { type: 'text', value: '倒计时' }, reduceMotion: { type: 'boolean', value: false },
   },
   table: {
     columns: { type: 'json', value: componentPropDefaults.table.columns }, data: { type: 'json', value: componentPropDefaults.table.data }, rowKey: { type: 'text', value: 'id' },
@@ -981,7 +1013,7 @@ const releasePropDefinitions = {
     value: { type: 'json', apiType: 'String | Number | null', value: null }, defaultValue: { type: 'text', value: '' }, name: { type: 'text', value: '' }, label: { type: 'text', value: '' },
     placeholder: { type: 'text', value: '请输入内容' }, type: { type: 'select', value: 'text', options: ['text', 'number', 'digit', 'idcard', 'safe-password', 'password', 'nickname'] },
     maxlength: { type: 'range', value: -1, min: -1, max: 200 }, maxcharacter: { type: 'range', value: -1, min: -1, max: 400 }, size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] }, align: { type: 'select', value: 'left', options: ['left', 'center', 'right'] },
-    bordered: { type: 'boolean', value: true }, clearable: { type: 'boolean', value: false }, prefix: { type: 'text', value: '' }, prefixIcon: { type: 'text', value: '' }, suffix: { type: 'text', value: '' }, suffixIcon: { type: 'text', value: '' },
+    bordered: { type: 'boolean', value: true }, clearable: { type: 'boolean', value: false }, clearTrigger: { type: 'select', value: 'focus', options: ['focus', 'always'] }, prefix: { type: 'text', value: '' }, prefixIcon: { type: 'text', value: '' }, suffix: { type: 'text', value: '' }, suffixIcon: { type: 'text', value: '' },
     disabled: { type: 'boolean', value: false }, readonly: { type: 'boolean', value: false }, loading: { type: 'boolean', value: false }, focus: { type: 'boolean', value: false },
     confirmType: { type: 'select', value: 'done', options: ['done', 'go', 'next', 'search', 'send'] }, status: { type: 'select', value: 'default', options: ['default', 'success', 'warning', 'error'] }, tips: { type: 'text', value: '' }, required: { type: 'boolean', value: false },
     cursorSpacing: { type: 'range', value: 0, min: 0, max: 500, step: 4 }, adjustPosition: { type: 'boolean', value: true }, holdKeyboard: { type: 'boolean', value: false }, confirmHold: { type: 'boolean', value: false }, ariaLabel: { type: 'text', value: '' }, reduceMotion: { type: 'boolean', value: false },
@@ -999,7 +1031,7 @@ const releasePropDefinitions = {
   textarea: {
     value: { type: 'json', apiType: 'String | Number | Boolean | null', value: null }, defaultValue: { type: 'text', value: '' }, name: { type: 'text', value: '' }, label: { type: 'text', value: '' }, placeholder: { type: 'text', value: '请输入内容' },
     maxlength: { type: 'range', value: -1, min: -1, max: 500 }, maxcharacter: { type: 'range', value: -1, min: -1, max: 500 }, autosize: { type: 'json', value: false }, indicator: { type: 'boolean', value: false },
-    bordered: { type: 'boolean', value: true }, size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] }, clearable: { type: 'boolean', value: false },
+    bordered: { type: 'boolean', value: true }, size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
     disabled: { type: 'boolean', value: false }, readonly: { type: 'boolean', value: false }, loading: { type: 'boolean', value: false }, focus: { type: 'boolean', value: false }, status: { type: 'select', value: 'default', options: ['default', 'success', 'warning', 'error'] }, tips: { type: 'text', value: '' }, required: { type: 'boolean', value: false },
     confirmType: { type: 'select', value: 'done', options: ['done', 'go', 'next', 'search', 'send'] }, showConfirmBar: { type: 'boolean', value: true }, cursorSpacing: { type: 'range', value: 0, min: 0, max: 240, step: 4 }, selectionStart: { type: 'range', value: -1, min: -1, max: 120 }, selectionEnd: { type: 'range', value: -1, min: -1, max: 120 }, adjustPosition: { type: 'boolean', value: true }, holdKeyboard: { type: 'boolean', value: false }, confirmHold: { type: 'boolean', value: false }, disableDefaultPadding: { type: 'boolean', value: true },
     ariaLabel: { type: 'text', value: '' }, reduceMotion: { type: 'boolean', value: false },
@@ -1088,7 +1120,7 @@ const releasePropDefinitions = {
   },
   'notice-bar': {
     content: { type: 'json', apiType: 'String | String[]', value: '组件目录、API 文档与发布产物已经同步，请继续完成微信端交互复核。' }, direction: { type: 'select', value: 'horizontal', options: ['horizontal', 'vertical'] }, interval: { type: 'range', value: 2000, min: 0, max: 10000, step: 100 }, marquee: { type: 'json', apiType: 'Boolean | { speed?: number; loop?: number; delay?: number }', value: { speed: 50, loop: -1, delay: 400 } },
-    operation: { type: 'text', value: '查看详情' }, prefixIcon: { type: 'json', apiType: 'Boolean | String | { name: String }', value: true }, suffixIcon: { type: 'json', apiType: 'String | { name: String } | null', value: 'close' }, theme: { type: 'select', value: 'info', options: ['info', 'success', 'warning', 'error'] },
+    operation: { type: 'text', value: '查看详情' }, prefixIcon: { type: 'json', apiType: 'Boolean | String | { name: String }', value: true }, suffixIcon: { type: 'json', apiType: 'String | { name: String } | null', value: 'close' }, theme: { type: 'select', value: 'primary', options: ['primary', 'success', 'warning', 'danger'] },
     visible: { type: 'nullable-boolean', value: null }, defaultVisible: { type: 'boolean', value: true }, ariaLabel: { type: 'text', value: '组件目录更新通知' }, reduceMotion: { type: 'boolean', value: false },
   },
   result: {
@@ -1111,7 +1143,7 @@ const releasePropDefinitions = {
   dialog: {
     visible: { type: 'boolean', value: false }, title: { type: 'text', value: '确认发布组件？' }, content: { type: 'text', value: '确认后由页面处理业务结果，Dialog 不伪造发布成功。' },
     actions: { type: 'json', value: [] }, buttonLayout: { type: 'select', value: 'horizontal', options: ['horizontal', 'vertical'] }, cancelBtn: { type: 'json', apiType: 'string | DialogButtonProps | null', value: '取消' }, closeBtn: { type: 'json', apiType: 'boolean | DialogCloseButtonProps', value: true }, closeOnOverlayClick: { type: 'boolean', value: false }, confirmBtn: { type: 'json', apiType: 'string | DialogButtonProps | null', value: { content: '确认发布', theme: 'primary' } },
-    overlayProps: { type: 'json', apiType: 'OverlayProps', value: {} }, preventScrollThrough: { type: 'boolean', value: true }, showOverlay: { type: 'boolean', value: true }, usingCustomNavbar: { type: 'boolean', value: false }, zIndex: { type: 'range', value: 11500, min: 1, max: 12000 }, ariaLabel: { type: 'text', value: '组件发布确认对话框' }, reduceMotion: { type: 'boolean', value: false },
+    overlayProps: { type: 'json', apiType: 'OverlayProps', value: {} }, preventScrollThrough: { type: 'boolean', value: true }, showOverlay: { type: 'boolean', value: true }, showFooter: { type: 'boolean', value: false }, usingCustomNavbar: { type: 'boolean', value: false }, zIndex: { type: 'range', value: 11500, min: 1, max: 12000 }, ariaLabel: { type: 'text', value: '组件发布确认对话框' }, reduceMotion: { type: 'boolean', value: false },
   },
   direction: {
     direction: { type: 'select', value: 'ltr', options: ['ltr', 'rtl', 'auto'] },
@@ -1177,6 +1209,8 @@ const releasePropDefinitions = {
     closable: { type: 'boolean', value: true },
     duration: { type: 'range', value: 3000, min: 0, max: 60000, step: 100 },
     safeArea: { type: 'boolean', value: true },
+    shadow: { type: 'nullable-boolean', value: null, apiType: 'boolean | null' },
+    frostedGlass: { type: 'nullable-boolean', value: null, apiType: 'boolean | null' },
     ariaLabel: { type: 'text', value: '' },
     reduceMotion: { type: 'boolean', value: false },
   },
@@ -1195,6 +1229,39 @@ const releasePropDefinitions = {
     customHeader: { type: 'boolean', value: false }, customFooter: { type: 'boolean', value: false }, customEmpty: { type: 'boolean', value: false }, customItem: { type: 'boolean', value: false }, clickable: { type: 'boolean', value: true }, readonly: { type: 'boolean', value: false }, disabled: { type: 'boolean', value: false },
     loading: { type: 'boolean', value: false }, loadingText: { type: 'text', value: '列表加载中' }, error: { type: 'boolean', value: false }, errorText: { type: 'text', value: '列表加载失败' }, retryText: { type: 'text', value: '重试' }, emptyText: { type: 'text', value: '暂无数据' },
     ariaLabel: { type: 'text', value: '组件交付虚拟列表' }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 10 }, easing: { type: 'select', value: 'standard', options: ['standard', 'ease', 'linear', 'ease-in', 'ease-out', 'ease-in-out'] }, reduceMotion: { type: 'boolean', value: false },
+  },
+  'area-chart': {
+    items: { type: 'json', apiType: 'AreaChartItem[]', value: componentPropDefaults['area-chart'].items },
+    max: { type: 'range', value: 0, min: 0, max: 1000, step: 10 },
+    curve: { type: 'select', value: 'natural', options: ['natural', 'linear', 'step'] },
+    stacked: { type: 'boolean', value: false },
+    size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+    showGrid: { type: 'boolean', value: true }, showXAxis: { type: 'boolean', value: true },
+    showLegend: { type: 'boolean', value: true }, showDots: { type: 'boolean', value: false },
+    animated: { type: 'boolean', value: true }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+    ariaLabel: { type: 'text', value: '访问趋势' }, reduceMotion: { type: 'boolean', value: false },
+  },
+  'bar-chart': {
+    items: { type: 'json', apiType: 'ChartItem[]', value: componentPropDefaults['bar-chart'].items },
+    orientation: { type: 'select', value: 'horizontal', options: ['horizontal', 'vertical'] },
+    mode: { type: 'select', value: 'stacked', options: ['stacked', 'grouped'] },
+    max: { type: 'range', value: 0, min: 0, max: 100, step: 1 },
+    size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+    showValue: { type: 'boolean', value: true }, showLegend: { type: 'boolean', value: true }, showGrid: { type: 'boolean', value: true },
+    animated: { type: 'boolean', value: true }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+    ariaLabel: { type: 'text', value: '组件分类数量' }, reduceMotion: { type: 'boolean', value: false },
+  },
+  waffle: {
+    items: { type: 'json', apiType: 'ChartItem[]', value: componentPropDefaults.waffle.items },
+    columns: { type: 'range', value: 10, min: 4, max: 12, step: 1 },
+    groupColumns: { type: 'range', value: 0, min: 0, max: 12, step: 1 },
+    shape: { type: 'select', value: 'rounded', options: ['rounded', 'circle', 'square'] },
+    size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+    unit: { type: 'range', value: 1, min: 1, max: 20, step: 1 },
+    maxCells: { type: 'range', value: 100, min: 1, max: 200, step: 1 },
+    showValue: { type: 'boolean', value: true }, showLegend: { type: 'boolean', value: true },
+    animated: { type: 'boolean', value: true }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+    ariaLabel: { type: 'text', value: '组件数量点阵' }, reduceMotion: { type: 'boolean', value: false },
   },
   sticky: {
     container: { type: 'text', apiType: '() => NodesRef | null', value: '' }, disabled: { type: 'boolean', value: false }, offsetTop: { type: 'range', value: 0, min: 0, max: 200, step: 1 }, zIndex: { type: 'range', value: 99, min: 0, max: 12000, step: 1 },
@@ -1493,6 +1560,8 @@ const state = {
   previewSwiperAbort: null,
   previewNavigationMenuTimer: null,
   previewNavigationMenuAbort: null,
+  previewChartResetFrame: null,
+  previewChartEnterFrame: null,
 };
 
 function escapeHtml(value) {
@@ -1573,7 +1642,7 @@ function resetDemoRuntime(id, key) {
     }
     delete demo.checkboxEvent;
   }
-  if (id === 'textarea' && ['value', 'defaultValue', 'maxlength', 'maxcharacter', 'autosize', 'indicator', 'bordered', 'size', 'clearable', 'disabled', 'readonly', 'loading', 'focus', 'status', 'tips', 'required', 'reduceMotion'].includes(key)) {
+  if (id === 'textarea' && ['value', 'defaultValue', 'maxlength', 'maxcharacter', 'autosize', 'indicator', 'bordered', 'size', 'disabled', 'readonly', 'loading', 'focus', 'status', 'tips', 'required', 'reduceMotion'].includes(key)) {
     delete demo.textareaEvent;
   }
   if (id === 'breadcrumb' && ['items', 'defaultValue'].includes(key)) {
@@ -1677,7 +1746,7 @@ function resetDemoRuntime(id, key) {
     delete demo.collapseInitialized;
     delete demo.collapseEvent;
   }
-  if (id === 'collapsible' && ['open', 'defaultOpen', 'label', 'content', 'customTrigger', 'customContent', 'icon', 'expandIcon', 'iconPosition', 'theme', 'bordered', 'block', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'].includes(key)) {
+  if (id === 'collapsible' && ['open', 'defaultOpen', 'label', 'content', 'customTrigger', 'customContent', 'icon', 'expandIcon', 'iconPosition', 'theme', 'bordered', 'shadow', 'block', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'].includes(key)) {
     delete demo.collapsibleOpen;
     delete demo.collapsibleEvent;
     delete demo.collapsibleAfter;
@@ -1759,7 +1828,7 @@ function resetDemoRuntime(id, key) {
     }
     delete demo.uploadEvent;
   }
-  if (id === 'avatar' && ['src', 'text', 'alt', 'icon', 'shape', 'size', 'bordered', 'hideOnLoadFailed', 'useSlot', 'ariaLabel', 'reduceMotion'].includes(key)) delete demo.avatarEvent;
+  if (id === 'avatar' && ['src', 'text', 'alt', 'icon', 'shape', 'size', 'bordered', 'hideOnLoadFailed', 'lazy', 'loading', 'useSlot', 'ariaLabel', 'reduceMotion'].includes(key)) delete demo.avatarEvent;
   if (id === 'image' && ['src', 'mode', 'width', 'height', 'shape', 'lazy', 'webp', 'loading', 'error', 'text', 'showMenuByLongpress', 'showSlot', 'ariaLabel', 'reduceMotion'].includes(key)) delete demo.imageEvent;
   if (id === 'grid' && ['items', 'column', 'gutter', 'border', 'align', 'disabled', 'loading', 'error', 'loadingText', 'errorText', 'emptyText', 'retryText', 'ariaLabel', 'reduceMotion'].includes(key)) {
     delete demo.gridResult;
@@ -2547,7 +2616,7 @@ const previewElementRoleDefinitions = {
   input: {
     label: '输入控件',
     description: '输入值、格式、状态与可用性相关 Props。',
-    keys: ['value', 'defaultValue', 'label', 'placeholder', 'type', 'maxlength', 'maxcharacter', 'size', 'align', 'bordered', 'clearable', 'prefixIcon', 'suffix', 'suffixIcon', 'disabled', 'readonly', 'loading', 'focus', 'status', 'tips', 'required', 'ariaLabel'],
+    keys: ['value', 'defaultValue', 'label', 'placeholder', 'type', 'maxlength', 'maxcharacter', 'size', 'align', 'bordered', 'clearable', 'clearTrigger', 'prefixIcon', 'suffix', 'suffixIcon', 'disabled', 'readonly', 'loading', 'focus', 'status', 'tips', 'required', 'ariaLabel'],
   },
   overlay: {
     label: '遮罩',
@@ -3219,7 +3288,7 @@ function makeUsageCode(detail, props) {
     return `// shadcn/ui ${detail.title}\n// 当前条目仅用于组件分类与微信平台边界说明。\n// 该能力尚未生成可安装的 PoemUI 原生目录。\n\n// 兼容矩阵：docs/SHADCN_COMPATIBILITY.md`;
   }
   if (detail.id === 'getting-started') {
-    return `/* npm i poemui-miniprogram@0.1.0 -S --production */
+    return `/* npm i poemui-miniprogram@0.1.2 -S --production */
 {
   "usingComponents": {
     "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
@@ -4709,7 +4778,7 @@ function makeCompatNotes(detail) {
   } else if (compatId === 'collapse') {
     base.push(['事件', 'H5 使用真实 click 与键盘增强请求 change；小程序通过 triggerEvent 发布 change/retry，不重复伪造 input/open/close。']);
   } else if (compatId === 'textarea') {
-    base.push(['事件', 'H5 的真实 input 统一镜像为 change；清空固定为 clear → change，Cmd/Ctrl + Enter 只镜像 enter。小程序继续转发真实 focus/blur/line-change/keyboardheightchange。']);
+    base.push(['事件', 'H5 的真实 input 统一镜像为 change；Textarea 不提供 Clear，Cmd/Ctrl + Enter 只镜像 enter。小程序继续转发真实 focus/blur/line-change/keyboardheightchange。']);
   } else if (compatId === 'stepper') {
     base.push(['事件', 'H5 输入只更新草稿，Enter 或失焦才提交一次 change；失焦固定 change → blur。边界继续点击只发 overlimit，不伪造 change。']);
   } else if (compatId === 'switch') {
@@ -4749,11 +4818,11 @@ function makeCompatNotes(detail) {
     base.push(['布局与动效', 'horizontal/vertical、positive/reverse、default/dot 与 scrollable 在 H5/WXSS 同步；状态过渡固定 500ms standard，reduceMotion 与系统低动效压缩为 1ms。']);
   }
   if (compatId === 'textarea') {
-    base.push(['受控合同', 'value 非 null 时 change/clear 只请求父级回写，父级回写前不提前改变；defaultValue 只初始化，受控切回非受控时保留最后一次受控值。']);
+    base.push(['受控合同', 'value 非 null 时 change 只请求父级回写，父级回写前不提前改变；defaultValue 只初始化，受控切回非受控时保留最后一次受控值。']);
     base.push(['字符边界', 'maxcharacter 非负时优先执行 ASCII=1、非 ASCII 与 emoji=2 的加权安全截断；否则 maxlength 按 UTF-16 边界截断，不留下半个代理对。']);
-    base.push(['高度与组合', 'autosize 只接受 Boolean 或包含 minRows/maxRows 的对象；label/tips/extra Slot 与内部 Button/Icon/Loading 保持真实组合，不建立第二层 Surface。']);
+    base.push(['高度与组合', 'autosize 只接受 Boolean 或包含 minRows/maxRows 的对象；输入区不动态插入 Clear，label/tips/extra Slot 与内部 Icon/Loading 保持真实组合，不建立第二层 Surface。']);
     base.push(['平台能力', 'line-change 与 keyboardheightchange 只转发微信平台真实回调，H5 不凭换行数或视口高度伪造；selection、confirmType 和键盘参数仍直接映射到小程序原生 textarea。']);
-    base.push(['动效与映射', '字段状态、清空/加载动作和反馈区保留节点，以 grid rows/opacity/transform 固定使用 500ms；reduceMotion 与 prefers-reduced-motion 压缩为 1ms。']);
+    base.push(['动效与映射', '字段状态、Loading 和反馈区保留节点，以 grid rows/opacity/transform 固定使用 500ms；reduceMotion 与 prefers-reduced-motion 压缩为 1ms。']);
   }
   if (compatId === 'checkbox') {
     base.push(['单项受控', 'checked 非 null 时只发布一次 change 请求并等待父级回写；defaultChecked 仅初始化，退控保留最后渲染状态。value 只表示原始选项身份。']);
@@ -4993,6 +5062,8 @@ function makeCompatNotes(detail) {
   }
   base.push(compatId === 'divider'
     ? ['视觉开关', '深浅色更新线条与文字 Token；边框关闭时仍保留 Divider 的语义线条。阴影、毛玻璃、大圆角、渐变和低动效不改变 Divider 几何。']
+    : compatId === 'dynamic-message'
+      ? ['视觉开关', 'shadow 与 frostedGlass 是组件私有三态覆盖：null 继承全局外观，true 强制当前通知开启，false 强制当前通知关闭；流光不会覆盖 Surface 效果。']
       : ['视觉开关', '阴影、毛玻璃和大圆角只影响视觉镜像，不改变组件 API 的设计方向。']);
   return base;
 }
@@ -5318,6 +5389,14 @@ function bindPreviewRuntime(id, props) {
     state.previewDialogAbort.abort();
     state.previewDialogAbort = null;
   }
+  if (id !== 'avatar' && state.previewAvatarAbort) {
+    state.previewAvatarAbort.abort();
+    state.previewAvatarAbort = null;
+  }
+  if (id !== 'avatar' && Array.isArray(state.previewAvatarHideTimers)) {
+    state.previewAvatarHideTimers.forEach((timer) => clearTimeout(timer));
+    state.previewAvatarHideTimers = [];
+  }
   if (id !== 'popup' && state.previewPopupAbort) {
     state.previewPopupAbort.abort();
     state.previewPopupAbort = null;
@@ -5393,6 +5472,10 @@ function bindPreviewRuntime(id, props) {
   }
   if (id === 'cell') {
     bindCellPreviewRuntime(props);
+    return;
+  }
+  if (previewIdFor(id) === 'avatar') {
+    bindAvatarPreviewRuntime(props);
     return;
   }
   if (id === 'image') {
@@ -5549,10 +5632,57 @@ function bindPreviewRuntime(id, props) {
     bindVirtualListPreviewRuntime(props);
     return;
   }
+  if (['area-chart', 'bar-chart', 'waffle'].includes(id)) {
+    bindChartEntrancePreviewRuntime(props);
+    return;
+  }
   if (id === 'collapse') {
     syncCollapsePreviewHeights(true, props);
     return;
   }
+}
+
+function bindChartEntrancePreviewRuntime(props) {
+  cancelChartEntrancePreviewFrames();
+  const roots = Array.from(document.querySelectorAll('#previewStage [data-chart-entrance]'));
+  const enter = () => roots.forEach((root) => root.classList.add('is-entered'));
+  if (props.animated !== false) requestAnimationFrame(enter);
+}
+
+function cancelChartEntrancePreviewFrames() {
+  if (state.previewChartResetFrame) cancelAnimationFrame(state.previewChartResetFrame);
+  if (state.previewChartEnterFrame) cancelAnimationFrame(state.previewChartEnterFrame);
+  state.previewChartResetFrame = null;
+  state.previewChartEnterFrame = null;
+}
+
+function replayChartEntrancePreviewRuntime(props) {
+  const roots = Array.from(document.querySelectorAll('#previewStage [data-chart-entrance]'));
+  if (!roots.length) return;
+  cancelChartEntrancePreviewFrames();
+  if (props.animated === false) {
+    roots.forEach((root) => {
+      root.classList.remove('is-replay-reset');
+      root.classList.add('is-entered');
+    });
+    return;
+  }
+  roots.forEach((root) => {
+    root.classList.add('is-replay-reset');
+    root.classList.remove('is-entered');
+  });
+  roots.forEach((root) => { void root.getBoundingClientRect().width; });
+  state.previewChartResetFrame = requestAnimationFrame(() => {
+    state.previewChartResetFrame = null;
+    state.previewChartEnterFrame = requestAnimationFrame(() => {
+      state.previewChartEnterFrame = null;
+      roots.forEach((root) => {
+        if (!root.isConnected) return;
+        root.classList.remove('is-replay-reset');
+        root.classList.add('is-entered');
+      });
+    });
+  });
 }
 
 function apiPropDescription(id, key) {
@@ -5729,7 +5859,7 @@ function apiPropDescription(id, key) {
     };
     if (descriptions[key]) return descriptions[key];
   }
-  if (id === 'avatar') {
+  if (previewIdFor(id) === 'avatar') {
     const descriptions = {
       src: '头像图片地址；变更时重新进入真实图片加载状态。',
       text: '无图片、无 slot、无 icon 时取首字符作为回退。',
@@ -5737,6 +5867,8 @@ function apiPropDescription(id, key) {
       icon: '无图片、未启用 slot 时使用内部 pui-icon 作为回退。',
       useSlot: '是否让默认 slot 覆盖内部 Icon / 文本回退。',
       hideOnLoadFailed: '图片 error 后是否完成淡出再隐藏整个节点。',
+      lazy: '是否启用原生 image 的 lazy-load；只改变资源何时开始请求，等待态仍由 Avatar 内部管理。',
+      loading: '是否强制保持 Avatar 内部 Loading；用于持续等待或骨架场景，关闭后继续按真实图片 load/error 状态显示。',
       ariaLabel: 'Avatar 的可访问名称；为空时按 alt、text、icon 回退。',
       reduceMotion: '是否将固定的图片淡入和失败退场压缩为 1ms。',
     };
@@ -6526,7 +6658,8 @@ function apiPropDescription(id, key) {
     prefix: '输入组合左侧的前缀内容。',
     suffix: '输入组合右侧的后缀内容。',
     required: '是否展示必填标记。',
-    clearable: '是否在有输入内容时展示清空操作。',
+    clearable: '是否在有输入内容时提供清空操作。',
+    clearTrigger: '清空操作的显示时机；Input 默认仅聚焦时显示，always 可保持常驻。',
     showCancel: '是否展示取消操作。',
     rules: '表单校验规则集合。',
     requiredMark: '是否展示必填标记。',
@@ -6860,7 +6993,7 @@ function configProviderShowcase(props) {
 }
 
 const guideCopySources = {
-  install: `npm i poemui-miniprogram@0.1.0 -S --production`,
+  install: `npm i poemui-miniprogram@0.1.2 -S --production`,
   registry: `https://www.npmjs.com/package/poemui-miniprogram`,
   reference: `{
   "usingComponents": {
@@ -6882,7 +7015,7 @@ App({
     visualConfig.restore();
   }
 });`,
-  skill: `git clone --depth 1 --branch v0.1.0 https://github.com/fanxeon/poemui-miniprogram.git
+  skill: `git clone --depth 1 --branch v0.1.2 https://github.com/fanxeon/poemui-miniprogram.git
 cp -R poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/`,
 };
 
@@ -6916,7 +7049,7 @@ function gettingStartedGuide() {
       <header class="pui-guide__hero">
         <div class="pui-guide__eyebrow">
           ${tagSample({ content: '受限 Beta', variant: 'warning', size: 'small' })}
-          <span>poemui-miniprogram@0.1.0</span>
+          <span>poemui-miniprogram@0.1.2</span>
         </div>
         <h2>用真实组件完成第一个小程序页面</h2>
         <p>PoemUI 正在快速迭代。API、样式、文档和在线服务仍可能调整，当前暂不提供正式 SLA。</p>
@@ -6935,12 +7068,12 @@ function gettingStartedGuide() {
           <span>01</span>
           <div>
             <h2 id="guideInstallTitle">安装与微信构建</h2>
-            <p>固定安装 0.1.0，不使用 latest 漂移当前组件合同。</p>
+            <p>固定安装 0.1.2，不使用 latest 漂移当前组件合同。</p>
           </div>
         </header>
         <div class="pui-guide__status-grid">
           <div><span>包名</span><strong>poemui-miniprogram</strong></div>
-          <div><span>当前版本</span><strong>0.1.0</strong></div>
+          <div><span>当前版本</span><strong>0.1.2</strong></div>
           <div><span>npm Registry</span><strong>已发布</strong></div>
           <div><span>微信 build-npm</span><strong>公共包已验证</strong></div>
         </div>
@@ -6997,8 +7130,8 @@ function gettingStartedGuide() {
           <div class="pui-guide__skill-icon">${iconComponent('ai', { size: 'large' })}</div>
           <div>
             <strong>poemui-miniprogram Skill</strong>
-            <span>适配 0.1.0 · 公开可用</span>
-            <p>公开真相源为 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/v0.1.0/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>；安装后仍需让 AI 运行合同测试和微信构建。</p>
+            <span>适配 0.1.2 · 公开可用</span>
+            <p>公开真相源为 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/v0.1.2/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>；安装后仍需让 AI 运行合同测试和微信构建。</p>
           </div>
         </div>
         ${guideCodeBlockSample('skill', '安装 PoemUI Skill', 'Terminal')}
@@ -7108,6 +7241,12 @@ function renderComponentPreview(id, props) {
       return directionShowcase(props, demo);
     case 'progress':
       return progressShowcase(props, demo);
+    case 'area-chart':
+      return areaChartShowcase(props, demo);
+    case 'bar-chart':
+      return barChartShowcase(props, demo);
+    case 'waffle':
+      return waffleShowcase(props, demo);
     case 'loading':
       return loadingShowcase(props, demo);
     case 'top-loading':
@@ -7297,11 +7436,13 @@ function inputControlSample(props = {}) {
   const size = ['small', 'medium', 'large'].includes(props.size) ? props.size : 'medium';
   const type = browserInputType(props.type || 'text');
   const align = ['left', 'center', 'right'].includes(props.align) ? props.align : 'left';
+  const clearTrigger = ['focus', 'always'].includes(props.clearTrigger) ? props.clearTrigger : 'focus';
   const semanticLabel = String(props.ariaLabel || props.placeholder || '输入框').trim() || '输入框';
   const classes = [
     'pui-input-preview',
     `pui-input-preview--${size}`,
     `pui-input-preview--align-${align}`,
+    `pui-input-preview--clear-${clearTrigger}`,
     props.bordered === false ? 'pui-input-preview--borderless' : 'pui-input-preview--bordered',
     props.customClass || '',
     props.invalid ? 'pui-input-preview--error' : '',
@@ -8179,7 +8320,9 @@ function cardShowcase(props, demo) {
   const padding = props.padding === 'compact' ? 'compact' : 'normal';
   const clickable = props.clickable === true;
   const disabled = props.disabled === true;
-  const headerVisible = props.showHeader || props.title || props.description;
+  const menuItems = Array.isArray(props.menuItems) ? props.menuItems.slice(0, 8) : [];
+  const menuOpen = typeof props.menuVisible === 'boolean' ? props.menuVisible : !!demo.cardMenuOpen;
+  const headerVisible = props.showHeader || props.title || props.description || menuItems.length;
   const duration = previewMotionDuration(props.duration, props.reduceMotion);
   const easing = { standard: 'cubic-bezier(0.2, 0, 0, 1)', ease: 'ease', linear: 'linear', 'ease-in': 'ease-in', 'ease-out': 'ease-out', 'ease-in-out': 'ease-in-out' };
   const classes = [
@@ -8192,13 +8335,13 @@ function cardShowcase(props, demo) {
     clickable ? 'is-clickable' : '',
     disabled ? 'is-disabled' : '',
   ].filter(Boolean).join(' ');
-  const pendingTag = tagSample({ theme: 'warning', variant: 'light', size: 'small', content: demo.cardSaved ? '已标记复核' : '待用户确认' });
+  const trailing = `<span class="pui-card-showcase__header-right">${iconButtonSample({ icon: 'star', size: 'small', ariaLabel: '收藏卡片', demoAction: 'card-header-action' })}${iconButtonSample({ icon: props.menuIcon || 'more-horizontal', size: 'small', ariaLabel: '更多操作', demoAction: 'card-menu-toggle', ariaExpanded: menuOpen })}${menuOpen ? `<span class="pui-card-showcase__menu" role="menu">${menuItems.map((item, index) => buttonSample({ block: true, variant: 'text', size: 'small', icon: item.icon || '', content: item.label || item.text || `操作 ${index + 1}`, disabled: !!item.disabled, demoAction: 'card-menu-select', demoIndex: index })).join('')}</span>` : ''}</span>`;
   const footer = props.showFooter
     ? `<footer>${buttonSample({ theme: 'primary', block: true, icon: demo.cardSaved ? 'refresh' : 'check', content: demo.cardSaved ? '返回验收清单' : '查看验收清单', demoAction: 'card-save' })}</footer>`
     : '';
   return `<section class="demo-section pui-card-showcase-wrap">
     <article class="${classes}" ${clickable && !disabled ? 'data-demo-action="card-tap" role="button" tabindex="0"' : ''} aria-label="${escapeHtml(props.ariaLabel || '卡片')}" aria-disabled="${disabled}" style="--pui-card-duration:${duration}ms;--pui-card-ease:${easing[props.easing] || easing.standard}">
-      ${headerVisible ? `<header><div><strong>${escapeHtml(props.title || 'Tabs 更新已准备')}</strong><span>${escapeHtml(props.description || '横向滑动、主题和外观开关将在发布前复核。')}</span></div>${pendingTag}</header>` : ''}
+      ${headerVisible ? `<header><div><strong>${escapeHtml(props.title || 'Tabs 更新已准备')}</strong><span>${escapeHtml(props.description || '横向滑动、主题和外观开关将在发布前复核。')}</span></div>${trailing}</header>` : ''}
       <div class="pui-card-showcase__content">
         <div class="pui-card-showcase__meta"><span>${iconComponent('check-circle', { size: 'small' })} 发布前检查</span><em>${demo.cardTapped ? '已打开' : '待查看'}</em></div>
         <div class="pui-card-showcase__summary"><span>影响范围：组件导航与内容切换</span><span>下一步：查看验收清单</span></div>
@@ -8444,23 +8587,37 @@ function bubblePreviewNode(props, demo, config) {
   if (!demo.bubbleRendered) return '<div class="pui-bubble-showcase__empty">Bubble 未挂载：visible=false 或没有有效正文</div>';
   const expanded = resolveBubbleExpanded(props, demo);
   const interactive = props.clickable && !props.disabled;
-  const surfaceTag = interactive ? 'button' : 'div';
+  const surfaceTag = interactive && !props.collapsible ? 'button' : 'div';
   const surfaceAttrs = interactive
-    ? `type="button" data-demo-action="bubble-click" data-bubble-surface aria-label="${escapeHtml(config.label)}"`
+    ? `${surfaceTag === 'button' ? 'type="button"' : 'role="button" tabindex="0"'} data-demo-action="bubble-click" data-bubble-surface aria-label="${escapeHtml(config.label)}"`
     : `role="group" data-bubble-surface aria-label="${escapeHtml(config.label)}" aria-disabled="${Boolean(props.disabled)}"`;
   const content = props.customContent
     ? `<div class="pui-bubble-preview__custom">${iconComponent('check-circle', { size: 'small' })}<span>自定义消息正文</span>${tagSample({ theme: 'success', variant: 'outline', size: 'small', content: 'ready' })}</div>`
     : escapeHtml(config.content);
-  const initialFullHeight = Math.max(config.maxLines * 20, Math.ceil(Math.max(1, config.content.length) / 14) * 20);
+  const measureKey = [config.content, config.maxLines, config.variant, Boolean(props.customContent)].join('\u0001');
+  if (demo.bubbleMeasureKey !== measureKey) {
+    demo.bubbleMeasureKey = measureKey;
+    demo.bubbleMeasuredCollapsed = null;
+    demo.bubbleMeasuredExpanded = null;
+  }
+  const initialCollapsedHeight = Number.isFinite(demo.bubbleMeasuredCollapsed) ? demo.bubbleMeasuredCollapsed : config.maxLines * 20;
+  const estimatedFullHeight = Math.max(initialCollapsedHeight, Math.ceil(Math.max(1, config.content.length) / 14) * 20);
+  const initialFullHeight = Number.isFinite(demo.bubbleMeasuredExpanded) ? demo.bubbleMeasuredExpanded : estimatedFullHeight;
+  const expansionDirection = demo.bubbleExpansionDirection || '';
+  const initialClipHeight = expansionDirection === 'expanding'
+    ? initialCollapsedHeight
+    : expansionDirection === 'collapsing' ? initialFullHeight : null;
+  const initialClipStyle = Number.isFinite(initialClipHeight) ? ` style="max-height:${initialClipHeight}px"` : '';
   const reactions = props.customReactions
     ? `<div class="pui-bubble-preview__reactions is-${config.reactionAlign}" data-bubble-reactions>${buttonSample({ previewContract: true, customClass: 'pui-bubble-preview__reaction', size: 'small', variant: 'outline', content: '👍 2', demoAction: 'bubble-reaction', demoValue: 'custom' })}</div>`
     : config.reactions.length ? `<div class="pui-bubble-preview__reactions is-${config.reactionAlign}" data-bubble-reactions role="group" aria-label="消息回应">${config.reactions.map((item, index) => buttonSample({ previewContract: true, customClass: `pui-bubble-preview__reaction ${item.active ? 'is-active' : ''}`, size: 'small', theme: item.active ? 'primary' : 'default', variant: item.active ? 'base' : 'outline', content: item.text, disabled: !!props.disabled || item.disabled, demoAction: 'bubble-reaction', demoIndex: index, ariaLabel: item.ariaLabel, ariaPressed: item.active })).join('')}</div>` : '';
-  const toggle = props.collapsible ? buttonSample({ previewContract: true, customClass: 'pui-bubble-preview__toggle', size: 'small', variant: 'text', icon: expanded ? 'chevron-up' : 'chevron-down', content: expanded ? props.collapseText || '收起' : props.expandText || '展开', disabled: !!props.disabled, demoAction: 'bubble-toggle', ariaExpanded: expanded }) : '';
-  return `<div class="pui-bubble-preview is-${config.align} is-${config.variant} is-group-${config.groupPosition} is-reaction-${config.reactionSide} ${props.customReactions || config.reactions.length ? 'has-reactions' : ''} ${demo.bubbleActive ? 'is-active' : ''} ${props.collapsible ? 'is-collapsible' : ''} ${expanded ? 'is-expanded' : 'is-collapsed'} ${props.disabled ? 'is-disabled' : ''}" data-bubble-preview data-expansion-direction="${demo.bubbleExpansionDirection || ''}" style="--pui-bubble-preview-duration:${config.duration}ms;--pui-bubble-preview-ease:${config.easing};--pui-bubble-preview-lines:${config.maxLines};--pui-bubble-preview-collapsed:${config.maxLines * 20}px;--pui-bubble-preview-expanded:${initialFullHeight}px">
+  const toggle = props.collapsible
+    ? `<div class="pui-bubble-preview__toggle-row">${buttonSample({ previewContract: true, customClass: 'pui-bubble-preview__toggle', block: true, size: 'small', variant: 'text', icon: expanded ? 'chevron-up' : 'chevron-down', content: expanded ? props.collapseText || '收起' : props.expandText || '展开', disabled: !!props.disabled, demoAction: 'bubble-toggle', ariaExpanded: expanded })}</div>`
+    : '';
+  return `<div class="pui-bubble-preview is-${config.align} is-${config.variant} is-group-${config.groupPosition} is-reaction-${config.reactionSide} ${props.customReactions || config.reactions.length ? 'has-reactions' : ''} ${demo.bubbleActive ? 'is-active' : ''} ${props.collapsible ? 'is-collapsible' : ''} ${expanded ? 'is-expanded' : 'is-collapsed'} ${props.disabled ? 'is-disabled' : ''}" data-bubble-preview data-expansion-direction="${expansionDirection}" style="--pui-bubble-preview-duration:${config.duration}ms;--pui-bubble-preview-ease:${config.easing};--pui-bubble-preview-lines:${config.maxLines};--pui-bubble-preview-collapsed:${initialCollapsedHeight}px;--pui-bubble-preview-expanded:${initialFullHeight}px">
     <div class="pui-bubble-preview__shell">
       ${config.reactionSide === 'top' ? reactions : ''}
-      <${surfaceTag} class="pui-bubble-preview__surface" ${surfaceAttrs} aria-live="${config.ariaLive}"><span class="pui-bubble-preview__clip" data-bubble-clip>${content}</span></${surfaceTag}>
-      ${toggle}
+      <${surfaceTag} class="pui-bubble-preview__surface" ${surfaceAttrs} aria-live="${config.ariaLive}"><span class="pui-bubble-preview__clip" data-bubble-clip${initialClipStyle}>${content}</span>${toggle}</${surfaceTag}>
       ${config.reactionSide === 'bottom' ? reactions : ''}
     </div>
   </div>`;
@@ -8491,6 +8648,8 @@ function bubbleShowcase(props, demo) {
 function bindBubblePreviewRuntime(props) {
   const root = document.querySelector('#previewStage [data-bubble-preview]');
   if (!root) return;
+  clearTimeout(state.previewBubbleExpansionTimer);
+  state.previewBubbleExpansionTimer = null;
   const demo = getDemoState('bubble');
   const config = bubblePreviewConfig(props);
   const clip = root.querySelector('[data-bubble-clip]');
@@ -8498,34 +8657,50 @@ function bindBubblePreviewRuntime(props) {
   if (clip) {
     const lineHeight = Number.parseFloat(getComputedStyle(clip).lineHeight) || 20;
     const collapsed = Math.max(lineHeight, lineHeight * config.maxLines);
-    // A line-clamped flex box reports its clamped scrollHeight in some WebKit
-    // builds. Measure the same live node synchronously without the clamp, then
-    // restore its inline style before the browser paints the next frame.
+    // Measure the retained visible node synchronously without its max-height,
+    // then restore the committed endpoint before the browser paints.
     const previousInlineStyle = clip.getAttribute('style');
-    clip.style.display = 'block';
     clip.style.maxHeight = 'none';
-    clip.style.webkitLineClamp = 'unset';
     const expanded = Math.max(collapsed, clip.scrollHeight);
     if (previousInlineStyle === null) clip.removeAttribute('style');
     else clip.setAttribute('style', previousInlineStyle);
-    root.style.setProperty('--pui-bubble-preview-collapsed', `${Math.ceil(collapsed)}px`);
-    root.style.setProperty('--pui-bubble-preview-expanded', `${Math.ceil(expanded + 1)}px`);
+    demo.bubbleMeasuredCollapsed = Math.ceil(collapsed);
+    demo.bubbleMeasuredExpanded = Math.ceil(expanded + 1);
+    root.style.setProperty('--pui-bubble-preview-collapsed', `${demo.bubbleMeasuredCollapsed}px`);
+    root.style.setProperty('--pui-bubble-preview-expanded', `${demo.bubbleMeasuredExpanded}px`);
     const overflowing = props.customContent || expanded > collapsed + 1;
     demo.bubbleOverflowing = overflowing;
     if (toggle) toggle.hidden = !overflowing;
     const direction = root.dataset.expansionDirection;
     if (direction === 'expanding' || direction === 'collapsing') {
-      void clip.offsetHeight;
       root.classList.add(`is-${direction}`);
-      clip.addEventListener('animationend', () => {
+      const startHeight = direction === 'expanding' ? demo.bubbleMeasuredCollapsed : demo.bubbleMeasuredExpanded;
+      const targetHeight = direction === 'expanding' ? demo.bubbleMeasuredExpanded : demo.bubbleMeasuredCollapsed;
+      clip.style.maxHeight = `${startHeight}px`;
+      void clip.offsetHeight;
+      let finished = false;
+      const finishExpansion = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(state.previewBubbleExpansionTimer);
+        state.previewBubbleExpansionTimer = null;
         if (!bubblePreviewIsCurrent(demo)) return;
+        clip.style.removeProperty('max-height');
         root.classList.remove('is-expanding', 'is-collapsing');
         demo.bubbleExpansionDirection = '';
-        demo.bubbleEvent = `${direction === 'expanding' ? 'input → change → expand' : 'input → change → collapse'}：source=${demo.bubbleExpansionSource || 'property'} · animationend`;
+        demo.bubbleEvent = `${direction === 'expanding' ? 'input → change → expand' : 'input → change → collapse'}：source=${demo.bubbleExpansionSource || 'property'} · transitionend`;
         demo.bubbleExpansionSource = '';
         const output = document.querySelector('#previewStage [data-bubble-event]');
         if (output) output.textContent = demo.bubbleEvent;
-      }, { once: true });
+      };
+      clip.addEventListener('transitionend', (event) => {
+        if (event.propertyName === 'max-height') finishExpansion();
+      });
+      requestAnimationFrame(() => {
+        if (!bubblePreviewIsCurrent(demo) || !clip.isConnected) return;
+        clip.style.maxHeight = `${targetHeight}px`;
+      });
+      state.previewBubbleExpansionTimer = setTimeout(finishExpansion, config.duration + 80);
     }
   }
   const surface = root.querySelector('[data-bubble-surface]');
@@ -8624,6 +8799,7 @@ function avatarNode(props, options = {}) {
   const source = options.source === undefined ? (props.src || '') : options.source;
   const size = ['small', 'medium', 'large'].includes(options.size || props.size) ? (options.size || props.size) : 'medium';
   const shape = ['circle', 'round', 'square'].includes(options.shape || props.shape) ? (options.shape || props.shape) : 'circle';
+  const lazy = options.lazy === undefined ? !!props.lazy : !!options.lazy;
   const iconPx = { small: 14, medium: 18, large: 23 }[size];
   const label = props.ariaLabel || props.alt || props.text || props.icon || '头像';
   const fallbackText = String(options.text === undefined ? (props.text || props.alt || '?') : options.text).trim().charAt(0).toUpperCase() || '?';
@@ -8639,19 +8815,92 @@ function avatarNode(props, options = {}) {
     props.bordered ? 'is-bordered' : '',
   ].filter(Boolean).join(' ');
   const style = `--pui-avatar-duration:${avatarPreviewDuration(props)}ms;`;
-  const observerAttr = options.observeImage ? ' data-avatar-host' : '';
-  const image = source ? `<img data-avatar-image src="${escapeHtml(source)}" alt="" />` : '';
-  return `<span class="${classes}" style="${style}"${observerAttr} role="img" aria-label="${escapeHtml(label)}"><span class="pui-avatar-demo__fallback">${fallback}</span>${image}</span>`;
+  const forcedLoading = !!props.loading;
+  const loading = Boolean(forcedLoading || source);
+  const image = source ? `<img data-avatar-image src="${escapeHtml(source)}" alt="" loading="${lazy ? 'lazy' : 'eager'}" />` : '';
+  const loadingNode = loading ? `<span class="pui-avatar-demo__loading" data-avatar-loading>${loadingComponent({ size: 'small', text: '', reduceMotion: !!props.reduceMotion })}</span>` : '';
+  return `<span class="${classes}" style="${style}" data-avatar-host data-avatar-current="${options.current ? 'true' : 'false'}" data-avatar-hide-failed="${props.hideOnLoadFailed ? 'true' : 'false'}" data-avatar-forced-loading="${forcedLoading ? 'true' : 'false'}" role="img" aria-label="${escapeHtml(label)}" aria-busy="${loading}"><span class="pui-avatar-demo__fallback">${fallback}</span>${image}${loadingNode}</span>`;
+}
+
+function setAvatarPreviewEvent(message) {
+  const node = document.querySelector('#previewStage [data-avatar-event]');
+  if (node) node.textContent = message;
+}
+
+function setAvatarPreviewResourceState(host, nextState) {
+  const image = host.querySelector('[data-avatar-image]');
+  const loading = host.querySelector('[data-avatar-loading]');
+  const stateName = ['loading', 'loaded', 'error'].includes(nextState) ? nextState : 'error';
+  const busy = host.dataset.avatarForcedLoading === 'true' || stateName === 'loading';
+  host.classList.toggle('is-loaded', stateName === 'loaded');
+  host.classList.toggle('is-error', stateName === 'error');
+  host.setAttribute('aria-busy', String(busy));
+  if (image) {
+    image.classList.toggle('is-loaded', stateName === 'loaded');
+    image.hidden = stateName === 'error';
+  }
+  if (loading) loading.hidden = !busy;
+}
+
+function bindAvatarPreviewRuntime(props) {
+  if (state.previewAvatarAbort) state.previewAvatarAbort.abort();
+  if (Array.isArray(state.previewAvatarHideTimers)) {
+    state.previewAvatarHideTimers.forEach((timer) => clearTimeout(timer));
+  }
+  state.previewAvatarHideTimers = [];
+  const controller = new AbortController();
+  state.previewAvatarAbort = controller;
+  const duration = avatarPreviewDuration(props);
+  document.querySelectorAll('#previewStage [data-avatar-host]').forEach((host) => {
+    const image = host.querySelector('[data-avatar-image]');
+    if (!image) {
+      if (host.dataset.avatarForcedLoading === 'true') setAvatarPreviewResourceState(host, 'loading');
+      else {
+        host.classList.remove('is-loaded', 'is-error');
+        host.setAttribute('aria-busy', 'false');
+        const loading = host.querySelector('[data-avatar-loading]');
+        if (loading) loading.hidden = true;
+      }
+      return;
+    }
+    let settled = false;
+    const updateEvent = (message) => {
+      if (host.dataset.avatarCurrent === 'true') setAvatarPreviewEvent(message);
+    };
+    const onLoad = () => {
+      if (settled || !host.isConnected) return;
+      settled = true;
+      setAvatarPreviewResourceState(host, 'loaded');
+      updateEvent('图片已真实加载；load 只更新 Avatar 内部绘制状态');
+    };
+    const onError = () => {
+      if (settled || !host.isConnected) return;
+      settled = true;
+      setAvatarPreviewResourceState(host, 'error');
+      updateEvent('图片真实加载失败；error 已触发并显示回退内容');
+      if (host.dataset.avatarForcedLoading === 'true') return;
+      if (host.dataset.avatarHideFailed !== 'true') return;
+      host.classList.add('is-leaving');
+      const timer = setTimeout(() => {
+        if (host.isConnected) host.hidden = true;
+      }, duration);
+      state.previewAvatarHideTimers.push(timer);
+    };
+    setAvatarPreviewResourceState(host, 'loading');
+    image.addEventListener('load', onLoad, { once: true, signal: controller.signal });
+    image.addEventListener('error', onError, { once: true, signal: controller.signal });
+    if (image.complete) requestAnimationFrame(() => (image.naturalWidth > 0 ? onLoad() : onError()));
+  });
 }
 
 function avatarShowcase(props, demo) {
   const source = props.src || '';
-  const event = demo.avatarEvent || (source ? '等待真实图片 error；load 只更新内部绘制' : '未传图片，展示真实回退内容');
-  const current = avatarNode(props, { observeImage: true });
+  const event = demo.avatarEvent || (props.loading ? 'loading=true，Avatar 内部持续显示 Loading' : source ? '等待真实图片 error；load 只更新内部绘制' : '未传图片，展示真实回退内容');
+  const current = avatarNode(props, { current: true });
   const actionContent = `<span class="pui-avatar-action__content">${avatarNode({ ...componentPropDefaults.avatar, text: 'P', size: 'small' })}<span class="pui-avatar-action__label">查看资料</span></span>`;
   return `<section class="demo-section pui-avatar-showcase">
     <article class="pui-showcase-section"><h3>基础用法</h3><div class="pui-avatar-showcase__row">${current}</div></article>
-    <article class="pui-showcase-section"><h3>图片与回退</h3><div class="pui-avatar-showcase__row">${avatarNode({ ...componentPropDefaults.avatar, src: previewWorkspaceAsset, alt: 'PoemUI 图片头像', size: 'large' })}${avatarNode({ ...componentPropDefaults.avatar, icon: 'profile', alt: 'Icon 回退' })}${avatarNode({ ...componentPropDefaults.avatar, useSlot: true, ariaLabel: 'Slot 回退' })}${avatarNode({ ...componentPropDefaults.avatar, text: 'Text', alt: '文字回退' })}</div><p class="pui-avatar-showcase__event" data-avatar-event>${escapeHtml(event)}</p></article>
+    <article class="pui-showcase-section"><h3>懒加载、图片与回退</h3><div class="pui-avatar-showcase__row">${avatarNode({ ...componentPropDefaults.avatar, src: avatarRealProfileSource, alt: '真实用户头像', size: 'large', lazy: true })}${avatarNode({ ...componentPropDefaults.avatar, loading: true, text: 'L', ariaLabel: '头像持续加载中', size: 'large' })}${avatarNode({ ...componentPropDefaults.avatar, src: '/__poemui__/missing-avatar.png', text: 'F', alt: '失败回退头像', lazy: true, size: 'large' })}${avatarNode({ ...componentPropDefaults.avatar, icon: 'profile', alt: 'Icon 回退' })}${avatarNode({ ...componentPropDefaults.avatar, useSlot: true, ariaLabel: 'Slot 回退' })}</div><p class="pui-avatar-showcase__event" data-avatar-event>${escapeHtml(event)}</p></article>
     <article class="pui-showcase-section"><h3>尺寸与形状</h3><div class="pui-avatar-showcase__row">${avatarNode({ ...componentPropDefaults.avatar, text: 'S' }, { size: 'small', shape: 'circle' })}${avatarNode({ ...componentPropDefaults.avatar, text: 'M' }, { size: 'medium', shape: 'round' })}${avatarNode({ ...componentPropDefaults.avatar, text: 'L' }, { size: 'large', shape: 'square' })}</div></article>
     <article class="pui-showcase-section"><h3>组合用法</h3><div class="pui-avatar-showcase__row is-composed"><span class="pui-avatar-badge-host">${avatarNode({ ...componentPropDefaults.avatar, text: 'B', bordered: true })}${badgeSample({ count: 3 })}</span>${buttonSample({ previewContract: true, variant: 'outline', size: 'small', defaultSlot: actionContent, ariaLabel: '查看 PoemUI 用户资料', demoAction: 'avatar-host-click' })}${buttonSample({ previewContract: true, variant: 'outline', size: 'small', defaultSlot: actionContent, ariaLabel: '不可用的用户资料', disabled: true })}</div></article>
   </section>`;
@@ -9360,7 +9609,8 @@ function tabbarPreviewMarkup(props, demo, sampleId, scenario) {
   const active = current.index >= 0 ? items[current.index] : null;
   const theme = props.theme === 'tag' ? 'tag' : 'normal';
   const shape = props.shape === 'round' ? 'round' : 'normal';
-  const classes = ['pui-tabbar-preview', `pui-tabbar-preview--theme-${theme}`, `pui-tabbar-preview--shape-${shape}`, props.bordered ? 'is-bordered' : 'is-borderless', props.split ? 'is-split' : '', props.fixed ? 'is-fixed' : '', props.safeAreaInsetBottom ? 'has-safe-bottom' : '', props.disabled ? 'is-disabled' : '', props.reduceMotion ? 'is-reduced-motion' : ''].filter(Boolean).join(' ');
+  const allIconOnly = items.length > 0 && items.every((item) => !item.label);
+  const classes = ['pui-tabbar-preview', `pui-tabbar-preview--theme-${theme}`, `pui-tabbar-preview--shape-${shape}`, props.bordered ? 'is-bordered' : 'is-borderless', props.split ? 'is-split' : '', allIconOnly ? 'is-all-icon-only' : '', props.fixed ? 'is-fixed' : '', props.safeAreaInsetBottom ? 'has-safe-bottom' : '', props.disabled ? 'is-disabled' : '', props.reduceMotion ? 'is-reduced-motion' : ''].filter(Boolean).join(' ');
   const buttons = items.map((item, index) => {
     const selected = index === current.index;
     const icon = selected && item.activeIcon ? item.activeIcon : item.icon;
@@ -9891,6 +10141,20 @@ function indexesNavigation(props, groups, current) {
   }, []);
 }
 
+function indexesPreviewGeometry(height, navigation, showFullIndex) {
+  const availableHeight = Math.max(1, height - 20);
+  const itemHeight = navigation.length ? Math.min(18, availableHeight / navigation.length) : 18;
+  const longest = navigation.reduce((length, item) => Math.max(length, Array.from(String(item.index)).length), 1);
+  const buttonWidth = showFullIndex ? Math.min(120, 21 + Math.max(0, longest - 1) * 12) : 21;
+  return {
+    itemHeight,
+    railHeight: navigation.length ? itemHeight * navigation.length : 0,
+    buttonWidth,
+    railWidth: buttonWidth + 7,
+    fontSize: Math.min(12, Math.max(8, itemHeight - 1)),
+  };
+}
+
 function indexesPreviewMarkup(props, demo, sampleId = 'current') {
   const groups = indexesGroupsFromProps(props);
   const current = resolveIndexesPreviewValue(props, demo, groups);
@@ -9898,20 +10162,25 @@ function indexesPreviewMarkup(props, demo, sampleId = 'current') {
   const stateType = props.error ? 'error' : props.loading ? 'loading' : groups.length ? 'content' : 'empty';
   const motion = indexesPreviewMotion(props);
   const height = Math.max(120, Math.min(600, (Number(props.height) || 680) / 2));
+  const geometry = indexesPreviewGeometry(height, navigation, props.showFullIndex);
   const stickyOffset = Math.max(0, Math.min(120, (Number(props.stickyOffset) || 0) / 2));
   const position = props.indexPosition === 'left' ? 'left' : 'right';
   const content = groups.map((group) => `<section class="pui-indexes-preview__group ${group.disabled ? 'is-disabled' : ''}" data-indexes-group-index="${group.groupIndex}"><strong class="pui-indexes-preview__heading">${escapeHtml(group.title)}</strong><div>${group.items.map((item) => indexesEntryMarkup(props, group, item)).join('')}</div></section>`).join('');
-  const bar = navigation.map((item) => `<span class="pui-indexes-preview__bar-item ${item.active ? 'is-active' : ''}">${buttonSample({ content: item.display, size: 'small', variant: 'text', disabled: !!props.disabled || !!props.loading || !!props.error || item.disabled, ariaLabel: `定位到${item.title}`, demoAction: 'indexes-select', demoIndex: item.groupIndex })}</span>`).join('');
+  const bar = navigation.map((item) => {
+    const blocked = !!props.disabled || !!props.loading || !!props.error || item.disabled;
+    return `<span class="pui-indexes-preview__bar-item ${item.active ? 'is-active' : ''}" role="button" tabindex="${blocked ? -1 : 0}" aria-label="定位到${escapeHtml(item.title)}" aria-disabled="${blocked}" data-demo-action="indexes-select" data-index="${item.groupIndex}"><span class="pui-indexes-preview__bar-label">${escapeHtml(item.display)}</span></span>`;
+  }).join('');
   const classes = ['pui-indexes-preview', `is-${stateType}`, `is-bar-${position}`, props.sticky ? 'has-sticky' : '', navigation.length ? '' : 'is-index-hidden', props.disabled ? 'is-disabled' : '', props.readonly ? 'is-readonly' : '', props.reduceMotion ? 'is-reduced-motion' : ''].filter(Boolean).join(' ');
   const contentInactive = stateType !== 'content';
   const stateLayer = (type, role, body) => {
     const active = stateType === type;
     return `<div class="pui-indexes-preview__state is-${type} ${active ? 'is-active' : ''}" role="${role}" aria-hidden="${!active}"${active ? '' : ' inert'}>${body}</div>`;
   };
-  return `<div class="${classes}" style="--pui-indexes-preview-height:${height}px;--pui-indexes-preview-sticky-offset:${stickyOffset}px;--pui-indexes-preview-duration:${motion}ms;--pui-indexes-preview-ease:var(--pui-ease-standard)" role="region" aria-label="${escapeHtml(props.ariaLabel || '索引列表')}" aria-disabled="${!!props.disabled}" data-indexes-sample="${escapeHtml(sampleId)}" data-indexes-current="${escapeHtml(JSON.stringify(current.value))}" data-indexes-event="${escapeHtml(demo.indexesEvent || '')}">
+  return `<div class="${classes}" style="--pui-indexes-preview-height:${height}px;--pui-indexes-preview-sticky-offset:${stickyOffset}px;--pui-indexes-preview-duration:${motion}ms;--pui-indexes-preview-ease:var(--pui-ease-standard);--pui-indexes-preview-rail-item-height:${geometry.itemHeight}px;--pui-indexes-preview-rail-height:${geometry.railHeight}px;--pui-indexes-preview-rail-button-width:${geometry.buttonWidth}px;--pui-indexes-preview-rail-width:${geometry.railWidth}px;--pui-indexes-preview-rail-font-size:${geometry.fontSize}px" role="region" aria-label="${escapeHtml(props.ariaLabel || '索引列表')}" aria-disabled="${!!props.disabled}" data-indexes-sample="${escapeHtml(sampleId)}" data-indexes-current="${escapeHtml(JSON.stringify(current.value))}" data-indexes-event="${escapeHtml(demo.indexesEvent || '')}">
       <div class="pui-indexes-preview__body">
         <div class="pui-indexes-preview__scroll ${contentInactive ? 'is-inactive' : 'is-active'}" data-indexes-scroll tabindex="${contentInactive ? '-1' : '0'}" aria-label="${escapeHtml(props.ariaLabel || '索引列表')}内容" aria-hidden="${contentInactive}"${contentInactive ? ' inert' : ''}>${content}</div>
         <nav class="pui-indexes-preview__bar ${navigation.length && !contentInactive ? 'is-active' : 'is-inactive'}" aria-label="索引导航" aria-hidden="${contentInactive || !navigation.length}"${contentInactive || !navigation.length ? ' inert' : ''}>${bar}</nav>
+        <div class="pui-indexes-preview__magnifier" data-indexes-magnifier aria-hidden="true"></div>
         ${stateLayer('loading', 'status', loadingComponent({ size: '36rpx', text: props.loadingText || '加载中', reduceMotion: !!props.reduceMotion }))}
         ${stateLayer('error', 'alert', `${emptySample({ embedded: true, role: 'alert', description: props.errorText || '加载失败', icon: 'error-circle', reduceMotion: !!props.reduceMotion })}${props.retryText ? buttonSample({ theme: 'danger', variant: 'outline', size: 'small', icon: 'refresh', content: props.retryText, disabled: !!props.disabled, demoAction: 'indexes-retry', dataAttributes: { 'indexes-sample': sampleId } }) : ''}`)}
         ${stateLayer('empty', 'status', emptySample({ embedded: true, description: props.emptyText || '暂无索引数据', icon: 'inbox', reduceMotion: !!props.reduceMotion }))}
@@ -9953,39 +10222,73 @@ function bindIndexesPreviewRuntime(props) {
     const sampleDemo = sampleId === 'current' ? getDemoState('indexes') : indexesSampleDemo(getDemoState('indexes'), sampleId);
     const area = root.querySelector('[data-indexes-scroll]');
     const bar = root.querySelector('.pui-indexes-preview__bar');
-    if (!area || !bar || sampleProps.disabled || sampleProps.loading || sampleProps.error) return;
+    if (!area || !bar || sampleProps.loading || sampleProps.error) return;
     const groupMarkers = Array.from(area.querySelectorAll('[data-indexes-group-index]'));
-    const selectFromPoint = (clientY, source) => {
-      const target = Array.from(bar.querySelectorAll('[data-demo-action="indexes-select"]')).find((button) => {
-        const rect = button.getBoundingClientRect();
+    const targets = Array.from(bar.querySelectorAll('[data-demo-action="indexes-select"]'));
+    const magnifier = root.querySelector('[data-indexes-magnifier]');
+    const showMagnifier = (target) => {
+      if (!magnifier || !target) return;
+      magnifier.textContent = target.textContent.trim();
+      magnifier.classList.add('is-active');
+      magnifier.setAttribute('aria-hidden', 'false');
+    };
+    const hideMagnifier = () => {
+      if (!magnifier) return;
+      magnifier.classList.remove('is-active');
+      magnifier.setAttribute('aria-hidden', 'true');
+    };
+    const selectFromPoint = (clientY, source, showPreview) => {
+      const target = targets.find((item) => {
+        const rect = item.getBoundingClientRect();
         return clientY >= rect.top && clientY <= rect.bottom;
       });
-      if (!target || target.disabled) return false;
+      if (!target || target.getAttribute('aria-disabled') === 'true') return false;
       const groupIndex = Number(target.dataset.index);
       if (!Number.isInteger(groupIndex)) return false;
       sampleDemo.indexesIgnoreClickUntil = Date.now() + 240;
-      return requestIndexesPreviewGroup(sampleProps, sampleDemo, groupIndex, source, { current: sampleId === 'current' });
+      sampleDemo.indexesPendingPointerGroup = groupIndex;
+      targets.forEach((item) => item.classList.toggle('is-active', item === target));
+      const marker = groupMarkers.find((node) => Number(node.dataset.indexesGroupIndex) === groupIndex);
+      if (marker) area.scrollTop = marker.offsetTop;
+      if (showPreview) showMagnifier(target);
+      sampleDemo.indexesPointerSource = source;
+      return true;
     };
     let pointerActive = false;
     bar.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0) return;
+      if (event.button !== 0 || sampleProps.disabled) return;
       pointerActive = true;
+      sampleDemo.indexesPointerActive = true;
       if (bar.setPointerCapture) bar.setPointerCapture(event.pointerId);
-      selectFromPoint(event.clientY, event.pointerType === 'touch' ? 'touch' : 'pointer');
+      selectFromPoint(event.clientY, event.pointerType === 'touch' ? 'touch' : 'pointer', false);
+      clearTimeout(sampleDemo.indexesPreviewHoldTimer);
+      sampleDemo.indexesPreviewHoldTimer = window.setTimeout(() => {
+        const pending = targets.find((item) => Number(item.dataset.index) === Number(sampleDemo.indexesPendingPointerGroup));
+        if (pointerActive) showMagnifier(pending);
+      }, 120);
     }, { signal });
     bar.addEventListener('pointermove', (event) => {
       if (!pointerActive) return;
-      selectFromPoint(event.clientY, event.pointerType === 'touch' ? 'touch' : 'pointer');
+      selectFromPoint(event.clientY, event.pointerType === 'touch' ? 'touch' : 'pointer', true);
     }, { signal });
-    const releasePointer = () => { pointerActive = false; };
+    const releasePointer = () => {
+      if (!pointerActive) return;
+      pointerActive = false;
+      sampleDemo.indexesPointerActive = false;
+      clearTimeout(sampleDemo.indexesPreviewHoldTimer);
+      hideMagnifier();
+      const groupIndex = Number(sampleDemo.indexesPendingPointerGroup);
+      delete sampleDemo.indexesPendingPointerGroup;
+      if (Number.isInteger(groupIndex)) requestIndexesPreviewGroup(sampleProps, sampleDemo, groupIndex, sampleDemo.indexesPointerSource || 'pointer', { current: sampleId === 'current' });
+    };
     bar.addEventListener('pointerup', releasePointer, { signal });
     bar.addEventListener('pointercancel', releasePointer, { signal });
     bar.addEventListener('mousemove', (event) => {
       if (typeof window.PointerEvent !== 'undefined' || event.buttons !== 1) return;
-      selectFromPoint(event.clientY, 'mouse');
+      selectFromPoint(event.clientY, 'mouse', true);
     }, { signal });
     area.addEventListener('scroll', () => {
-      if (sampleDemo.indexesAnimating) return;
+      if (sampleDemo.indexesAnimating || sampleDemo.indexesPointerActive) return;
       const atEnd = area.scrollTop + area.clientHeight >= area.scrollHeight - 2;
       const marker = atEnd ? groupMarkers.at(-1) : groupMarkers.reduce((active, node) => {
         const groupIndex = Number(node.dataset.indexesGroupIndex);
@@ -10243,7 +10546,7 @@ function collapsibleShowcase(props, demo) {
   const expand = props.expandIcon ? `<i class="pui-collapsible-preview__expand">${iconComponent('chevron-down', { size: 'small' })}</i>` : '';
   return `<section class="demo-section pui-collapsible-showcase">
     <div class="pui-showcase-label"><strong>Collapsible native mirror</strong><span>single trigger/content · ${mode}</span></div>
-    <div class="pui-collapsible-preview pui-collapsible-preview--${theme} is-icon-${iconPosition} ${props.block ? 'is-block' : 'is-inline'} ${props.bordered ? 'is-bordered' : 'is-borderless'} ${open ? 'is-open' : 'is-closed'} ${props.disabled ? 'is-disabled' : ''} ${props.readonly ? 'is-readonly' : ''} ${props.loading ? 'is-loading' : ''}" data-collapsible-root style="--pui-collapsible-preview-duration:${duration}ms;--pui-collapsible-preview-ease:${collapsibleMotionEasing(props)}" role="group" aria-label="${escapeHtml(props.ariaLabel || props.label || '折叠内容')}" aria-expanded="${open}" aria-disabled="${!!props.disabled}" aria-readonly="${!!props.readonly}" aria-busy="${!!props.loading}">
+    <div class="pui-collapsible-preview pui-collapsible-preview--${theme} is-icon-${iconPosition} ${props.block ? 'is-block' : 'is-inline'} ${props.bordered ? 'is-bordered' : 'is-borderless'} ${props.shadow ? 'has-shadow' : ''} ${open ? 'is-open' : 'is-closed'} ${props.disabled ? 'is-disabled' : ''} ${props.readonly ? 'is-readonly' : ''} ${props.loading ? 'is-loading' : ''}" data-collapsible-root style="--pui-collapsible-preview-duration:${duration}ms;--pui-collapsible-preview-ease:${collapsibleMotionEasing(props)}" role="group" aria-label="${escapeHtml(props.ariaLabel || props.label || '折叠内容')}" aria-expanded="${open}" aria-disabled="${!!props.disabled}" aria-readonly="${!!props.readonly}" aria-busy="${!!props.loading}">
       <button class="pui-collapsible-preview__trigger" type="button" data-demo-action="collapsible-toggle" aria-expanded="${open}" aria-controls="pui-collapsible-preview-content" ${props.disabled ? 'disabled' : ''}>${triggerContent}${expand}</button>
       <div class="pui-collapsible-preview__content" id="pui-collapsible-preview-content" data-collapsible-content role="region" aria-hidden="${!open}" style="max-height:0px;opacity:${open ? 1 : 0};transform:translateY(${open ? 0 : -4}px)"><div class="pui-collapsible-preview__content-inner" data-collapsible-content-inner>${collapsibleContentMarkup(props, demo)}</div></div>
     </div>
@@ -11096,6 +11399,9 @@ function listItemsFromProps(props) {
 
 function listShowcase(props, demo) {
   const items = listItemsFromProps(props);
+  const previousItemCount = Number.isInteger(demo.listItemCount) ? demo.listItemCount : -1;
+  const revealFrom = previousItemCount > 0 && items.length > previousItemCount ? previousItemCount : -1;
+  demo.listItemCount = items.length;
   const durationValue = Number(props.duration);
   const motion = previewMotionDuration(durationValue, props.reduceMotion);
   const easing = ['ease', 'linear', 'ease-in', 'ease-out', 'ease-in-out'].includes(props.easing) ? props.easing : 'ease-out';
@@ -11145,14 +11451,14 @@ function listShowcase(props, demo) {
         role: blocked ? 'listitem' : 'button',
         ariaLabel: item.title,
       });
-      return `<div class="pui-list-preview__item-wrap" role="listitem">${cell}</div>`;
+      return `<div class="pui-list-preview__item-wrap ${item.index >= revealFrom && revealFrom >= 0 ? 'is-appended' : ''}" role="listitem">${cell}</div>`;
     }).join('');
   const emptyState = props.customEmpty
     ? `<div class="pui-list-preview__empty-slot">${iconComponent('inbox', { size: 'medium' })}<strong>empty slot</strong>${buttonSample({ content: '创建条目', size: 'small', variant: 'outline', icon: 'add', demoAction: 'list-empty-slot' })}</div>`
     : emptySample({ embedded: true, description: props.emptyText || '暂无列表数据', icon: 'inbox', ariaLabel: props.emptyText || '暂无列表数据', reduceMotion: !!props.reduceMotion });
   const footer = props.customFooter
     ? `<div class="pui-list-preview__footer-slot">${buttonSample({ content: '消费者 footer 操作', size: 'small', variant: 'text', icon: 'component', demoAction: 'list-footer-slot' })}</div>`
-    : buttonSample({ previewContract: true, customClass: 'pui-list-preview__footer-button', content: footerText, icon: footerIcon, theme: footerState === 'error' ? 'danger' : 'default', variant: 'text', size: 'small', block: true, loading: footerState === 'loading', loadingProps: { text: footerText }, disabled: footerDisabled, reduceMotion: !!props.reduceMotion, duration: motion, easing, demoAction: footerState === 'error' ? 'list-retry' : 'list-load', ariaLabel: footerText });
+    : buttonSample({ previewContract: true, customClass: 'pui-list-preview__footer-button', content: footerState === 'loading' ? '' : footerText, icon: footerIcon, theme: footerState === 'error' ? 'danger' : 'default', variant: 'text', size: 'small', block: true, loading: footerState === 'loading', loadingProps: { text: footerText }, disabled: footerDisabled, reduceMotion: !!props.reduceMotion, duration: motion, easing, demoAction: footerState === 'error' ? 'list-retry' : 'list-load', ariaLabel: footerText });
   const eventText = props.disabled
     ? 'disabled=true；List click/load/retry 被阻止，消费者 slot 自行管理状态'
     : demo.listEvent || '点按条目触发 click；尾部触发 load 或 retry，等待消费者回写 Props';
@@ -11260,11 +11566,13 @@ function updateSwipePreviewDom(position) {
   root.classList.toggle('is-open', !!position);
   root.classList.toggle('is-open-left', position === 'left');
   root.classList.toggle('is-open-right', position === 'right');
+  root.classList.remove('is-dragging', 'is-drag-left', 'is-drag-right');
   root.setAttribute('aria-expanded', String(!!position));
   root.querySelector('.pui-swipe-cell-preview__actions--left')?.setAttribute('aria-hidden', String(position !== 'left'));
   root.querySelector('.pui-swipe-cell-preview__actions--right')?.setAttribute('aria-hidden', String(position !== 'right'));
   if (content) {
     content.classList.remove('is-dragging');
+    root.classList.remove('is-dragging');
     content.style.transform = `translate3d(${offset}px,0,0)`;
     content.setAttribute('aria-expanded', String(!!position));
     content.setAttribute('aria-label', position ? '收起滑动操作' : root.getAttribute('aria-label') || '滑动操作');
@@ -11336,6 +11644,12 @@ function bindSwipeCellPreviewRuntime(props) {
     if (!content.classList.contains('is-dragging')) emitSwipePreviewEvent(root, 'dragstart');
     const offset = Math.max(-(Number(root.dataset.rightWidth) || 0), Math.min(Number(root.dataset.leftWidth) || 0, pointer.startOffset + deltaX));
     content.classList.add('is-dragging');
+    root.classList.add('is-dragging');
+    root.classList.remove('is-open-left', 'is-open-right');
+    root.classList.toggle('is-drag-left', offset > 0);
+    root.classList.toggle('is-drag-right', offset < 0);
+    root.querySelector('.pui-swipe-cell-preview__actions--left')?.setAttribute('aria-hidden', String(offset <= 0));
+    root.querySelector('.pui-swipe-cell-preview__actions--right')?.setAttribute('aria-hidden', String(offset >= 0));
     content.style.transform = `translate3d(${offset}px,0,0)`;
   };
   const onPointerUp = (event) => finish(event, false);
@@ -11390,8 +11704,8 @@ function countDownSegments(time, formatValue, splitWithUnit) {
   };
   const units = { DD: '天', HH: '时', mm: '分', ss: '秒', SSS: '毫秒' };
   return format.split(/(SSS|DD|HH|mm|ss)/g).filter(Boolean).map((part, index) => values[part] === undefined
-    ? { key: `literal-${index}`, value: part, unit: '', numeric: false }
-    : { key: `number-${index}`, value: values[part], unit: splitWithUnit ? units[part] : '', numeric: true });
+    ? { key: `literal-${index}`, token: '', value: part, unit: '', numeric: false }
+    : { key: `number-${index}`, token: part, value: values[part], unit: splitWithUnit ? units[part] : '', numeric: true });
 }
 
 function countDownFormatted(time, props) {
@@ -11410,10 +11724,28 @@ function countDownStatus(demo) {
 
 function countDownContentMarkup(props, demo, animate) {
   const formatted = countDownFormatted(demo.countdownRemaining, props);
+  const segments = countDownSegments(countDownDisplayTime(demo.countdownRemaining, props), props.format, props.splitWithUnit);
+  const previousSegments = Array.isArray(demo.countdownPreviousSegments) ? demo.countdownPreviousSegments : segments;
+  const animation = props.animation === 'roll' ? 'roll' : 'pulse';
   demo.countdownMotionIndex = animate ? (Number(demo.countdownMotionIndex) || 0) + 1 : Number(demo.countdownMotionIndex) || 0;
-  const motion = animate && !props.reduceMotion ? `is-motion-${demo.countdownMotionIndex % 2 ? 'a' : 'b'}` : '';
+  const motion = animate && !props.reduceMotion && animation === 'pulse' ? `is-motion-${demo.countdownMotionIndex % 2 ? 'a' : 'b'}` : '';
   if (props.content === 'slot') return `<div class="pui-count-down-preview__slot">${iconComponent('clock', { size: 'small' })}<span>${escapeHtml(formatted)}</span>${tagSample({ theme: Number(demo.countdownRemaining) <= 0 ? 'success' : 'primary', variant: 'outline', size: 'small', content: 'Slot' })}</div>`;
-  return `<div class="pui-count-down-preview__segments">${countDownSegments(countDownDisplayTime(demo.countdownRemaining, props), props.format, props.splitWithUnit).map((part) => part.numeric ? `<strong class="pui-count-down-preview__part pui-count-down-preview__part--numeric ${motion}"><span>${part.value}</span>${part.unit ? `<small>${part.unit}</small>` : ''}</strong>` : `<i class="pui-count-down-preview__part pui-count-down-preview__part--split">${escapeHtml(part.value)}</i>`).join('')}</div>`;
+  const markup = segments.map((part, segmentIndex) => {
+    if (!part.numeric) return `<i class="pui-count-down-preview__part pui-count-down-preview__part--split">${escapeHtml(part.value)}</i>`;
+    let valueMarkup = escapeHtml(part.value);
+    if (animation === 'roll') {
+      const previousPart = previousSegments[segmentIndex] && previousSegments[segmentIndex].numeric ? previousSegments[segmentIndex] : part;
+      const previousValue = String(previousPart.value || '').padStart(String(part.value).length, ' ').slice(-String(part.value).length);
+      valueMarkup = `<span class="pui-count-down-preview__digits">${Array.from(String(part.value)).map((digit, digitIndex) => {
+        const previous = previousValue[digitIndex];
+        const rolling = animate && !props.reduceMotion && part.token !== 'SSS' && previous !== ' ' && previous !== digit;
+        return `<span class="pui-count-down-preview__digit">${rolling ? `<span class="pui-count-down-preview__digit-reel is-motion-${demo.countdownMotionIndex % 2 ? 'a' : 'b'}"><span class="pui-count-down-preview__digit-glyph">${escapeHtml(previous)}</span><span class="pui-count-down-preview__digit-glyph">${escapeHtml(digit)}</span></span>` : `<span class="pui-count-down-preview__digit-glyph">${escapeHtml(digit)}</span>`}</span>`;
+      }).join('')}</span>`;
+    }
+    return `<strong class="pui-count-down-preview__part pui-count-down-preview__part--numeric"><span class="pui-count-down-preview__value ${motion}">${valueMarkup}</span>${part.unit ? `<small>${part.unit}</small>` : ''}</strong>`;
+  }).join('');
+  demo.countdownPreviousSegments = segments.map((part) => ({ ...part }));
+  return `<div class="pui-count-down-preview__segments">${markup}</div>`;
 }
 
 function countDownActionsMarkup(props, demo) {
@@ -11429,7 +11761,8 @@ function updateCountDownPreviewDom(props, demo, animate) {
   const size = sizes.includes(props.size) ? props.size : 'medium';
   const theme = themes.includes(props.theme) ? props.theme : 'default';
   const status = countDownStatus(demo);
-  root.className = `pui-count-down-preview pui-count-down-preview--${size} pui-count-down-preview--${theme} is-${status} ${props.content === 'slot' ? 'is-slot' : ''}`;
+  const animation = props.animation === 'roll' ? 'roll' : 'pulse';
+  root.className = `pui-count-down-preview pui-count-down-preview--${size} pui-count-down-preview--${theme} is-${status} is-animation-${animation} ${props.content === 'slot' ? 'is-slot' : ''}`;
   root.style.setProperty('--pui-count-down-duration', `${countDownMotionDuration(props)}ms`);
   root.setAttribute('aria-label', `${props.ariaLabel || '倒计时'}：${countDownFormatted(demo.countdownRemaining, props)}`);
   root.innerHTML = countDownContentMarkup(props, demo, animate);
@@ -11502,12 +11835,13 @@ function countDownShowcase(props, demo) {
     const sampleSize = ['small', 'medium', 'large'].includes(sampleProps.size) ? sampleProps.size : 'medium';
     const sampleTheme = ['default', 'round', 'square'].includes(sampleProps.theme) ? sampleProps.theme : 'default';
     const sampleStatus = countDownStatus(sampleDemo);
-    return `<div class="pui-count-down-preview pui-count-down-preview--${sampleSize} pui-count-down-preview--${sampleTheme} is-${sampleStatus} ${sampleProps.content === 'slot' ? 'is-slot' : ''}" ${current ? 'data-count-down-root' : ''} role="timer" aria-live="polite" aria-label="${escapeHtml(sampleProps.ariaLabel || '倒计时')}：${escapeHtml(countDownFormatted(sampleDemo.countdownRemaining, sampleProps))}" style="--pui-count-down-duration:${countDownMotionDuration(sampleProps)}ms">${countDownContentMarkup(sampleProps, sampleDemo, false)}</div>`;
+    const sampleAnimation = sampleProps.animation === 'roll' ? 'roll' : 'pulse';
+    return `<div class="pui-count-down-preview pui-count-down-preview--${sampleSize} pui-count-down-preview--${sampleTheme} is-${sampleStatus} is-animation-${sampleAnimation} ${sampleProps.content === 'slot' ? 'is-slot' : ''}" ${current ? 'data-count-down-root' : ''} role="timer" aria-live="polite" aria-label="${escapeHtml(sampleProps.ariaLabel || '倒计时')}：${escapeHtml(countDownFormatted(sampleDemo.countdownRemaining, sampleProps))}" style="--pui-count-down-duration:${countDownMotionDuration(sampleProps)}ms">${countDownContentMarkup(sampleProps, sampleDemo, false)}</div>`;
   };
   return `<section class="demo-section pui-count-down-showcase">
     <article class="pui-showcase-section"><h3>基础用法</h3>${previewNode({ ...props, size, theme }, demo.countdownRemaining, true)}</article>
     <article class="pui-showcase-section"><h3>主题与尺寸</h3><div class="pui-count-down-showcase__examples">${previewNode({ ...sampleBase, theme: 'default', size: 'small' }, 3661000)}${previewNode({ ...sampleBase, theme: 'round', size: 'medium' }, 3661000)}${previewNode({ ...sampleBase, theme: 'square', size: 'large' }, 3661000)}</div></article>
-    <article class="pui-showcase-section"><h3>单位与毫秒</h3><div class="pui-count-down-showcase__examples">${previewNode({ ...sampleBase, format: 'HH:mm:ss', splitWithUnit: true, theme: 'default' }, 3661000)}${previewNode({ ...sampleBase, format: 'ss.SSS', millisecond: true, theme: 'square' }, 12345)}</div></article>
+    <article class="pui-showcase-section"><h3>单位、毫秒与数字滚动</h3><div class="pui-count-down-showcase__examples">${previewNode({ ...sampleBase, format: 'HH:mm:ss', splitWithUnit: true, theme: 'default' }, 3661000)}${previewNode({ ...sampleBase, format: 'ss.SSS', millisecond: true, theme: 'square' }, 12345)}${previewNode({ ...sampleBase, animation: 'roll', format: 'mm:ss', theme: 'round' }, 61000)}</div></article>
     <article class="pui-showcase-section"><h3>控制与自定义内容</h3><div class="pui-count-down-preview__actions" data-count-down-actions>${countDownActionsMarkup(props, demo)}</div><p class="pui-count-down-preview__status" data-count-down-status>${escapeHtml(demo.countdownEvent || '等待操作')}</p>${previewNode({ ...sampleBase, content: 'slot', theme: 'default', ariaLabel: '自定义内容倒计时' }, 61000)}</article>
   </section>`;
 }
@@ -13164,10 +13498,12 @@ function dynamicMessageTheme(value) {
 
 function dynamicMessageShowcase(props) {
   const action = String(props.actionText || '');
+  const shadowClass = props.shadow === true ? 'is-shadow-on' : props.shadow === false ? 'is-shadow-off' : 'is-shadow-inherit';
+  const frostedClass = props.frostedGlass === true ? 'is-frosted-on' : props.frostedGlass === false ? 'is-frosted-off' : 'is-frosted-inherit';
   return `<section class="demo-section pui-dynamic-message-showcase" data-dynamic-message-showcase>
     <div class="pui-dynamic-message-preview-layer">
-      <article class="pui-dynamic-message-preview is-phase-hidden is-${dynamicMessageTheme(props.theme)} ${action ? 'has-action' : ''} ${props.closable !== false ? 'has-close' : ''}" data-dynamic-message-root data-motion-phase="hidden" role="status" aria-live="polite" aria-hidden="true" style="--pui-dynamic-message-duration:${props.reduceMotion ? 1 : 500}ms;--pui-dynamic-message-compact-duration:${props.reduceMotion ? 1 : 180}ms;--pui-dynamic-message-panel-duration:${props.reduceMotion ? 1 : 320}ms">
-        <i class="pui-dynamic-message-preview__accent"></i>
+      <article class="pui-dynamic-message-preview is-phase-hidden is-${dynamicMessageTheme(props.theme)} ${shadowClass} ${frostedClass} ${action ? 'has-action' : ''} ${props.closable !== false ? 'has-close' : ''} ${props.reduceMotion ? 'is-reduced-motion' : ''}" data-dynamic-message-root data-motion-phase="hidden" role="status" aria-live="polite" aria-hidden="true" style="--pui-dynamic-message-duration:${props.reduceMotion ? 1 : 500}ms;--pui-dynamic-message-compact-duration:${props.reduceMotion ? 1 : 180}ms;--pui-dynamic-message-panel-duration:${props.reduceMotion ? 1 : 320}ms;--pui-dynamic-message-edge-flow-duration:${props.reduceMotion ? 1 : 1500}ms">
+        <i class="pui-dynamic-message-preview__edge-flow" aria-hidden="true"><i class="pui-dynamic-message-preview__edge-beam"></i></i>
         <span class="pui-dynamic-message-preview__indicator" data-dynamic-loading>${loadingComponent({ size: '32rpx', inheritColor: true, reduceMotion: !!props.reduceMotion })}</span>
         <span class="pui-dynamic-message-preview__indicator" data-dynamic-icon>${iconComponent(props.icon || 'info-circle', { size: 'small', pxSize: 16 })}</span>
         <span class="pui-dynamic-message-preview__content"><strong data-dynamic-title>${escapeHtml(props.title || '组件通知')}</strong><span data-dynamic-message>${escapeHtml(props.message || '实时状态会在同一个通知中原位更新。')}</span></span>
@@ -13215,6 +13551,7 @@ function bindDynamicMessagePreviewRuntime(props) {
   const motion = props.reduceMotion ? 1 : 500;
   const compactMotion = props.reduceMotion ? 1 : 180;
   const panelMotion = props.reduceMotion ? 1 : 320;
+  const edgeFlowMotion = props.reduceMotion ? 1 : 1500;
   const iconForTheme = { info: 'info-circle', success: 'success-circle', warning: 'warning-triangle', error: 'error-circle' };
   const phases = ['hidden', 'entering', 'compact', 'expanding', 'visible', 'collapsing', 'leave-compact'];
   const clearMotionTimers = () => {
@@ -13222,10 +13559,13 @@ function bindDynamicMessagePreviewRuntime(props) {
     clearTimeout(state.previewDynamicMessageStageTimer);
     clearTimeout(state.previewDynamicMessageCompleteTimer);
     clearTimeout(state.previewDynamicMessageLeaveTimer);
+    clearTimeout(state.previewDynamicMessageEdgeFlowTimer);
     state.previewDynamicMessageFrameTimer = null;
     state.previewDynamicMessageStageTimer = null;
     state.previewDynamicMessageCompleteTimer = null;
     state.previewDynamicMessageLeaveTimer = null;
+    state.previewDynamicMessageEdgeFlowTimer = null;
+    root.classList.remove('is-edge-flowing');
   };
   clearMotionTimers();
   clearTimeout(state.previewDynamicMessageAutoTimer);
@@ -13246,6 +13586,7 @@ function bindDynamicMessagePreviewRuntime(props) {
     root.style.setProperty('--pui-dynamic-message-duration', `${motion}ms`);
     root.style.setProperty('--pui-dynamic-message-compact-duration', `${compactMotion}ms`);
     root.style.setProperty('--pui-dynamic-message-panel-duration', `${panelMotion}ms`);
+    root.style.setProperty('--pui-dynamic-message-edge-flow-duration', `${edgeFlowMotion}ms`);
     root.querySelector('[data-dynamic-title]').textContent = request.title;
     root.querySelector('[data-dynamic-message]').textContent = request.message;
     root.querySelector('[data-dynamic-loading]').setAttribute('aria-hidden', String(request.theme !== 'loading' || !!request.icon));
@@ -13264,6 +13605,18 @@ function bindDynamicMessagePreviewRuntime(props) {
     if (!current?.duration) return;
     state.previewDynamicMessageAutoTimer = setTimeout(() => close('timeout'), current.duration);
   };
+  const startEdgeFlow = () => {
+    clearTimeout(state.previewDynamicMessageEdgeFlowTimer);
+    state.previewDynamicMessageEdgeFlowTimer = null;
+    root.classList.remove('is-edge-flowing');
+    if (props.reduceMotion) return;
+    void root.offsetWidth;
+    root.classList.add('is-edge-flowing');
+    state.previewDynamicMessageEdgeFlowTimer = setTimeout(() => {
+      state.previewDynamicMessageEdgeFlowTimer = null;
+      root.classList.remove('is-edge-flowing');
+    }, edgeFlowMotion);
+  };
   const finishEnter = () => {
     state.previewDynamicMessageCompleteTimer = null;
     if (!demo.dynamicCurrent) return;
@@ -13274,6 +13627,7 @@ function bindDynamicMessagePreviewRuntime(props) {
     state.previewDynamicMessageStageTimer = null;
     if (!demo.dynamicCurrent) return;
     setPhase('expanding');
+    startEdgeFlow();
     state.previewDynamicMessageCompleteTimer = setTimeout(finishEnter, panelMotion);
   };
   const startEnter = () => {
@@ -13299,7 +13653,10 @@ function bindDynamicMessagePreviewRuntime(props) {
           clearMotionTimers();
           setPhase(props.reduceMotion ? 'visible' : 'expanding');
           if (props.reduceMotion) schedule();
-          else state.previewDynamicMessageCompleteTimer = setTimeout(finishEnter, panelMotion);
+          else {
+            startEdgeFlow();
+            state.previewDynamicMessageCompleteTimer = setTimeout(finishEnter, panelMotion);
+          }
         } else if (root.dataset.motionPhase === 'visible') {
           schedule();
         }
@@ -13335,6 +13692,11 @@ function bindDynamicMessagePreviewRuntime(props) {
       state.previewDynamicMessageLeaveTimer = setTimeout(finishClose, compactMotion);
     }, panelMotion);
   };
+  if (demo.dynamicCurrent) {
+    paint(demo.dynamicCurrent);
+    setPhase('visible');
+    schedule();
+  }
   const previewStage = document.querySelector('#previewStage');
   previewStage.addEventListener('click', (event) => {
     const target = event.composedPath().find((node) => node instanceof HTMLElement && node.matches('[data-demo-action]'));
@@ -13440,6 +13802,7 @@ function inputPreviewMarkup(props, demo, options = {}) {
   const inputLabel = props.label === 'slot' ? '' : (props.label || '');
   const semanticLabel = props.ariaLabel || inputLabel || props.placeholder || '输入框';
   const inputType = browserInputType(props.type || 'text');
+  const clearTrigger = ['focus', 'always'].includes(props.clearTrigger) ? props.clearTrigger : 'focus';
   const maxLengthAttr = snapshot.maxcharacter < 0 && snapshot.maxlength >= 0 ? ` maxlength="${snapshot.maxlength}"` : '';
   const canClear = props.clearable && value && snapshot.interactive;
   const label = props.label === 'slot'
@@ -13477,6 +13840,7 @@ function inputPreviewMarkup(props, demo, options = {}) {
     `pui-input-preview--status-${snapshot.status}`,
     `pui-input-preview--${snapshot.size}`,
     `pui-input-preview--align-${snapshot.align}`,
+    `pui-input-preview--clear-${clearTrigger}`,
     props.bordered === false ? 'pui-input-preview--borderless' : '',
     props.disabled ? 'pui-input-preview--disabled' : '',
     props.readonly ? 'pui-input-preview--readonly' : '',
@@ -13583,7 +13947,7 @@ function textareaPreviewSnapshot(props, demo) {
   const value = textareaPreviewNormalizeValue(sourceValue, maxlength, maxcharacter);
   if (!controlled && value !== sourceValue) demo.textareaValue = value;
   const autosizeObject = props.autosize && typeof props.autosize === 'object' && !Array.isArray(props.autosize) ? props.autosize : null;
-  const autoHeight = autosizeObject || props.autosize === true;
+  const autoHeight = !!(autosizeObject || props.autosize === true);
   const normalizeRows = (candidate, fallback, maximum) => {
     const number = Math.floor(Number(candidate));
     return Math.max(1, Math.min(maximum, Number.isFinite(number) ? number : fallback));
@@ -13609,14 +13973,13 @@ function textareaPreviewSnapshot(props, demo) {
   };
 }
 
-function commitTextareaPreviewValue(props, demo, requestedValue, source, options = {}) {
+function commitTextareaPreviewValue(props, demo, requestedValue, source) {
   const snapshot = textareaPreviewSnapshot(props, demo);
-  if (!snapshot.interactive && !options.allowLockedRead) return false;
+  if (!snapshot.interactive) return false;
   const nextValue = textareaPreviewNormalizeValue(requestedValue, snapshot.maxlength, snapshot.maxcharacter);
   const previousValue = snapshot.value;
   const nextCount = snapshot.maxcharacter >= 0 ? textareaPreviewWeightedLength(nextValue) : nextValue.length;
-  const eventNames = [options.clear ? 'clear' : '', 'change'].filter(Boolean).join(' → ');
-  const message = `${eventNames}：source=${source} · “${previousValue || 'empty'}” → “${nextValue || 'empty'}” · ${nextCount}${snapshot.limit >= 0 ? `/${snapshot.limit}` : ''} ${snapshot.countMode} · ${snapshot.controlled ? '父级已回写 value' : '内部值已更新'}`;
+  const message = `change：source=${source} · “${previousValue || 'empty'}” → “${nextValue || 'empty'}” · ${nextCount}${snapshot.limit >= 0 ? `/${snapshot.limit}` : ''} ${snapshot.countMode} · ${snapshot.controlled ? '父级已回写 value' : '内部值已更新'}`;
   if (snapshot.controlled) {
     state.props[state.current].value = nextValue;
     resetDemoRuntime(state.current, 'value');
@@ -13647,21 +14010,28 @@ function syncTextareaPreviewDom(props, demo, message) {
   root.style.setProperty('--pui-textarea-field-max-height', `${snapshot.maxRows * snapshot.lineHeight + 20}px`);
   const counter = root.querySelector('.pui-textarea-preview__count');
   if (counter) counter.textContent = `${snapshot.count}${snapshot.limit >= 0 ? `/${snapshot.limit}` : ''}`;
-  const semanticLabel = props.ariaLabel || props.label || props.placeholder || '文本域';
-  const canClear = !!(props.clearable && snapshot.value && snapshot.interactive);
-  const clearWrap = root.querySelector('.pui-textarea-preview__clear-wrap');
-  if (clearWrap) {
-    clearWrap.classList.toggle('is-active', canClear);
-    clearWrap.setAttribute('aria-hidden', String(!canClear));
-    const clearControl = clearWrap.querySelector('[data-demo-action="textarea-clear"]');
-    if (clearControl) {
-      clearControl.disabled = !canClear;
-      clearControl.setAttribute('aria-disabled', String(!canClear));
-    }
-  }
   const field = root.querySelector('.pui-textarea-preview__field');
-  if (field) field.classList.toggle('has-action', canClear || !!props.loading);
+  if (field) field.classList.toggle('has-action', !!props.loading);
   if (message) root.dataset.textareaLastEvent = message;
+  return true;
+}
+
+function syncStaticTextareaAutosize(control) {
+  const root = control && control.closest('.pui-textarea-preview');
+  if (!root || control.dataset.autosize !== 'true') return false;
+  const minRows = Math.max(1, Math.min(20, Number(control.dataset.minRows) || 4));
+  const maxRows = Math.max(minRows, Math.min(40, Number(control.dataset.maxRows) || 8));
+  const lineHeight = Math.max(1, Number(control.dataset.lineHeight) || 21);
+  const lineLengths = String(control.value || '').split('\n').map((line) => textareaPreviewParts(line).length);
+  const estimatedRows = lineLengths.reduce((total, length) => total + Math.max(1, Math.ceil(length / 30)), 0);
+  const rows = Math.max(minRows, Math.min(maxRows, estimatedRows));
+  const fieldHeight = rows * lineHeight + 20;
+  control.rows = rows;
+  control.setAttribute('rows', String(rows));
+  root.style.setProperty('--pui-textarea-field-height', `${fieldHeight}px`);
+  root.style.setProperty('--pui-textarea-field-min-height', `${minRows * lineHeight + 20}px`);
+  root.style.setProperty('--pui-textarea-field-max-height', `${maxRows * lineHeight + 20}px`);
+  root.dataset.textareaLastEvent = `input：autosize=${rows} rows · 局部高度同步`;
   return true;
 }
 
@@ -13685,19 +14055,12 @@ function textareaPreviewMarkup(props, demo, options = {}) {
   const tips = props.tips === 'slot'
     ? tagSample({ theme: snapshot.invalid ? 'danger' : 'success', variant: 'outline', size: 'small', content: snapshot.invalid ? '请检查输入' : '可继续输入' })
     : escapeHtml(props.tips || '');
-  const canClear = !!(props.clearable && snapshot.value && snapshot.interactive);
-  const clearButton = canClear ? buttonSample({
-    previewContract: true,
-    customClass: 'pui-textarea-preview__clear', variant: 'text', size: 'extra-small', shape: 'square', icon: 'close-circle', content: '',
-    ariaLabel: `清空${semanticLabel}`, demoAction: current ? 'textarea-clear' : 'textarea-static-clear', reduceMotion: props.reduceMotion,
-  }) : '';
   const hasFeedback = !!(props.tips || snapshot.showIndicator);
   const fieldHeight = snapshot.rows * snapshot.lineHeight + 20;
   return `<div class="pui-textarea-preview ${stateClasses} pui-textarea-preview--${snapshot.size} ${props.bordered === false ? 'pui-textarea-preview--borderless' : ''} ${props.reduceMotion ? 'is-reduced-motion' : ''}" style="--pui-textarea-preview-duration:${snapshot.duration}ms;--pui-textarea-preview-ease:${snapshot.easing};--pui-textarea-field-height:${fieldHeight}px;--pui-textarea-field-min-height:${snapshot.minRows * snapshot.lineHeight + 20}px;--pui-textarea-field-max-height:${snapshot.maxRows * snapshot.lineHeight + 20}px"${current ? ' data-textarea-root' : ''} aria-label="${escapeHtml(semanticLabel)}" aria-disabled="${!!(props.disabled || props.loading)}" aria-readonly="${!!props.readonly}" aria-busy="${!!props.loading}" aria-invalid="${snapshot.invalid}" aria-required="${!!props.required}">
     ${props.label || props.required ? `<div class="pui-textarea-preview__header"><span class="pui-textarea-preview__label">${label}</span></div>` : ''}
-    <div class="pui-textarea-preview__field ${canClear || props.loading ? 'has-action' : ''}">
-      <textarea name="${escapeHtml(props.name || '')}" rows="${snapshot.rows}" placeholder="${escapeHtml(props.placeholder || '请输入')}"${maxLengthAttr}${!snapshot.interactive ? ' disabled' : ''}${props.readonly ? ' readonly' : ''}${props.focus && snapshot.interactive ? ' autofocus' : ''}${props.required ? ' required' : ''} aria-label="${escapeHtml(semanticLabel)}" aria-invalid="${snapshot.invalid}"${current ? ' data-demo-action="textarea-input"' : ''} data-autosize="${snapshot.autoHeight}">${escapeHtml(snapshot.value)}</textarea>
-      ${clearButton ? `<span class="pui-textarea-preview__clear-wrap is-active" aria-hidden="false">${clearButton}</span>` : ''}
+    <div class="pui-textarea-preview__field ${props.loading ? 'has-action' : ''}">
+      <textarea name="${escapeHtml(props.name || '')}" rows="${snapshot.rows}" placeholder="${escapeHtml(props.placeholder || '请输入')}"${maxLengthAttr}${!snapshot.interactive ? ' disabled' : ''}${props.readonly ? ' readonly' : ''}${props.focus && snapshot.interactive ? ' autofocus' : ''}${props.required ? ' required' : ''} aria-label="${escapeHtml(semanticLabel)}" aria-invalid="${snapshot.invalid}"${current ? ' data-demo-action="textarea-input"' : snapshot.autoHeight && snapshot.interactive ? ' data-demo-action="textarea-static-autosize"' : ''} data-autosize="${snapshot.autoHeight}" data-min-rows="${snapshot.minRows}" data-max-rows="${snapshot.maxRows}" data-line-height="${snapshot.lineHeight}">${escapeHtml(snapshot.value)}</textarea>
       ${props.loading ? `<span class="pui-textarea-preview__loading-wrap is-active" aria-hidden="false">${loadingComponent({ size: 'small', ariaLabel: `${semanticLabel}加载中`, reduceMotion: props.reduceMotion })}</span>` : ''}
     </div>
     <div class="pui-textarea-preview__feedback-shell ${hasFeedback ? 'is-active' : ''}" aria-hidden="${!hasFeedback}"><div><div class="pui-textarea-preview__feedback">
@@ -13726,7 +14089,6 @@ function textareaSample(props) {
       ${textareaPreviewMarkup({ ...staticBase, defaultValue: '只读内容', readonly: true }, {})}
       ${textareaPreviewMarkup({ ...staticBase, defaultValue: '正在恢复草稿', loading: true }, {})}
       ${textareaPreviewMarkup({ ...staticBase, defaultValue: '已禁用', disabled: true }, {})}
-      ${textareaPreviewMarkup({ ...staticBase, defaultValue: '可一键清空', clearable: true }, {})}
     </div></article>
   </section>`;
 }
@@ -14866,7 +15228,7 @@ function pickerShowcase(props, demo) {
   const result = snapshot.committed.label.join(' / ') || '未选择';
   const triggerText = snapshot.stateType === 'loading' ? props.loadingText : snapshot.stateType === 'error' ? props.errorText : result;
   const multiProps = pickerH5StaticProps([
-    [{ label: '北京', value: 'beijing' }, { label: '上海', value: 'shanghai' }, { label: '深圳', value: 'shenzhen' }],
+    [{ label: '北京', value: 'beijing' }, { label: '上海', value: 'shanghai' }, { label: '深圳', value: 'shenzhen' }, { label: '杭州', value: 'hangzhou' }],
     [{ label: '上午', value: 0 }, { label: '下午', value: false }, { label: '全天', value: '' }],
   ], ['shanghai', false], '多列选择');
   const multiSnapshot = pickerH5Snapshot(multiProps, {});
@@ -15601,12 +15963,11 @@ function searchPreviewSnapshot(props, demo = {}) {
 function searchPreviewMarkup(props, demo = {}, options = {}) {
   const snapshot = searchPreviewSnapshot(props, demo);
   const current = !!options.current;
-  const canClear = !!props.clearable && !!snapshot.value && !snapshot.locked && (snapshot.clearTrigger === 'always' || snapshot.focused);
   const maxLength = snapshot.maxcharacter >= 0 ? undefined : snapshot.maxlength;
   const eventOrder = Array.isArray(demo.searchEventOrder) ? demo.searchEventOrder.join(' → ') : '';
   return `<div class="pui-search pui-search--${snapshot.shape} ${props.center ? 'is-center' : ''} ${props.disabled ? 'is-disabled' : ''} ${props.readonly ? 'is-readonly' : ''} ${snapshot.focused ? 'is-focused' : ''}" style="--pui-search-duration:${snapshot.motion}ms;--pui-search-ease:var(--ease-standard);--pui-input-preview-duration:${snapshot.motion}ms;--pui-input-preview-ease:var(--ease-standard)" role="search" aria-label="${escapeHtml(props.ariaLabel || props.placeholder || '搜索')}" aria-disabled="${!!props.disabled}" aria-readonly="${!!props.readonly}" data-search-controlled="${snapshot.controlled}" data-search-event="${escapeHtml(demo.searchEvent || '')}" data-search-event-order="${escapeHtml(eventOrder)}">
-    ${inputControlSample({ customClass: 'pui-search__field', type: 'search', inputMode: 'search', value: snapshot.value, placeholder: props.placeholder || '搜索', prefixIcon: 'search', align: props.center ? 'center' : 'left', bordered: true, clearable: canClear, clearAction: current ? 'search-clear' : '', clearClass: 'pui-input-preview__clear pui-search__clear', clearLabel: '清空搜索', maxLength, disabled: !!props.disabled, readonly: !!props.readonly, autofocus: current && !!props.focus, ariaLabel: props.ariaLabel || props.placeholder || '搜索', demoAction: current ? 'search-input' : '' })}
-    ${props.showCancel ? buttonSample({ previewContract: true, customClass: 'pui-search-cancel', variant: 'text', size: 'small', content: props.cancelText || '取消', demoAction: current ? 'search-cancel' : '', disabled: snapshot.locked, reduceMotion: !!props.reduceMotion }) : ''}
+    ${inputControlSample({ customClass: 'pui-search__field', type: 'search', inputMode: 'search', value: snapshot.value, placeholder: props.placeholder || '搜索', prefixIcon: 'search', align: props.center ? 'center' : 'left', bordered: true, clearable: !!props.clearable, clearTrigger: snapshot.clearTrigger, clearAction: current ? 'search-clear' : '', clearClass: 'pui-input-preview__clear pui-search__clear', clearLabel: '清空搜索', maxLength, disabled: !!props.disabled, readonly: !!props.readonly, autofocus: current && !!props.focus, ariaLabel: props.ariaLabel || props.placeholder || '搜索', demoAction: current ? 'search-input' : '' })}
+    ${props.showCancel ? buttonSample({ previewContract: true, customClass: 'pui-search-cancel', variant: 'transparent', surface: 'transparent', size: 'extra-small', content: props.cancelText || '取消', demoAction: current ? 'search-cancel' : '', disabled: snapshot.locked, reduceMotion: !!props.reduceMotion }) : ''}
     ${options.defaultSlot || ''}
   </div>`;
 }
@@ -15754,7 +16115,10 @@ function stepperPreviewMarkup(props, demo, key, initialValue) {
     reduceMotion: snapshot.reduceMotion,
     disabled: locked,
   };
-  return `<div class="pui-stepper pui-stepper--${snapshot.size} pui-stepper--${snapshot.theme} ${snapshot.disabled ? 'is-disabled' : ''} ${snapshot.readonly ? 'is-readonly' : ''} ${snapshot.disableInput ? 'is-input-disabled' : ''}" style="--pui-stepper-duration:${snapshot.reduceMotion ? 1 : 500}ms;--pui-stepper-ease:var(--ease-standard);--pui-stepper-input-width:${snapshot.inputWidth / 2}px" role="group" aria-label="${escapeHtml(snapshot.ariaLabel)}" aria-disabled="${snapshot.disabled}" aria-readonly="${snapshot.readonly}" data-stepper-root data-stepper-key="${escapeHtml(key)}" data-stepper-value="${snapshot.value}" data-stepper-min="${min}" data-stepper-max="${max}" data-stepper-step="${step}" data-stepper-integer="${props.integer !== false}" data-stepper-controlled="${snapshot.controlled}" data-stepper-event-order="${escapeHtml(snapshot.eventOrder.join(' → '))}" data-stepper-event-detail="${escapeHtml(snapshot.eventDetail)}">${iconButtonSample({ ...buttonProps, customClass: `pui-stepper__button pui-stepper__button--minus ${atMin ? 'is-limit' : ''}`, icon: 'minus', ariaLabel: atMin ? `已到最小值 ${min}，不能减少` : `减少 ${step}`, demoAction: 'stepper-minus', demoKey: key })}${inputControlSample({ customClass: 'pui-stepper__input', size: snapshot.size, type: props.integer === false ? 'number' : 'number', inputMode: props.integer === false ? 'decimal' : 'numeric', align: 'center', bordered: false, value: snapshot.draft, min, max, step, disabled: snapshot.disabled || snapshot.disableInput, readonly: snapshot.readonly, ariaLabel: snapshot.ariaLabel, demoAction: 'stepper-input', demoName: key })}${iconButtonSample({ ...buttonProps, customClass: `pui-stepper__button pui-stepper__button--plus ${atMax ? 'is-limit' : ''}`, icon: 'add', ariaLabel: atMax ? `已到最大值 ${max}，不能增加` : `增加 ${step}`, demoAction: 'stepper-plus', demoKey: key })}</div>`;
+  const minus = iconButtonSample({ ...buttonProps, customClass: `pui-stepper__button pui-stepper__button--minus ${atMin ? 'is-limit' : ''}`, icon: 'minus', ariaLabel: atMin ? `已到最小值 ${min}，不能减少` : `减少 ${step}`, demoAction: 'stepper-minus', demoKey: key });
+  const input = inputControlSample({ customClass: 'pui-stepper__input', size: snapshot.size, type: 'number', inputMode: props.integer === false ? 'decimal' : 'numeric', align: 'center', bordered: false, value: snapshot.draft, min, max, step, disabled: snapshot.disabled || snapshot.disableInput, readonly: snapshot.readonly, ariaLabel: snapshot.ariaLabel, demoAction: 'stepper-input', demoName: key });
+  const plus = iconButtonSample({ ...buttonProps, customClass: `pui-stepper__button pui-stepper__button--plus ${atMax ? 'is-limit' : ''}`, icon: 'add', ariaLabel: atMax ? `已到最大值 ${max}，不能增加` : `增加 ${step}`, demoAction: 'stepper-plus', demoKey: key });
+  return `<div class="pui-stepper pui-stepper--${snapshot.size} pui-stepper--${snapshot.theme} ${snapshot.disabled ? 'is-disabled' : ''} ${snapshot.readonly ? 'is-readonly' : ''} ${snapshot.disableInput ? 'is-input-disabled' : ''}" style="--pui-stepper-duration:${snapshot.reduceMotion ? 1 : 500}ms;--pui-stepper-ease:var(--ease-standard);--pui-stepper-input-width:${snapshot.inputWidth / 2}px" role="group" aria-label="${escapeHtml(snapshot.ariaLabel)}" aria-disabled="${snapshot.disabled}" aria-readonly="${snapshot.readonly}" data-stepper-root data-stepper-key="${escapeHtml(key)}" data-stepper-value="${snapshot.value}" data-stepper-min="${min}" data-stepper-max="${max}" data-stepper-step="${step}" data-stepper-integer="${props.integer !== false}" data-stepper-controlled="${snapshot.controlled}" data-stepper-event-order="${escapeHtml(snapshot.eventOrder.join(' → '))}" data-stepper-event-detail="${escapeHtml(snapshot.eventDetail)}"><span class="pui-stepper__button-track">${minus}</span><span class="pui-stepper__input-track">${input}</span><span class="pui-stepper__button-track">${plus}</span></div>`;
 }
 
 function stepperPreviewItem(label, props, demo, key, initialValue) {
@@ -16105,7 +16469,7 @@ function dialogPreviewActions(props) {
   if (!Array.isArray(props.actions)) return [];
   const themes = ['default', 'primary', 'danger'];
   const variants = ['base', 'outline', 'text', 'ghost', 'transparent'];
-  return props.actions.map((entry, index) => {
+  return props.actions.slice(0, 2).map((entry, index) => {
     const item = entry && typeof entry === 'object' && !Array.isArray(entry) ? entry : { text: entry };
     return {
       index,
@@ -16253,12 +16617,13 @@ function dialogShowcase(props, demo) {
   const footerButtons = actions.length
     ? actions.map((action) => buttonSample({ previewContract: true, block: true, theme: action.theme, variant: action.variant, icon: action.icon, loading: action.loading, disabled: action.disabled, content: action.text, demoAction: 'dialog-action', demoValue: action.index })).join('')
     : `${cancel ? buttonSample({ previewContract: true, block: true, ...cancel, demoAction: 'dialog-cancel' }) : ''}${confirm ? buttonSample({ previewContract: true, block: true, ...confirm, demoAction: 'dialog-confirm' }) : ''}`;
-  const closeButton = previewProps.closeBtn ? buttonSample({ customClass: 'pui-dialog__close-button', previewContract: true, variant: 'text', shape: 'circle', size: 'small', icon: 'close', content: '', ariaLabel: '关闭对话框', demoAction: 'dialog-close' }) : '';
+  const closeButton = previewProps.closeBtn ? buttonSample({ customClass: 'pui-dialog__close-button', previewContract: true, theme: 'default', variant: 'base', shape: 'circle', size: 'small', icon: 'close', content: '', ariaLabel: '关闭对话框', demoAction: 'dialog-close' }) : '';
+  const headerLeft = selected.scenario === 'slots' ? iconButtonSample({ theme: 'primary', variant: 'base', shape: 'circle', size: 'small', icon: 'check', ariaLabel: '确认当前内容', demoAction: 'dialog-header-left' }) : '';
   const body = previewProps.__slotDemo
     ? `<div class="pui-dialog-preview__slot">${cellSample({ title: '产物校验', description: '正文由 content slot 组合 PUI Cell 与 Badge。', value: '已就绪', icon: 'check-circle' })}${tagSample({ theme: 'success', variant: 'outline', content: '已校验' })}</div>`
     : `<p class="pui-dialog-preview__content">${escapeHtml(previewProps.content || '')}</p>`;
   const header = previewProps.title || closeButton
-    ? `<header class="pui-dialog-preview__header"><span></span><h3>${escapeHtml(previewProps.title || '')}</h3><span class="pui-dialog-preview__header-action">${closeButton}</span></header>`
+    ? `<header class="pui-dialog-preview__header"><span class="pui-dialog-preview__header-action">${headerLeft}</span><h3>${escapeHtml(previewProps.title || '')}</h3><span class="pui-dialog-preview__header-action">${closeButton}</span></header>`
     : '';
   const footerCount = actions.length || (cancel ? 1 : 0) + (confirm ? 1 : 0);
   const footerLayout = previewProps.buttonLayout === 'vertical' ? 'vertical' : 'horizontal';
@@ -16486,6 +16851,291 @@ function progressShowcase(props, demo) {
     <div class="pui-progress-demo pui-progress-demo--success" style="--pui-progress-active:var(--success);--pui-progress-track:var(--surface-soft);--pui-progress-height:6px;--pui-progress-value:100%;--pui-progress-duration:500ms;--pui-progress-ease:var(--pui-ease-standard)"><div class="pui-progress-demo__body"><div class="pui-progress-demo__track"><span class="pui-progress-demo__bar"></span></div><span class="pui-progress-demo__info"><strong>完成</strong></span></div></div>
     <div class="pui-progress-demo pui-progress-demo--warning" style="--pui-progress-active:var(--warning);--pui-progress-track:var(--surface-soft);--pui-progress-height:6px;--pui-progress-value:58%;--pui-progress-duration:500ms;--pui-progress-ease:var(--pui-ease-standard)"><div class="pui-progress-demo__body"><div class="pui-progress-demo__track"><span class="pui-progress-demo__bar"></span></div><span class="pui-progress-demo__info"><strong>待核对</strong></span></div></div>
   </div></div><div class="pui-progress-showcase__section"><div class="pui-progress-demo__heading"><strong>label Slot</strong><span>追加读数，不承载业务内容</span></div><div class="pui-progress-demo pui-progress-demo--line" style="--pui-progress-active:var(--brand);--pui-progress-track:var(--surface-soft);--pui-progress-height:6px;--pui-progress-value:76%;--pui-progress-duration:500ms;--pui-progress-ease:var(--pui-ease-standard)"><div class="pui-progress-demo__body"><div class="pui-progress-demo__track"><span class="pui-progress-demo__bar"></span></div><span class="pui-progress-demo__info"><strong>76%</strong>${labelSlot}</span></div></div></div></section>`;
+}
+
+const chartThemes = new Set(['neutral', 'violet', 'blue', 'teal', 'pink', 'amber']);
+const chartHighVarianceItems = {
+  'area-chart': [
+    { key: 'jan', label: '1月', segments: [{ key: 'desktop', label: '桌面端', value: 310, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 84, theme: 'teal' }] },
+    { key: 'feb', label: '2月', segments: [{ key: 'desktop', label: '桌面端', value: 88, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 290, theme: 'teal' }] },
+    { key: 'mar', label: '3月', segments: [{ key: 'desktop', label: '桌面端', value: 338, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 104, theme: 'teal' }] },
+    { key: 'apr', label: '4月', segments: [{ key: 'desktop', label: '桌面端', value: 112, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 330, theme: 'teal' }] },
+    { key: 'may', label: '5月', segments: [{ key: 'desktop', label: '桌面端', value: 360, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 92, theme: 'teal' }] },
+    { key: 'jun', label: '6月', segments: [{ key: 'desktop', label: '桌面端', value: 140, theme: 'blue' }, { key: 'mobile', label: '移动端', value: 348, theme: 'teal' }] },
+  ],
+  'bar-chart': [
+    { key: 'foundation', label: '基础', segments: [{ key: 'existing', label: '已有', value: 48 }, { key: 'added', label: '本次新增', value: 14 }] },
+    { key: 'form', label: '表单', segments: [{ key: 'existing', label: '已有', value: 12 }, { key: 'added', label: '本次新增', value: 4 }] },
+    { key: 'data', label: '数据展示', segments: [{ key: 'existing', label: '已有', value: 44 }, { key: 'added', label: '本次新增', value: 18 }] },
+    { key: 'advanced', label: '高级', segments: [{ key: 'existing', label: '已有', value: 14 }, { key: 'added', label: '本次新增', value: 34 }] },
+  ],
+  waffle: [
+    { key: 'components', label: '组件总量', segments: [{ key: 'existing', label: '已有', value: 62, theme: 'neutral' }, { key: 'added', label: '本次新增', value: 24, theme: 'violet' }] },
+  ],
+};
+
+function chartPreviewProps(id, props, demo) {
+  return demo.chartHighVariance ? { ...props, items: chartHighVarianceItems[id] } : props;
+}
+
+function chartDataToggleButton(id, demo) {
+  const icon = id === 'area-chart' ? 'chart-line' : id === 'bar-chart' ? 'chart-bar' : 'chart-pie';
+  return buttonSample({
+    block: true,
+    theme: 'primary',
+    size: 'small',
+    icon,
+    content: demo.chartHighVariance ? '恢复初始数据' : '切换高波动数据',
+    demoAction: 'chart-data-toggle',
+    ariaLabel: `${demo.chartHighVariance ? '恢复' : '切换'}${id === 'area-chart' ? '面积图' : id === 'bar-chart' ? '条形图' : '点阵图'}演示数据`,
+  });
+}
+
+function chartNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : 0;
+}
+
+function chartValueText(value) {
+  const number = chartNumber(value);
+  return Number.isInteger(number) ? String(number) : String(Number(number.toFixed(2))).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function chartItemsFromProps(items, palette, options = {}) {
+  const source = Array.isArray(items) ? items : [];
+  const requestedPalette = Array.isArray(palette) ? palette.filter((theme, index) => chartThemes.has(theme) && palette.indexOf(theme) === index) : [];
+  const fallbackPalette = requestedPalette.length ? requestedPalette : ['neutral', 'violet'];
+  const cycleSingleItems = options.cycleSingleItems !== false;
+  const keys = new Map();
+  const legendKeys = new Set();
+  const legend = [];
+  const normalized = source.map((rawItem, itemIndex) => {
+    const item = rawItem && typeof rawItem === 'object' ? rawItem : {};
+    const baseKey = String(item.key ?? `item-${itemIndex}`);
+    const count = (keys.get(baseKey) || 0) + 1;
+    keys.set(baseKey, count);
+    const key = count > 1 ? `${baseKey}-${count}` : baseKey;
+    const segmentSource = Array.isArray(item.segments) && item.segments.length ? item.segments : [item];
+    const segments = segmentSource.map((rawSegment, segmentIndex) => {
+      const segment = rawSegment && typeof rawSegment === 'object' ? rawSegment : {};
+      const requestedTheme = String(segment.theme || '').toLowerCase();
+      const fallbackIndex = segmentSource.length === 1 && cycleSingleItems ? itemIndex : segmentIndex;
+      const theme = chartThemes.has(requestedTheme) ? requestedTheme : fallbackPalette[fallbackIndex % fallbackPalette.length];
+      const label = String(segment.label ?? (segmentIndex === 0 ? '数值' : `分段 ${segmentIndex + 1}`));
+      const legendKey = `${theme}:${label}`;
+      if (!legendKeys.has(legendKey)) {
+        legendKeys.add(legendKey);
+        legend.push({ key: `${theme}-${legend.length}`, theme, label });
+      }
+      const value = chartNumber(segment.value);
+      return { key: String(segment.key ?? `${key}-segment-${segmentIndex}`), label, theme, value, valueText: chartValueText(value) };
+    });
+    const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+    return { key, label: String(item.label ?? `项目 ${itemIndex + 1}`), segments, total, valueText: chartValueText(total) };
+  });
+  return { items: normalized, legend };
+}
+
+function chartLegendMarkup(legend) {
+  return `<div class="pui-chart-preview__legend" aria-hidden="true">${legend.map((item) => `<span><i class="pui-chart-theme--${item.theme}"></i>${escapeHtml(item.label)}</span>`).join('')}</div>`;
+}
+
+function chartEntranceDuration(props) {
+  if (props.reduceMotion) return 1;
+  const duration = Number(props.duration);
+  return Number.isFinite(duration) ? Math.max(0, Math.min(1000, duration)) : 500;
+}
+
+function chartEntranceAttrs(props) {
+  const entered = props.animated === false;
+  return {
+    classes: `${entered ? 'is-entered' : ''} ${props.reduceMotion ? 'is-reduced-motion' : ''}`.trim(),
+    attrs: `data-chart-entrance data-chart-animated="${props.animated !== false}" style="--pui-chart-duration:${chartEntranceDuration(props)}ms"`,
+  };
+}
+
+function areaChartSeries(items) {
+  const points = chartItemsFromProps(items, ['blue', 'teal', 'violet'], { cycleSingleItems: false }).items;
+  const registry = new Map();
+  points.forEach((point) => {
+    point.segments.forEach((segment, index) => {
+      const key = String(segment.key || `series-${index}`);
+      if (!registry.has(key)) registry.set(key, { key, label: segment.label, theme: segment.theme, values: [] });
+    });
+  });
+  const series = Array.from(registry.values());
+  points.forEach((point) => {
+    const byKey = new Map(point.segments.map((segment, index) => [String(segment.key || `series-${index}`), segment]));
+    series.forEach((entry) => entry.values.push(chartNumber(byKey.get(entry.key)?.value)));
+  });
+  return {
+    labels: points.map((point) => point.label),
+    points,
+    series,
+    legend: series.map((entry) => ({ key: entry.key, label: entry.label, theme: entry.theme })),
+  };
+}
+
+function areaChartLinePath(points, curve) {
+  if (!points.length) return '';
+  const start = `M${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+  if (points.length === 1) return start;
+  return points.slice(1).reduce((path, point, index) => {
+    const previous = points[index];
+    if (curve === 'step') {
+      const midpoint = (previous.x + point.x) / 2;
+      return `${path} H${midpoint.toFixed(2)} V${point.y.toFixed(2)} H${point.x.toFixed(2)}`;
+    }
+    if (curve === 'linear') return `${path} L${point.x.toFixed(2)} ${point.y.toFixed(2)}`;
+    const delta = (point.x - previous.x) / 3;
+    return `${path} C${(previous.x + delta).toFixed(2)} ${previous.y.toFixed(2)} ${(point.x - delta).toFixed(2)} ${point.y.toFixed(2)} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`;
+  }, start);
+}
+
+function areaChartGeometry(props) {
+  const data = areaChartSeries(props.items);
+  const width = 300;
+  const height = 160;
+  const top = 8;
+  const bottom = 146;
+  const plotHeight = bottom - top;
+  const stacked = !!props.stacked;
+  const cumulative = new Array(data.labels.length).fill(0);
+  let derivedMaximum = 0;
+  data.series.forEach((series) => {
+    series.values.forEach((value, index) => {
+      derivedMaximum = Math.max(derivedMaximum, stacked ? cumulative[index] + value : value);
+      if (stacked) cumulative[index] += value;
+    });
+  });
+  const maximum = chartNumber(props.max) || derivedMaximum || 1;
+  const curve = ['natural', 'linear', 'step'].includes(props.curve) ? props.curve : 'natural';
+  const stackBase = new Array(data.labels.length).fill(0);
+  const xFor = (index) => data.labels.length === 1 ? width / 2 : 8 + ((width - 16) * index) / Math.max(1, data.labels.length - 1);
+  const yFor = (value) => bottom - Math.max(0, Math.min(1, value / maximum)) * plotHeight;
+  const series = data.series.map((entry) => {
+    const lowerValues = stackBase.slice();
+    const upperValues = entry.values.map((value, index) => lowerValues[index] + value);
+    if (stacked) upperValues.forEach((value, index) => { stackBase[index] = value; });
+    const upper = upperValues.map((value, index) => ({ x: xFor(index), y: yFor(value) }));
+    const lower = (stacked ? lowerValues : lowerValues.map(() => 0)).map((value, index) => ({ x: xFor(index), y: yFor(value) }));
+    const linePath = areaChartLinePath(upper, curve);
+    const reverseLower = lower.slice().reverse();
+    const areaPath = `${linePath}${reverseLower.length ? ` L${reverseLower[0].x.toFixed(2)} ${reverseLower[0].y.toFixed(2)}${reverseLower.slice(1).map((point) => ` L${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join('')}` : ''} Z`;
+    return { ...entry, upper, linePath, areaPath };
+  });
+  return { ...data, width, height, top, bottom, maximum, series };
+}
+
+let areaChartGradientSequence = 0;
+
+function areaChartMarkup(props) {
+  const geometry = areaChartGeometry(props);
+  const size = ['small', 'medium', 'large'].includes(props.size) ? props.size : 'medium';
+  const entrance = chartEntranceAttrs(props);
+  const gradientScope = `pui-area-${areaChartGradientSequence += 1}`;
+  const gradients = geometry.series.map((series, index) => `<linearGradient id="${gradientScope}-${index}" class="pui-chart-theme--${series.theme}" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stop-color="var(--pui-chart-accent)" stop-opacity="var(--pui-chart-area-fill-start)"/><stop offset="95%" stop-color="var(--pui-chart-accent)" stop-opacity="var(--pui-chart-area-fill-end)"/></linearGradient>`).join('');
+  const grid = props.showGrid === false ? '' : [0, .25, .5, .75, 1].map((ratio) => {
+    const y = geometry.top + ((geometry.bottom - geometry.top) * ratio);
+    return `<line x1="8" x2="292" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}"/>`;
+  }).join('');
+  const areas = geometry.series.map((series, index) => `<g class="pui-chart-theme--${series.theme}" style="--pui-chart-delay:${Math.min(index * 70, 210)}ms"><path class="pui-area-chart-preview__area" d="${series.areaPath}" fill="url(#${gradientScope}-${index})"/><path class="pui-area-chart-preview__line" d="${series.linePath}" pathLength="1"/>${props.showDots ? series.upper.map((point) => `<circle class="pui-area-chart-preview__dot" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="2.5"/>`).join('') : ''}</g>`).join('');
+  const labels = props.showXAxis === false ? '' : `<div class="pui-area-chart-preview__axis" aria-hidden="true">${geometry.labels.map((label) => `<span>${escapeHtml(label)}</span>`).join('')}</div>`;
+  const semantic = `${props.ariaLabel || '面积图'}${geometry.points.length ? `：${geometry.points.map((point) => `${point.label} ${point.valueText}`).join('，')}` : '：暂无数据'}`;
+  return `<div class="pui-area-chart-preview pui-area-chart-preview--${size} ${entrance.classes}" data-chart-entrance data-chart-animated="${props.animated !== false}" style="--pui-chart-duration:${chartEntranceDuration(props)}ms;--pui-area-chart-points:${Math.max(1, geometry.labels.length)}" role="img" aria-label="${escapeHtml(semantic)}">${geometry.points.length ? `<div class="pui-area-chart-preview__plot"><svg viewBox="0 0 ${geometry.width} ${geometry.height}" preserveAspectRatio="none" aria-hidden="true"><defs>${gradients}</defs><g class="pui-area-chart-preview__grid">${grid}</g>${areas}</svg>${labels}</div>` : '<p class="pui-chart-preview__empty">暂无数据</p>'}${props.showLegend !== false && geometry.legend.length ? chartLegendMarkup(geometry.legend) : ''}</div>`;
+}
+
+function areaChartShowcase(props, demo) {
+  const previewProps = chartPreviewProps('area-chart', props, demo);
+  return `<section class="demo-section pui-chart-showcase">
+    <div class="pui-chart-showcase__heading"><span><strong>连续趋势</strong><small>${demo.chartHighVariance ? '高波动数据' : '初始数据'} · ${escapeHtml(props.curve || 'natural')}</small></span>${iconButtonSample({ icon: 'refresh', size: 'small', variant: 'text', shape: 'circle', ariaLabel: '重播面积图动画', demoAction: 'chart-replay' })}</div>
+    ${areaChartMarkup(previewProps)}
+    <div class="pui-chart-showcase__data-toggle">${chartDataToggleButton('area-chart', demo)}</div>
+  </section>`;
+}
+
+function barChartMarkup(props) {
+  const data = chartItemsFromProps(props.items, ['blue', 'teal', 'violet'], { cycleSingleItems: false });
+  const orientation = ['horizontal', 'vertical'].includes(props.orientation) ? props.orientation : 'horizontal';
+  const mode = ['stacked', 'grouped'].includes(props.mode) ? props.mode : 'stacked';
+  const size = ['small', 'medium', 'large'].includes(props.size) ? props.size : 'medium';
+  const derivedMax = data.items.reduce((maximum, item) => {
+    if (mode === 'grouped') return Math.max(maximum, ...item.segments.map((segment) => segment.value));
+    return Math.max(maximum, item.total);
+  }, 0);
+  const explicitMax = chartNumber(props.max);
+  const maximum = explicitMax > 0 ? explicitMax : (derivedMax || 1);
+  const ratio = (value) => Math.max(0, Math.min(100, Math.round((value / maximum) * 10000) / 100));
+  const entrance = chartEntranceAttrs(props);
+  const bars = data.items.map((item, itemIndex) => {
+    const heading = `<div class="pui-bar-chart-preview__heading"><strong>${escapeHtml(item.label)}</strong>${props.showValue === false ? '' : `<span>${item.valueText}</span>`}</div>`;
+    const tracks = mode === 'stacked'
+      ? `<div class="pui-bar-chart-preview__track">${item.segments.map((segment, segmentIndex) => `<i class="pui-bar-chart-preview__segment pui-chart-theme--${segment.theme}" style="--pui-bar-ratio:${ratio(segment.value)}%;--pui-chart-delay:${Math.min((itemIndex * 45) + (segmentIndex * 24), 225)}ms" aria-hidden="true"></i>`).join('')}</div>`
+      : item.segments.map((segment, segmentIndex) => `<div class="pui-bar-chart-preview__group"><small>${escapeHtml(segment.label)}</small><div class="pui-bar-chart-preview__track"><i class="pui-bar-chart-preview__segment pui-chart-theme--${segment.theme}" style="--pui-bar-ratio:${ratio(segment.value)}%;--pui-chart-delay:${Math.min((itemIndex * 45) + (segmentIndex * 24), 225)}ms" aria-hidden="true"></i></div></div>`).join('');
+    return `<div class="pui-bar-chart-preview__item">${heading}<div class="pui-bar-chart-preview__tracks">${tracks}</div></div>`;
+  }).join('');
+  const semantic = `${props.ariaLabel || '条形图'}${data.items.length ? `：${data.items.map((item) => `${item.label} ${item.valueText}`).join('，')}` : '：暂无数据'}`;
+  const scale = props.showGrid && orientation === 'horizontal'
+    ? `<div class="pui-bar-chart-preview__scale" aria-hidden="true"><span>0</span><span>${escapeHtml(chartValueText(maximum))}</span></div>`
+    : '';
+  return `<div class="pui-bar-chart-preview pui-bar-chart-preview--${orientation} pui-bar-chart-preview--${mode} pui-bar-chart-preview--${size} ${props.showGrid ? 'pui-bar-chart-preview--grid' : ''} ${entrance.classes}" ${entrance.attrs} role="img" aria-label="${escapeHtml(semantic)}">${data.items.length ? `<div class="pui-bar-chart-preview__plot">${scale}${bars}</div>` : '<p class="pui-chart-preview__empty">暂无数据</p>'}${props.showLegend !== false && data.legend.length ? chartLegendMarkup(data.legend) : ''}</div>`;
+}
+
+function barChartShowcase(props, demo) {
+  const previewProps = chartPreviewProps('bar-chart', props, demo);
+  return `<section class="demo-section pui-chart-showcase">
+    <div class="pui-chart-showcase__heading"><span><strong>组件分类增量</strong><small>${demo.chartHighVariance ? '高波动数据' : '初始数据'} · ${escapeHtml(props.mode || 'stacked')}</small></span>${iconButtonSample({ icon: 'refresh', size: 'small', variant: 'text', shape: 'circle', ariaLabel: '重播条形图动画', demoAction: 'chart-replay' })}</div>
+    ${barChartMarkup(previewProps)}
+    <div class="pui-chart-showcase__data-toggle">${chartDataToggleButton('bar-chart', demo)}</div>
+    <div class="pui-chart-showcase__heading"><strong>纵向参考</strong><span>同一数据，不单独放大</span></div>
+    ${barChartMarkup({ ...previewProps, orientation: 'vertical', showGrid: false, showLegend: false, size: 'large' })}
+  </section>`;
+}
+
+function waffleMarkup(props) {
+  const data = chartItemsFromProps(props.items);
+  const columns = Math.max(4, Math.min(12, Math.floor(Number(props.columns) || 10)));
+  const maxCells = Math.max(1, Math.min(200, Math.floor(Number(props.maxCells) || 100)));
+  const requestedUnit = chartNumber(props.unit) || 1;
+  const total = data.items.reduce((sum, item) => sum + item.total, 0);
+  const effectiveUnit = Math.max(requestedUnit, total > 0 ? Math.ceil(total / maxCells) : requestedUnit);
+  const groupColumns = Number(props.groupColumns) > 0
+    ? Math.max(1, Math.min(columns, Math.floor(Number(props.groupColumns))))
+    : 0;
+  let remaining = maxCells;
+  const entrance = chartEntranceAttrs(props);
+  let entranceIndex = 0;
+  const groups = data.items.map((item) => {
+    const cells = [];
+    item.segments.forEach((segment) => {
+      const count = Math.min(remaining, Math.ceil(segment.value / effectiveUnit));
+      for (let index = 0; index < count; index += 1) {
+        const opacity = count <= 1 ? 1 : Math.round((1 - (index / (count - 1)) * 0.72) * 100) / 100;
+        const cellIndex = cells.length;
+        const groupStart = groupColumns && cellIndex > 0 && cellIndex % groupColumns === 0 && cellIndex % columns !== 0;
+        cells.push(`<i class="pui-waffle-preview__cell pui-chart-theme--${segment.theme}${groupStart ? ' is-group-start' : ''}" style="--pui-waffle-opacity:${opacity};--pui-chart-delay:${Math.min(entranceIndex * 14, 224)}ms" aria-hidden="true"></i>`);
+        entranceIndex += 1;
+      }
+      remaining -= count;
+    });
+    return `<div class="pui-waffle-preview__item"><div class="pui-waffle-preview__heading"><strong>${escapeHtml(item.label)}</strong>${props.showValue === false ? '' : `<span>${item.valueText}</span>`}</div><div class="pui-waffle-preview__grid">${cells.join('')}</div></div>`;
+  }).join('');
+  const shape = ['rounded', 'circle', 'square'].includes(props.shape) ? props.shape : 'rounded';
+  const size = ['small', 'medium', 'large'].includes(props.size) ? props.size : 'medium';
+  const semantic = `${props.ariaLabel || '组件点阵图'}${data.items.length ? `：${data.items.map((item) => `${item.label} ${item.valueText}`).join('，')}${effectiveUnit > requestedUnit ? `；每格代表 ${chartValueText(effectiveUnit)}` : ''}` : '：暂无数据'}`;
+  return `<div class="pui-waffle-preview pui-waffle-preview--${shape} pui-waffle-preview--${size} ${entrance.classes}" data-chart-entrance data-chart-animated="${props.animated !== false}" style="--pui-waffle-columns:${columns};--pui-chart-duration:${chartEntranceDuration(props)}ms" role="img" aria-label="${escapeHtml(semantic)}">${data.items.length ? `<div class="pui-waffle-preview__plot">${groups}</div>` : '<p class="pui-chart-preview__empty">暂无数据</p>'}${effectiveUnit > requestedUnit ? `<small class="pui-waffle-preview__unit">1 格 = ${chartValueText(effectiveUnit)}</small>` : ''}${props.showLegend !== false && data.legend.length ? chartLegendMarkup(data.legend) : ''}</div>`;
+}
+
+function waffleShowcase(props, demo) {
+  const previewProps = chartPreviewProps('waffle', props, demo);
+  const scaledItems = [{ key: 'coverage', label: '测试用例', value: 486, theme: 'teal' }];
+  return `<section class="demo-section pui-chart-showcase">
+    <div class="pui-chart-showcase__heading"><span><strong>组件数量点阵</strong><small>${demo.chartHighVariance ? '高波动数据' : '初始数据'} · 渐隐仍可辨认</small></span>${iconButtonSample({ icon: 'refresh', size: 'small', variant: 'text', shape: 'circle', ariaLabel: '重播点阵图动画', demoAction: 'chart-replay' })}</div>
+    ${waffleMarkup(previewProps)}
+    <div class="pui-chart-showcase__data-toggle">${chartDataToggleButton('waffle', demo)}</div>
+    <div class="pui-chart-showcase__heading"><strong>大数据缩放</strong><span>单位显式可见</span></div>
+    ${waffleMarkup({ ...props, items: scaledItems, maxCells: 80, showLegend: false })}
+  </section>`;
 }
 
 function overlaySample(type, placement) {
@@ -17417,7 +18067,9 @@ function noticePreviewMarquee(props) {
 }
 
 function noticePreviewTheme(value) {
-  return ['info', 'success', 'warning', 'error'].includes(value) ? value : 'info';
+  if (value === 'info') return 'primary';
+  if (value === 'error') return 'danger';
+  return ['primary', 'success', 'warning', 'danger'].includes(value) ? value : 'primary';
 }
 
 function noticePreviewContent(value) {
@@ -17520,7 +18172,7 @@ function bindNoticePreviewMarquee(props, demo) {
 
 function noticePreviewSample(props, current, options = {}) {
   const theme = noticePreviewTheme(props.theme);
-  const fallbackIcon = ({ info: 'info-circle', success: 'success-circle', warning: 'warning-triangle', error: 'error-circle' })[theme];
+  const fallbackIcon = ({ primary: 'info-circle', success: 'success-circle', warning: 'warning-triangle', danger: 'error-circle' })[theme];
   const prefix = noticePreviewIcon(props.prefixIcon, fallbackIcon);
   const suffix = noticePreviewIcon(props.suffixIcon, '');
   const items = noticePreviewContent(props.content);
@@ -17532,9 +18184,9 @@ function noticePreviewSample(props, current, options = {}) {
   if (!mounted) return '';
   const prefixMarkup = prefix ? `<span class="pui-notice-preview__icon">${iconButtonSample({ icon: prefix, ariaLabel: '通知前置图标', demoAction: options.interactive ? 'notice-click' : '', demoValue: 'prefix-icon' })}</span>` : '';
   const operation = props.operation ? `<span class="pui-notice-preview__operation">${buttonSample({ theme: 'default', variant: 'text', size: 'small', content: props.operation, demoAction: options.interactive ? 'notice-click' : '', demoValue: 'operation' })}</span>` : '';
-  const suffixMarkup = suffix ? `<span class="pui-notice-preview__icon">${iconButtonSample({ icon: suffix, ariaLabel: '通知尾部图标', demoAction: options.interactive ? 'notice-click' : '', demoValue: 'suffix-icon' })}</span>` : '';
+  const suffixMarkup = suffix ? `<span class="pui-notice-preview__icon pui-notice-preview__icon--suffix">${iconButtonSample({ theme: 'default', variant: 'transparent', surface: 'transparent', shape: 'circle', size: 'small', icon: suffix, ariaLabel: suffix === 'close' ? '关闭通知' : '通知尾部图标', demoAction: options.interactive ? 'notice-click' : '', demoValue: 'suffix-icon' })}</span>` : '';
   const contentAction = options.interactive ? ' data-demo-action="notice-click" data-value="content" tabindex="0" role="button" aria-label="通知内容"' : '';
-  return `<div class="pui-notice-preview pui-notice-preview--${theme} ${active ? 'is-active' : 'is-inactive'} ${vertical ? 'pui-notice-preview--vertical' : ''}" style="--pui-notice-preview-duration:${props.reduceMotion ? 1 : (options.static ? 500 : current.motion)}ms" role="${theme === 'error' ? 'alert' : 'status'}" aria-live="${theme === 'error' ? 'assertive' : 'polite'}" aria-label="${escapeHtml(props.ariaLabel || items.join(' · ') || '通知')}" aria-hidden="${!active}"${options.interactive ? ' data-notice-current' : ''}>${prefixMarkup}<div class="pui-notice-preview__viewport" data-notice-viewport${contentAction}><div class="pui-notice-preview__text" data-notice-text>${content}</div></div>${operation}${suffixMarkup}</div>`;
+  return `<div class="pui-notice-preview pui-notice-preview--${theme} ${active ? 'is-active' : 'is-inactive'} ${vertical ? 'pui-notice-preview--vertical' : ''}" style="--pui-notice-preview-duration:${props.reduceMotion ? 1 : (options.static ? 500 : current.motion)}ms" role="${theme === 'danger' ? 'alert' : 'status'}" aria-live="${theme === 'danger' ? 'assertive' : 'polite'}" aria-label="${escapeHtml(props.ariaLabel || items.join(' · ') || '通知')}" aria-hidden="${!active}"${options.interactive ? ' data-notice-current' : ''}>${prefixMarkup}<div class="pui-notice-preview__viewport" data-notice-viewport${contentAction}><div class="pui-notice-preview__text" data-notice-text>${content}</div></div>${operation}${suffixMarkup}</div>`;
 }
 
 function noticeBarShowcase(props, demo) {
@@ -17545,7 +18197,7 @@ function noticeBarShowcase(props, demo) {
   const static = (overrides, options) => noticePreviewSample({ ...props, ...overrides }, { mounted: true, active: true, motion: 500 }, { static: true, ...options });
   return `<section class="demo-section pui-notice-showcase">
     <article class="pui-showcase-section"><h3>基础用法</h3>${primary || reopen}</article>
-    <article class="pui-showcase-section"><h3>组件状态</h3><div class="pui-notice-showcase__stack">${static({ theme: 'info', content: '信息公告：基础功能可直接使用。', marquee: false, operation: '', suffixIcon: null })}${static({ theme: 'success', content: '成功公告：页面已接收到最新数据。', marquee: false, operation: '', suffixIcon: null })}${static({ theme: 'warning', content: '提醒公告：请在提交前检查填写内容。', marquee: false, operation: '', suffixIcon: null })}${static({ theme: 'error', content: '异常公告：请求失败，后续动作由页面提供。', marquee: false, operation: '', suffixIcon: null })}</div></article>
+    <article class="pui-showcase-section"><h3>组件状态</h3><div class="pui-notice-showcase__stack">${static({ theme: 'primary', content: '信息公告：基础功能可直接使用。', marquee: false, operation: '', suffixIcon: null })}${static({ theme: 'success', content: '成功公告：页面已接收到最新数据。', marquee: false, operation: '', suffixIcon: null })}${static({ theme: 'warning', content: '提醒公告：请在提交前检查填写内容。', marquee: false, operation: '', suffixIcon: null })}${static({ theme: 'danger', content: '异常公告：请求失败，后续动作由页面提供。', marquee: false, operation: '', suffixIcon: null })}</div></article>
     <article class="pui-showcase-section"><h3>滚动内容</h3><div class="pui-notice-showcase__stack">${static({ marquee: { speed: 50, loop: -1, delay: 0 }, content: '横向跑马只在内容实际超过可用宽度时启动，低动效时保持静止。', operation: '', suffixIcon: null })}${static({ direction: 'vertical', content: ['第一条纵向公告', '第二条纵向公告', '第三条纵向公告'], marquee: false, operation: '', suffixIcon: null }, { verticalIndex: demo.noticeStaticVerticalIndex })}${buttonSample({ theme: 'default', variant: 'outline', size: 'small', content: '查看下一条纵向公告', demoAction: 'notice-vertical-next' })}</div></article>
     <article class="pui-showcase-section"><h3>内容区域</h3>${static({ content: '', operation: '', prefixIcon: 'bell', suffixIcon: 'chevron-right', marquee: false }, { contentMarkup: `${tagSample({ theme: 'primary', variant: 'outline', content: 'content Slot' })}<span>可组合业务摘要</span>` })}<p class="pui-notice-showcase__note">prefix-icon、content、operation、suffix-icon 均是独立具名 Slot。</p></article>
     <article class="pui-showcase-section"><h3>受控显隐</h3><p class="pui-notice-showcase__note">${controlled ? '当前由 visible 控制；尾部图标会请求父级回写 false。' : '当前为非受控；可在属性面板传入 visible 体验父级控制。'}</p></article>
@@ -19494,10 +20146,10 @@ function breadcrumbPreviewMarkup(props, demo, sampleId) {
   const easing = toastPreviewEasing(props.easing);
   if (stateType !== 'content') {
     const stateNode = stateType === 'error'
-      ? `${iconComponent('error-circle', { size: 'medium' })}<span>${escapeHtml(props.errorText || '路径加载失败')}</span>${props.retryText ? buttonSample({ theme: 'default', variant: 'outline', size: 'small', icon: 'refresh', content: props.retryText, disabled: props.disabled, demoAction: 'breadcrumb-retry' }) : ''}`
+      ? `${iconComponent('error-circle', { size: 'medium' })}<span class="pui-breadcrumb-preview__state-message">${escapeHtml(props.errorText || '路径加载失败')}</span>${props.retryText ? buttonSample({ theme: 'default', variant: 'outline', size: 'small', icon: 'refresh', content: props.retryText, disabled: props.disabled, demoAction: 'breadcrumb-retry' }) : ''}`
       : stateType === 'loading'
         ? loadingComponent({ loading: true, size: 'small', text: props.loadingText || '路径加载中', duration: motion, reduceMotion: props.reduceMotion })
-        : `${iconComponent('inbox', { size: 'medium' })}<span>${escapeHtml(props.emptyText || '暂无路径')}</span>`;
+        : `${iconComponent('inbox', { size: 'medium' })}<span class="pui-breadcrumb-preview__state-message">${escapeHtml(props.emptyText || '暂无路径')}</span>`;
     return `<div class="pui-breadcrumb-preview__state is-${stateType}" role="${stateType === 'error' ? 'alert' : 'status'}">${stateNode}</div>`;
   }
   const current = resolveBreadcrumbPreviewValue(props, demo, items);
@@ -20653,6 +21305,10 @@ document.querySelector('#previewStage').addEventListener('input', (event) => {
     restorePreviewTextInput('#previewStage [data-demo-action="textarea-input"]', selection, selection);
     return;
   }
+  if (action === 'textarea-static-autosize' && previewIdFor(state.current) === 'textarea') {
+    syncStaticTextareaAutosize(event.target);
+    return;
+  }
   if (action === 'field-input' && previewIdFor(state.current) === 'field') {
     const demo = getDemoState('field');
     demo.fieldValue = event.target.value;
@@ -20868,11 +21524,6 @@ document.querySelector('#previewStage').addEventListener('focus', (event) => {
       root.classList.add('is-focused');
       root.dataset.searchEvent = demo.searchEvent;
       root.dataset.searchEventOrder = 'focus';
-      const snapshot = searchPreviewSnapshot(props, demo);
-      const control = root.querySelector('.pui-input-preview__control');
-      if (snapshot.clearTrigger === 'focus' && snapshot.value && control && !control.querySelector('[data-demo-action="search-clear"]')) {
-        control.insertAdjacentHTML('beforeend', iconButtonSample({ customClass: 'pui-input-preview__clear pui-search__clear', icon: 'close-circle', ariaLabel: '清空搜索', title: '清空搜索', demoAction: 'search-clear' }));
-      }
     }
     return;
   }
@@ -20921,7 +21572,6 @@ document.querySelector('#previewStage').addEventListener('blur', (event) => {
       root.classList.remove('is-focused');
       root.dataset.searchEvent = demo.searchEvent;
       root.dataset.searchEventOrder = 'blur';
-      if (props.clearTrigger === 'focus') root.querySelector('[data-demo-action="search-clear"]')?.remove();
     }
     return;
   }
@@ -21018,7 +21668,7 @@ document.querySelector('#previewStage').addEventListener('keydown', (event) => {
     event.target.click();
     return;
   }
-  if (action === 'indexes-item' && previewIdFor(state.current) === 'indexes' && (event.key === 'Enter' || event.key === ' ')) {
+  if (['indexes-select', 'indexes-item'].includes(action) && previewIdFor(state.current) === 'indexes' && (event.key === 'Enter' || event.key === ' ')) {
     event.preventDefault();
     event.target.dataset.activationSource = 'keyboard';
     event.target.click();
@@ -21138,6 +21788,17 @@ document.querySelector('#previewStage').addEventListener('click', async (event) 
   const index = Number(action.dataset.index || 0);
   const value = action.dataset.value;
   if (type === 'copy-guide-code') return;
+  if (type === 'chart-replay' && ['area-chart', 'bar-chart', 'waffle'].includes(previewIdFor(state.current))) {
+    event.preventDefault();
+    replayChartEntrancePreviewRuntime(props);
+    return;
+  }
+  if (type === 'chart-data-toggle' && ['area-chart', 'bar-chart', 'waffle'].includes(previewIdFor(state.current))) {
+    event.preventDefault();
+    demo.chartHighVariance = !demo.chartHighVariance;
+    renderStage();
+    return;
+  }
   if (previewIdFor(state.current) === 'picker' && type === 'picker-open') {
     if (!pickerH5SetVisible(props, demo, true, 'trigger')) return;
     demo.pickerEvent = `visible-change → open：source=trigger${props.visible !== null && props.visible !== undefined ? ' · 父级已回写' : ''}`;
@@ -21679,26 +22340,6 @@ document.querySelector('#previewStage').addEventListener('click', async (event) 
     renderStage();
     return;
   }
-  if (type === 'textarea-static-clear') {
-    const root = action.closest('.pui-textarea-preview');
-    const control = root && root.querySelector('textarea');
-    if (!control || control.disabled || !control.value) return;
-    control.value = '';
-    const counter = root.querySelector('.pui-textarea-preview__count');
-    if (counter) counter.textContent = `0${counter.textContent.includes('/') ? counter.textContent.slice(counter.textContent.indexOf('/')) : ''}`;
-    const clearButton = root.querySelector('[data-demo-action="textarea-static-clear"]');
-    const clearWrap = clearButton && clearButton.closest('.pui-textarea-preview__clear-wrap');
-    if (clearWrap) clearWrap.remove();
-    root.dataset.textareaLastEvent = 'clear → change';
-    control.focus();
-    return;
-  }
-  if (type === 'textarea-clear' && previewIdFor(state.current) === 'textarea') {
-    const snapshot = textareaPreviewSnapshot(props, demo);
-    if (!snapshot.interactive || !snapshot.value) return;
-    commitTextareaPreviewValue(props, demo, '', 'clear', { clear: true });
-    return;
-  }
   if (type === 'clear') {
     updateCurrentProp('value', '');
     return;
@@ -21715,6 +22356,24 @@ document.querySelector('#previewStage').addEventListener('click', async (event) 
     demo.cardTapped = true;
   } else if (type === 'card-save') {
     demo.cardSaved = !demo.cardSaved;
+  } else if (type === 'card-header-action') {
+    demo.cardSaved = true;
+    renderStage();
+    return;
+  } else if (type === 'card-menu-toggle') {
+    const controlled = typeof props.menuVisible === 'boolean';
+    const next = controlled ? !props.menuVisible : !demo.cardMenuOpen;
+    if (controlled) state.props[state.current].menuVisible = next;
+    else demo.cardMenuOpen = next;
+    renderStage();
+    return;
+  } else if (type === 'card-menu-select') {
+    const item = Array.isArray(props.menuItems) ? props.menuItems[index] : null;
+    if (!item || item.disabled) return;
+    demo.cardMenuOpen = false;
+    demo.cardSaved = true;
+    renderStage();
+    return;
   } else if (type === 'button-click' || type === 'button-secondary' || type === 'button-danger') {
     if (action.disabled) return;
     demo.buttonClicked = true;
@@ -21958,11 +22617,24 @@ document.querySelector('#previewStage').addEventListener('click', async (event) 
     return;
   } else if (type === 'list-load' || type === 'list-retry') {
     if (props.disabled || (type === 'list-load' && (props.loading || props.finished)) || (type === 'list-retry' && !props.error)) return;
-    demo.listEvent = type === 'list-retry'
-      ? `retry：source=tap · itemCount=${listItemsFromProps(props).length}；等待消费者重新请求并回写 error/loading/items`
-      : `load：source=tap · itemCount=${listItemsFromProps(props).length}；等待消费者请求并回写 loading/items`;
-    const output = document.querySelector('#previewStage [data-list-event]');
-    if (output) output.textContent = demo.listEvent;
+    clearTimeout(state.previewListTimer);
+    const currentItems = Array.isArray(props.items) ? props.items.slice() : [];
+    state.props[state.current].error = false;
+    state.props[state.current].loading = true;
+    demo.listEvent = `${type === 'list-retry' ? 'retry' : 'load'}：父级已进入 loading`;
+    renderInspector();
+    renderStage();
+    state.previewListTimer = setTimeout(() => {
+      if (previewIdFor(state.current) !== 'list') return;
+      const nextItems = currentItems.concat([
+        { title: `新增条目 ${currentItems.length + 1}`, description: '由 H5 演示父级真实回写', value: currentItems.length + 1, leftIcon: 'component' },
+        { title: `新增条目 ${currentItems.length + 2}`, description: '加载动画完成后加入列表', value: currentItems.length + 2, leftIcon: 'check-circle' },
+      ]);
+      Object.assign(state.props[state.current], { items: nextItems, loading: false, error: false, finished: true });
+      demo.listEvent = `${type === 'list-retry' ? 'retry' : 'load'}：父级已回写 ${nextItems.length} 条并结束加载`;
+      renderInspector();
+      renderStage();
+    }, props.reduceMotion ? 1 : 500);
     return;
   } else if (type === 'list-content-slot' || type === 'list-empty-slot' || type === 'list-footer-slot') {
     const slotName = type === 'list-content-slot' ? 'default' : type === 'list-empty-slot' ? 'empty' : 'footer';

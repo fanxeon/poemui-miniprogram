@@ -1,0 +1,145 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0483",
+  "title": "NoticeBar 关闭按钮层级和语义染色不正确",
+  "scope": "component",
+  "components": [
+    "notice-bar",
+    "button",
+    "icon"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
+  "userGoal": "关闭操作右对齐为小号透明圆形 Close，不在 NoticeBar 内制造第二层 Surface；多条信息按 primary/warning 等语义共同染色。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "wechat-component-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "打开 NoticeBar 独立页。",
+    "观察右侧默认 Close；上一轮使用 default/base Button，产生独立 muted 背景，和 NoticeBar 主 Surface 抢层级。"
+  ],
+  "expected": "尾部 Close 右对齐，保留小号圆形命中区但视觉透明；背景、文字、图标共同按 theme 染色。",
+  "actual": "default/base Close 在 NoticeBar 内形成第二层按钮 Surface，关闭操作主次过强。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "notice-bar/notice-bar.wxml",
+      "note": "尾部改为 transparent/small/circle/icon-only，删除 default/base。"
+    },
+    {
+      "kind": "file",
+      "ref": "notice-bar/notice-bar.wxss",
+      "note": "primary/success/warning/danger 背景与前景；suffix Button 继承语义前景且背景透明。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://tdesign.tencent.com/miniprogram/components/notice-bar",
+      "note": "2026-07-29 官方 NoticeBar 产品与 API 对照。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/notice-bar",
+      "note": "2026-07-29 官方源码目录对照；固定复现版本另读取 npm 1.15.3 包内 props/type/JS/WXML/WXSS。"
+    },
+    {
+      "kind": "browser",
+      "ref": "/tmp/poemui-notice-bar-transparent-light-390.png",
+      "note": "微信开发者工具 iPhone 12/13 Pro 390px 浅色模拟器截图，Close 无独立底色。"
+    },
+    {
+      "kind": "browser",
+      "ref": "/tmp/poemui-notice-bar-transparent-dark-fruit-390.png",
+      "note": "微信开发者工具 iPhone 12/13 Pro 390px 深色果味模拟器截图，Close 在阴影、毛玻璃、大圆角与渐变组合下仍透明。"
+    },
+    {
+      "kind": "build",
+      "ref": "miniprogram/miniprogram_npm/poemui-miniprogram/notice-bar/",
+      "note": "微信构建 npm 329ms 完成；NoticeBar 四件套在源码、dist、node_modules、miniprogram_npm 四路 SHA-256 一致。"
+    }
+  ],
+  "rootCause": "上一轮为强调 Close 的圆形命中区使用了 default/base Button，把按钮的 muted Surface 错放进 NoticeBar 的唯一语义 Surface；命中几何与视觉背景没有分离。",
+  "decision": {
+    "outcome": "规范 theme 为 primary/success/warning/danger，兼容 info/error；suffix close 使用 variant=transparent、small/circle/icon-only，点击后仍由父级回写 visible。",
+    "rationale": "透明变体保留 PUI Button 的圆形命中区和无障碍语义，同时消除第二层 Surface，让关闭保持次级操作。",
+    "alternativesRejected": [
+      "组件自动关闭会破坏受控 visible。",
+      "surface=transparent 会额外移除 Button 圆角，不符合保留圆形命中几何的目标。",
+      "页面 CSS 覆盖会掩盖共享组件缺陷。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "notice-bar/notice-bar.js",
+      "notice-bar/notice-bar.wxml",
+      "notice-bar/notice-bar.wxss",
+      "scripts/test-notice-bar.js",
+      "docs/components/NOTICEBAR.md",
+      "preview/app.js",
+      "preview/styles.css"
+    ],
+    "dependencies": [
+      "PUI Button",
+      "PUI Icon"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-notice-bar.js",
+      "scripts/test-miniprogram-feedback-pages.js",
+      "scripts/test-miniprogram-component-pages.js",
+      "scripts/test-miniprogram-component-page-quality.js"
+    ],
+    "commands": [
+      "node scripts/test-notice-bar.js",
+      "node scripts/test-miniprogram-feedback-pages.js",
+      "node scripts/test-miniprogram-component-pages.js",
+      "node scripts/test-miniprogram-component-page-quality.js",
+      "npm run miniprogram:build",
+      "npm run feedback:generate",
+      "npm run feedback:check"
+    ],
+    "browser": [
+      "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 Pro 390px：浅色、深色、深色果味下右侧 Close 均只显示语义色图标，没有独立 default/base Surface。",
+      "浅色与深色果味分别实点 Close，页面真实回写为“公告已由页面隐藏”；实点“重新显示公告”后恢复，ARIA 仍暴露“关闭通知”。",
+      "微信 build-npm 329ms 完成；调试器 Errors=0，累计 6 条 warning 为灰度基础库、Navbar selector、IntersectionObserver、预加载与热重载既有基线，没有 NoticeBar 新错误。",
+      "H5 Chrome 390px 深色果味：Close 计算样式为 36x36px、999px 圆角、透明背景与边界；实际点击后 NoticeBar 卸载，点击“重新显示公告”恢复，ARIA 为“关闭通知”，document scrollWidth=clientWidth。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的透明 Button 样式隔离、触摸命中、swiper 与深色语义色待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "NoticeBar 主题同时作用背景、文字、图标；Close 保留圆形命中区但视觉透明，只发请求。",
+    "rules": [
+      "suffix close 不自动改 visible。",
+      "复合 Surface 内的次级图标操作使用透明 Button 视觉，不要用 default/base 再造 Surface。",
+      "需要保留圆形命中区时使用 variant=transparent，不要用会移除圆角的 surface=transparent。"
+    ],
+    "tags": [
+      "noticebar",
+      "close",
+      "semantic-color"
+    ]
+  }
+}

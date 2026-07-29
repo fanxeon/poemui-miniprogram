@@ -1,0 +1,165 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0506",
+  "title": "图表演示数据变化幅度过小导致动画不明显",
+  "scope": "component",
+  "components": [
+    "area-chart",
+    "bar-chart",
+    "waffle"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "battle",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "让三个图表的初始形态和数据变化具有足够大的波动，使真实入场与数据更新动画一眼可辨。",
+  "environment": {
+    "surfaces": [
+      "component-detail-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "393px PreviewDevice"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开 AreaChart、BarChart 或 Waffle 独立页或 H5 概览。",
+    "观察旧默认数据，再点击旧 BarChart 的高级 +1 或旧 Waffle 的新增 +1。",
+    "在共享比例或十列点阵中比较变化前后，单个单位的变化几乎无法辨认；旧 H5 只有同数据重播，没有父级数据切换。"
+  ],
+  "expected": "默认数据本身具有清晰峰谷，切换数据时同时出现明显上升和下降；父级真实回写 items 后重播，H5 与小程序页面使用同义数据和 PUI 操作入口。",
+  "actual": "BarChart 和 Waffle 旧页面只增加 1，视觉幅度过小；AreaChart 没有第二组数据；H5 三个概览都缺少真实数据切换入口。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 chart battle",
+      "note": "用户要求让初始数据与变化形成更大波动，使动画更明显。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/bar-chart/index.js",
+      "note": "旧 onAddChartValue 只把高级分类新增值加 1。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/waffle/index.js",
+      "note": "旧 onAddWaffleValue 只把新增 segment 加 1。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "H5 现以保留 demo state 切换三组高波动数据，并在重建后的真实组件镜像上播放入场。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/area-chart",
+      "note": "2026-07-29 实点后合计值从 292/378/374/426/434/398 变为 394/378/442/442/452/488，描边出现非完成 dash offset。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/bar-chart",
+      "note": "2026-07-29 实点后分类总值从 10/44/44/60 变为 62/16/62/48，横纵实例均出现 scale 中间帧。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/waffle",
+      "note": "2026-07-29 实点后点阵从 32 格增至 86 格，首格出现 opacity/scale/translate 中间帧。"
+    },
+    {
+      "kind": "browser",
+      "ref": "微信开发者工具 Nightly 2.02.2607282 · pages/components/area-chart/index · iPhone 12/13 Pro 模拟器",
+      "note": "2026-07-29 实际点击后按钮从“切换高波动数据”回写为“恢复初始数据”，两条曲线呈明显交叉峰谷；重播入口仍保留。"
+    }
+  ],
+  "rootCause": "演示把数据变化理解为任意非零更新，没有按当前图表比例、点阵列数和用户视觉感知设计足够大的前后态；H5 又只演示 replay，没有承接父级 items 回写。",
+  "decision": {
+    "outcome": "三个演示统一使用页面拥有的初始态与高波动态，保持相同 item/segment key，父级回写 items 后调用既有 replay；H5 用保留 demo state 和全宽 PUI Button 镜像同义切换。",
+    "rationale": "同 key 的大幅数据切换既能证明父级真实回写，也能让 Area 峰谷、Bar 长度和 Waffle 行数变化在 500ms 内清晰可见，不需要扩大公共 API 或延长动画。",
+    "alternativesRejected": [
+      "继续使用 +1：在当前共享比例和十列点阵下视觉不可辨。",
+      "只增大 CSS 位移或缩放：只能夸张装饰动画，不能证明真实数据变化。",
+      "新增组件级 demo Prop：演示状态属于消费者页面，不应污染通用组件 API。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/components/area-chart/index.js",
+      "miniprogram/pages/components/area-chart/index.wxml",
+      "miniprogram/pages/components/bar-chart/index.js",
+      "miniprogram/pages/components/bar-chart/index.wxml",
+      "miniprogram/pages/components/waffle/index.js",
+      "miniprogram/pages/components/waffle/index.wxml",
+      "scripts/test-area-chart.js",
+      "scripts/test-bar-chart.js",
+      "scripts/test-waffle.js",
+      "scripts/test-miniprogram-advanced-pages.js",
+      "docs/components/AREA-CHART.md",
+      "docs/components/BAR-CHART.md",
+      "docs/components/WAFFLE.md"
+    ],
+    "dependencies": [
+      "PUI Button",
+      "PUI Icon",
+      "replay()",
+      "parent-owned items"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-area-chart.js",
+      "scripts/test-bar-chart.js",
+      "scripts/test-waffle.js",
+      "scripts/test-miniprogram-advanced-pages.js"
+    ],
+    "commands": [
+      "node scripts/test-area-chart.js：通过",
+      "node scripts/test-bar-chart.js：通过",
+      "node scripts/test-waffle.js：通过",
+      "node scripts/test-miniprogram-advanced-pages.js：通过",
+      "npm run feedback:generate：通过，生成 488 条记录",
+      "npm run feedback:check：通过",
+      "npm run miniprogram:build：通过，生成 74 个组件目录",
+      "npm run site:build：通过，生成 488 条 Ledger、562 个样式类、220 个图标、74 个组件目录和 6 份目录产物",
+      "npm run check：专项与前置门禁通过；在既有 scripts/test-miniprogram-home.js:316 失败，enableShareTimeline 期望 true、实际 undefined，与本条图表修改无关",
+      "npm run pack:check：通过，559 个文件，366.7kB，shasum b717af3f5fc36550a4560697eb71d1e215ebea5e"
+    ],
+    "browser": [
+      "AreaChart、BarChart、Waffle 的全宽数据切换按钮均为 313px，切换后出现真实非完成动画帧并恢复完成态。",
+      "三个 PreviewDevice 的横向 overflow 均为 0；Waffle 浅色下渐变与 inset 轮廓可见，完成后恢复用户原深色偏好。",
+      "微信开发者工具 iPhone 12/13 Pro 模拟器实点 AreaChart：父级数据切换真实生效，按钮文案回写，曲线形成大幅交叉波动。"
+    ],
+    "deviceRisks": [
+      "本轮仅在微信开发者工具实点 AreaChart；BarChart、Waffle 尚未在模拟器逐项实点，iOS/Android 真机的 Canvas 重绘、连续点击与系统低动效仍待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "图表动画演示必须用同 key 的大幅前后态证明真实数据更新，不能以 +1 或单纯放大 CSS 动效冒充。",
+    "rules": [
+      "AreaChart 演示前后态同时包含明显峰谷与系列交叉。",
+      "BarChart 演示至少包含一组明显上升和一组明显下降，并共享同一比例。",
+      "Waffle 演示前后至少跨越多行点阵，保留总值与图例。",
+      "数据切换由父级回写 items 后调用 replay，不增加组件级 demo Prop。",
+      "同数据重播和数据切换后重播必须是两个可区分的真实操作。"
+    ],
+    "tags": [
+      "chart",
+      "animation",
+      "demo-data",
+      "high-variance",
+      "parent-writeback"
+    ]
+  }
+}

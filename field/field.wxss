@@ -77,10 +77,10 @@
 .pui-field__content > .pui-input { display: flex; flex: 1 1 0; width: 100%; min-width: 0; gap: 0; }
 .pui-field__content .pui-input__field {
   min-height: 68rpx;
-  padding: 0;
+  padding: 0 var(--pui-space-sm);
   background: transparent;
   border-color: transparent;
-  border-radius: 0;
+  border-radius: var(--pui-radius-medium);
   box-shadow: none;
 }
 .pui-field__content .pui-input--focus .pui-input__field { border-color: var(--pui-text-primary); box-shadow: 0 0 0 2rpx var(--pui-border-color); }

@@ -30,8 +30,8 @@ vm.runInNewContext(source, {
 assert(definition, 'CountDown component definition must be registered');
 assert.deepStrictEqual(
   Object.keys(definition.properties),
-  ['time', 'autoStart', 'paused', 'content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit', 'ariaLabel', 'reduceMotion'],
-  'CountDown publishes the focused 11-Prop clock contract',
+  ['time', 'autoStart', 'paused', 'content', 'format', 'millisecond', 'size', 'theme', 'splitWithUnit', 'animation', 'ariaLabel', 'reduceMotion'],
+  'CountDown publishes the focused 12-Prop clock and presentation contract',
 );
 ['finishText', 'customContent', 'pauseOnHidden', 'duration', 'easing'].forEach((legacy) => {
   assert(!Object.prototype.hasOwnProperty.call(definition.properties, legacy), `CountDown removes legacy ${legacy}`);
@@ -113,15 +113,53 @@ assert.strictEqual(fallback.instance.data.contentMode, 'default');
 assert.strictEqual(create({ time: 1000, autoStart: false, content: 'slot' }).instance.data.contentMode, 'slot');
 assert.strictEqual(create({ time: 1000, autoStart: false, reduceMotion: true }).instance.data.rootStyle, '--pui-count-down-duration:1ms;');
 
+const pulse = create({ time: 2500, autoStart: false, animation: 'pulse' });
+pulse.instance.start();
+now += 550;
+pulse.instance.tick();
+assert(pulse.instance.data.rootClass.includes('pui-count-down--animation-pulse'));
+assert(pulse.instance.data.motionClass.includes('pui-count-down__value--motion-'), 'pulse keeps the compatible whole-value entrance');
+
+const rolling = create({ time: 2500, autoStart: false, animation: 'roll' });
+rolling.instance.start();
+now += 550;
+rolling.instance.tick();
+assert(rolling.instance.data.rootClass.includes('pui-count-down--animation-roll'));
+assert.strictEqual(rolling.instance.data.motionClass, '', 'roll does not replay the whole-value pulse');
+const rollingSecond = rolling.instance.data.segments.find((segment) => segment.token === 'ss');
+assert(rollingSecond.digits.some((digit) => digit.rolling && digit.previous === '3' && digit.value === '2'), 'roll retains the previous changed digit and moves to the new digit');
+assert(rollingSecond.digits.filter((digit) => digit.rolling).every((digit) => digit.motionClass.includes('pui-count-down__digit-reel--motion-')), 'only changed digits receive a reel animation class');
+
+const reducedRoll = create({ time: 2500, autoStart: false, animation: 'roll', reduceMotion: true });
+reducedRoll.instance.start();
+now += 550;
+reducedRoll.instance.tick();
+assert.strictEqual(reducedRoll.instance.data.rootStyle, '--pui-count-down-duration:1ms;');
+assert(reducedRoll.instance.data.segments.find((segment) => segment.token === 'ss').digits.some((digit) => digit.rolling), 'reduceMotion compresses roll to 1ms instead of changing the selected API style');
+
+const millisecondRoll = create({ time: 1234, autoStart: false, animation: 'roll', millisecond: true, format: 'ss.SSS' });
+millisecondRoll.instance.start();
+now += 50;
+millisecondRoll.instance.tick();
+assert(millisecondRoll.instance.data.segments.find((segment) => segment.token === 'SSS').digits.every((digit) => !digit.rolling), 'millisecond digits update directly to avoid restarting a 500ms reel every 50ms');
+
+const invalidAnimation = create({ time: 1000, autoStart: false, animation: 'flip' });
+assert(invalidAnimation.instance.data.rootClass.includes('pui-count-down--animation-pulse'), 'invalid animation falls back to pulse');
+
 const wxml = read('count-down/count-down.wxml');
 const wxss = read('count-down/count-down.wxss');
 assert(wxml.includes('contentMode === \'slot\''));
 assert.strictEqual((wxml.match(/<slot/g) || []).length, 1);
 assert(!wxml.includes('slot name='));
 assert(!wxml.includes('finishText'));
-assert(wxss.includes('.pui-count-down--round .pui-count-down__part--numeric'));
-assert(wxss.includes('.pui-count-down--square .pui-count-down__part--numeric'));
+assert(wxss.includes('.pui-count-down--round .pui-count-down__value'));
+assert(wxss.includes('.pui-count-down--square .pui-count-down__value'));
 assert(wxss.includes('var(--pui-count-down-duration)'));
+assert(wxml.includes("animationMode === 'roll'"));
+assert(wxml.includes('digit.previous'));
+assert(wxml.includes('digit.value'));
+assert(wxss.includes('@keyframes pui-count-down-digit-roll-a'));
+assert(wxss.includes('transform: translateY(-50%)'));
 assert(wxss.includes('.pui-count-down__part--numeric .pui-count-down__unit { flex: 0 0 auto; white-space: nowrap; }'), 'CountDown native units keep time labels intact');
 assert(!/\b(?:1[1-9]\d\d|[2-9]\d{3,})ms\b/.test(wxss), 'CountDown source animation never exceeds 1000ms');
 
@@ -133,7 +171,7 @@ assert.deepStrictEqual(metadata.apiMethods['count-down'].map((item) => item.name
 assert.deepStrictEqual(metadata.apiPropGroups['count-down'].flatMap((item) => item.keys), metadata.apiProps['count-down']);
 
 const preview = read('preview/app.js');
-['基础用法', '主题与尺寸', '单位与毫秒', '控制与自定义内容'].forEach((title) => assert(preview.includes(title)));
+['基础用法', '主题与尺寸', '单位、毫秒与数字滚动', '控制与自定义内容'].forEach((title) => assert(preview.includes(title)));
 const usage = preview.slice(preview.indexOf("if (runtimeId === 'count-down')"), preview.indexOf("if (runtimeId === 'tabs')"));
 ['bind:start', 'bind:pause', 'bind:reset', 'bind:finish', 'bind:change', 'restart()', 'getRemaining()'].forEach((legacy) => assert(!usage.includes(legacy), `basic WXML excludes ${legacy}`));
 assert(usage.includes('<pui-count-down${countDownAttrs ? ` ${countDownAttrs}` : \'\'} />'));
@@ -145,7 +183,10 @@ assert(preview.includes('state.props[state.current] = { ...countDownSourceDefaul
 assert(preview.includes('apiMethodsByComponent'));
 assert(preview.includes('api-table api-table--methods'));
 assert(read('preview/styles.css').includes('.pui-count-down-showcase__examples'));
-assert(read('preview/styles.css').includes('.pui-count-down-preview__part--numeric small { flex: 0 0 auto; white-space: nowrap; }'), 'CountDown H5 unit labels keep time labels intact');
+assert(read('preview/styles.css').includes('.pui-count-down-preview__value { display: inline-flex;'), 'CountDown H5 separates the fixed digit box from the unit label');
+assert(preview.includes("animation: { type: 'select', value: 'pulse', options: ['pulse', 'roll'] }"), 'CountDown H5 property workspace exposes the native animation enum');
+assert(preview.includes('pui-count-down-preview__digit-reel'), 'CountDown H5 retains previous and current digits for roll animation');
+assert(read('preview/styles.css').includes('@keyframes pui-count-down-preview-digit-roll-a'), 'CountDown H5 mirrors the native vertical reel motion');
 
 const exampleWxml = read('_example/miniprogram/pages/components/index.wxml');
 const exampleJs = read('_example/miniprogram/pages/components/index.js');

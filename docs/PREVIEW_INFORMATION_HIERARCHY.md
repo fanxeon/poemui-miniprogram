@@ -8,7 +8,7 @@ Topbar 的全站入口使用“月下成行”品牌标记：偏移双弧月牙�
 
 ## 目录分类合同
 
-目录以 `taxonomyId` 为唯一归属依据，不能再根据源码目录或 H5 路由名临时分组。一个规范公开入口只能出现一次，不创建第二套“适配组件”分区。当前目录共 78 条规范入口，71 个为可安装的 npm 组件；其余为安装、设计规范文档与未发布的 Chart 说明。
+目录以 `taxonomyId` 为唯一归属依据，不能再根据源码目录或 H5 路由名临时分组。一个规范公开入口只能出现一次，不创建第二套“适配组件”分区。当前 H5 目录共 80 条规范入口，74 个为可安装的 npm 组件；其余为快速开始与设计规范文档。小程序 Search 不包含 H5 快速开始入口，因此是 74 个组件加 5 个规范页，共 79 条候选。旧 Chart 研究入口已由 AreaChart、BarChart、Waffle 三个真实组件替代。
 
 | 分区 | 归属原则 | 代表入口 |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ Topbar 的全站入口使用“月下成行”品牌标记：偏移双弧月牙�
 | 数据展示 | 组织、呈现或浏览已有内容 | Cell、Card、List、Avatar、Badge、Image、Table、Swiper、Collapse |
 | 反馈 | 解释状态、结果、进度或短暂消息 | Alert、Loading、Toast、Dialog、Progress、Skeleton、Empty、Result |
 | 浮层 | 在当前页面上下文临时打开的菜单、面板与遮罩 | Popup、Popover、Sheet、ActionSheet、DropdownMenu、Overlay |
-| 高级 | 性能、刷新、水印与尚未发布的扩展能力 | PullRefresh、VirtualList、Watermark、Chart |
+| 高级 | 性能、刷新、状态反馈、水印与数据图形 | BarChart、DynamicMessage、PullRefresh、TopLoading、VirtualList、Waffle、Watermark |
 
 分类重构会有意改变反馈序号的完整目录基线；筛选后的序号仍不变。不能用 CSS 视觉隐藏、搜索别名或另建“其他”分区绕过该表。
 
@@ -54,7 +54,7 @@ Topbar 的全站入口使用“月下成行”品牌标记：偏移双弧月牙�
 
 深浅色、边框、阴影、毛玻璃、大圆角和渐变背景属于同一组站点级用户偏好。Topbar 的详细设置只展示一个“外观”PUI Palette IconButton，六项 PUI Switch 收纳在同一个锚定的非模态菜单中，避免与主导航争抢宽度；其左侧保留“一键果味”PUI Switch 作为复合捷径。果味开启等价于阴影/毛玻璃/大圆角开、边框/渐变关，关闭恢复标准组合，theme 始终独立；checked 从五项实时推导，用户单改任一项后自动关闭，不单独持久化。菜单支持入口展开语义、首项聚焦、Esc/点击外部关闭、焦点恢复、低动效和 390px 边界。六项继续复用 PUI Switch 的 H5 镜像和 `role="switch"` 语义。官网以 `poemui-preview-preferences` 对象持久化六项，并兼容迁移旧主题键；非法值分别回退为 `theme=light / border=off / shadow=on / frost=off / radius=large / gradient=off`。边框总开关默认关闭，只从 PreviewDevice 的内部 viewport 向真实 PUI 组件树传递：关闭后组件中性 Surface 与分割线透明，PreviewDevice 外框、API、属性、导航、工具栏及文档面板保持原边界；焦点、错误、选中、危险操作边界仍然可见，盒模型不变。显式 `pui-border-solid` 仍只负责线型。渐变背景只改变页面与 PreviewDevice 的单一背景画布，不增加组件 Surface，也不得改变间距、尺寸、圆角或定位。
 
-交互预览统一使用 `PreviewDevice` 设备面板，并由概览 Stage 直接挂载，不再增加可见的 canvas 外壳。桌面按机型选择使用 375/393/430px 宽度、高度固定为 622px；窄屏只压缩可用宽度。所有组件预览根必须填满这块完整设备内容区：普通组件填满 shadow-safe 安全内距后的空间，浮层和屏幕附着组件填满 edge-to-edge viewport。设备底与页面共享中性色主题，标准浅色为 `#fafafa`、标准深色为 `#09090b`，不得用组件私有靛蓝主题覆盖。面板始终保留主题底色、边框、圆角和裁切，Dialog 等浮层不得绕过统一外框。每个标准组件概览必须复用唯一 `.preview-device__viewport[data-preview-scroll-contract="component-preview"]`；组件状态、事件日志和长内容只能在这里滚动，不得改变外框尺寸、改回页面级滚动或新建路由私有滚动根。滚动条仅在真实滚动期间显示，空闲时隐藏，状态重渲染继续恢复原滚动位置。文档页、尚未发布的 Chart 说明和 Icon 资源库不属于手机组件预览，继续使用各自正文或资源库布局。
+交互预览统一使用 `PreviewDevice` 设备面板，并由概览 Stage 直接挂载，不再增加可见的 canvas 外壳。桌面按机型选择使用 375/393/430px 宽度、高度固定为 622px；窄屏只压缩可用宽度。所有组件预览根必须填满这块完整设备内容区：普通组件填满 shadow-safe 安全内距后的空间，浮层和屏幕附着组件填满 edge-to-edge viewport。设备底与页面共享中性色主题，标准浅色为 `#fafafa`、标准深色为 `#09090b`，不得用组件私有靛蓝主题覆盖。面板始终保留主题底色、边框、圆角和裁切，Dialog 等浮层不得绕过统一外框。每个标准组件概览必须复用唯一 `.preview-device__viewport[data-preview-scroll-contract="component-preview"]`；组件状态、事件日志和长内容只能在这里滚动，不得改变外框尺寸、改回页面级滚动或新建路由私有滚动根。滚动条仅在真实滚动期间显示，空闲时隐藏，状态重渲染继续恢复原滚动位置。文档页和 Icon 资源库不属于手机组件预览，继续使用各自正文或资源库布局；BarChart、Waffle 不适用该例外。
 
 ## 全量设备预览回归
 

@@ -31,14 +31,14 @@ function assertComponentTree(directory, label) {
   assert.deepStrictEqual(componentDirectories(directory), packageComponentIds, `${label} must contain exactly the current published component set`);
 }
 
-assert.strictEqual(metadata.packageComponents.length, 71, 'the npm package must expose exactly 71 components after TopLoading and DynamicMessage are added');
-assert.strictEqual(metadata.releaseComponentIds.size, 71, 'the release set must match the 71 installable components');
+assert.strictEqual(metadata.packageComponents.length, 74, 'the npm package must expose exactly 74 components after AreaChart, BarChart and Waffle are added');
+assert.strictEqual(metadata.releaseComponentIds.size, 74, 'the release set must match the 74 installable components');
 assert(!metadata.packageComponents.includes('separator'), 'the removed Separator component must not remain installable');
 assert(!metadata.packageComponents.includes('pagination'), 'the removed Pagination component must not remain installable');
 assert(!metadata.packageComponents.includes('tooltip'), 'the removed Tooltip component must not remain installable');
 assertComponentTree(root, 'source root');
 
-assert.strictEqual(allNavigationItems.length, 78, 'catalog pruning must leave 78 canonical public routes');
+assert.strictEqual(allNavigationItems.length, 80, 'catalog pruning must leave 80 canonical public routes');
 assert.strictEqual(new Set(allNavigationItems.map((item) => item.id)).size, allNavigationItems.length, 'public route ids must stay unique');
 
 const expectedPublicEntries = new Map([
@@ -46,6 +46,9 @@ const expectedPublicEntries = new Map([
   ['shadcn-badge', 'Badge'],
   ['shadcn-dialog', 'Dialog'],
   ['dynamic-message', 'DynamicMessage 灵动通知'],
+  ['area-chart', 'AreaChart 面积图'],
+  ['bar-chart', 'BarChart 条形图'],
+  ['waffle', 'Waffle 组件点阵图'],
   ['top-loading', 'TopLoading 顶部加载'],
 ]);
 for (const [id, name] of expectedPublicEntries) {
@@ -119,7 +122,7 @@ assert(dialogContract.includes('## 1. 组件定位与公开边界'), 'Dialog con
 const compatibilityRules = [...compatibility.split('## 最终预览站能力')[0].matchAll(/^(\d+)\./gm)].map((match) => Number(match[1]));
 assert(!compatibility.includes('旧队列入口'), 'H5 compatibility must not retain the removed feedback queue contract');
 assert.deepStrictEqual(compatibilityRules, [...new Set(compatibilityRules)].sort((left, right) => left - right), 'H5 compatibility rule numbers must stay unique and ordered after retired components are removed');
-assert(readme.includes('当前 npm 包内包含 `71` 个'), 'README package count must be updated to 71');
+assert(readme.includes('当前 npm 包内包含 `74` 个'), 'README package count must match the 74-component release set');
 assert(prepareExample.includes("'miniprogram', 'miniprogram_npm', packageJson.name"), 'example install must resolve the exact generated WeChat package root');
 assert(prepareExample.includes('fs.rmSync(wechatInstalledPackage, { recursive: true, force: true });'), 'example install must prune stale WeChat package directories before build-npm');
 
@@ -131,4 +134,4 @@ assert(!fs.existsSync(path.join(root, 'miniprogram_dist', retiredComponentId)), 
 const wechatPackageRoot = path.join(root, '_example/miniprogram/miniprogram_npm/poemui-miniprogram');
 if (fs.existsSync(wechatPackageRoot)) assertComponentTree(wechatPackageRoot, 'WeChat miniprogram_npm');
 
-console.log('Component catalog pruning contract tests passed for 71 components and 78 canonical public routes.');
+console.log('Component catalog pruning contract tests passed for 74 components and 80 canonical public routes.');

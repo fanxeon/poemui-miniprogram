@@ -64,6 +64,8 @@ var navigationMenuJson = JSON.parse(read('miniprogram/pages/components/navigatio
 assert.ok(navigationMenuWxml.indexOf('content="打开导航菜单"') === -1, 'NavigationMenu 页面不得在组件 Trigger 外增加重复打开按钮');
 assert.ok(navigationMenuWxml.indexOf('direction="horizontal"') !== -1, 'NavigationMenu 页面必须展示水平浮层');
 assert.ok(navigationMenuWxml.indexOf('direction="vertical"') !== -1, 'NavigationMenu 页面必须展示垂直双栏工作区');
+assert.strictEqual((navigationMenuWxml.match(/items="\{\{horizontalMenuItems\}\}"/g) || []).length, 2, '两个 horizontal 示例只使用三个可读根入口，不能把整块 Button 裁成半截');
+assert.ok(navigationMenuWxml.indexOf('id="vertical-menu-demo"\n              items="{{menuItems}}"') !== -1, 'vertical 双栏继续展示完整根项能力');
 assert.ok(navigationMenuWxml.indexOf('show-overlay="{{false}}"') !== -1, 'NavigationMenu 垂直工作区必须关闭全屏 Overlay');
 assert.ok(navigationMenuWxml.indexOf('visible="{{true}}"') === -1, 'NavigationMenu 页面不得保留永久可见的诊断浮层');
 assert.ok(navigationMenuWxml.indexOf('error="{{errorMenuError}}"') !== -1 && navigationMenuWxml.indexOf('bind:retry="onErrorMenuRetry"') !== -1, 'NavigationMenu 错误态必须由页面控制并闭环 Retry');
@@ -71,6 +73,9 @@ assert.ok(navigationMenuWxml.indexOf('z-index="{{horizontalMenuVisible ? 3200 : 
 assert.ok(navigationMenuWxml.indexOf('z-index="{{errorMenuVisible ? 3200 : 800}}"') !== -1, 'NavigationMenu 活动错误浮层必须高于同页工作区');
 assert.ok(navigationMenuWxml.indexOf('content-padding-bottom="{{pageContentPaddingBottom}}"') !== -1, 'NavigationMenu 最后一个浮层必须通过 ScrollArea 公开安全区 API 预留展开空间');
 assert.ok(navigationMenuJson.usingComponents['pui-switch'], 'NavigationMenu 页面缺少 PUI Switch 依赖');
+assert.strictEqual(navigationMenuJson.usingComponents['component-page-feedback'], '/components/component-page-feedback/component-page-feedback', 'NavigationMenu 页面必须注册共享反馈宿主');
+assert.ok(navigationMenuWxml.indexOf('navigation-page__status') === -1, 'NavigationMenu 页面不得保留展开、关闭、选中等重复状态文字');
+assert.ok(navigationMenuWxml.indexOf('</pui-scroll-area>') < navigationMenuWxml.indexOf('<component-page-feedback id="component-page-feedback"'), '共享反馈宿主必须位于 ScrollArea 外');
 
 var tabsWxml = read('miniprogram/pages/components/tabs/index.wxml');
 assert.ok(tabsWxml.indexOf('space-evenly="{{true}}"') !== -1, 'Tabs 页面必须覆盖四项等分');
@@ -89,10 +94,21 @@ assert.ok(backTopWxml.indexOf('bind:to-top="onBackTop"') !== -1, 'BackTop 必须
 assert.ok(backTopWxml.indexOf('scroll-top="{{pageScrollTop}}"') !== -1, 'BackTop 必须通过 ScrollArea 的公开 scroll-top 控制同一滚动区');
 assert.ok(backTopJs.indexOf('selectComponent') === -1 && backTopJs.indexOf('scrollToTop') === -1, 'BackTop 页面不得调用 ScrollArea 未公开的实例方法');
 
-function loadPage(id) {
+function loadPage(id, options) {
+  var settings = options || {};
+  var queuedTimers = [];
   var captured;
   var pageFactory = require(path.join(ROOT, 'miniprogram/utils/component-page.js'));
   var sandbox = {
+    setTimeout: function setTimeoutControlled(callback) {
+      if (settings.deferTimers) {
+        queuedTimers.push(callback);
+        return queuedTimers.length;
+      }
+      callback();
+      return 1;
+    },
+    clearTimeout: function clearTimeoutNoop() {},
     Page: function Page(definition) { captured = definition; },
     require: function required(request) {
       if (request === '../../../utils/component-page') return pageFactory;
@@ -102,7 +118,11 @@ function loadPage(id) {
   vm.runInNewContext(read('miniprogram/pages/components/' + id + '/index.js'), sandbox, { filename: id + '/index.js' });
   assert.ok(captured, id + ' 必须注册 Page');
   captured.data = JSON.parse(JSON.stringify(captured.data));
-  captured.setData = function setData(next) { Object.assign(captured.data, next); };
+  captured.setData = function setData(next, callback) {
+    Object.assign(captured.data, next);
+    if (typeof callback === 'function') callback();
+  };
+  captured.__queuedTimers = queuedTimers;
   return captured;
 }
 
@@ -131,6 +151,10 @@ assert.strictEqual(tabbar.data.tabbarFixed, true, 'Tabbar fixed 必须由页面�
 var breadcrumb = loadPage('breadcrumb');
 breadcrumb.onBreadcrumbChange({ detail: { value: 'library' } });
 assert.strictEqual(breadcrumb.data.breadcrumbValue, 'library', 'Breadcrumb 必须回写路径');
+breadcrumb.onBreadcrumbRetry();
+assert.strictEqual(breadcrumb.data.breadcrumbError, false, 'Breadcrumb Retry 必须由页面移除 error');
+assert.strictEqual(breadcrumb.data.breadcrumbLoading, false, 'Breadcrumb 页面请求完成后必须退出 loading');
+assert.strictEqual(breadcrumb.data.breadcrumbStatus, '路径已重新加载。', 'Breadcrumb Retry 必须闭环到真实页面结果');
 
 var steps = loadPage('steps');
 assert.ok((read('miniprogram/pages/components/steps/index.wxml').match(/<pui-button block/g) || []).length >= 2, 'Steps 上一步与下一步必须以 block 填满两列轨道');
@@ -145,12 +169,25 @@ backTop.onBackTop();
 assert.strictEqual(backTop.data.pageScrollTop, 0, 'BackTop 必须通过 ScrollArea 的公开 scroll-top 回写页面位置');
 assert.ok(read('miniprogram/pages/components/back-top/index.wxml').indexOf('scroll-top="{{pageScrollTop}}"') !== -1, 'BackTop 页面必须把同一 scrollTop 同步给 ScrollArea');
 
-var indexes = loadPage('indexes');
+var indexes = loadPage('indexes', { deferTimers: true });
 assert.ok(indexes.data.indexGroups.length >= 12, 'Indexes 核心示例必须有足够长的分组列表验证滚动与右侧索引');
 indexes.onIndexesChange({ detail: { current: 'T' } });
 assert.strictEqual(indexes.data.indexCurrent, 'T', 'Indexes 必须回写当前分组');
 indexes.onIndexesItemClick({ detail: { valueText: 'Tabs' } });
 assert.ok(indexes.data.indexesStatus.indexOf('Tabs') !== -1, 'Indexes 条目点击必须给出真实结果');
+assert.strictEqual(indexes.data.indexesRecoveryError, true, 'Indexes 恢复示例从真实错误态开始');
+indexes.onIndexesRetry();
+assert.strictEqual(indexes.data.indexesRecoveryError, false, 'Indexes Retry 由页面移除 error');
+assert.strictEqual(indexes.data.indexesRecoveryLoading, true, 'Indexes Retry 进入可见 loading');
+assert.strictEqual(indexes.__queuedTimers.length, 1, 'Indexes 页面拥有唯一可取消的恢复任务');
+indexes.__queuedTimers.shift()();
+assert.strictEqual(indexes.data.indexesRecoveryLoading, false, 'Indexes 页面恢复完成后退出 loading');
+assert.strictEqual(indexes.data.indexesRecoveryError, false, 'Indexes 页面有效数据恢复后保持 content');
+assert.ok(indexes.data.indexesRecoveryItems.length >= 12, 'Indexes 页面把真实分组数据交回组件');
+assert.strictEqual(indexes.data.indexesStatus, '组件索引已重新加载。');
+var indexesWxml = read('miniprogram/pages/components/indexes/index.wxml');
+assert.ok(indexesWxml.indexOf('error="{{indexesRecoveryError}}"') !== -1 && indexesWxml.indexOf('loading="{{indexesRecoveryLoading}}"') !== -1, 'Indexes 页面必须把恢复状态真实传给组件');
+assert.ok(indexesWxml.indexOf('error="{{true}}"') === -1, 'Indexes 页面不得把错误态永久写死');
 
 var sidebar = loadPage('sidebar');
 sidebar.onSidebarChange({ detail: { value: 'navigation' } });
@@ -160,6 +197,18 @@ assert.ok(sidebarWxml.indexOf('subtitle="只读状态"') !== -1 && sidebarWxml.i
 assert.ok(sidebarWxml.indexOf('恢复入口') === -1 && sidebarWxml.indexOf('onSidebarRetry') === -1, 'SideBar 页面不得再用含糊的恢复入口作为主要示例');
 
 var menu = loadPage('navigation-menu');
+var menuFeedback;
+menu.selectComponent = function selectMenuComponent(selector) {
+  assert.strictEqual(selector, '#component-page-feedback');
+  return {
+    show: function show(options) {
+      menuFeedback = options;
+      return options.key;
+    }
+  };
+};
+assert.strictEqual(menu.data.horizontalMenuItems.length, 3, 'NavigationMenu 默认水平示例应以三项证明容器内等宽');
+assert.strictEqual(menu.data.menuItems.length, 5, 'NavigationMenu 完整数据应保留五项以覆盖超过可读最小宽度后的滚动能力');
 menu.onHorizontalMenuVisibleChange({ detail: { visible: true } });
 assert.strictEqual(menu.data.horizontalMenuVisible, true, 'NavigationMenu 水平浮层必须真实打开');
 assert.strictEqual(menu.data.errorMenuVisible, false, 'NavigationMenu 水平浮层打开时必须关闭错误浮层');
@@ -173,6 +222,13 @@ menu.onVerticalMenuExpandedChange({ detail: { expandedValue: 'components' } });
 assert.strictEqual(menu.data.verticalMenuExpandedValue, 'components', 'NavigationMenu 垂直工作区必须回写展开项');
 menu.onErrorMenuRetry();
 assert.strictEqual(menu.data.errorMenuError, false, 'NavigationMenu Retry 必须等待页面移除 error Prop');
+assert.deepStrictEqual(JSON.parse(JSON.stringify(menuFeedback)), {
+  key: 'navigation-menu-recovery',
+  theme: 'success',
+  title: '目录已恢复',
+  message: '组件分类已经重新提供，可以继续浏览。',
+  closable: false
+}, 'NavigationMenu 只能在目录真实恢复后发布重要 DynamicMessage 结果');
 menu.onErrorMenuVisibleChange({ detail: { visible: true } });
 assert.strictEqual(menu.data.horizontalMenuVisible, false, 'NavigationMenu 错误浮层打开时必须关闭水平浮层');
 assert.strictEqual(menu.data.pageContentPaddingBottom, '680rpx', 'NavigationMenu 底部浮层打开时必须真实扩大 ScrollArea 内容尾部安全区');

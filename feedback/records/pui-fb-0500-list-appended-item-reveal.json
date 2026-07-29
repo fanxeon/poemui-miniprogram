@@ -1,0 +1,142 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0500",
+  "title": "List 尾部追加条目瞬间撑开且 API 边界不清",
+  "scope": "component",
+  "components": [
+    "list"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "List 在父级真实追加条目后应有清楚但克制的展开过渡，同时公共 API 不因视觉瞬态变复杂。",
+  "environment": {
+    "surfaces": [
+      "wechat-component-page",
+      "component-source",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "reduced-motion"
+    ]
+  },
+  "reproduction": [
+    "进入 List 独立页，点击加载更多。",
+    "页面先回写 loading，500ms 后把 items 从 5 条追加为 9 条。",
+    "旧 List 会让新增四项瞬间撑开；既有 content 状态 transition 不会命中新插入条目。"
+  ],
+  "expected": "只让父级真实追加的尾部条目平滑展开；首次渲染和重复同步不重播，load/retry 所有权与公共 API 保持稳定。",
+  "actual": "共享 List 只对 content/state/footer 有过渡，items 增量没有进入态；独立页还传入了不存在的 retry-text。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "list/list.js",
+      "note": "按上一批 itemCount 只标记新增尾项。"
+    },
+    {
+      "kind": "file",
+      "ref": "list/list.wxss",
+      "note": "新增尾项使用现有 List motion token 展开。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/list/index.wxml",
+      "note": "移除不存在的 retry-text，保留真实 errorText API。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-list.js",
+      "note": "覆盖首次不播、追加只播新增、重复不重播与 1ms 低动效。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/cell",
+      "note": "官方 Cell/CellGroup 承担连续信息行；固定 1.15.3 包同样没有数据分页 List。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/footer",
+      "note": "官方 Footer 是静态页脚，不提供分页追加或展开事件。"
+    }
+  ],
+  "rootCause": "content 容器一直保持 active，新增 Cell 节点不发生状态 class 切换；旧实现也没有保存上一批 itemCount 来识别尾部增量。",
+  "decision": {
+    "outcome": "复用 duration/easing/reduceMotion，只为 items 尾部增量增加内部 entering 标记与 CSS 动画，不新增公共 Prop 或 Event。",
+    "rationale": "动画只表达父级写入后的视觉连续性，不应成为第二套业务状态机；现有三个动效 Prop 已足以调节。",
+    "alternativesRejected": [
+      "新增 expanded/animate/after-expand 会把内部瞬态暴露为重复 API。",
+      "在 List 内收到 load 后自行追加或宣布完成会制造 fake success。",
+      "给 useSlot 内容强加包装和增量识别会越过消费者 DOM 所有权。",
+      "只在页面 WXSS 给新增条目动画会掩盖共享组件缺陷。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "list/list.js",
+      "list/list.wxml",
+      "list/list.wxss",
+      "miniprogram/pages/components/list/index.wxml",
+      "preview/app.js",
+      "preview/styles.css",
+      "scripts/test-list.js",
+      "docs/components/LIST.md",
+      "docs/COMPONENT_API.md"
+    ],
+    "dependencies": [
+      "PUI Cell",
+      "PUI Button",
+      "ConfigProvider motion"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-list.js",
+      "scripts/test-miniprogram-data-pages.js"
+    ],
+    "commands": [
+      "node scripts/test-list.js",
+      "node scripts/test-miniprogram-data-pages.js",
+      "npm run miniprogram:build",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "微信开发者工具 build-npm"
+    ],
+    "browser": [
+      "微信开发者工具 Nightly 2.02.2607282 / iPhone 12/13 (Pro) 390px：首屏 5 项，点击加载更多后父级真实回写 loading 并追加为 9 项/finished；模拟失败后点击 error Footer，真实恢复到 9 项/finished。浅色、深色以及 shadow + frost + largeRadius + bordered 组合均保持唯一 List Surface、完整滚动与可读性。最终 Errors=0；5 条 warning 来自灰度基础库、既有 Navbar 选择器、IntersectionObserver 与预加载资源，没有本轮 List 新错误。",
+      "H5 Chrome 390px：初始 9 项，点击加载更多先进入 loading 且仍为 9 项，约 560ms 后变为 11 项；只给两个新增尾项挂 is-appended，计算 animation-name=pui-list-preview-item-reveal、duration=500ms，document scrollWidth=clientWidth。"
+    ],
+    "deviceRisks": [
+      "pending-device：iOS/Android 的批量节点动画合成、长文案高度、快速连续追加、滚动锚点、系统低动效和读屏仍需真机确认。"
+    ]
+  },
+  "ai": {
+    "summary": "List 尾项展开复用现有 motion API，只表达父级已经写入的数据，不扩张业务状态。",
+    "rules": [
+      "首次渲染、同长度替换、移除和重复同步不得重播尾项进入动画。",
+      "load/retry 只发请求，动画不得被解释为请求成功。",
+      "不要为内部视觉瞬态新增 expanded、animate 或完成事件。",
+      "useSlot 内容的节点和动效由消费者自行管理。"
+    ],
+    "tags": [
+      "list",
+      "append",
+      "reveal",
+      "motion",
+      "api-boundary",
+      "no-fake-success"
+    ]
+  }
+}

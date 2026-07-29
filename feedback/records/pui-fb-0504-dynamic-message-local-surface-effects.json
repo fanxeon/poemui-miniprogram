@@ -1,0 +1,169 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0504",
+  "title": "DynamicMessage 需要组件私有阴影与毛玻璃覆盖",
+  "scope": "component",
+  "components": [
+    "dynamic-message",
+    "preview-site",
+    "miniprogram-advanced-page"
+  ],
+  "type": "api-contract",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "DynamicMessage 除了继承全局外观，还要能用自己的一套开关单独控制阴影和毛玻璃，并保证流光结束后这些 Surface 效果仍然存在。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "h5-preview",
+      "miniprogram-advanced-page",
+      "npm-dist"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser",
+      "node"
+    ],
+    "viewports": [
+      "393px PreviewDevice",
+      "390x844 pending-device"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "全局阴影或毛玻璃关闭时展示 DynamicMessage。",
+    "旧公开 API 没有组件级覆盖，单条重要通知无法独立获得浮层层级或背景模糊。",
+    "从属性页返回概览后再次点击同 key 通知，旧 H5 demo 状态保留 dynamicCurrent，但新 DOM 仍处于 hidden，导致数据更新却看不到通知。"
+  ],
+  "expected": "shadow/frostedGlass 均提供 true/false/null 三态：null 继承 ConfigProvider，true 强制当前通知开启，false 强制当前通知关闭；局部覆盖不写入全局 Store。属性切换后返回概览必须恢复 retained current 通知，不能留下 hidden 节点或重播流光。",
+  "actual": "旧组件只能消费全局有效 Token，没有公开局部覆盖；H5 属性视图重建概览 DOM 时还会出现 retained data 与 hidden node 不一致。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前组件 battle",
+      "note": "用户明确授权 DynamicMessage 新建一套组件私有开关。"
+    },
+    {
+      "kind": "file",
+      "ref": "dynamic-message/dynamic-message.js",
+      "note": "新增 shadow/frostedGlass nullable Props，并生成 on/off/inherit 三态根 class。"
+    },
+    {
+      "kind": "file",
+      "ref": "dynamic-message/dynamic-message.wxss",
+      "note": "根 Surface 以组件语义 Token 分别承接局部阴影和毛玻璃，装饰流光不修改这些属性。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/components/dynamic-message/index.wxml",
+      "note": "独立页用 PUI CellGroup + PUI Switch 陈列两个私有开关并传给真实组件。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/dynamic-message",
+      "note": "H5 属性面板显示 shadow/frostedGlass 的未传入、true、false 三态；组件 false 在全局果味开启时计算为 shadow=none/filter=none，组件 true 在全局 shadow/frost 关闭时仍计算为真实阴影和 blur。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-dynamic-message.js",
+      "note": "锁定 12 Props、三态 class、跨全局关闭覆盖、Surface 连续性与 overview DOM 重建后的 retained message 恢复。"
+    }
+  ],
+  "rootCause": "DynamicMessage 作为独立浮层有局部强调需求，但旧实现只读取 ConfigProvider 的全局有效 Token；H5 runtime 又把消息状态保存在 demo 对象、节点状态保存在可重建 DOM，缺少重建后的重新挂载步骤。",
+  "decision": {
+    "outcome": "新增 shadow/frostedGlass 两个 Boolean|null Prop，默认 null。原生与 H5 都生成 on/off/inherit 三态；true 使用 DynamicMessage 自有语义效果 Token，false 只清除当前 Surface，null 继续读取 ConfigProvider。小程序独立页提供两项 PUI Switch。H5 重新绑定 runtime 时若存在 dynamicCurrent，则复用同一内容恢复 visible 并继续停留计时，但不重播入场或 edge-flow。",
+    "rationale": "三态同时满足全局统一、局部强调和局部抑制，不需要复制第二份全局 Store。恢复 retained current 使运行数据与 DOM 状态重新一致，也避免属性调试后按钮看似失效。",
+    "alternativesRejected": [
+      "只保留全局开关：无法让单条关键通知独立提升层级。",
+      "把局部开关写回 visualConfig：会污染全页和跨页面持久化，不再是组件私有行为。",
+      "用普通 Boolean 且默认 false：会无提示切断现有 ConfigProvider 继承。",
+      "属性切换后清空 dynamicCurrent：会丢失用户正在验证的 retained 状态，且掩盖 DOM 与运行态不同步。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "dynamic-message/dynamic-message.js",
+      "dynamic-message/dynamic-message.wxss",
+      "metadata/components.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/components/dynamic-message/index.js",
+      "miniprogram/pages/components/dynamic-message/index.wxml",
+      "miniprogram/pages/components/dynamic-message/index.json",
+      "docs/components/DYNAMIC-MESSAGE.md",
+      "docs/COMPONENT_API.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "scripts/test-dynamic-message.js",
+      "scripts/test-miniprogram-advanced-pages.js",
+      "skills/poemui-miniprogram/SKILL.md"
+    ],
+    "dependencies": [
+      "ConfigProvider effective tokens",
+      "PUI CellGroup",
+      "PUI Switch",
+      "DynamicMessage retained runtime"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-dynamic-message.js",
+      "scripts/test-miniprogram-advanced-pages.js",
+      "scripts/test-wxss-universal-selector-compatibility.js"
+    ],
+    "commands": [
+      "node --check dynamic-message/dynamic-message.js",
+      "node --check miniprogram/pages/components/dynamic-message/index.js",
+      "node scripts/test-dynamic-message.js",
+      "node scripts/test-miniprogram-advanced-pages.js",
+      "node scripts/test-wxss-universal-selector-compatibility.js",
+      "npm run site:build：通过，生成 74 个发布组件目录",
+      "npm run check：precheck 与本组件前置门禁通过，随后被既有首页 enableShareTimeline 缺失断言阻断",
+      "npm run pack:check：通过，559 files / 366.7 kB / shasum 33ba47f6c2a9f061b399faf923d4e34eb0d45952",
+      "npm run example:install：通过，0 vulnerabilities",
+      "node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：ok=true",
+      "wechatwebdevtools cli build-npm --port 25928 --project miniprogram：1176ms / warnings=[]",
+      "DynamicMessage 源码、dist、示例 node_modules、真实 node_modules、微信 miniprogram_npm 五路四件套 SHA-256 一致"
+    ],
+    "browser": [
+      "属性面板 Props 数量为 12，容器外观分组完整显示 shadow/frostedGlass 两个三态 Select；WXML 在 false 状态输出 shadow={{false}} 与 frosted-glass={{false}}。",
+      "全局 shadow/frost=on 时，局部 false 回读 root class is-shadow-off/is-frosted-off，box-shadow=none、backdrop-filter=none、背景为 rgb(9,9,11)。",
+      "全局 shadow/frost=off 时，局部 true 回读 root class is-shadow-on/is-frosted-on，box-shadow 为 0 18px 44px rgba(0,0,0,.34)，backdrop-filter 为 blur(14px) saturate(1.2)，背景为 rgba(9,9,11,.78)。",
+      "loading 通知显示后进入属性页设置 false，再返回概览，retained current 直接恢复 visible；没有 hidden node，也没有重播 edge-flow。",
+      "API 共 6 张能力表，Props 分组行数为 6+2+2+2=12；104 个表头/单元格 clipped=0、ellipsis=0，shadow/frostedGlass 均完整显示。",
+      "393px PreviewDevice 外框 393px、viewport/showcase 391px，二者 scrollWidth=clientWidth=391px；document scrollWidth=clientWidth=1265px。"
+    ],
+    "deviceRisks": [
+      "微信 iOS/Android 真机仍需确认 backdrop-filter 与局部强制阴影在全局关闭组合下的合成结果。",
+      "小程序 PUI Switch 触摸、rpx 阴影边界、样式隔离、低端 Android 毛玻璃帧率与读屏仍为 pending-device。",
+      "微信自动化桥接返回 Bad Request；_example 使用 touristappid，官方 build-npm 返回 code 10，均未伪报为运行通过。"
+    ]
+  },
+  "ai": {
+    "summary": "DynamicMessage 的 shadow/frostedGlass 是组件私有 Boolean|null 覆盖，不是第二份全局 Store；null 继承、true 强制开、false 强制关。",
+    "rules": [
+      "不得把 shadow/frostedGlass 改成默认 false；默认 null 保留 ConfigProvider 继承。",
+      "局部开关只能改变当前 DynamicMessage Surface，不能写入 visualConfig 或改变其他组件。",
+      "edge-flow 只能动画自己的装饰节点，不能覆盖根 Surface 的 background/backdrop-filter/box-shadow。",
+      "H5 全局 shadow-off 的通用 reset 不能压过 DynamicMessage 显式 shadow=true；局部显式值优先于继承值。",
+      "属性或预览 DOM 重建时，dynamicCurrent 数据与根节点可见阶段必须重新同步；不得保留 hidden 节点或重播流光。",
+      "小程序独立页陈列必须复用 PUI CellGroup、Cell 与 Switch，不能用页面原生 checkbox。"
+    ],
+    "tags": [
+      "dynamic-message",
+      "shadow",
+      "frosted-glass",
+      "nullable-prop",
+      "surface",
+      "h5-parity"
+    ]
+  }
+}

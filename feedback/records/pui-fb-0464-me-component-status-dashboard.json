@@ -1,0 +1,135 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0464",
+  "title": "Me 页使用真实版本总量接入 AreaChart 趋势仪表盘",
+  "scope": "component",
+  "components": ["miniprogram", "me-page", "area-chart", "card", "catalog-metadata"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "第四 Tab 使用 AreaChart 精简展示 0.1.0 到 0.1.1 的真实组件增长；不虚构趋势点，也不保留与趋势语义无关的分类展开操作。",
+  "environment": {
+    "surfaces": ["me top-level page", "wechat-miniprogram", "catalog generation"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入 pages/me/index。",
+    "身份资料移除后，服务列表上方保留大段空间，但此前没有真实组件状态源，不能放置静态占位。",
+    "仓库 metadata 已维护公开目录分组和 packageComponents，但小程序页面没有可直接消费、可随生成更新的统计模块。"
+  ],
+  "expected": "Me 页通过真实生成数据展示当前包版本、前序版本、发布组件总数和本版增量；AreaChart 只使用 0.1.0=71 与 0.1.1=74 两个有证据的版本点，服务入口、唯一滚动区和非用户中心边界不被破坏。",
+  "actual": "页面没有仪表盘；若直接在页面手写数量，会与 metadata 漂移并形成 fake success。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前任务对话",
+      "note": "用户最终要求把 Me Tab 的图表换成 AreaChart，并尽量精简文案。"
+    },
+    {
+      "kind": "file",
+      "ref": "scripts/generate-catalog.js",
+      "note": "生成器从 metadata groups 与 packageComponents 交集输出组件分类状态模块。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/data/component-status.js",
+      "note": "生成文件公开 currentVersion、previousVersion、71→74 总量、+3 增量、baseline、maximum 和深拷贝后的九类 items/segments。"
+    },
+    {
+      "kind": "file",
+      "ref": "metadata/component-release-deltas.js",
+      "note": "0.1.1 以 0.1.0 发布快照提交 8a52d10 为前序，声明 area-chart、bar-chart 与 waffle 三个新增组件。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "页面以唯一 PUI Card 组合同一个 PUI AreaChart，保留版本横轴、圆点和唯一 ScrollArea，删除旧分类展开按钮，并在 Popup/Dialog 可见期间卸载原生 Canvas 防止穿透。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "专项从 metadata 重算总量，锁定一个 Card/AreaChart、71→74 两个版本点、无 BarChart/分类展开、服务 margin-top:auto 与无身份资料。"
+    }
+  ],
+  "rootCause": "旧 Me 方案把分类横向比较与版本增长混在同一 BarChart 中，并为分类折叠引入额外按钮、测量和高度动画；用户现在关注的是版本总量趋势，继续保留分类和展开交互会让页面语义与文案都过重。",
+  "decision": {
+    "outcome": "保留 catalog 生成器的显式 release delta 作为 71→74 真相源；Me 页只把 previousVersion/previousTotal 与 currentVersion/total 转为同一 components 系列，在唯一 Card 中组合 small AreaChart，显示 Grid、XAxis 和 Dots，隐藏单系列冗余 Legend，显式 max=74。删除旧 BarChart、分类合并/排序、查看更多按钮、SelectorQuery 高度测量和过渡样式。服务 CellGroup 继续 margin-top:auto，超高由页面唯一 ScrollArea 滚动。微信 Canvas 的宿主 hidden 在 Popup 上方仍会留下原生绘制层，因此 Popup/Dialog 可见期间使用 wx:if 卸载 AreaChart，关闭后重新挂载。",
+    "rationale": "AreaChart 适合连续版本趋势，BarChart 更适合分类横向比较。只有 0.1.0 与 0.1.1 两个发布事实，因此宁可保留两点和完整读屏名称，也不虚构月份或健康度。Card 继续提供唯一 Surface，AreaChart 保持透明叶子；Canvas 避让属于 Me 页面与浮层的组合边界，不应向共享 AreaChart 增加伪业务状态。",
+    "alternativesRejected": [
+      "页面硬编码九类数量：metadata 变化后会静默漂移。",
+      "接入云端组件状态：当前没有真实上报链、异常口径或权限合同。",
+      "继续使用 BarChart 展示分类：能比较类别，但不符合用户最终指定的版本趋势语义。",
+      "为 AreaChart 添加月份、健康度或使用量：当前没有对应数据源，会制造假趋势。",
+      "保留查看更多/收起：AreaChart 只有两个版本点，继续保留分类展开会增加无效交互。",
+      "恢复头像昵称填满空间：违背第四 Tab 非用户中心的已确认定位。",
+      "复制 Me 页到 H5：它是小程序应用目的地，不是官网标准组件页。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "scripts/generate-catalog.js",
+      "metadata/component-release-deltas.js",
+      "miniprogram/common/data/component-status.js",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.json",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.wxss",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/COMPONENT_RULES_INDEX.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["metadata/components.js", "metadata/component-release-deltas.js", "poemui-miniprogram/version", "PUI Card", "PUI AreaChart", "PUI ScrollArea"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-me-page.js", "scripts/test-area-chart.js", "scripts/test-bar-chart.js", "scripts/test-waffle.js", "scripts/test-miniprogram-tabbar-pages.js"],
+    "commands": [
+      "node scripts/generate-catalog.js：通过；0.1.0 71 → 0.1.1 74、本版 +3，只有 advanced 为 5+3",
+      "node scripts/test-miniprogram-me-page.js：通过；锁定唯一 AreaChart、71→74 两点、无 BarChart 和无分类展开链",
+      "node scripts/test-area-chart.js：通过",
+      "node scripts/test-bar-chart.js：通过",
+      "node scripts/test-waffle.js：通过",
+      "node scripts/test-miniprogram-advanced-pages.js：通过",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过",
+      "npm pack + miniprogram npm install --no-save --package-lock=false：本地 0.1.1 包安装成功，未修改真实工程的公共 0.1.0 依赖声明",
+      "npm run feedback:generate && npm run feedback:check：通过，468 条 Ledger 记录",
+      "npm run site:build && npm run example:install：通过；npm run pack:check 通过，0.1.1 dry-run 为 559 files / 361.8kB",
+      "微信最终 build-npm：cost=907ms、warnings=[]；AreaChart source/dist/miniprogram node_modules/miniprogram_npm 四件套哈希一致",
+      "生产共享云 pui_updatelog 稳定文档 pui-v0-1-1-20260728：原位更新 matchedCount=1/modifiedCount=1，写后回读 total=1；小程序 source=cloud 且同步错误为空",
+      "npm run check：precheck 全部通过，本次 AreaChart/BarChart/Waffle/Me/生成链/ConfigProvider/全局动效均通过；总命令被本轮未修改的 Search H5 search-clear 私有原生按钮设计门禁阻断"
+    ],
+    "browser": [
+      "微信开发者工具 390x844 浅色 AreaChart Card 为 left=14/top=101/362x207，图表为 left=25/top=152/340x145，服务区为 left=14/top=433/362x272，Tabbar 为 left=0/top=752/390x92；截图 /tmp/poemui-me-area-chart-390.png。",
+      "深色果味运行态根类为 pui-theme--dark / pui-frosted-glass--on / pui-shadow--on / pui-radius--large / pui-border--off，AreaChart、Card、服务 Cell 和 Tabbar 无横向溢出，截图 /tmp/poemui-me-area-chart-dark-fruity-390.png；验收后已恢复原空存储与浅色默认。",
+      "打开公告前 AreaChart 可见；Popup/Dialog 可见期间 AreaChart 查询为空，关闭后重新出现。第一次仅用 hidden 时 Canvas 仍穿透 Popup，改为 wx:if 卸载后 /tmp/poemui-me-v011-announcement-compact-390.png 不再出现曲线；公告 click 链为 false→true→false。",
+      "旧 BarChart 折叠/展开截图与几何只作为被取代的历史证据，不用于当前验收。",
+      "H5 AreaChart 组件本体已有 390px Canvas/SVG 双端专项证据；Me 应用页不复制 H5 业务壳。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 Canvas/Popup 合成、ScrollArea 惯性、Card 阴影、图表文字、读屏和安全区仍需验证。",
+      "该数据只描述当前工作树目录分类数量和显式 release delta，不代表 npm 0.1.1 已发布，也不代表组件运行健康度、使用量或用户量。"
+    ]
+  },
+  "ai": {
+    "summary": "Me 仪表盘只消费生成型真实组件目录与显式版本差集；AreaChart 只画有证据的版本总量，不虚构时间点或健康度。",
+    "rules": [
+      "组件总量必须由 metadata packageComponents 与显式 release delta 生成，页面不维护第二份数字。",
+      "版本增量必须由显式 release delta 生成并验证 added component ID；不能按日期、文件数量或 UI 文案猜测。",
+      "AreaChart 版本趋势只使用已证实的 release delta 点，不得为了曲线丰富虚构时间点或监控指标。",
+      "单系列可以隐藏冗余 Legend，但版本横轴、圆点、摘要和读屏名称必须完整表达变化。",
+      "版本只读取 poemui-miniprogram/version 轻量入口，不加载组件总入口或硬编码。",
+      "页面只允许一个仪表盘 Card；AreaChart 保持透明，服务 CellGroup 继续 margin-top:auto。",
+      "页面同时存在 Canvas 图表与 Popup/Dialog 时必须打开浮层检查真实合成层；hidden 不能保证原生层退出，必要时在浮层可见期间用 wx:if 卸载并验证关闭恢复。",
+      "H5 同步 Card/AreaChart 组件合同，不复制小程序业务页或伪造微信平台能力。",
+      "新增真实监控、版本增量或云端状态前必须先建立独立数据源、异常态和权限合同。"
+    ],
+    "tags": ["miniprogram", "me", "dashboard", "area-chart", "catalog", "generated-data", "version-trend"]
+  }
+}

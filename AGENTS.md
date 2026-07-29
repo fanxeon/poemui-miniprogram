@@ -53,7 +53,7 @@
 - `.panel` 等纯分组根只有在透明、无边框、无 Surface 时才允许 `padding:0`；真正可见的元信息、属性控件、兼容项和代码面板必须分别保留 panel/spacious padding。站点 Header/Stage 的页面 gutter 使用独立 `--pui-site-*` 语义 Token，不能冒充组件面板内距。
 - Dialog Footer 的左右、底部和按钮间距共同使用 `--pui-dialog-action-spacing`，默认 `28rpx / 14px`；Content→Footer 属于分区关系，使用 `--pui-dialog-section-spacing`。
 - Dialog 关闭按钮尺寸为 `72rpx / 36px`；它属于 Header，不再使用独立的绝对定位 top/right。
-- Dialog 不公开 `loading/error/empty/retry` 或 `header-left` 能力；业务状态必须在 `content` 具名 Slot 中组合 PUI Loading、Empty、Button 等已有组件，不能把父级请求状态伪装成 Dialog 自身状态。
+- Dialog 不公开 `loading/error/empty/retry`；`header-left` 只承载一个紧凑 PUI 图标按钮并与右侧默认 Close 对称，业务状态必须在 `content` 具名 Slot 中组合 PUI Loading、Empty、Button 等已有组件。
 - Dialog 按内容自然增高至视口上限，Header/Footer 固定可见且不收缩；只有 Content 可以 `min-height:0` 并内部滚动，任何状态不得越出 Dialog 或 PreviewDevice。
 - 不允许通过多层容器弥补错误的间距结构。
 
@@ -120,7 +120,7 @@
 - 图标按钮必须提供可访问名称。
 - 圆形图标按钮在大圆角、阴影、毛玻璃和深浅色模式下必须保持圆形。
 - H5 预览的纯图标操作必须复用统一 `iconButtonSample`（PUI Button + PUI Icon 镜像），不得在组件演示中手写私有原生 `button`；空文字节点不得占据 gap。
-- Dialog Header 固定使用左右等宽的三列 Grid：左列是保留的平衡轨道，中间承载 `title` Slot 或标题文本，右侧为可选 Close；无左侧 Slot 时仍保留空轨道，保证标题几何居中。
+- Dialog Header 固定使用左右等宽的三列 Grid：左列承载可选 `header-left` 紧凑图标按钮，中间承载 `title` Slot 或标题文本，右侧为默认 Close；无左侧 Slot 时仍保留空轨道，保证标题几何居中。
 
 ### 8. 外观设置与持久化
 

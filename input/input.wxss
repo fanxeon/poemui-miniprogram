@@ -122,6 +122,20 @@
 .pui-input__clear-host {
   width: var(--pui-input-action-size);
   height: var(--pui-input-action-size);
+  transition:
+    opacity var(--pui-input-duration) var(--pui-input-ease),
+    visibility var(--pui-input-duration) var(--pui-input-ease);
+}
+
+.pui-input__clear-host--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pui-input__clear-host--hidden {
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .pui-input__loading-host {

@@ -25,10 +25,10 @@
   transform: translateY(0);
 }
 
-.pui-notice-bar--info { color: var(--pui-color-brand); }
-.pui-notice-bar--success { color: var(--pui-color-success); }
-.pui-notice-bar--warning { color: var(--pui-color-warning); }
-.pui-notice-bar--error { color: var(--pui-color-danger); }
+.pui-notice-bar--primary { color: var(--pui-color-brand) !important; background: var(--pui-color-info-light) !important; }
+.pui-notice-bar--success { color: var(--pui-color-success) !important; background: var(--pui-color-success-light) !important; }
+.pui-notice-bar--warning { color: var(--pui-color-warning) !important; background: var(--pui-color-warning-light) !important; }
+.pui-notice-bar--danger { color: var(--pui-color-danger) !important; background: var(--pui-color-danger-light) !important; }
 
 .pui-notice-bar__icon,
 .pui-notice-bar__operation {
@@ -39,9 +39,15 @@
 }
 
 .pui-notice-bar__icon { width: 44rpx; }
+.pui-notice-bar__icon--suffix { width: auto; margin-left: auto; }
 .pui-notice-bar__operation { font-weight: 700; }
 .pui-notice-bar__icon pui-button,
 .pui-notice-bar__operation pui-button { display: block; }
+.pui-notice-bar__prefix-button,
+.pui-notice-bar__suffix-button {
+  color: inherit !important;
+  background: transparent !important;
+}
 
 .pui-notice-bar__viewport {
   flex: 1;

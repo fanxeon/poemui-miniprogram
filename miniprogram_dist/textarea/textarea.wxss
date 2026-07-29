@@ -78,7 +78,6 @@
 .pui-textarea--small .pui-textarea__control { font-size: var(--pui-font-size-small); line-height: 36rpx; }
 .pui-textarea--large .pui-textarea__control { font-size: var(--pui-font-size-large); line-height: 48rpx; }
 
-.pui-textarea__clear-wrap,
 .pui-textarea__loading-wrap {
   position: absolute;
   z-index: 1;
@@ -127,7 +126,6 @@
 .pui-textarea--success .pui-textarea__tips { color: var(--pui-color-success); }
 
 .pui-textarea--reduced-motion .pui-textarea__field,
-.pui-textarea--reduced-motion .pui-textarea__clear-wrap,
 .pui-textarea--reduced-motion .pui-textarea__loading-wrap,
 .pui-textarea--reduced-motion .pui-textarea__feedback-shell {
   transition-duration: 1ms !important;

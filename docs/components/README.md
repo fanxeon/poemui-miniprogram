@@ -72,6 +72,9 @@
 - [Loading](./LOADING.md)：声明式进行中反馈、延迟与退场、三种指示器、三 Slot 与无事件边界。
 - [TopLoading](./TOP-LOADING.md)：页面或卡片顶部请求轨道、未知/精确进度、显式完成、防闪烁与低动效边界。
 - [DynamicMessage](./DYNAMIC-MESSAGE.md)：顶部 retained 通知、同 key 原位更新、不同 key 队列、真实 Action/关闭与非模态边界。
+- [AreaChart](./AREA-CHART.md)：共享零基线面积趋势、Canvas/SVG 双端、渐变填充、默认入场与透明展示叶子边界。
+- [BarChart](./BAR-CHART.md)：共享零基线条形、分段增量、透明渐变、图例和透明展示叶子边界。
+- [Waffle](./WAFFLE.md)：圆润点阵、显式有效单位、分段透明度、轮廓和透明展示叶子边界。
 - [List](./LIST.md)：数据驱动连续信息行、正文与 Footer 双状态优先级、真实 load/retry 边界。
 - [VirtualList](./VIRTUAL-LIST.md)：固定行高窗口、真实局部滚动、选择回写与状态边界。
 - [Toast](./TOAST.md)：单条命令式反馈、Overlay、具名 Slot、自动收起与 close 边界。

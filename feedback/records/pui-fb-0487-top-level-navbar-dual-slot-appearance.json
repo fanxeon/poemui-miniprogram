@@ -1,0 +1,139 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0487",
+  "title": "Me 与安装一级页 Navbar 缺少一致的双 Slot 操作和外观入口",
+  "scope": "component",
+  "components": ["miniprogram-me", "miniprogram-codepage", "navbar", "button", "popup", "dialog", "config-provider"],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "让 Me 页以客服和菜单、安装页以 Info 和菜单组成 Navbar 左侧双 Slot，并由菜单打开与首页一致的外观设置。",
+  "environment": {
+    "surfaces": ["miniprogram me page", "miniprogram codepage navbar", "appearance popup", "info dialog"],
+    "platforms": ["wechat-miniprogram", "h5-contract"],
+    "viewports": ["390px"],
+    "themes": ["light", "dark", "fruit-flavor"]
+  },
+  "reproduction": [
+    "进入小程序 Me 一级页，Navbar 左侧只有客服按钮，没有外观菜单。",
+    "进入小程序安装一级页，Navbar 左侧没有 Info 或外观菜单。",
+    "对照首页外观入口与 Navbar 双 Slot 示例，两个一级页缺少一致操作链。"
+  ],
+  "expected": "Me 页保留真实微信客服并增加菜单，安装页提供可用 Info 与菜单；两个菜单复用首页同源外观 Popup、共享 AppearanceSettings 和 visualConfig，390px 下不侵入标题或原生胶囊。",
+  "actual": "Me 页只有一个 small 客服 Slot Button；安装页 Navbar 无操作；两页都无法从当前一级页直接打开共享外观设置。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前任务",
+      "note": "用户明确要求 Me 为客服加菜单双 Slot，安装页为 Info 加菜单双 Slot。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "Navbar left Slot 组合客服和菜单两个 PUI IconButton，外观 Popup 复用共享 AppearanceSettings。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/codex/index.wxml",
+      "note": "Navbar left Slot 组合 Info 和菜单，分别打开受控 Dialog 与外观 Popup。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "锁定客服 open-type、双 Slot 结构、外观显隐互斥、重置 Store 与 Canvas 卸载。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-tabbar-pages.js",
+      "note": "锁定安装页 Info/Dialog、菜单/Popup、显隐互斥和外观重置。"
+    },
+    {
+      "kind": "browser",
+      "ref": "微信开发者工具 390x844 / pages/me/index / pages/codex/index",
+      "note": "双操作各为 33x33px，横向起点为 16.5/51.5px，完整落在 87px 左镜像胶囊轨；Info Dialog 和浅色/深色果味外观 Popup 均完成运行态复核。"
+    },
+    {
+      "kind": "build",
+      "ref": "npm run site:build / npm run pack:check / 微信 build-npm",
+      "note": "站点生成和 559 文件 tarball dry-run 通过，微信 build-npm 用时 939ms 且 warnings=[]。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-design-contracts.js",
+      "note": "本次页面与共享组件相关测试均通过；全量在既有 Search H5 search-clear 私有原生按钮设计合同处停止，与本次文件范围无关。"
+    }
+  ],
+  "rootCause": "两个一级页建立时只完成正文和 Tabbar 任务，未把首页已经存在的共享外观入口纳入各自 Navbar；安装页也没有为 Info 建立真实动作。",
+  "decision": {
+    "outcome": "两页都在 Navbar 唯一 left Slot 中组合两个 extra-small/text/transparent/circle/icon-only PUI Button，使用共享 Flex 与紧密 gap。Me 客服保留 open-type=contact，菜单打开共享外观 Popup；安装 Info 打开单按钮 PUI Dialog，菜单打开同源外观 Popup。",
+    "rationale": "字面 Slot 可保留客服 Button 的微信平台属性；两个紧凑圆形按钮能在 Navbar 的真实胶囊镜像轨内稳定排列。Popup、Dialog、AppearanceSettings 与 visualConfig 已提供完整能力，无需扩张 Navbar API或复制页面私有控件。",
+    "alternativesRejected": [
+      "把客服改成 Navbar leftBtn，从而丢失 open-type=contact 平台能力。",
+      "把菜单放到 capsule=true 时不渲染的 right Slot，与微信原生胶囊冲突。",
+      "为两页分别手写外观开关、浮层或第二份 visualConfig。",
+      "让安装页 Info 成为没有动作的装饰图标。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.json",
+      "miniprogram/pages/codex/index.wxml",
+      "miniprogram/pages/codex/index.js",
+      "miniprogram/pages/codex/index.json",
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-miniprogram-tabbar-pages.js",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/components/NAVBAR.md",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/MINIPROGRAM_CODEX_PAGE.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0487-top-level-navbar-dual-slot-appearance.json"
+    ],
+    "dependencies": ["PUI Navbar", "PUI Button", "PUI Popup", "PUI Dialog", "AppearanceSettings", "visualConfig", "page background preference"]
+  },
+  "verification": {
+    "tests": ["scripts/test-miniprogram-me-page.js", "scripts/test-miniprogram-tabbar-pages.js", "scripts/test-navbar.js", "scripts/test-popup.js", "scripts/test-dialog.js", "scripts/test-appearance-settings.js"],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js",
+      "node scripts/test-miniprogram-tabbar-pages.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check",
+      "git diff --check",
+      "node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram",
+      "微信开发者工具 build-npm"
+    ],
+    "browser": [
+      "微信开发者工具 390x844：Me 客服/菜单与安装 Info/菜单均为 33x33px，横向起点 16.5/51.5px，Navbar 标题保持居中且不与 87px 原生胶囊重叠。",
+      "Me 触发菜单后 appearancePopupVisible=false→true，AreaChart 查询由存在变为 no such element；关闭 Popup 后 visible=false 且 AreaChart 恢复，截图 /tmp/poemui-me-navbar-dual-slot-390.png 与 /tmp/poemui-me-navbar-appearance-390.png。",
+      "安装页触发 Info 后 Dialog Header/Content/单列满宽 Footer 可见，关闭后再触发菜单，infoDialogVisible=false 且 appearancePopupVisible=true；截图 /tmp/poemui-codepage-info-dialog-390.png 与 /tmp/poemui-codepage-appearance-390.png。",
+      "把真实 visualConfig 写入 dark+shadow+frostedGlass+largeRadius 后重新编译，Provider 回读 pui-theme--dark/pui-frosted-glass--on/pui-shadow--on/pui-radius--large，外观 Popup 遮罩含 pui-popup__mask--blurred；调用页面重置后回到 light/frost-off，截图 /tmp/poemui-codepage-appearance-dark-fruit-390.png。",
+      "模拟器 console 无本次页面错误；存在范围外首页 page.json 的 enableShareTimeline 无效警告，以及安装页 onLoad 56ms Perf warning。",
+      "微信开发者工具 build-npm 用时 939ms、warnings=[]；构建后重新打开 Me 与安装页，双操作仍为 33x33px。"
+    ],
+    "deviceRisks": [
+      "pending-device：iOS/Android 真机的胶囊镜像宽度、两个 extra-small 命中区、safe-area 和读屏仍需复核。",
+      "pending-device：open-type=contact 依赖小程序后台客服配置，Node 与模拟器不能证明客服会话可用。"
+    ]
+  },
+  "ai": {
+    "summary": "一级页 Navbar 双操作优先复用 PUI Slot 与真实浮层链路，平台能力不得降级。",
+    "rules": [
+      "Navbar 双操作若含 open-type 等平台属性，使用唯一 left Slot 组合两个紧凑 PUI IconButton，不得改成普通 leftBtn。",
+      "capsule=true 时不向 right Slot 投递业务操作。",
+      "外观菜单必须复用共享 AppearanceSettings、Popup 和 visualConfig，不复制第二份开关或 Store。",
+      "Info 等图标入口必须连接真实 Dialog 或业务动作，不能做静态装饰。",
+      "Canvas 图表在微信浮层可见时应由页面卸载并在关闭后恢复，不能用 hidden 假设原生绘制层不会穿透。"
+    ],
+    "tags": ["navbar", "dual-slot", "me", "codepage", "appearance", "contact", "dialog", "popup"]
+  }
+}

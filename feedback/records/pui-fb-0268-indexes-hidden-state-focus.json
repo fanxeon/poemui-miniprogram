@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "agent-audit",
   "reportedAt": "2026-07-23",
-  "updatedAt": "2026-07-23",
+  "updatedAt": "2026-07-28",
   "userGoal": "Indexes 在 content、loading、error、empty 间切换时，键盘和读屏只能接触当前真实状态，不能操作视觉上已经隐藏的内容。",
   "environment": {
     "surfaces": ["h5-preview", "native-source"],
@@ -40,7 +40,7 @@
     {
       "kind": "file",
       "ref": "indexes/indexes.wxml",
-      "note": "原生隐藏错误层的 Retry Button 仅在 stateType=error 时可用。"
+      "note": "原生隐藏错误层的 Retry Button 仅在 stateType=error 时可用；0.1.2 进一步让非 content 正文和索引轨同步 aria-hidden。"
     },
     {
       "kind": "test",
@@ -50,8 +50,8 @@
   ],
   "rootCause": "旧状态镜像把 opacity、pointer-events 与 aria-hidden 当成完整交互隔离，但它们不会禁用后代原生 Button，也不会移除显式 tabindex。",
   "decision": {
-    "outcome": "H5 为非当前内容、导航和状态层增加 inert 与 aria-hidden，并把隐藏滚动区 tabindex 改为 -1；原生 Retry 增加 stateType 锁定。",
-    "rationale": "保留节点和 500ms 视觉状态结构不变，同时把键盘与辅助技术的可操作范围限制到当前真实状态。",
+    "outcome": "H5 为非当前内容、导航和状态层增加 inert 与 aria-hidden，并把隐藏滚动区 tabindex 改为 -1；原生 Retry 增加 stateType 锁定，0.1.2 原生正文和索引轨也同步 aria-hidden。",
+    "rationale": "保留节点和 500ms 视觉状态结构不变，同时把键盘与辅助技术的可操作范围限制到当前真实状态；原生没有 inert 时至少保持状态语义同源。",
     "alternativesRejected": [
       "只设置 pointer-events:none 不能阻止 Tab 和键盘激活。",
       "只设置 aria-hidden 不能让可聚焦后代自动退出 Tab 序列。",

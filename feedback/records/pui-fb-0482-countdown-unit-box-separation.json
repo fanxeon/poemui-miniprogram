@@ -1,0 +1,105 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0482",
+  "title": "CountDown 时分秒单位被数字盒裁切",
+  "scope": "component",
+  "components": [
+    "count-down"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "时分秒单位位置整齐且完整可读。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "启用 splitWithUnit 与 round/square。",
+    "旧数字 part 固定 48rpx 且 overflow:hidden。",
+    "单位与数字同在 part 内而被裁切。"
+  ],
+  "expected": "数字固定盒与单位分离，外层不可拆分但不裁切。",
+  "actual": "时/分/秒落入固定宽盒并挤压、截断。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "count-down/count-down.wxml",
+      "note": "新增独立 value 节点。"
+    },
+    {
+      "kind": "file",
+      "ref": "count-down/count-down.wxss",
+      "note": "尺寸圆角仅作用 value。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 同构。"
+    }
+  ],
+  "rootCause": "布局把数值视觉盒与语义单位错误合并为同一 overflow 容器。",
+  "decision": {
+    "outcome": "part 负责数字+单位组，value 单独负责固定盒。",
+    "rationale": "保持单位对齐且不改变计时语义。",
+    "alternativesRejected": [
+      "扩大固定盒会在不同单位和字号下继续漂移。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "count-down/count-down.wxml",
+      "count-down/count-down.wxss",
+      "preview/app.js",
+      "preview/styles.css"
+    ],
+    "dependencies": [
+      "CountDown segments"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-count-down.js"
+    ],
+    "commands": [
+      "node scripts/test-count-down.js"
+    ],
+    "browser": [
+      "微信开发者工具 390px 截图确认时/分/秒完整显示且不进入数字圆形盒。",
+      "H5 实测 unit 各 13px、value 22px、外层 overflow visible、横向溢出=0。"
+    ],
+    "deviceRisks": [
+      "真机系统字体基线待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "固定数字盒不得包含单位。",
+    "rules": [
+      "overflow 只限 value。",
+      "unit nowrap 位于 value 外。"
+    ],
+    "tags": [
+      "countdown",
+      "unit",
+      "clipping"
+    ]
+  }
+}

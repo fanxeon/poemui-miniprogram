@@ -2,7 +2,6 @@
   "component": true,
   "styleIsolation": "shared",
   "usingComponents": {
-    "pui-button": "../button/button",
     "pui-icon": "../icon/icon",
     "pui-loading": "../loading/loading"
   }

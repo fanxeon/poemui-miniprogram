@@ -45,7 +45,7 @@ function create(overrides, measuredHeight) {
   return { instance, events };
 }
 
-assert.strictEqual(Object.keys(definition.properties).length, 24, 'Collapsible publishes 24 Props');
+assert.strictEqual(Object.keys(definition.properties).length, 25, 'Collapsible publishes 25 Props');
 
 const defaults = create();
 assert.strictEqual(defaults.instance.data.innerOpen, false);
@@ -56,6 +56,7 @@ assert(defaults.instance.data.rootClass.includes('pui-collapsible--default'));
 assert(defaults.instance.data.rootClass.includes('pui-collapsible--icon-right'));
 assert(defaults.instance.data.rootClass.includes('pui-collapsible--block'));
 assert(defaults.instance.data.rootClass.includes('pui-collapsible--bordered'));
+assert(!defaults.instance.data.rootClass.includes('pui-collapsible--shadow'), 'Collapsible remains flat unless shadow is explicitly enabled');
 assert(defaults.instance.data.rootStyle.includes('--pui-collapsible-duration: 500ms'));
 assert.strictEqual(defaults.instance.data.semanticLabel, '展开详情');
 
@@ -64,6 +65,10 @@ assert(fallback.instance.data.rootClass.includes('pui-collapsible--default'));
 assert(fallback.instance.data.rootClass.includes('pui-collapsible--icon-right'));
 assert(fallback.instance.data.rootStyle.includes('--pui-collapsible-duration: 999ms'));
 assert(fallback.instance.data.rootStyle.includes('cubic-bezier(0.2, 0, 0, 1)'));
+
+const elevated = create({ defaultOpen: true, shadow: true, content: '展开 Surface' });
+assert(elevated.instance.data.rootClass.includes('pui-collapsible--shadow'));
+assert(elevated.instance.data.rootClass.includes('pui-collapsible--open'));
 
 const capped = create({ duration: 1600 });
 assert(capped.instance.data.rootStyle.includes('--pui-collapsible-duration: 1000ms'));
@@ -187,9 +192,10 @@ assert(!/height\s*:\s*auto/.test(wxss), 'Collapsible must not transition height:
 assert(wxss.includes('transition-property: max-height, opacity, transform'));
 assert(wxss.includes('var(--pui-collapsible-duration)'));
 assert(!/\b(?:[5-9]\d\d|[1-9]\d{3,})ms\b/.test(wxss), 'Collapsible CSS has no fixed motion longer than 500ms');
-assert.strictEqual(metadata.apiProps.collapsible.length, 24, 'generated inspector must expose all 24 Collapsible Props');
+assert.strictEqual(metadata.apiProps.collapsible.length, 25, 'generated inspector must expose all 25 Collapsible Props');
 assert.strictEqual(metadata.details.collapsible.path, 'poemui-miniprogram/collapsible/collapsible');
 assert(preview.includes('function collapsibleShowcase(props, demo)'));
+assert(preview.includes("${props.shadow ? 'has-shadow' : ''}"), 'H5 mirror must expose the same explicit shadow gate');
 assert(preview.includes('function bindCollapsiblePreviewRuntime(props)'));
 assert(preview.includes("emptySample({ embedded: true, role: 'alert', description: props.errorText || '内容加载失败'"));
 assert(preview.includes("emptySample({ embedded: true, description: props.emptyText || '暂无详情'"));
@@ -197,6 +203,8 @@ assert(preview.includes("inner.scrollHeight"), 'H5 mirror measures real content 
 assert(preview.includes('data-demo-action="collapsible-toggle"'), 'H5 mirror uses a real trigger button');
 assert(preview.includes('retry：source=retry；等待消费者重新请求，不伪造成功'));
 assert(previewStyles.includes('.pui-collapsible-showcase'));
+assert(previewStyles.includes('.pui-collapsible-preview.has-shadow.is-open { box-shadow: var(--preview-shadow-card); }'), 'H5 shadow must be limited to enabled open state');
+assert(wxss.includes('.pui-collapsible--shadow.pui-collapsible--open { box-shadow: var(--pui-shadow-card); }'), 'native shadow must be limited to enabled open state');
 assert(previewStyles.includes('.pui-empty-sample.is-embedded'));
 assert(previewStyles.includes('transition-property: max-height, opacity, transform'));
 assert(previewStyles.includes('@media (prefers-reduced-motion: reduce)'));

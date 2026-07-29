@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0466",
+  "title": "三类图表缺少统一且默认开启的优雅入场 API",
+  "scope": "component",
+  "components": ["area-chart", "bar-chart", "waffle", "preview-site"],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "所有图表组件都提供优雅的入场动画 API，并且默认打开。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "h5-preview", "component-api"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390px", "PreviewDevice 622px"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "检查 BarChart/Waffle 原合同，修复前只有 reduceMotion，没有 animated、duration 或公开重播方法。",
+    "组件数据首次出现与父级更新使用同一完成态，无法表达克制的进入过程。",
+    "页面若自行操作内部 class 会破坏组件封装并导致 H5/小程序漂移。"
+  ],
+  "expected": "AreaChart、BarChart、Waffle 统一公开 animated=true、duration=500 和 replay()；各自使用符合图形语义的入场，关闭动画立即完成，低动效为 1ms，H5 同步。",
+  "actual": "修复前图表没有统一入场 API，调用方只能在页面层复制动画或接受直接出现。",
+  "evidence": [
+    {"kind": "file", "ref": "common/utils/chart-data.js", "note": "统一 duration 0–1000 和有限级联 delay 规整。"},
+    {"kind": "file", "ref": "area-chart/area-chart.js", "note": "默认淡入并公开 replay()。"},
+    {"kind": "file", "ref": "bar-chart/bar-chart.js", "note": "条形从共享零基线级联伸展并公开 replay()。"},
+    {"kind": "file", "ref": "waffle/waffle.js", "note": "点阵顺序缩放淡入并公开 replay()。"},
+    {"kind": "file", "ref": "preview/app.js", "note": "H5 下一帧进入，重播 IconButton 只重置图表入场状态。"},
+    {"kind": "test", "ref": "scripts/test-area-chart.js", "note": "锁定默认 Props、replay 和 H5 动效镜像。"},
+    {"kind": "test", "ref": "scripts/test-bar-chart.js", "note": "锁定条形入场和公开 Method。"},
+    {"kind": "test", "ref": "scripts/test-waffle.js", "note": "锁定点阵级联、渐变与公开 Method。"}
+  ],
+  "rootCause": "早期图表先解决数据比例与可读性，没有建立“首次出现 / 禁用动画 / 重播 / 低动效”的统一组件级生命周期。",
+  "decision": {
+    "outcome": "三组件固定公开 animated、duration、reduceMotion 与 replay()：AreaChart 淡入，H5 描边展开；BarChart 从共享零基线伸展；Waffle 上移缩放到目标 opacity。级联均设置有限上限，replay 不修改数据。",
+    "rationale": "图形自身拥有入场语义可避免页面穿透；默认 500ms 与现有 PUI normal motion 一致，有限级联避免大量点阵拖慢完成。",
+    "alternativesRejected": [
+      "由页面统一给根 opacity：无法表达 Bar 零基线、Waffle 单元顺序或 Area 描边。",
+      "默认关闭动画：不符合用户明确要求。",
+      "每次 items 更新自动重播：会把实时数据更新变成持续闪动。",
+      "replay 同时刷新数据：混淆展示动效与业务请求。"
+    ]
+  },
+  "impact": {
+    "files": ["common/utils/chart-data.js", "area-chart/", "bar-chart/", "waffle/", "metadata/components.js", "preview/app.js", "preview/styles.css", "docs/components/AREA-CHART.md", "docs/components/BAR-CHART.md", "docs/components/WAFFLE.md"],
+    "dependencies": ["PUI motion tokens", "reduceMotion", "component methods"]
+  },
+  "verification": {
+    "tests": ["scripts/test-area-chart.js", "scripts/test-bar-chart.js", "scripts/test-waffle.js"],
+    "commands": [
+      "PUI_VERIFY_DIST=1 node scripts/test-area-chart.js：通过",
+      "PUI_VERIFY_DIST=1 node scripts/test-bar-chart.js：通过",
+      "PUI_VERIFY_DIST=1 node scripts/test-waffle.js：通过",
+      "微信 390x844 运行态：三组件 animated=true、duration=500、replay() 均真实经历 entered=false→true",
+      "微信 build-npm：cost=872ms、warnings=[]；三组件和 chart helper 的 source/dist/example/consumer/miniprogram_npm 五路哈希一致"
+    ],
+    "browser": [
+      "H5 390×844 三页均读取 data-chart-animated=true、is-entered=true、透明根、无阴影、无 filter、页面横向溢出 0，三个低强调 replay IconButton 均有明确 aria-label。",
+      "Area replay 读取到 opacity 0.87673→1 与 line dash offset 0.12327px→0；Bar 首尾条同帧 scaleX 0.867835 / 0.618629，随后均回到 1，证明有限级联真实存在。",
+      "Waffle 144 个圆润单元使用 145deg 渐变，最后单元目标 opacity=0.28；replay 中首末 scale 0.965603 / 0.760885，最终均回到 1，浏览器日志为空。"
+    ],
+    "deviceRisks": ["浏览器系统 prefers-reduced-motion 的真实媒体查询切换仍待人工复核；静态合同已锁定 1ms 和零 delay。", "微信真机的定时器帧、Canvas 淡入、长 Waffle 性能和系统低动效仍待验证。"]
+  },
+  "ai": {
+    "summary": "图表入场是组件级展示生命周期，不是业务请求；默认开启，可关闭，可重播，低动效必须收敛。",
+    "rules": [
+      "图表统一默认 animated=true、duration=500，并将 duration 限制到 0–1000ms。",
+      "replay() 只能重播图形，不修改 items、比例、单位或请求状态。",
+      "低动效必须使用 1ms 且取消级联 delay。",
+      "不要在页面穿透内部 class 或复制另一套图表动画。"
+    ],
+    "tags": ["chart", "animation", "replay", "reduce-motion", "api", "miniprogram", "h5"]
+  }
+}

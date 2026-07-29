@@ -44,12 +44,16 @@ const defaults = create();
 assert.strictEqual(defaults.instance.data.innerValue, '');
 assert.strictEqual(defaults.instance.data.normalizedShape, 'square');
 assert.strictEqual(defaults.instance.data.confirmTypeValue, 'search');
+assert.strictEqual(defaults.instance.data.cancelHostClass, 'pui-search__cancel-host pui-search__cancel-host--compact');
 assert(defaults.instance.data.rootStyle.includes('--pui-search-duration:500ms'));
 assert(defaults.instance.data.rootStyle.includes('--pui-search-ease:var(--pui-ease-standard)'));
 assert(defaults.instance.data.inputStyle.includes('--pui-input-field-radius:var(--pui-radius-medium)'));
 const round = create({ shape: 'round', center: true });
 assert.strictEqual(round.instance.data.normalizedShape, 'round');
 assert(round.instance.data.inputStyle.includes('--pui-input-field-radius:var(--pui-radius-round)'), 'Search round must pass the defined round token into its PUI Input root');
+assert.strictEqual(create({ cancelText: 'Cancel' }).instance.data.cancelHostClass, 'pui-search__cancel-host pui-search__cancel-host--regular');
+assert.strictEqual(create({ cancelText: '关闭搜索' }).instance.data.cancelHostClass, 'pui-search__cancel-host pui-search__cancel-host--wide');
+assert.strictEqual(create({ cancelText: '停止当前搜索任务' }).instance.data.cancelHostClass, 'pui-search__cancel-host pui-search__cancel-host--xwide');
 
 const uncontrolled = create({ value: null, defaultValue: 'PoemUI' });
 uncontrolled.instance.onInputChange({ detail: { value: 'PoemUI Next', source: 'input', cursor: 11 } });
@@ -135,6 +139,7 @@ assert(boundaries.instance.data.rootStyle.includes('--pui-search-duration:1ms'))
 
 const wxml = fs.readFileSync(path.join(root, 'search/search.wxml'), 'utf8');
 const wxss = fs.readFileSync(path.join(root, 'search/search.wxss'), 'utf8');
+const buttonWxss = fs.readFileSync(path.join(root, 'button/button.wxss'), 'utf8');
 const json = JSON.parse(fs.readFileSync(path.join(root, 'search/search.json'), 'utf8'));
 const preview = fs.readFileSync(path.join(root, 'preview/app.js'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'preview/styles.css'), 'utf8');
@@ -142,6 +147,7 @@ const metadata = require(path.join(root, 'metadata/components.js'));
 const api = fs.readFileSync(path.join(root, 'docs/COMPONENT_API.md'), 'utf8');
 const compatibility = fs.readFileSync(path.join(root, 'docs/H5_PREVIEW_COMPATIBILITY.md'), 'utf8');
 const contract = fs.readFileSync(path.join(root, 'docs/components/SEARCH.md'), 'utf8');
+const battleChangelog = fs.readFileSync(path.join(root, 'docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md'), 'utf8');
 const exampleWxml = fs.readFileSync(path.join(root, '_example/miniprogram/pages/components/index.wxml'), 'utf8');
 const exampleJs = fs.readFileSync(path.join(root, '_example/miniprogram/pages/components/index.js'), 'utf8');
 
@@ -154,8 +160,17 @@ assert(wxml.includes('custom-style="{{inputStyle}}"'), 'Search 内部 Input 根�
 assert(wxml.includes('bordered="{{true}}"'), 'Search 必须让 PUI Input 消费 ConfigProvider 的边框 Token');
 assert(!wxml.includes('bind:input='));
 assert(!wxml.includes('bind:confirm='));
-assert(wxml.includes('clearable="{{showClear}}"'));
+assert(wxml.includes('clearable="{{clearable}}"'));
+assert(wxml.includes('clear-trigger="{{normalizedClearTrigger}}"'), 'Search explicitly preserves its own normalized always/focus strategy when composing the focus-first Input');
 assert(wxml.includes('maxcharacter="{{normalizedMaxcharacter}}"'));
+assert(/wx:if="\{\{showCancel\}\}"[\s\S]*id="search-cancel-action"[\s\S]*class="\{\{cancelHostClass\}\}"[\s\S]*custom-class="pui-search__cancel"[\s\S]*custom-style="--pui-button-tone:var\(--pui-text-secondary\);font-weight:var\(--pui-font-weight-medium\);"[\s\S]*variant="text"[\s\S]*surface="transparent"[\s\S]*size="extra-small"[\s\S]*content="\{\{cancelText\}\}"[\s\S]*aria-label="\{\{cancelText\}\}"/.test(wxml), 'Search cancel must style the custom-component host separately from its internal root, expose the real cancel label, and use the compact low-emphasis PUI text Button contract');
+assert(/\.pui-button--text\s*\{[\s\S]*?min-width:\s*0;[\s\S]*?padding-right:\s*var\(--pui-space-xs\);[\s\S]*?padding-left:\s*var\(--pui-space-xs\);/.test(buttonWxss), 'PUI text Button must remove the ordinary Button min-width and keep only compact token padding');
+assert(!/\.pui-search__cancel\{/.test(wxss), 'Search parent stylesheet must not patch Button geometry');
+assert(wxss.includes('--pui-search-cancel-width-compact:68rpx'));
+assert(wxss.includes('--pui-search-cancel-width-regular:104rpx'));
+assert(wxss.includes('--pui-search-cancel-width-wide:144rpx'));
+assert(wxss.includes('--pui-search-cancel-width-xwide:176rpx'));
+assert(wxss.includes('.pui-search__cancel-host{display:flex;min-width:0;width:var(--pui-search-cancel-width);max-width:var(--pui-search-cancel-width);flex:0 0 var(--pui-search-cancel-width)}'), 'Search cancel custom-component host must consume its semantic content-width tier');
 assert(wxss.includes(':host{display:block;width:100%;max-width:100%;min-width:0}'), 'Search 小程序宿主必须占满调用者可用宽度');
 assert(!wxss.includes('.pui-search--round'), 'Search 不得跨组件选择器覆盖 Input 圆角，必须经 Input 语义变量传递');
 assert.strictEqual(metadata.apiProps.search.length, 17);
@@ -172,11 +187,14 @@ assert(preview.includes("action === 'search-input' && previewIdFor(state.current
 assert(preview.includes("apiOptions: '-1–10000, 步长 1'"));
 assert(preview.includes("apiOptions: '-1–20000, 步长 1'"));
 assert(preview.includes("const clearTrigger = ['always', 'focus'].includes(props.clearTrigger) ? props.clearTrigger : 'always';"), 'H5 clearTrigger 必须与真实组件同样归一化');
-assert(preview.includes("snapshot.clearTrigger === 'always' || snapshot.focused"), 'H5 clearTrigger=focus 只能在内部输入已聚焦时展示清空入口');
+assert(styles.includes('.pui-input-preview--clear-focus:not(:focus-within) .pui-input-preview__clear-host'), 'H5 clearTrigger=focus 由共享 Input 在真实聚焦边界控制');
 assert(styles.includes('.pui-search-showcase > .pui-showcase-section + .pui-showcase-section'));
 assert(styles.includes('.pui-search {\n  display: flex;\n  align-items: center;\n  width: 100%;\n  min-width: 0;'), 'H5 Search 镜像必须保持全宽可收缩根');
 assert(styles.includes('.pui-search--round .pui-search__field'));
+assert(preview.includes("clearable: !!props.clearable, clearTrigger: snapshot.clearTrigger"), 'H5 Search 必须把自身 clearTrigger 策略显式传给共享 Input 镜像');
 assert(preview.includes("align: props.center ? 'center' : 'left', bordered: true"), 'H5 Search 镜像必须让 Input 消费全局边框外观');
+assert(battleChangelog.includes('`preview/app.js` 的 Search 已复用 `buttonSample`'), 'Search Battle must record the completed H5 Button mirror sync');
+assert(battleChangelog.includes('`preview/styles.css` 删除取消操作的最小宽度与左右 padding'), 'Search Battle must record the completed H5 compact geometry sync');
 assert(!styles.includes('.pui-search-results'));
 
 assert(api.includes('Search：TDesign 对照后的 17 Props'));

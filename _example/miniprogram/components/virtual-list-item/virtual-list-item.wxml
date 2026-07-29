@@ -1,0 +1,3 @@
+<pui-cell title="{{title}}" description="{{description}}" left-icon="{{leftIcon}}" bordered="{{false}}">
+  <pui-tag theme="{{selected ? 'primary' : 'default'}}" variant="outline" size="small">generic item</pui-tag>
+</pui-cell>

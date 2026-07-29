@@ -29,7 +29,7 @@ const renderedRoots = [...wxml.matchAll(/<pui-([a-z0-9-]+)/g)]
 const matrixRoots = Object.keys(appearanceContracts).sort();
 
 assert.deepStrictEqual(renderedRoots, matrixRoots, 'appearance matrix must match all direct PUI roots rendered by the real miniprogram');
-assert.strictEqual(matrixRoots.length, 74, 'the current miniprogram appearance matrix must contain 74 direct PUI roots');
+assert.strictEqual(matrixRoots.length, 77, 'the current miniprogram appearance matrix must contain 77 direct PUI roots');
 assert(!matrixRoots.includes('drawer'), 'deleted Drawer must not return to the appearance contract');
 assert.deepStrictEqual(directionalShadowTokens.slice(0, 1), ['none']);
 
@@ -52,6 +52,18 @@ assert.deepStrictEqual(tabbarContract, {
   surface: 'screen-attached-layout', shadow: 'none', frostedGlass: false, largeRadius: false,
   bordered: true, equalSpacing: false, gradient: false,
 }, 'appearance matrix must describe normal Tabbar as a transparent screen-attached layout; round is governed by the dedicated variant contract');
+assert.deepStrictEqual(appearanceContracts['bar-chart'], {
+  surface: 'display-leaf', shadow: 'none', frostedGlass: false, largeRadius: false,
+  bordered: false, equalSpacing: false, gradient: false,
+}, 'BarChart must remain a transparent display leaf');
+assert.deepStrictEqual(appearanceContracts['area-chart'], {
+  surface: 'display-leaf', shadow: 'none', frostedGlass: false, largeRadius: false,
+  bordered: false, equalSpacing: false, gradient: false,
+}, 'AreaChart must remain a transparent display leaf');
+assert.deepStrictEqual(appearanceContracts.waffle, {
+  surface: 'display-leaf', shadow: 'none', frostedGlass: false, largeRadius: true,
+  bordered: false, equalSpacing: false, gradient: false,
+}, 'Waffle may remap rounded cells but must not become a Surface');
 
 const theme = read('common/style/theme.wxss');
 const miniInput = read('input/input.wxss');
@@ -63,7 +75,11 @@ for (const token of ['--pui-shadow-floating', '--pui-shadow-edge-top', '--pui-sh
 }
 assert(miniInput.includes('box-shadow: var(--pui-shadow-card)'), 'native Input must own the field Surface shadow');
 assert(!miniImage.includes('var(--pui-glass-shadow-soft)'), 'native Image must not receive a global outer shadow');
-assert(!miniCollapsible.includes('var(--pui-shadow-card)'), 'native Collapsible must not receive a global outer shadow');
+assert.deepStrictEqual(appearanceContracts.collapsible, {
+  surface: 'expandable-surface', shadow: 'card', frostedGlass: true, largeRadius: true,
+  bordered: true, equalSpacing: true, gradient: false,
+}, 'Collapsible may consume card elevation only through its explicit expanded Surface contract');
+assert(miniCollapsible.includes('.pui-collapsible--shadow.pui-collapsible--open { box-shadow: var(--pui-shadow-card); }'), 'native Collapsible shadow must be explicitly enabled and limited to the open state');
 assert(h5.includes('.app-shell[data-effects="off"] .preview-device__viewport'), 'H5 must expose an effective effects-off tree boundary');
 assert(h5.includes('box-shadow: var(--shadow-edge-top)'), 'H5 must expose top-attached shadow direction');
 assert(h5.includes('box-shadow: var(--shadow-edge-bottom)'), 'H5 must expose bottom-attached shadow direction');

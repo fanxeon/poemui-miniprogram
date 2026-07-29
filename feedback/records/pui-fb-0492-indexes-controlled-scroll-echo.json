@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0492",
+  "title": "Indexes 受控滚动回写被误判为再次定位",
+  "scope": "component",
+  "components": ["indexes", "miniprogram"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "用户直接滚动 Indexes 时，活动索引应跟随但不能抢回滚动位置或产生吸附。",
+  "environment": {
+    "surfaces": ["wechat-component", "wechat-component-page"],
+    "platforms": ["wechat-miniprogram", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在受控独立页中手动滚动正文到下一个分组。",
+    "组件发布 change(source=scroll)，页面把 detail.current 写回 current。",
+    "旧 observer 只看到 current 改变，重新设置该分组 scrollIntoView 并启动程序滚动保护，形成吸附和抢滚动。"
+  ],
+  "expected": "scroll 来源的同值受控回写只更新活动态，不再次定位；外部主动改变 current 仍执行 scrollIntoView。",
+  "actual": "旧实现没有记录 change 的来源回声，无法区分用户滚动回写和外部命令式受控更新。",
+  "evidence": [
+    {"kind": "file", "ref": "indexes/indexes.js", "note": "scroll change 在派发前记录短时回声；observer 消费同值回声但不设置 anchor。"},
+    {"kind": "test", "ref": "scripts/test-indexes.js", "note": "模拟 scroll→父级 current 回写，锁定无 programmatic suppression；随后外部切换 AA 仍真实定位。"},
+    {"kind": "user-report", "ref": "2026-07-28 Indexes battle", "note": "用户要求按之前审计结论开始组件级修复，滚动联动属于本轮已指出缺口。"}
+  ],
+  "rootCause": "受控 observer 只比较 previous/current，没有携带触发来源，因而把页面对 scroll change 的所有权回写当成新的外部定位请求。",
+  "decision": {
+    "outcome": "增加内部 scroll echo 标记；同值父级回写只同步 active，不触发 scrollIntoView。外部不同值更新继续执行定位。",
+    "rationale": "受控所有权需要父级回写，但回写不能改变原事件的物理滚动语义。",
+    "alternativesRejected": [
+      "页面不回写 current 会破坏受控合同。",
+      "完全禁用 current observer 会让外部受控定位失效。",
+      "用更短动画掩盖吸附仍会抢用户滚动。"
+    ]
+  },
+  "impact": {
+    "files": ["indexes/indexes.js", "scripts/test-indexes.js", "docs/components/INDEXES.md"],
+    "dependencies": ["controlled current contract", "scroll-view scrollIntoView"]
+  },
+  "verification": {
+    "tests": ["scripts/test-indexes.js"],
+    "commands": ["node scripts/test-indexes.js：通过"],
+    "browser": ["微信开发者工具 390x844 实际滚动 Indexes 正文后，页面 current 从 A 连续回写到 P，未出现反向回跳；scroll→父级同值回写不再设置 anchor 的所有权边界由专项运行测试锁定。"],
+    "deviceRisks": ["真机惯性滚动、setData/observer 调度时序和快速反向滚动仍为 pending-device。"]
+  },
+  "ai": {
+    "summary": "受控 current 的页面回写必须保留原始 scroll 来源，不能反向制造程序定位。",
+    "rules": [
+      "测试完整 scroll→change→父级 current→observer 链，不能只直接调用 onScroll。",
+      "scroll 回声只抑制同值回写；外部不同 current 仍须定位。",
+      "程序滚动保护不能在首次经过目标组时提前结束。"
+    ],
+    "tags": ["indexes", "controlled", "scroll", "echo", "ownership", "scroll-into-view"]
+  }
+}

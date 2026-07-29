@@ -1,7 +1,7 @@
 <view class="{{rootClass}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="navigation" aria-label="{{semanticLabel}}" aria-disabled="{{disabled}}">
   <view wx:if="{{stateType === 'error'}}" class="pui-breadcrumb__state pui-breadcrumb__state--error" role="alert">
     <pui-icon name="error-circle" size="{{iconSize}}" color-scheme="{{colorScheme}}" />
-    <text>{{errorText}}</text>
+    <text class="pui-breadcrumb__state-message">{{errorText}}</text>
     <pui-button wx:if="{{retryText}}" size="small" variant="outline" icon="refresh" content="{{retryText}}" disabled="{{disabled}}" aria-label="{{retryText}}" color-scheme="{{colorScheme}}" bind:click="onRetry" />
   </view>
   <view wx:elif="{{stateType === 'loading'}}" class="pui-breadcrumb__state" role="status" aria-label="{{loadingText}}">
@@ -9,7 +9,7 @@
   </view>
   <view wx:elif="{{stateType === 'empty'}}" class="pui-breadcrumb__state" role="status">
     <pui-icon name="inbox" size="{{iconSize}}" color-scheme="{{colorScheme}}" />
-    <text>{{emptyText}}</text>
+    <text class="pui-breadcrumb__state-message">{{emptyText}}</text>
   </view>
   <view wx:else class="pui-breadcrumb__content">
     <view wx:if="{{customPrefix}}" class="pui-breadcrumb__prefix"><slot name="prefix"></slot></view>

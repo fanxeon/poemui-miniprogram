@@ -68,3 +68,7 @@ Image 负责安全加载和展示图片资源，并对空地址、加载中、�
 ## 10. 修改闭环
 
 后续修改前先运行 `npm run feedback:list -- --component image` 并阅读命中的原始 Ledger；同步检查 JS/JSON/WXML/WXSS、H5、metadata、API、示例、`miniprogram_dist` 和安装产物。完成后更新专项测试、Ledger、进度文档，并复核 390px、主题、外观开关与真实资源事件。
+
+## 11. 2026-07-28 加载与懒加载示例
+
+共享组件既有 `loading` 和原生 `lazy-load` 能力保持不变；独立页必须同时展示父级受控加载、真实资源 load/error 与懒加载，不能只展示错误开关。H5 使用真实 `<img loading="lazy">` 镜像同一语义。

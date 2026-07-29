@@ -1,0 +1,20 @@
+<view class="{{rootClass}} {{entered ? 'pui-area-chart--entered' : ''}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="img" aria-label="{{semanticLabel}}">
+  <view wx:if="{{empty}}" class="pui-area-chart__empty">暂无数据</view>
+  <view wx:else class="pui-area-chart__plot">
+    <view class="pui-area-chart__canvas-wrap">
+      <canvas type="2d" class="pui-area-chart__canvas" aria-hidden="true"></canvas>
+      <view class="pui-area-chart__probes" aria-hidden="true">
+        <view wx:for="{{chartSeries}}" wx:key="key" class="pui-area-chart__probe pui-area-chart__probe--series pui-chart-theme--{{item.theme}}" data-role="series" data-key="{{item.key}}"></view>
+        <view class="pui-area-chart__probe pui-area-chart__probe--grid" data-role="grid"></view>
+        <view class="pui-area-chart__probe pui-area-chart__probe--fill-start" data-role="fill-start"></view>
+        <view class="pui-area-chart__probe pui-area-chart__probe--fill-end" data-role="fill-end"></view>
+      </view>
+    </view>
+    <view wx:if="{{showXAxis}}" class="pui-area-chart__axis" aria-hidden="true">
+      <text wx:for="{{axisLabels}}" wx:key="key" class="pui-area-chart__axis-label">{{item.visible ? item.label : ''}}</text>
+    </view>
+  </view>
+  <view wx:if="{{showLegend && legend.length}}" class="pui-chart-legend" aria-hidden="true">
+    <view wx:for="{{legend}}" wx:key="key" class="pui-chart-legend__item"><view class="pui-chart-legend__swatch pui-chart-theme--{{item.theme}}"></view><text>{{item.label}}</text></view>
+  </view>
+</view>

@@ -1,0 +1,119 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0457",
+  "title": "高级版商业授权未进入已发布落地页",
+  "scope": "component",
+  "components": ["miniprogram", "dialog", "cell", "button"],
+  "type": "bug",
+  "severity": "high",
+  "status": "needs-device",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "点击“高级版商业授权”后先明确确认，再真实打开 https://poemcoder.com/poem-ui 查阅授权范围与版本权益。",
+  "environment": {
+    "surfaces": ["miniprogram me page", "PUI Dialog", "WeChat WebView"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "进入小程序第四个 Tab 的 pages/me/index。",
+    "点击“高级版商业授权 / 查阅详情”。",
+    "页面只显示“授权详情正在准备中”Toast，没有确认 Dialog，也没有进入已发布的 PoemUI 落地页。"
+  ],
+  "expected": "Cell 打开受控 PUI Dialog；取消或关闭不离开页面；确认后通过真实 wx.navigateTo 进入固定 WebView 页面并加载 https://poemcoder.com/poem-ui；失败可重试、取消或复制链接。",
+  "actual": "onPurchaseLicense 仍沿用旧占位 Toast，已发布且 HTTP 200 的生产落地页没有接入小程序用户链路。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-28 当前任务对话",
+      "note": "用户指出商业授权本应跳转 https://poemcoder.com/poem-ui。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.js",
+      "note": "商业授权入口改为受控 Dialog，并在真实 wx.navigateTo success/fail 回调中关闭或恢复。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/license/index.wxml",
+      "note": "固定微信 WebView 加载生产授权落地页，不接受任意 query URL。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "锁定 PUI Dialog 结构、固定路由、成功关闭、失败恢复、WebView 地址与复制链接恢复动作。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://poemcoder.com/poem-ui",
+      "note": "2026-07-28 curl HEAD 返回 HTTP/2 200，落地页在线。"
+    }
+  ],
+  "rootCause": "落地页与页面文案已经发布，但我的页仍保留商业授权后端尚未交付时期的占位 Toast；产品链路更新没有同步回页面合同、测试和 Ledger。",
+  "decision": {
+    "outcome": "Cell 继续使用“查阅详情”而不是购买文案；点击先打开受控 PUI Dialog，确认后进入固定 pages/license/index，由微信 WebView 加载生产落地页。导航期间 Confirm loading/disabled；navigateTo 失败保留 Dialog，WebView 加载失败提供复制链接恢复。",
+    "rationale": "当前能力是查阅已发布授权信息而不是支付。Dialog 能在离开当前页面前清楚告知目标，固定 WebView 路由避免任意外部 URL，真实平台回调保证没有假成功。",
+    "alternativesRejected": [
+      "继续显示准备中 Toast：落地页已经在线，属于断点流程。",
+      "点击 Cell 后不经确认直接离开：用户无法预期会打开外部网页。",
+      "接受 query 中任意 URL：形成不必要的开放跳转边界。",
+      "创建价格、订单或支付结果：当前没有对应后端合同，会制造假业务。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/app.json",
+      "miniprogram/pages/me/index.json",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/license/index.json",
+      "miniprogram/pages/license/index.wxml",
+      "miniprogram/pages/license/index.js",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_RULES_INDEX.md"
+    ],
+    "dependencies": ["PUI Dialog", "PUI Cell", "PUI Button", "wx.navigateTo", "web-view", "wx.showModal", "wx.setClipboardData"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-miniprogram-tabbar-pages.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过。",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过。",
+      "node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过，PoemUI 0.1.0、路径与微信 npm 产物可解析。",
+      "微信开发者工具 build-npm：872ms，warnings=[]。",
+      "curl -I https://poemcoder.com/poem-ui：HTTP/2 200。",
+      "npm run site:build、npm run pack:check、npm run example:install：通过。",
+      "npm run check：precheck 与 439 条 Ledger 等前序门禁通过，随后被范围外首页版头旧断言阻断。"
+    ],
+    "browser": [
+      "微信开发者工具 390px 热重载：商业授权 Dialog 正确展示标题、说明、关闭、取消和前往查看，截图 /tmp/poemui-license-dialog-390.png。",
+      "调用真实 onConfirmLicense 后当前页面切换为 pages/license/index，运行态 data.licenseUrl 固定为 https://poemcoder.com/poem-ui。",
+      "当前 AppID 的 WebView 被微信拒绝并触发 bind:error；页面展示“无法打开该页面”，应用恢复框提供返回与复制链接，截图 /tmp/poemui-license-webview-390.png。"
+    ],
+    "deviceRisks": [
+      "当前开发者工具已经复现 WebView 拒绝；生产 AppID 必须确认不是个人类型，并在微信公众平台把 poemcoder.com 配置为业务域名后才能闭环。",
+      "iOS/Android 真机仍需验证 Dialog 取消、确认、WebView 首屏、返回栈、加载失败与复制链接。",
+      "WebView 页面使用微信原生导航栏承接返回；深浅色导航栏跟随平台，不能由 PUI ConfigProvider 控制。"
+    ]
+  },
+  "ai": {
+    "summary": "商业授权是信息查阅链：PUI Dialog 确认后进入固定微信 WebView，加载 poemcoder.com/poem-ui；不伪造购买、支付或订单。",
+    "rules": [
+      "高级版商业授权 Cell 必须先打开受控 PUI Dialog，确认后才进入 WebView。",
+      "WebView 地址固定为 https://poemcoder.com/poem-ui，不接受任意 query URL。",
+      "wx.navigateTo 成功后才能关闭 Dialog；失败必须恢复 Confirm 并保留重试或取消。",
+      "没有支付后端时继续使用“查阅详情”语义，不创建价格、订单、授权成功或支付成功状态。",
+      "业务域名与 iOS/Android 真机未验证时必须明确标记 pending-device。"
+    ],
+    "tags": ["miniprogram", "me", "license", "dialog", "web-view", "external-link", "no-fake-success"]
+  }
+}

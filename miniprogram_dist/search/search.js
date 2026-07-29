@@ -28,6 +28,16 @@ function textParts(value) {
   return output;
 }
 function characterWeight(character) { return /^[\x00-\x7F]$/.test(character) ? 1 : 2; }
+function cancelTextWidthClass(value) {
+  var units = textParts(value || '取消').reduce(function sum(total, character) {
+    if (/^\s$/.test(character)) return total + 0.35;
+    return total + (/^[\x00-\x7F]$/.test(character) ? 0.55 : 1);
+  }, 0);
+  if (units <= 2.25) return 'compact';
+  if (units <= 3.5) return 'regular';
+  if (units <= 5.5) return 'wide';
+  return 'xwide';
+}
 function normalizeText(value, maxlength, maxcharacter) {
   var parts = textParts(value);
   if (maxcharacter >= 0) {
@@ -78,6 +88,8 @@ Component({
     inputStyle: 'display:flex;flex:1;min-width:0;width:100%;--pui-input-field-radius:var(--pui-radius-medium);',
     nativeMaxlength: -1,
     normalizedMaxcharacter: -1,
+    normalizedClearTrigger: 'always',
+    cancelHostClass: 'pui-search__cancel-host pui-search__cancel-host--compact',
     showClear: false
   },
   observers: {
@@ -134,6 +146,8 @@ Component({
         inputStyle: 'display:flex;flex:1;min-width:0;width:100%;--pui-input-field-radius:' + (shape === 'round' ? 'var(--pui-radius-round)' : 'var(--pui-radius-medium)') + ';',
         nativeMaxlength: limits.maxcharacter >= 0 ? -1 : limits.maxlength,
         normalizedMaxcharacter: limits.maxcharacter,
+        normalizedClearTrigger: clearTrigger,
+        cancelHostClass: 'pui-search__cancel-host pui-search__cancel-host--' + cancelTextWidthClass(this.data.cancelText),
         showClear: !!(this.data.clearable && value && interactive && (clearTrigger === 'always' || focused))
       });
     },

@@ -195,6 +195,7 @@ const example = fs.readFileSync(path.join(root, '_example/miniprogram/pages/comp
 assert(wxml.includes('<pui-popup'));
 assert(wxml.includes('show-header="{{showHeader}}"'), 'Popup mode forwards Picker showHeader so cancel and confirm remain reachable');
 assert(wxml.includes('title="{{title}}"'), 'Popup mode forwards the Picker title into the shared Popup Header');
+assert(wxml.includes('custom-style="--pui-popup-section-gap:var(--pui-picker-title-options-gap);"'), 'Picker Popup must use a component semantic variable for title-to-wheel spacing');
 assert(wxml.includes('show-footer="{{showClassicFooter}}"'), 'only classic Popup mode exposes the shared Popup Footer');
 assert(wxml.includes('slot="header-left"'), 'default Popup mode puts confirm in the shared Popup Header left slot');
 assert(wxml.includes('slot="close-btn"'), 'default Popup mode puts cancel in the shared Popup Header right slot');
@@ -219,6 +220,8 @@ assert(!/<(?:button|input|select|textarea)\b/.test(`${wxml}\n${template}`), 'Pic
 assert.deepStrictEqual(Object.keys(json.usingComponents).sort(), ['pui-button', 'pui-empty', 'pui-icon', 'pui-loading', 'pui-popup']);
 assert(!/display\s*:\s*none|height\s*:\s*auto/.test(wxss));
 assert(wxss.includes('var(--pui-picker-duration)'));
+assert(wxss.includes('--pui-picker-title-options-gap: 0'), 'Picker normal mode must not stack Popup section gap on top of Content inset');
+assert(wxss.includes('.pui-picker.pui-spacing--equal { --pui-picker-title-options-gap: var(--pui-surface-inset); }'), 'Picker equal spacing mode keeps exactly one Surface inset between title and wheel');
 
 assert.deepStrictEqual(metadata.apiProps.picker, PROPS);
 assert.strictEqual(metadata.details.picker.props.find((prop) => prop.key === 'defaultVisible').value, false);
@@ -234,7 +237,8 @@ assert(preview.includes("const pickerType = props.type === 'classic' ? 'classic'
 assert(preview.includes('pui-picker-h5__panel--${pickerType}'));
 assert(preview.includes("iconButtonSample({ theme: 'primary', variant: 'base', shape: 'circle', size: 'small', icon: 'check'"), 'H5 default Header confirm uses the shared primary Check IconButton');
 assert(preview.includes("iconButtonSample({ theme: 'default', variant: 'base', shape: 'circle', size: 'small', icon: 'close'"), 'H5 default Header cancel uses the shared default Close IconButton');
-assert(preview.includes("title: '选择组件', type: 'default', cancelText: '取消'"), 'H5 Picker runtime defaults expose the public type');
+assert(preview.includes("title: '发布通道', type: 'default', cancelText: '取消'"), 'H5 Picker runtime defaults expose the public type');
+assert(preview.includes("picker: { columns: [{ label: '稳定版', value: 'stable' }, { label: '候选版', value: 'candidate' }, { label: '测试版', value: 'beta' }, { label: '开发版', value: 'canary' }]"), 'H5 Picker 默认演示必须展示四个发布候选项');
 assert(preview.includes("type: { type: 'select', value: 'default', options: ['default', 'classic'] }"), 'H5 Props workspace exposes the same type enum');
 const pickerRuntimeBlock = preview.slice(preview.indexOf('function bindPickerPreviewRuntime'), preview.indexOf('const dateTimePreviewDateUnits'));
 assert(pickerRuntimeBlock.includes("onStep(pointer.index - Math.round(distance / itemHeight), 'drag')"), 'Picker Pointer release reports its own drag source');

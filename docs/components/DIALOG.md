@@ -9,7 +9,7 @@
 ## 1. 组件定位与公开边界
 
 - Dialog 是父级 `visible` 控制的中心模态，用于确认、选择或承载关键内容；Popup 是唯一遮罩、滚动保护、层级与进退场承载者。
-- Dialog 公开 16 个 Props、5 个 Events、7 个具名 Slots 和唯一 `close()` 方法；完整名称以 API 表为准，不能由旧版宽泛 API 推断。
+- Dialog 公开 17 个 Props、5 个 Events、8 个具名 Slots 和唯一 `close()` 方法；完整名称以 API 表为准，不能由旧版宽泛 API 推断。
 - Dialog 不维护第二套显隐状态或动画定时器。它没有 defaultVisible、input/change/open/after-open/after-close/retry、loading/empty/error 或私有动效 Props。
 - 业务请求状态必须在 content Slot 中组合 PUI Loading、Empty、Button；`visible=false` 后父级必须真实回写，组件只请求 close。
 
@@ -22,7 +22,7 @@ Popup Layer
     ├── Header：空左轨 / title / Close
     ├── Content：content 文本与 content Slot
     ├── middle Slot
-    └── Footer：actions / cancel-btn / confirm-btn
+    └── Footer：actions / cancel-btn / confirm-btn（仅有真实动作时挂载）
 ```
 
 - Header 是 `72rpx | minmax(0,1fr) | 72rpx` 三列 Grid（H5 36px）；空左轨保留，标题几何居中。
@@ -36,12 +36,12 @@ Popup Layer
 
 ## 4. Token、间距与排版
 
-- Header/Content/Footer 主分区使用 `--pui-dialog-section-spacing`（36rpx/18px）；Footer 左右、底部和按钮间距使用 `--pui-dialog-action-spacing`（28rpx/14px）；Content 组合使用 `--pui-dialog-content-gap`（16rpx/8px）。
+- Dialog 复用 Popup Surface 但清除 Popup Content 的重复 padding；Header、Content 与 Footer 直接使用 Dialog 的 `--pui-dialog-action-spacing`（28rpx/14px），Footer 左右、底部和按钮间距相等，Content 组合使用 `--pui-dialog-content-gap`（16rpx/8px）。
 - Close 尺寸为 `--pui-dialog-close-size`（72rpx/36px）；主题、边框、阴影、毛玻璃和语义圆角均消费全局 Token，circle 在大圆角下保持满圆。
 
 ## 5. 内容、Slot 与组合边界
 
-- 全部具名 Slots 是 top/title/content/middle/actions/cancel-btn/confirm-btn；无 default Slot 和 header-left Slot。
+- 全部具名 Slots 是 top/header-left/title/content/middle/actions/cancel-btn/confirm-btn；无 default Slot。`header-left` 最多承载一个声明 `icon-only` 的紧凑圆形 PUI 图标按钮，禁止普通文本按钮撑开平衡轨道。
 - content 文本与 content Slot 可并列，调用方避免重复；actions 非空时取代内建 cancel/confirm。空 Footer 不占高度、不产生幽灵分区。
 - Slot 只能组合内容，不能覆盖 Header 三列、Content 滚动边界、Footer 动作区或 Popup 的遮罩层级。
 
@@ -78,7 +78,7 @@ Popup Layer
 
 ## 11. 明确禁止
 
-- 不得恢复旧版 40 Props、defaultVisible、header-left、原生滚动/动画参数或 Dialog 自有请求状态。
+- 不得恢复旧版 40 Props、defaultVisible、原生滚动/动画参数或 Dialog 自有请求状态；`header-left` 不得扩张为任意内容区。
 - 不得用第二遮罩、绝对定位 Close、display:none、height:auto transition、静态成功提示或整 Stage 重绘掩盖真实显隐。
 - 不得把页面请求状态、历史兼容 Slot、预览诊断字段伪装为 Dialog 公开能力。
 

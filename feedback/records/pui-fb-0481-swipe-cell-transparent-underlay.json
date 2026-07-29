@@ -1,0 +1,107 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0481",
+  "title": "SwipeCell 毛玻璃下提前透出动作底色",
+  "scope": "component",
+  "components": [
+    "swipe-cell",
+    "button"
+  ],
+  "type": "visual-layout",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "userGoal": "滑动前下层无颜色、边框或阴影，开始滑动后才显示语义动作色。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "fruit-flavor",
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "开启果味/毛玻璃。",
+    "观察未滑动 SwipeCell。",
+    "旧动作 wrapper 的颜色透过半透明前层。"
+  ],
+  "expected": "静止关闭时 actions 透明；dragging/opened 时再显示颜色。",
+  "actual": "动作底色从初始帧存在，且底层边界可能露出。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "swipe-cell/swipe-cell.wxss",
+      "note": "关闭透明，drag/open 后着色。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 同步 opacity 与语义色条件。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-swipe-cell.js",
+      "note": "锁定透明底层。"
+    }
+  ],
+  "rootCause": "旧 CSS 把主题色永久写在 underlay wrapper，依赖前层完全不透明遮盖。",
+  "decision": {
+    "outcome": "关闭时 transparent/no border/no shadow；drag/open 根类激活动作色。",
+    "rationale": "适配毛玻璃且不改变动作按钮语义。",
+    "alternativesRejected": [
+      "把前层强制不透明会破坏外观合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "swipe-cell/swipe-cell.wxml",
+      "swipe-cell/swipe-cell.wxss",
+      "preview/app.js",
+      "preview/styles.css"
+    ],
+    "dependencies": [
+      "PUI Button",
+      "frosted glass"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-swipe-cell.js"
+    ],
+    "commands": [
+      "node scripts/test-swipe-cell.js"
+    ],
+    "browser": [
+      "微信开发者工具关闭态截图未出现动作底色或边界泄漏。",
+      "H5 果味关闭态计算样式为 transparent / border none / shadow none / opacity 0。"
+    ],
+    "deviceRisks": [
+      "真机拖动首帧与圆角抗锯齿待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "SwipeCell underlay 只在 drag/open 可见。",
+    "rules": [
+      "底层关闭态不得预着色。",
+      "底层不得有边框阴影。"
+    ],
+    "tags": [
+      "swipe-cell",
+      "frosted-glass",
+      "underlay"
+    ]
+  }
+}

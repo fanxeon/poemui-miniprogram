@@ -1,0 +1,127 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0477",
+  "title": "Card 缺少固定右侧操作轨与溢出菜单",
+  "scope": "component",
+  "components": [
+    "card",
+    "popover",
+    "button"
+  ],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
+  "userGoal": "Card Header 最多承载三个固定右侧操作，并能用默认 More 打开不受 Card 圆角裁切的完整下拉菜单。",
+  "environment": {
+    "surfaces": [
+      "wechat-component",
+      "wechat-component-page",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "browser"
+    ],
+    "viewports": [
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruit-flavor"
+    ]
+  },
+  "reproduction": [
+    "打开 Card 独立页并滚动到“默认 More 下拉菜单”。",
+    "点击发布记录右侧 More。",
+    "修复前 Card 根高约 100px，三项菜单被 overflow:hidden 裁切，只露出白色窄片。"
+  ],
+  "expected": "提供 header-right Slot 与 menuItems/menuVisible API；More 菜单可越过 Card Surface 完整显示，选择事件真实发布并由父级回写。",
+  "actual": "API 与菜单入口已经存在，但内置 Popover 使用普通绝对定位，三项菜单被 Card 根 overflow:hidden 裁掉。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "card/card.wxml",
+      "note": "Header 主轨、右轨与固定视口定位的 PUI Popover 菜单。"
+    },
+    {
+      "kind": "file",
+      "ref": "card/card.js",
+      "note": "受控/非受控菜单与 select 事件。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-card.js",
+      "note": "锁定 19 Props、4 Slots、3 Events、fixed Popover 与 H5 非裁切边界。"
+    },
+    {
+      "kind": "browser",
+      "ref": "微信开发者工具 Nightly 2.02.2607282 · pages/components/card/index · 390px",
+      "note": "修复前三项菜单只露白色窄片；修复后三项完整显示，真实选择标记复核后菜单关闭且父级结果回写。"
+    },
+    {
+      "kind": "browser",
+      "ref": "http://127.0.0.1:4179/#/components/card · 390px",
+      "note": "浅深果味下三项菜单内容高度 128/128px，越过 Card 底边仍完整命中，页面无横向溢出且控制台为空。"
+    }
+  ],
+  "rootCause": "首轮只补了 Header trailing/menu API，却让内置 Popover 保持普通绝对定位；Card 根的 overflow:hidden 因而把越过 Surface 的菜单裁掉。",
+  "decision": {
+    "outcome": "保留 header-right 与现有菜单 API；内置 More 固定启用 PUI Popover 的 fixed 定位，H5 Surface 同步允许菜单越界显示。",
+    "rationale": "菜单是脱离 Card 内容流的浮层，应复用 Popover 的视口定位与碰撞能力，而不是靠减少选项或放大 Card 隐藏裁切。",
+    "alternativesRejected": [
+      "页面私有绝对定位会导致跨端漂移。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "card/card.js",
+      "card/card.wxml",
+      "card/card.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/CARD.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "scripts/test-card.js"
+    ],
+    "dependencies": [
+      "PUI Popover",
+      "PUI Button"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-card.js"
+    ],
+    "commands": [
+      "node scripts/test-card.js",
+      "npm run site:build",
+      "wechatide -c codex build_npm --project miniprogram"
+    ],
+    "browser": [
+      "微信开发者工具实际点击 More，三项菜单完整显示；点击“标记复核”后菜单关闭，父级 cardStatus 更新为对应选择结果。",
+      "H5 390px 浅/深果味实点 More；菜单 clientHeight=scrollHeight=128px，三项命中全部成功，越过 Card 底边仍可见且无横向溢出。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 fixed 合成、屏幕边缘翻转、触摸、Slot 投影和读屏待验证。"
+    ]
+  },
+  "ai": {
+    "summary": "Card Header 右轨最多三个紧凑操作，More 菜单必须脱离 Card 裁切边界完整展示。",
+    "rules": [
+      "menu-select 不表示业务成功。",
+      "受控 menuVisible 等待父级回写。",
+      "Card 内置浮层必须使用 Popover 视口定位，禁止用减少菜单项掩盖 overflow 裁切。"
+    ],
+    "tags": [
+      "card",
+      "menu",
+      "slot",
+      "popover"
+    ]
+  }
+}
