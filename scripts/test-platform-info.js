@@ -2,6 +2,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const metadata = require('../metadata/components');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'common/utils/platform-info.js'), 'utf8');
@@ -25,12 +26,25 @@ assert.deepStrictEqual(JSON.parse(JSON.stringify(platformInfo.getDeviceInfo())),
 assert.deepStrictEqual(JSON.parse(JSON.stringify(platformInfo.getAppBaseInfo())), { language: 'zh_CN', theme: 'dark' });
 assert(!source.includes('getSystemInfoSync'), 'shared platform reader must not restore the deprecated aggregate API');
 
-const sourceFiles = [
-  'common/utils/theme.js', 'icon/icon.js', 'navbar/navbar.js', 'sheet/sheet.js', 'swipe-cell/swipe-cell.js',
-  'rate/rate.js', 'watermark/watermark.js', 'tabs/tabs.js', 'popover/popover.js', 'direction/direction.js',
-  'virtual-list/virtual-list.js', 'overlay/overlay.js', 'miniprogram/pages/index/index.js',
-  'miniprogram/utils/component-page.js', 'miniprogram/components/navigation-bar/navigation-bar.js'
-];
+function javascriptFiles(relativeRoot) {
+  const absoluteRoot = path.join(root, relativeRoot);
+  if (!fs.existsSync(absoluteRoot)) return [];
+  return fs.readdirSync(absoluteRoot, { withFileTypes: true }).flatMap((entry) => {
+    const relative = path.join(relativeRoot, entry.name);
+    if (entry.isDirectory()) return javascriptFiles(relative);
+    return entry.isFile() && entry.name.endsWith('.js') ? [relative] : [];
+  });
+}
+
+const runtimeRoots = [
+  'common',
+  'miniprogram/common',
+  'miniprogram/components',
+  'miniprogram/pages',
+  'miniprogram/utils',
+].concat(metadata.packageComponents);
+const sourceFiles = Array.from(new Set(runtimeRoots.flatMap(javascriptFiles)));
+assert(sourceFiles.length > metadata.packageComponents.length, 'platform scan must cover package components and miniprogram runtime sources');
 sourceFiles.forEach((relative) => {
   const text = fs.readFileSync(path.join(root, relative), 'utf8');
   assert(!text.includes('getSystemInfoSync'), `${relative} must not call the deprecated aggregate API`);

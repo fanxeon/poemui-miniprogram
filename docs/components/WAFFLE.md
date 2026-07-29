@@ -6,6 +6,8 @@ Waffle 用圆润点阵表达总量、占比与新增单元。它是透明的只�
 
 组件使用 WXML `view` 与 CSS Grid，不使用 Canvas、图片或图表插件。
 
+当消费页面只有两个累计版本点且差值很小时，Waffle 可以把当前总量拆成“前序已有 + 本版新增”，比近似水平的两点 AreaChart 更直接。该用法必须由调用方提供真实 release delta，并保留分段图例与完整 `ariaLabel`；组件不推断版本、不计算发布差集，也不把新增解释为发布成功。
+
 ## 2. 数据结构
 
 `items` 与 BarChart 共用 `ChartItem[]` 和 `common/utils/chart-data.js`。仅接受非负有限值，主题白名单为 `neutral/violet/blue/teal/pink/amber`。颜色必须与可见 label、数值和图例共同表达含义。
@@ -46,7 +48,7 @@ Waffle 为 `display-leaf`：`shadow=none / frostedGlass=false / bordered=false /
 
 ## 6. H5 镜像与预览
 
-H5 使用同名 Props、相同有效单位、单元渐变、透明度、轮廓、默认级联入场、`replay()` 和 500ms/1ms 动效，并进入标准 PreviewDevice `shadow-safe` 布局。概览必须包含正常总量与超限缩放两个真实 DOM 场景。
+H5 使用同名 Props、相同有效单位、固定正方形单元、渐变、透明度、轮廓、默认级联入场、`replay()` 和 500ms/1ms 动效，并进入标准 PreviewDevice `shadow-safe` 布局。概览必须包含正常总量与超限缩放两个真实 DOM 场景。
 
 正常总量示例必须由父级在 `32` 格初始态与 `86` 格高波动态之间真实切换，并在回写 `items` 后调用 `replay()`；两态保持相同 item/segment key，使数量增长、分段边界和级联入场同时可见。旧的“新增 +1”在 10 列点阵中感知过弱，禁止恢复。该运行态不进入公开 Props 或复制 WXML；超限缩放示例继续独立证明 `effectiveUnit`。
 

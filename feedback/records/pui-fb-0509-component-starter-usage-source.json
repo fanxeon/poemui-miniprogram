@@ -1,0 +1,133 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0509",
+  "title": "组件安全默认值与开箱引用混用导致基础代码不可见",
+  "scope": "global",
+  "components": ["all-components", "popup", "preview-site"],
+  "type": "ai-usability",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "全部公开组件都应提供复制后立即可见、可理解的开箱调用，同时保持运行时默认安全，并同步 H5 引用文档且不改变小程序独立组件页的既有演示效果。",
+  "environment": {
+    "surfaces": ["component-source", "h5-preview", "documentation", "miniprogram-component-pages"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "打开官网 Popup 标准组件页的常规模式引用文档。",
+    "复制基础 WXML `<pui-popup />` 到已注册组件的页面。",
+    "运行后 Popup 保持关闭且 content 为空，用户无法确认组件是否安装和渲染成功。",
+    "检查其他数据、浮层和命令式组件，可见同类空数组、关闭态或仅挂载标签但没有真实显示入口的问题。"
+  ],
+  "expected": "组件源码继续使用安全、无副作用的运行时默认值；官网基础引用由单独的 Starter Usage 提供最小可见内容、必要页面数据或真实命令式入口。Popup 固定展示 `<pui-popup visible=\"{{true}}\" content=\"Popup 内容\" />`。Starter 不写入 H5 Showcase 初始 Props或小程序独立组件页。",
+  "actual": "修复前官网基础引用主要从 H5 当前 Props 和运行时默认过滤结果生成，Popup 被专项测试锁定为 `<pui-popup />`；安全关闭态与用户复制后应立即看到结果的开箱目标没有独立数据合同。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前 Goal 对话",
+      "note": "用户明确指定 Popup 的开箱引用，并要求全部组件具备适合的默认调用、同步 H5 文档且尽量不影响小程序独立页。"
+    },
+    {
+      "kind": "file",
+      "ref": "metadata/component-starter-usage.js",
+      "note": "新增 74 个组件的 Starter Usage 单一数据源，覆盖最小 WXML、附加组件、页面数据与命令式入口。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "常规模式引用文档读取 Starter Usage；Showcase getProps 与工具栏当前效果复制保持原路径。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-component-starter-usage.js",
+      "note": "锁定 74 个组件完整覆盖、真实 pui 根、Props、数据绑定、无原生控件、Popup 精确代码和独立演示隔离。"
+    },
+    {
+      "kind": "test",
+      "ref": "miniprogram/pages/components",
+      "note": "修改前后目录整体 SHA-1 均为 965b4ef5682d36109ec72a16666534f07e0ffe41。"
+    }
+  ],
+  "rootCause": "旧生成链只有组件运行时默认值和 H5 当前演示 Props 两层语义，并让基础引用从当前 Props 过滤生成。安全默认关闭或空数据对于运行时正确，却不能保证用户复制后看到组件，且直接改 H5 演示 Props 又会污染成熟的独立展示。",
+  "decision": {
+    "outcome": "建立 `metadata/component-starter-usage.js` 作为第三层单一真相源。Starter 只驱动 H5 组件引用、基础用法、必要页面数据/逻辑和生成文档；运行时默认值、H5 Showcase 初态、小程序独立页以及工具栏当前效果复制保持独立。数据和命令式组件必须提供真实页面准备代码。",
+    "rationale": "把安全默认与教学初值分开，既避免 Popup、Dialog 等组件安装后擅自弹出，也避免官网给用户一段不可见空标签；同一 metadata 同时生成 H5 与 Markdown，避免两端示例漂移。",
+    "alternativesRejected": [
+      "把全部浮层运行时默认改为 visible=true 会给安装端带来副作用并破坏受控语义。",
+      "直接改 74 个小程序独立页面会污染已经完成 battle 的代表场景。",
+      "继续从 H5 Showcase Props 生成基础引用会让展示需要与最小安装需要互相牵制。",
+      "为数据组件只输出 items 绑定但不提供页面 data 仍然不是可运行的开箱路径。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "metadata/component-starter-usage.js",
+      "metadata/components.js",
+      "scripts/catalog-utils.js",
+      "scripts/generate-catalog.js",
+      "preview/app.js",
+      "preview/components-data.js",
+      "docs/COMPONENT_STARTER_USAGE.md",
+      "docs/COMPONENT_API.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/PREVIEW_INFORMATION_HIERARCHY.md",
+      "docs/components/POPUP.md",
+      "scripts/test-component-starter-usage.js",
+      "scripts/test-preview-normal-code-card.js",
+      "scripts/test-popup.js",
+      "scripts/test-cell.js",
+      "scripts/check-package.js",
+      "package.json",
+      "README.md",
+      "CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["component metadata", "H5 usage document", "catalog generation", "Popup runtime safety"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-component-starter-usage.js",
+      "scripts/test-preview-normal-code-card.js",
+      "scripts/test-popup.js"
+    ],
+    "commands": [
+      "npm run catalog:generate：通过，生成 7 个目录与文档产物",
+      "npm run test:component-starter-usage：通过，74 个组件全部覆盖",
+      "node scripts/test-preview-normal-code-card.js：通过",
+      "node scripts/test-popup.js：通过",
+      "npm run check：通过，含 74 组件设计、H5、页面与共享组件全量门禁",
+      "npm run site:build：通过，生成 74 个 miniprogram_dist 组件目录与 7 个目录产物",
+      "npm run example:install：通过，真实 0.1.2 tarball 安装且 0 vulnerabilities",
+      "npm run pack:check：通过，559 files / 367.4 kB / 1.8 MB",
+      "npm run feedback:check：通过，491 条记录",
+      "git diff --check 与 git -C miniprogram diff --check：通过",
+      "miniprogram/pages/components 修改前后目录整体 SHA-1 一致"
+    ],
+    "browser": [
+      "Chrome DevTools 真实打开 http://127.0.0.1:4179/#/components/popup；常规模式同时显示 usingComponents 与用户指定的 Popup Starter。",
+      "390px 响应式视口实测 innerWidth=390、clientWidth=390、scrollWidth=390，PreviewDevice 宽 366px，页面无横向溢出；控制台在刷新后为 0 条消息。",
+      "真实点击“复制基础用法代码”后按钮进入“已复制”，系统剪贴板逐字节回读 `<pui-popup visible=\"{{true}}\" content=\"Popup 内容\" />`。"
+    ],
+    "deviceRisks": [
+      "Starter Usage 是文档/引用层，不会自动挂载到独立组件页；微信开发者工具尚未逐项新建页面编译 74 份 Starter 片段。",
+      "iOS/Android 真机的组件加载、Slot、Canvas、滚动、弹层安全区和读屏仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "运行时默认值负责安全，Starter Usage 负责复制后立即可见；两者不得混用。",
+    "rules": [
+      "新增公开组件时必须同时新增 Starter Usage，并通过全量覆盖测试。",
+      "Starter Usage 可以显式写入非默认 Prop，但不得改变组件源码默认值、H5 Showcase 初态或小程序独立页。",
+      "数据驱动组件必须同时提供最小页面 data；命令式组件必须提供真实 show 或等价入口。",
+      "基础用法不得绑定完整事件全集、手写原生控件或伪造业务成功。",
+      "工具栏复制当前效果继续读取实时 Props，不得固定返回 Starter Usage。"
+    ],
+    "tags": ["starter-usage", "all-components", "popup", "h5-preview", "documentation", "ai-usability"]
+  }
+}

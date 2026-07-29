@@ -1,4 +1,5 @@
 const { shadcnComponents } = require('./shadcn');
+const starterUsage = require('./component-starter-usage');
 
 // 这是当前发布组件及规范文档的唯一源，不保留第二份历史目录。
 const sourceGroups = [
@@ -1032,7 +1033,7 @@ const componentCopy = {
   'input-otp': ['多格验证码输入，支持自动跳格、粘贴填充、完整状态和错误反馈。', '长度、遮罩、焦点、粘贴、错误、完成'],
   label: ['表单标签，支持必填、禁用和冒号格式。', '内容、必填、禁用、冒号'],
   popover: ['相对触发元素展示轻量内容；业务加载、错误和操作由消费者组合。', '受控/非受控、12 向定位、主题、箭头、外部点击、slot、低动效'],
-  'scroll-area': ['轻量封装原生 scroll-view，在固定高度内定位、滚动并按真实边缘提示可继续阅读。', '高度、目标定位、边缘渐隐、默认 slot'],
+  'scroll-area': ['轻量封装原生 scroll-view，在固定高度或有界自适应高度内定位、滚动并按真实边缘提示可继续阅读。', '固定/自适应高度、目标定位、边缘渐隐、默认 slot'],
   select: ['由 PUI Button Trigger、PUI Popup 与 PUI Button 选项组成的简单单选器，支持严格原始值、受控值、空选项、取消与只读语义。', '选项、PUI 浮层、受控、空态、只读、input/change'],
   sheet: ['可组合底部面板，支持真实拖拽关闭、内容状态、header/default/footer slot、尺寸边界与低动效。', '受控/非受控、拖拽、状态、slot、滚动、事件、低动效'],
 
@@ -1108,7 +1109,7 @@ const apiProps = {
   label: ['content', 'required', 'disabled', 'colon'],
   popup: ['closeBtn', 'showHeader', 'title', 'subtitle', 'showFooter', 'contentScrollable', 'closeOnOverlayClick', 'content', 'card', 'duration', 'overlayProps', 'placement', 'preventScrollThrough', 'showOverlay', 'blurOverlay', 'usingCustomNavbar', 'visible', 'defaultVisible', 'zIndex', 'ariaLabel', 'reduceMotion'],
   popover: ['visible', 'defaultVisible', 'content', 'placement', 'showArrow', 'theme', 'closeOnClickOutside', 'fixed', 'ariaLabel', 'reduceMotion'],
-  'scroll-area': ['height', 'scrollTop', 'scrollIntoView', 'gradientOverlay', 'gradientOverlayColor', 'gradientOverlaySize', 'contentPaddingBottom', 'ariaLabel'],
+  'scroll-area': ['height', 'maxHeight', 'scrollTop', 'scrollIntoView', 'gradientOverlay', 'gradientOverlayColor', 'gradientOverlaySize', 'contentPaddingBottom', 'ariaLabel'],
   select: ['options', 'value', 'defaultValue', 'placeholder', 'disabled', 'readonly', 'emptyText', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
   combobox: ['options', 'value', 'defaultValue', 'visible', 'defaultVisible', 'multiple', 'maxSelected', 'placeholder', 'clearable', 'showIcon', 'showDescription', 'showGroup', 'showCheck', 'closeOnSelect', 'customTrigger', 'customEmpty', 'customFooter', 'placement', 'size', 'shape', 'bordered', 'block', 'disabled', 'readonly', 'loading', 'loadingText', 'error', 'errorText', 'retryText', 'emptyText', 'listHeight', 'ariaLabel', 'duration', 'easing', 'reduceMotion'],
 
@@ -2562,6 +2563,7 @@ module.exports = {
   apiEvents,
   apiSlots,
   apiMethods,
+  starterUsage,
   packageComponents,
   releaseComponentIds,
 };

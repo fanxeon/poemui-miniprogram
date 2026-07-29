@@ -1,0 +1,115 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0507",
+  "title": "Me Waffle 版本构成试案被用户否决",
+  "scope": "component",
+  "components": [
+    "miniprogram-me",
+    "waffle",
+    "area-chart"
+  ],
+  "type": "design-decision",
+  "severity": "medium",
+  "status": "wont-fix",
+  "acceptance": "accepted",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "保留原来的 AreaChart 趋势表达，不采用 Waffle 替换方案。",
+  "environment": {
+    "surfaces": [
+      "miniprogram-me",
+      "component-status-card"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruity"
+    ]
+  },
+  "reproduction": [
+    "打开 pages/me/index 的 Waffle 试案。",
+    "观察点阵取代了用户希望保留的原趋势图表达。",
+    "用户明确回复“不，我希望你原来的那种方式”。"
+  ],
+  "expected": "恢复原 PUI AreaChart，并在同一全宽图表中标注 0.1.0、0.1.1、0.1.2。",
+  "actual": "Waffle 试案改变了图形类型，不符合用户最终选择。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户明确确认不采用 Waffle，并要求回到原来的图表方式。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "Waffle 仍未恢复；页面在后续用户决定中改为真实 pui-bar-chart。"
+    },
+    {
+      "kind": "file",
+      "ref": "feedback/records/pui-fb-0510-waffle-fluid-version-rows.json",
+      "note": "最终全宽三版本 AreaChart 合同由后续记录承接。"
+    }
+  ],
+  "rootCause": "在用户只要求改善图表表达时，试案擅自更换图表类型，没有保留用户认可的原 AreaChart 视觉语言。",
+  "decision": {
+    "outcome": "撤销 Waffle 消费页试案，不发布 fluid API；Me 恢复 AreaChart，最终行为转由 PUI-FB-0510 约束。",
+    "rationale": "用户对图形类型的明确选择优先；三个真实版本点已足以在原 AreaChart 中完成标注和全宽呈现。",
+    "alternativesRejected": [
+      "继续 Waffle：用户已明确否决。",
+      "保留两种图表切换：增加无必要状态和 API，违背页面克制原则。",
+      "页面 CSS 模拟折线：绕过真实 PUI AreaChart。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.json",
+      "miniprogram/pages/me/index.wxml",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md"
+    ],
+    "dependencies": [
+      "PUI AreaChart",
+      "PUI Card",
+      "component release milestones"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-area-chart.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过"
+    ],
+    "browser": [],
+    "deviceRisks": [
+      "被否决的 Waffle 试案不再验收。",
+      "Waffle 试案不再验收；当前 BarChart 的 iOS/Android 真机风险见 PUI-FB-0513，仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "Waffle 试案被用户明确否决；不要把它恢复成当前 Me 合同。",
+    "rules": [
+      "用户要求保留原方式时，不得自行更换图表类型。",
+      "Waffle 仍是被用户否决的试案；当前 Me 图表合同只看 PUI-FB-0513。",
+      "不得为已否决试案保留未使用的共享 API。"
+    ],
+    "tags": [
+      "miniprogram-me",
+      "waffle",
+      "rejected-direction",
+      "user-choice"
+    ]
+  }
+}

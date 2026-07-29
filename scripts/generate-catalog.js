@@ -5,6 +5,7 @@ const {
   createMatrixMarkdown,
   createPreviewSource,
   createShadcnCompatibilityMarkdown,
+  createStarterUsageMarkdown,
   root,
 } = require('./catalog-utils');
 const { createEntrySource } = require('./generate-entry');
@@ -71,6 +72,22 @@ function createMiniprogramComponentStatusSource() {
   const previousTotal = items.reduce((sum, item) => sum + item.previousValue, 0);
   const incrementTotal = items.reduce((sum, item) => sum + item.increment, 0);
   const maximum = items.reduce((max, item) => Math.max(max, item.value), 0);
+  const versions = Array.isArray(releaseDelta.versions)
+    ? releaseDelta.versions.map((entry) => ({
+      version: String(entry.version || ''),
+      total: Number(entry.total),
+    }))
+    : [];
+  if (
+    versions.length < 2
+    || versions[0].version !== releaseDelta.previousVersion
+    || versions[0].total !== previousTotal
+    || versions[versions.length - 1].version !== packageJson.version
+    || versions[versions.length - 1].total !== total
+    || versions.some((entry) => !entry.version || !Number.isFinite(entry.total) || entry.total < 0)
+  ) {
+    throw new Error(`Invalid version milestone series for ${packageJson.version}`);
+  }
   const status = {
     baseline: 0,
     currentVersion: packageJson.version,
@@ -79,9 +96,10 @@ function createMiniprogramComponentStatusSource() {
     previousTotal,
     incrementTotal,
     maximum,
+    versions,
     items,
   };
-  return `'use strict';\n\nvar STATUS = ${JSON.stringify(status, null, 2)};\n\nfunction cloneSegment(segment) {\n  return {\n    key: segment.key,\n    label: segment.label,\n    value: segment.value,\n    theme: segment.theme\n  };\n}\n\nfunction items() {\n  return STATUS.items.map(function clone(item) {\n    return {\n      key: item.key,\n      label: item.label,\n      value: item.value,\n      previousValue: item.previousValue,\n      increment: item.increment,\n      segments: item.segments.map(cloneSegment)\n    };\n  });\n}\n\nmodule.exports = {\n  baseline: STATUS.baseline,\n  currentVersion: STATUS.currentVersion,\n  previousVersion: STATUS.previousVersion,\n  total: STATUS.total,\n  previousTotal: STATUS.previousTotal,\n  incrementTotal: STATUS.incrementTotal,\n  maximum: STATUS.maximum,\n  items: items\n};\n`;
+  return `'use strict';\n\nvar STATUS = ${JSON.stringify(status, null, 2)};\n\nfunction cloneSegment(segment) {\n  return {\n    key: segment.key,\n    label: segment.label,\n    value: segment.value,\n    theme: segment.theme\n  };\n}\n\nfunction items() {\n  return STATUS.items.map(function clone(item) {\n    return {\n      key: item.key,\n      label: item.label,\n      value: item.value,\n      previousValue: item.previousValue,\n      increment: item.increment,\n      segments: item.segments.map(cloneSegment)\n    };\n  });\n}\n\nfunction versions() {\n  return STATUS.versions.map(function clone(version) {\n    return {\n      version: version.version,\n      total: version.total\n    };\n  });\n}\n\nmodule.exports = {\n  baseline: STATUS.baseline,\n  currentVersion: STATUS.currentVersion,\n  previousVersion: STATUS.previousVersion,\n  total: STATUS.total,\n  previousTotal: STATUS.previousTotal,\n  incrementTotal: STATUS.incrementTotal,\n  maximum: STATUS.maximum,\n  versions: versions,\n  items: items\n};\n`;
 }
 
 const outputs = [
@@ -89,6 +107,7 @@ const outputs = [
   ['docs/COMPONENT_CATALOG.md', createCatalogMarkdown()],
   ['docs/COMPONENT_MATRIX.md', createMatrixMarkdown()],
   ['docs/SHADCN_COMPATIBILITY.md', createShadcnCompatibilityMarkdown()],
+  ['docs/COMPONENT_STARTER_USAGE.md', createStarterUsageMarkdown()],
   ['index.js', createEntrySource()],
   ['miniprogram/common/data/component-status.js', createMiniprogramComponentStatusSource()],
 ];

@@ -21,8 +21,8 @@ vm.runInNewContext(source, {
 
 assert(definition, 'ScrollArea component definition must be registered');
 
-const PUBLIC_PROPS = ['height', 'scrollTop', 'scrollIntoView', 'gradientOverlay', 'gradientOverlayColor', 'gradientOverlaySize', 'contentPaddingBottom', 'ariaLabel'];
-assert.deepStrictEqual(Object.keys(definition.properties), PUBLIC_PROPS, 'ScrollArea only exposes its reviewed ScrollView-shaped props, fixed overlay extension, and semantic label');
+const PUBLIC_PROPS = ['height', 'maxHeight', 'scrollTop', 'scrollIntoView', 'gradientOverlay', 'gradientOverlayColor', 'gradientOverlaySize', 'contentPaddingBottom', 'ariaLabel'];
+assert.deepStrictEqual(Object.keys(definition.properties), PUBLIC_PROPS, 'ScrollArea only exposes its reviewed ScrollView-shaped props, bounded adaptive height, fixed overlay extension, and semantic label');
 
 function create(overrides) {
   const defaults = {};
@@ -71,6 +71,12 @@ assert.strictEqual(controlled.data.semanticLabel, '构建日志');
 assert.strictEqual(controlled.data.showGradientOverlay, false);
 assert.strictEqual(controlled.data.gradientOverlayStyle, '--pui-scroll-area-gradient-overlay-color:#fef3c7;--pui-scroll-area-gradient-overlay-size:var(--pui-scroll-area-gradient-overlay-size-lg);');
 assert.strictEqual(create({ height: '78vh' }).data.rootStyle, 'height:78vh;', 'viewport-relative height must support bounded Popup content');
+const adaptive = create({ height: 'auto', maxHeight: '60vh' });
+assert.strictEqual(adaptive.data.rootStyle, 'height:auto;max-height:60vh;', 'adaptive ScrollArea must grow naturally until its explicit maximum');
+assert.strictEqual(adaptive.data.viewportStyle, 'height:auto;max-height:inherit;', 'adaptive ScrollArea must keep the native viewport as the only bounded scroll owner');
+const adaptiveDefault = create({ height: 'auto' });
+assert.strictEqual(adaptiveDefault.data.rootStyle, 'height:auto;max-height:320rpx;', 'adaptive height without an explicit maximum must keep the component default bound');
+assert.strictEqual(create({ height: 'auto', maxHeight: 'invalid' }).data.rootStyle, 'height:auto;max-height:320rpx;', 'invalid adaptive maximum must not create an unbounded scroll area');
 
 const boundaries = create({ height: 'invalid', scrollIntoView: 0, ariaLabel: '' });
 assert.strictEqual(boundaries.data.rootStyle, 'height:320rpx;', 'invalid height must use the documented fallback');
@@ -146,6 +152,10 @@ assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-size-md: var(--pui
 assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-size-lg: var(--pui-space-step-44);'));
 assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-size: var(--pui-scroll-area-gradient-overlay-size-md);'));
 assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-color-context: var(--pui-bg-container);'));
+assert(
+  /\.pui-theme--dark\s*\{[^}]*--pui-bg-container:\s*#18181b;[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-bg-container\);/s.test(themeWxss),
+  'dark theme scope must rebind the ScrollArea context color after the dark container token, otherwise the inherited light value renders a white strip',
+);
 
 assert.deepStrictEqual(metadata.apiProps['scroll-area'], PUBLIC_PROPS);
 assert(previewCatalog.includes('"gradientOverlay"') && previewCatalog.includes('"gradientOverlayColor"') && previewCatalog.includes('"gradientOverlaySize"') && previewCatalog.includes('"contentPaddingBottom"'), 'generated H5 catalog must expose every ScrollArea visual Prop to the real Properties panel');
@@ -159,8 +169,10 @@ assert(usage.includes('<pui-scroll-area${attrs ? ` ${attrs}` : \'\'}>'));
 assert(!usage.includes('bind:'), 'ScrollArea basic WXML must stay bind-free');
 assert(showcase.includes('function bindScrollAreaPreviewRuntime(props)'));
 assert(showcase.includes('function scrollAreaPreviewOverlayColor(value)'));
+assert(showcase.includes("safePreviewColor(value, 'var(--pui-scroll-area-gradient-overlay-color-context)')"), 'H5 must consume the same theme-scoped ScrollArea context token as the miniprogram');
 assert(showcase.includes('function scrollAreaPreviewOverlaySize(value)'));
 assert(showcase.includes('function scrollAreaPreviewContentPaddingBottom(value)'));
+assert(showcase.includes('function scrollAreaPreviewMaxHeight(value)'));
 assert(showcase.includes('pui-scroll-area-preview__content'));
 assert(showcase.includes('padding-bottom:${escapeHtml(scrollAreaPreviewContentPaddingBottom(props.contentPaddingBottom))}'));
 assert(showcase.includes("props.gradientOverlay !== false"));
@@ -172,6 +184,8 @@ assert(showcase.includes('unitless && Number(unitless[1]) > 0'), 'H5 must reject
 assert(showcase.includes('rpx && Number(rpx[1]) > 0'), 'H5 must reject zero rpx heights before converting to px');
 assert(showcase.includes('px && Number(px[1]) > 0'), 'H5 must reject zero px heights before rendering');
 assert(showcase.includes('vh && Number(vh[1]) > 0'), 'H5 must preserve positive viewport-relative heights');
+assert(showcase.includes("if (raw.toLowerCase() === 'auto') return 'auto';"), 'H5 must mirror adaptive ScrollArea height');
+assert(showcase.includes('max-height:${scrollAreaPreviewMaxHeight(props.maxHeight)}'), 'H5 adaptive ScrollArea must preserve the same maximum-height bound');
 assert(showcase.includes('data-scroll-area-anchor'));
 assert(showcase.includes("{ sm: '20px', md: '32px', lg: '44px' }[size] || '32px'"));
 assert(showcase.includes('function scrollAreaPreviewScroll(area, top)'));
@@ -182,6 +196,7 @@ assert(showcase.includes('scrollAreaPreviewScroll(area, Number.isFinite(requeste
 assert(preview.includes("'scroll-area': { height: '1128rpx'"), 'ScrollArea overview must use a deliberate full-content-height demo instead of leaving PreviewDevice blank');
 assert(preview.includes('...(previewDemoInitialProps[previewIdFor(id)] || {}),'), 'ScrollArea tall demo height must be initialized as a preview-only override rather than replacing the public default');
 assert(preview.includes("gradientOverlaySize: { type: 'select', value: 'md', options: ['sm', 'md', 'lg'] }"), 'the Properties panel must expose the constrained overlay size enum and its documented default');
+assert(preview.includes("maxHeight: { type: 'text', value: '320rpx' }"), 'the Properties panel must expose the adaptive height bound and its documented default');
 assert(preview.includes("contentPaddingBottom: { type: 'text', value: '10vh' }"), 'the Properties panel must expose the default 10vh content bottom safety inset');
 const scrollAreaPreviewEntryCount = (showcase.match(/\{ id: 'scroll-area-/g) || []).length;
 assert.strictEqual(scrollAreaPreviewEntryCount, 18, 'ScrollArea overview must provide eighteen real PUI Cell slot entries for a meaningful scroll range');
@@ -194,6 +209,10 @@ assert(styles.includes('.pui-scroll-area-preview__entry'));
 assert(styles.includes('--pui-scroll-area-gradient-overlay-size-sm: var(--pui-preview-space-step-20);'));
 assert(styles.includes('--pui-scroll-area-gradient-overlay-size-md: var(--pui-preview-space-step-32);'));
 assert(styles.includes('--pui-scroll-area-gradient-overlay-size-lg: var(--pui-preview-space-step-44);'));
+assert(
+  /\.pui-scroll-area-preview\s*\{[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--surface-solid\);/s.test(styles),
+  'H5 ScrollArea root must resolve its context overlay color against the current light/dark surface',
+);
 assert(styles.includes('.pui-scroll-area-preview__viewport'));
 assert(styles.includes('.pui-scroll-area-preview__content'));
 assert(styles.includes('.pui-scroll-area-preview__gradient'));
@@ -210,6 +229,7 @@ assert(apiSection.includes('`gradientOverlay`'));
 assert(apiSection.includes('`gradientOverlayColor`'));
 assert(apiSection.includes('`gradientOverlaySize`'));
 assert(apiSection.includes('`contentPaddingBottom`'));
+assert(apiSection.includes('`maxHeight`'));
 assert(apiSection.includes('ScrollArea 没有公开 Methods'));
 assert(apiSection.includes('`scroll`'));
 assert(!/`scrollLeft`|`scrollWithAnimation`|`upperThreshold`|`scrolltolower`|`scrollTo\(/.test(apiSection));
@@ -222,6 +242,7 @@ assert(contract.includes('pointer-events:none'));
 assert(contract.includes('--pui-scroll-area-gradient-overlay-size'));
 assert(contract.includes('顶部只显示底部、底部只显示顶部、中段同时显示、无溢出时均不显示'));
 assert(contract.includes('`sm`、`md`、`lg`'));
+assert(contract.includes('`height=\"auto\"`'));
 assert(contractIndex.includes('[ScrollArea](./SCROLL-AREA.md)'));
 const exampleSection = exampleWxml.slice(exampleWxml.indexOf('<pui-card title="ScrollArea'), exampleWxml.indexOf('<pui-card title="Card'));
 assert(exampleSection.includes('scroll-into-view="{{scrollAreaTarget}}"'));

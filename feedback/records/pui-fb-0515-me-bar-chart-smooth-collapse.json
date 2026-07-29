@@ -1,0 +1,140 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0515",
+  "title": "Me 长 BarChart 默认折叠并平滑展开收起",
+  "scope": "component",
+  "components": [
+    "miniprogram-me",
+    "bar-chart",
+    "button"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "Me 的分类 BarChart 太长，默认只展示主要部分，并提供“查看更多/收起”的平滑动画，不破坏真实图表 API。",
+  "environment": {
+    "surfaces": [
+      "miniprogram-me",
+      "component-status-card"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools",
+      "node"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruity"
+    ]
+  },
+  "reproduction": [
+    "进入 pages/me/index，八个业务类别和图例全部展开后占用过多纵向空间。",
+    "旧页面没有可见层折叠入口，服务列表需要向下滚动更远。",
+    "如果直接把 items 从八类切到四类，高度会瞬间跳变，不能满足平滑收起。"
+  ],
+  "expected": "默认显示四类且优先包含存在版本增量的分类，使用真实 PUI Button 展开八类；展开和收起都按实测内容高度平滑过渡，收起完成后才卸载后四类，低动效为 1ms。",
+  "actual": "旧八类图表始终全量显示，没有展开入口或高度状态链。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户指出图表太长，要求“查看更多”折叠和展开关闭的平滑动画。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.js",
+      "note": "页面维护四类/八类可见数据、缓存真实折叠高度、测量展开高度，并在 height transitionend 后完成收起卸载。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "BarChart 外只有透明高度 viewport 和真实 transparent/small/block PUI Button，没有第二层 Surface。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxss",
+      "note": "高度只消费 --pui-duration-normal / --pui-ease-standard，prefers-reduced-motion 下压缩为 1ms。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "专项锁定默认四类、展开八类、实测 420px、收起 240px、过渡期间禁用重复点击和 transitionend 后卸载。"
+    }
+  ],
+  "rootCause": "BarChart 正确保持透明展示叶子，不应该拥有业务折叠 API；但 Me 消费页此前没有为长类别列表建立内容高度测量与分阶段卸载的页面编排。",
+  "decision": {
+    "outcome": "Me 先把存在基线后正增量的类别稳定置顶，再默认取前四个业务类别；当前折叠态为高级、基础、布局、导航。透明 viewport 包住唯一 BarChart，页面通过组件内 SelectorQuery 实测当前根高度。展开先挂八类再 nextTick 测量目标高度；收起先把 viewport 动画回缓存四类高度，height transitionend 后再把 items 降为四类。PUI Button 在过渡期间 disabled，文案和图标真实回写“查看更多/收起”。",
+    "rationale": "折叠是消费者对页面长度的控制，不应污染 BarChart 的通用数据 API。保留完整内容到收起动画结束可避免 DOM 先变短造成跳变，真实高度测量也不依赖行高魔法数。",
+    "alternativesRejected": [
+      "给 BarChart 增加 collapsed/visibleCount Prop：把页面信息架构塞进展示组件。",
+      "使用 max-height 魔法数：会随图例、字体、版本数量和主题回流失真。",
+      "直接切换四类/八类 items：收起和展开都会瞬间跳变。",
+      "用页面 CSS 隐藏后四行：可访问树、图例和真实高度仍不一致。",
+      "手写原生按钮：违反页面复用 PUI Button 的合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.wxss",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md",
+      "docs/COMPONENT_DETAIL_PAGE_UI_CHECKLIST_2026-07-28.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md"
+    ],
+    "dependencies": [
+      "PUI BarChart",
+      "PUI Button",
+      "SelectorQuery",
+      "motion tokens"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node --check miniprogram/pages/me/index.js：通过",
+      "微信 build-npm：944ms，warnings=[]"
+    ],
+    "browser": [
+      "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390x844：首次验收折叠 Card 362x332px、BarChart viewport 340x210px、服务区 top=451px；该几何属于页面级 Tag 与增量优先排序前的历史测量。本轮在真实 390x844 页面确认更新后的折叠顺序为高级/基础/布局/导航，未重新声明旧 Card/viewport 数值仍完全相同。",
+      "触发组件 click 后 expanded=true、八类 items、viewport=340x378px、按钮为“收起”；再次触发后 expanded=false、viewport=210px，并在 transitionend 后恢复四类。",
+      "受控慢速合成复核把同一 viewport 临时延长为 10000ms，在 210→378px 过程中实测到 341.875px 中间高度；随后移除运行态覆盖并恢复源码 500ms normal/standard Token 与 210px 折叠态。",
+      "页面级 Tag 与增量优先排序落地后，浅色折叠/展开与深色折叠截图分别为 /tmp/poemui-me-version-tags-light-collapsed-390.png、/tmp/poemui-me-version-tags-light-expanded-390.png、/tmp/poemui-me-version-tags-dark-collapsed-390.png。实点查看更多/收起后可访问树完成高级优先的四→八→四类；验收后恢复浅色与折叠态。Console 为 0 error，7 条 warning 均为基础库、既有安装产物、性能或开发者工具内部提示。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的大字体回流、快速重复触摸、滚动中展开、系统低动效和读屏 aria-expanded 仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "Me 的长 BarChart 由页面默认四类并平滑展开八类；折叠不是 BarChart 公共 API。",
+    "rules": [
+      "长图表折叠属于消费者页面，禁止给 BarChart 增加 visibleCount/collapsed 业务 Prop。",
+      "展开先挂完整内容并实测目标高度；收起先动画高度，结束后才卸载隐藏条目。",
+      "展开入口必须复用真实 PUI Button，过渡期间禁用重复操作。",
+      "折叠态前四类必须来自完成增量优先排序后的同一 items，不能另维护手写精选列表。",
+      "高度动效使用 normal/standard Token，低动效固定 1ms，不使用高度魔法数。",
+      "H5 不复制 Me 业务页；只同步 BarChart 公共视觉合同。"
+    ],
+    "tags": [
+      "miniprogram-me",
+      "bar-chart",
+      "collapse",
+      "height-animation",
+      "pui-button"
+    ]
+  }
+}

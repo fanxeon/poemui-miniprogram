@@ -1,0 +1,118 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0508",
+  "title": "首页移除无效 enableShareTimeline 页面配置",
+  "scope": "component",
+  "components": [
+    "miniprogram-home"
+  ],
+  "type": "compatibility",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "消除微信开发者工具对首页 page.json 的无效字段警告，同时保留真实好友分享与朋友圈生命周期。",
+  "environment": {
+    "surfaces": [
+      "miniprogram-home",
+      "wechat-devtools-console"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "在微信开发者工具编译真实 miniprogram 工程。",
+    "打开 pages/index/index。",
+    "观察控制台警告 pages/index/index: invalid page.json [\"enableShareTimeline\"]。"
+  ],
+  "expected": "首页 page.json 只包含当前工具接受的配置，控制台不再报告 enableShareTimeline 无效；onShareAppMessage 与 onShareTimeline 返回载荷保持不变。",
+  "actual": "index.json 声明 enableShareTimeline=true，但当前微信开发者工具把它判为无效 page.json 字段。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户贴出并要求解决 invalid page.json enableShareTimeline。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.json",
+      "note": "无效键已删除，usingComponents 保持不变。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.js",
+      "note": "onShareAppMessage 与 onShareTimeline 两个 Page 生命周期继续存在。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-home.js",
+      "note": "专项锁定 JSON 无无效键、两个生命周期存在及返回载荷。"
+    }
+  ],
+  "rootCause": "旧合同把 enableShareTimeline 当作页面 JSON 开关，但当前微信开发者工具的页面配置 schema 不接受该键；分享载荷本应由 Page 生命周期提供。",
+  "decision": {
+    "outcome": "从 pages/index/index.json 删除 enableShareTimeline，不修改 onShareAppMessage 与 onShareTimeline 的标题、稳定首页路径或包内品牌图。",
+    "rationale": "以真实开发者工具 schema 为当前工程兼容边界；移除无效配置能消除告警，又不会用页面按钮或 H5 假成功替代微信 Page 生命周期。",
+    "alternativesRejected": [
+      "保留字段并忽略 warning：会让真实配置错误长期污染控制台。",
+      "删除 onShareTimeline：会无理由移除已有朋友圈载荷合同。",
+      "新增页面私有分享按钮：与微信系统菜单重复，且不能证明朋友圈发送可用。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/pages/index/index.json",
+      "scripts/test-miniprogram-home.js",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md",
+      "feedback/records/pui-fb-0357-miniprogram-home-native-share.json"
+    ],
+    "dependencies": [
+      "微信 Page.onShareAppMessage",
+      "微信 Page.onShareTimeline",
+      "微信开发者工具 page.json schema"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-home.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-home.js：通过"
+    ],
+    "browser": [],
+    "deviceRisks": [
+      "开发者工具重新编译后的控制台告警消失仍待本轮验收。",
+      "朋友圈入口、真实发送、卡片标题图片和回流路径仍需合法 AppID 的 iOS/Android 真机验证。"
+    ]
+  },
+  "ai": {
+    "summary": "当前微信页面 JSON 不接受 enableShareTimeline；保留分享生命周期并删除无效配置键。",
+    "rules": [
+      "page.json 配置必须以当前真实微信开发者工具 schema 为准，不能照搬旧合同或第三方框架配置。",
+      "删除无效 enableShareTimeline 时必须保留并专项测试 onShareTimeline 生命周期。",
+      "分享返回载荷只使用稳定公开路径和合规图片，不携带临时 UI 或用户数据。",
+      "开发者工具无 warning 不等于朋友圈真机发送已通过，真机结果保持 pending-device。"
+    ],
+    "tags": [
+      "miniprogram-home",
+      "page-json",
+      "enableShareTimeline",
+      "share-timeline",
+      "wechat-devtools",
+      "compatibility"
+    ]
+  }
+}

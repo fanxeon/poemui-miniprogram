@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0519",
+  "title": "真实安装示例残留已退役组件导致开箱即用验证失败",
+  "scope": "global",
+  "components": ["example", "package-install", "tooltip", "button-group"],
+  "type": "compatibility",
+  "severity": "critical",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "regression",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "全平台发布前，真实安装示例必须只引用 npm 包内仍公开的组件，安装后可以直接执行微信构建 npm，不能依赖已经从 0.1.2 发布面删除的目录。",
+  "environment": {
+    "surfaces": ["npm-package", "real-miniprogram-example", "wechat-build-npm"],
+    "platforms": ["node", "wechat-miniprogram", "npm-registry"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "执行 npm run example:install，用当前 0.1.2 tarball 安装真实 _example。",
+    "执行 node skills/poemui-miniprogram/scripts/verify-install.mjs _example。",
+    "验证器报告 pui-tooltip 与 pui-button-group 的 usingComponents 路径不存在；对应 WXML、JavaScript 和 WXSS 仍保留退役组件演示与状态。"
+  ],
+  "expected": "示例 usingComponents、WXML、JavaScript、WXSS 与当前 74 个发布组件集合一致；退役组件完全退出当前产品面，其余操作区继续组合真实 PUI Button 并使用 Token 化换行布局。",
+  "actual": "组件源码、metadata、H5 和 miniprogram_dist 已删除 Tooltip 与 ButtonGroup，但 _example 仍注册并调用两个不存在的 npm 路径，导致真实安装验证在微信构建前失败。",
+  "evidence": [
+    {
+      "kind": "build",
+      "ref": "node skills/poemui-miniprogram/scripts/verify-install.mjs _example",
+      "note": "首次验证明确报告 pui-tooltip 和 pui-button-group usingComponents 无法解析。"
+    },
+    {
+      "kind": "file",
+      "ref": "_example/miniprogram/pages/components/index.json",
+      "note": "退役 npm 路径已从真实示例注册表移除。"
+    },
+    {
+      "kind": "file",
+      "ref": "_example/miniprogram/pages/components/index.wxml",
+      "note": "Tooltip 与 ButtonGroup 演示已删除，其余操作区改为透明 view 分组并继续承载真实 PUI Button。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-component-catalog-pruning.js",
+      "note": "回归门禁同时扫描示例 JSON、JavaScript、WXML、WXSS，禁止退役组件名称和 npm 路径重新出现。"
+    }
+  ],
+  "rootCause": "退役组件治理只检查了源码、metadata、H5、API 和发布目录，没有把真实安装示例纳入同一删除闭环；示例长期保留旧 usingComponents 与演示状态，直到发布前安装验证才暴露。",
+  "decision": {
+    "outcome": "彻底删除示例中的 Tooltip 与 ButtonGroup 注册、演示、状态和样式；其余并列操作只用透明 example-action-group 布局组合真实 PUI Button，并把四类示例文件加入退役组件回归扫描。",
+    "rationale": "退役组件不能以示例兼容名义继续成为当前合同；透明布局只负责 flex、换行与标准 gap，不创建第二套按钮或 Surface，能够保持真实 PUI Button 语义。",
+    "alternativesRejected": [
+      "把退役目录重新放回 npm 包：违反用户明确删除后彻底退出当前产品面的规则。",
+      "在验证器中忽略无效路径：会让用户安装后才在微信构建阶段失败。",
+      "只删除 usingComponents：WXML 和状态代码仍会形成断裂演示与后续误用。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "_example/miniprogram/pages/components/index.json",
+      "_example/miniprogram/pages/components/index.wxml",
+      "_example/miniprogram/pages/components/index.js",
+      "_example/miniprogram/pages/components/index.wxss",
+      "scripts/test-component-catalog-pruning.js",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["poemui-miniprogram@0.1.2", "WeChat build-npm"]
+  },
+  "verification": {
+    "tests": ["scripts/test-component-catalog-pruning.js", "skills/poemui-miniprogram/scripts/verify-install.mjs"],
+    "commands": [
+      "node scripts/test-component-catalog-pruning.js：通过",
+      "node -e JSON.parse(_example/miniprogram/pages/components/index.json)：通过"
+    ],
+    "browser": [],
+    "deviceRisks": [
+      "真实安装与微信 build-npm 将在本次全平台发布门禁中复验；iOS/Android 真机继续为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "组件退役必须把真实安装示例纳入源码、文档、H5 和发布产物的同一删除闭环。",
+    "rules": [
+      "删除组件后扫描 _example 的 usingComponents、WXML、JavaScript 与 WXSS，不能只检查 metadata 和 miniprogram_dist。",
+      "真实安装验证失败时修复调用源，不得绕过验证器或恢复已退役组件。",
+      "操作按钮分组可以使用透明 Token 化布局容器，但按钮本体必须继续复用 PUI Button。",
+      "发布前必须先本地 tar 安装，再执行微信 build-npm 和安装验证。"
+    ],
+    "tags": ["release-gate", "example", "retired-component", "tooltip", "button-group", "build-npm"]
+  }
+}

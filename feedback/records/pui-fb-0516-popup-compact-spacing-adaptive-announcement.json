@@ -1,0 +1,183 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0516",
+  "title": "Popup 标题正文重复间距与公告近全屏固定高度",
+  "scope": "component",
+  "components": [
+    "popup",
+    "scroll-area",
+    "miniprogram-me"
+  ],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "更新公告 Popup 的标题与滚动正文保持紧凑层级，短内容不要被撑成近全屏，长内容仍可滚动且 Footer 始终固定。",
+  "environment": {
+    "surfaces": [
+      "popup",
+      "scroll-area",
+      "miniprogram-me-update-announcement",
+      "h5-preview"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools",
+      "browser",
+      "node"
+    ],
+    "viewports": [
+      "390x844",
+      "390px"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruity",
+      "equal-spacing"
+    ]
+  },
+  "reproduction": [
+    "从 Me 页打开更新公告 Popup，观察“更新公告”标题与第一个公告内容之间的垂直空白。",
+    "旧 Popup Surface 在 Header/Content 间加入 36rpx section gap，Content 又保留 28rpx 顶部 panel padding，合计形成 64rpx 重复间距。",
+    "旧页面把 Popup 固定为视口减 Navbar 的近全屏高度，同时把内部 ScrollArea 固定为 78vh，短内容也无法自然收紧。"
+  ],
+  "expected": "Header 存在时到 Content 只保留一个 16rpx 紧凑间距；公告 Popup 由内容自然决定高度，内部 ScrollArea 达到 60vh 后才滚动，Footer 不进入滚动区。",
+  "actual": "Header 到 Content 同时消费 section gap 与 panel padding；外层 Popup 和内部 ScrollArea 都使用固定大高度，造成标题空白和面板过高。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户明确指出更新公告标题到 ScrollArea 间距过大、Popup 高度过高，并批准按共享组件层修复。"
+    },
+    {
+      "kind": "file",
+      "ref": "popup/popup.wxss",
+      "note": "Surface gap 归零，Header 邻接 Content 只使用 --pui-popup-content-gap；等距模式重映射同一个间距。"
+    },
+    {
+      "kind": "file",
+      "ref": "scroll-area/scroll-area.js",
+      "note": "height=auto 与 maxHeight 建立有界自适应高度，固定高度仍保留既有行为。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "公告 ScrollArea 改为 height=auto / max-height=60vh，Popup 外层只保留视口 max-height。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://tdesign.tencent.com/miniprogram/components/popup",
+      "note": "2026-07-29 核对 TDesign Popup 产品边界；基础实现按视口限制 max-height，不提供 PoemUI 三分区。"
+    },
+    {
+      "kind": "browser",
+      "ref": "https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/popup",
+      "note": "2026-07-29 同步核对官方源码，并以 tdesign-miniprogram@1.15.3 固定包复核 popup.js/wxml/wxss/props/type。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-popup.js",
+      "note": "锁定原生/H5 Surface 零重复 gap、Header 邻接 Content 单一紧凑间距和等距映射。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-scroll-area.js",
+      "note": "锁定 auto/maxHeight 的小程序与 H5 同构、默认上限和非法值回退。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "锁定公告外层 max-height、内部 auto/60vh、唯一滚动所有者与无 78vh 页面补丁。"
+    }
+  ],
+  "rootCause": "Popup 把主要分区 section gap 与 Content 四向 panel padding 同时用于同一 Header→Content 邻接关系；Me 消费页又把外层和内层都固定为大视口高度，缺少“自然增长到上限再滚动”的组件能力。",
+  "decision": {
+    "outcome": "Popup Surface 不再排列分区 gap；Header 存在时 Content 顶部用 16rpx content gap，无 Header 时仍保留完整 panel padding，等距模式把该唯一 gap 映射为 surface inset。ScrollArea 新增 maxHeight 默认 320rpx，并让 height=auto 自然增长到上限后由唯一原生视口滚动。Me 公告使用 auto/60vh，Popup 只设置扣除实测 Navbar 后的 max-height。",
+    "rationale": "同一邻接关系只应有一个 Token 所有者；有界自适应模式同时满足短内容紧凑与长内容可滚动，不需要负 margin、内容测量、重复 setData 或页面私有控件。",
+    "alternativesRejected": [
+      "在 Me 页用负 margin 抵消 Popup 留白：只修截图并破坏共享组件语义。",
+      "继续固定 78vh 但调小数值：短内容仍被强制撑高，且不同设备继续漂移。",
+      "运行时测量公告高度后反复 setData：引入首开闪动和额外布局竞争。",
+      "让 Popup 与 ScrollArea 同时滚动：产生双滚动所有者，Footer 与手势边界不稳定。",
+      "照搬 TDesign 基础 Popup：它没有 PoemUI Header/Content/Footer 扩展，不能解决现有三分区合同。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "popup/popup.wxml",
+      "popup/popup.wxss",
+      "scroll-area/scroll-area.js",
+      "metadata/components.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.wxss",
+      "docs/COMPONENT_API.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/components/POPUP.md",
+      "docs/components/SCROLL-AREA.md",
+      "scripts/test-popup.js",
+      "scripts/test-scroll-area.js",
+      "scripts/test-miniprogram-me-page.js"
+    ],
+    "dependencies": [
+      "PUI Popup",
+      "PUI ScrollArea",
+      "PUI Button",
+      "PUI TopLoading",
+      "surface spacing tokens"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-popup.js",
+      "scripts/test-scroll-area.js",
+      "scripts/test-miniprogram-me-page.js"
+    ],
+    "commands": [
+      "node scripts/test-popup.js：通过",
+      "node scripts/test-scroll-area.js：通过",
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node --check scroll-area/scroll-area.js：通过",
+      "node --check miniprogram/pages/me/index.js：通过",
+      "npm run site:build：通过",
+      "npm run check：通过",
+      "npm run pack:check：通过（559 files，367.6 kB）",
+      "微信 CLI build-npm：通过（1237ms，warnings=[]）"
+    ],
+    "browser": [
+      "H5 390px 浅色普通间距实测 Header→Content=8px、ScrollArea 上下及 Footer 间距=8px、单按钮 Footer 满宽，Popup 面板高 280px，无横向溢出。",
+      "H5 390px 深色果味+equalSpacing 实测 Header→Content、ScrollArea 上下及 Footer 间距均为 14px、单按钮 Footer 满宽，Popup 面板高 304px，无横向溢出，控制台无 error/warning。",
+      "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 打开 Me 更新公告：Header、可滚动内容和固定满宽 Footer 均落在同一 Popup Surface，深色截图未出现内容或按钮越界。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的 scroll-view auto/max-height、键盘/安全区、触摸惯性、读屏与系统大字体为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "Popup Header 到 Content 只保留一个紧凑 gap；公告用有界自适应 ScrollArea，短内容收紧、长内容滚动。",
+    "rules": [
+      "同一 Header→Content 邻接关系只能由一个 Token 所有，禁止同时叠加 Surface gap 与 Content 顶部 panel padding。",
+      "Popup 默认自然增高并受 max-height 约束，业务页不得同时固定 Popup 与内部 ScrollArea 的大视口高度。",
+      "需要短内容自然高度和长内容局部滚动时，使用 ScrollArea height=auto / maxHeight，不使用负 margin 或测量后 setData。",
+      "Popup contentScrollable=false 后只能有一个同方向 ScrollArea；Footer 必须留在该滚动区之外。",
+      "H5 必须镜像 Header 邻接 class、单一间距与 auto/maxHeight 真实 overflow，不能只更改 DOM 状态变量。",
+      "TDesign 基础 Popup 只提供产品边界参考；PoemUI 三分区 API 与间距仍由本地合同决定。"
+    ],
+    "tags": [
+      "popup",
+      "scroll-area",
+      "spacing",
+      "adaptive-height",
+      "miniprogram-me",
+      "h5-parity"
+    ]
+  }
+}

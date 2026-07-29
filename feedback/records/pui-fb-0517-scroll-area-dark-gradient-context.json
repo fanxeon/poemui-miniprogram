@@ -1,0 +1,103 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0517",
+  "title": "ScrollArea 深色主题继承浅色渐变上下文形成白条",
+  "scope": "component",
+  "components": ["scroll-area", "config-provider", "preview-site", "design-tokens"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "ScrollArea 的固定阅读渐变在深色模式下必须使用当前深色容器色，不能在更新公告等滚动内容上出现白色横条。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "scroll-area", "miniprogram-me-update-announcement", "h5-preview"],
+    "platforms": ["wechat-devtools", "wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844", "390px"],
+    "themes": ["light", "dark", "fruity"]
+  },
+  "reproduction": [
+    "在小程序 Me 页切换深色模式并打开更新公告 Popup。",
+    "滚动公告内容使顶部 ScrollArea 渐变显示；旧上下文色从浅色 page 根继承，形成明显白色横条。",
+    "检查 common/style/theme.wxss：--pui-scroll-area-gradient-overlay-color-context 只在 page/.pui-theme--light 作用域声明，深色作用域只改写 --pui-bg-container。"
+  ],
+  "expected": "默认渐变色在浅色解析为浅色容器，在深色重新解析为 #18181b；显隐、尺寸、透明点击穿透、滚动和公开 API 均保持不变，H5 使用同名上下文 Token。",
+  "actual": "组件根虽处于深色 Provider 子树，但默认上下文别名可能保留浅色根已经计算的白色值，导致渐变视觉与深色内容 Surface 断裂。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户在真实小程序深色公告滚动场景指出 ScrollArea 渐变遮罩未兼容深色模式。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "深色 pui-theme--dark 在 #18181b 容器 Token 后重新绑定 ScrollArea 上下文色。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 ScrollArea 根按当前主题 surface-solid 解析同名上下文 Token。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-scroll-area.js",
+      "note": "专项合同锁定深色作用域重绑定顺序、H5 同名 Token 和原有渐变边缘状态机。"
+    }
+  ],
+  "rootCause": "上下文自定义属性只在浅色 page 根声明，并间接引用浅色 --pui-bg-container；深色子树改写容器 Token 时没有在同一主题作用域重新声明该上下文别名。",
+  "decision": {
+    "outcome": "在 .pui-theme--dark 内紧随深色 --pui-bg-container 重新绑定 --pui-scroll-area-gradient-overlay-color-context；H5 helper 默认返回同名 Token，并在 ScrollArea 根将其绑定到当前 --surface-solid。",
+    "rationale": "主题上下文别名应在消费主题作用域解析；保持同名 Token 可让页面壳继续选择容器色或画布色，也不需要新增 Prop、页面补丁或硬编码渐变色。",
+    "alternativesRejected": [
+      "在 Me 页面传固定深色 gradientOverlayColor：只修一个页面并破坏组件级主题语义。",
+      "直接把组件默认色硬编码为 #18181b：浅色与自定义上下文会失效。",
+      "关闭深色渐变：会丢失真实可继续滚动的阅读提示。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/style/theme.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/SCROLL-AREA.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "scripts/test-scroll-area.js"
+    ],
+    "dependencies": ["PUI theme tokens", "ConfigProvider", "ScrollArea gradient overlay"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js", "scripts/test-config-provider.js"],
+    "commands": [
+      "node scripts/test-scroll-area.js：通过",
+      "node scripts/test-config-provider.js：通过",
+      "PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js：通过",
+      "node --check preview/app.js：通过",
+      "npm run site:build：通过",
+      "npm run check：通过",
+      "npm run pack:check：通过（559 files，367.6 kB）",
+      "微信 CLI build-npm：通过（1237ms，warnings=[]）"
+    ],
+    "browser": [
+      "H5 390px 深色 ScrollArea 实际滚动到 scrollTop=544；上下遮罩 opacity 均为 1，context 与 overlay 计算色均为 rgb(24,24,27)，渐变背景由该色过渡到 transparent。",
+      "H5 ScrollArea viewport clientWidth/scrollWidth=271/271，document clientWidth/scrollWidth=375/375，fresh navigation 的 Runtime/Log console 与 exception 均为空。",
+      "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 深色 Me 更新公告截图确认 ScrollArea 顶底过渡与 #18181b 内容 Surface 连续，没有旧白色横条。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的自定义属性继承、enhanced scroll-view 合成、惯性与触摸穿透为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "主题派生的 ScrollArea 上下文色必须在深色作用域重新绑定，不能只继承浅色 page 根。",
+    "rules": [
+      "默认渐变色必须由 ScrollArea 组件主题 Token 解决，不得在消费页面硬编码深色补丁。",
+      "依赖其他主题变量的上下文别名应在 light/dark 作用域分别声明并由计算样式验证。",
+      "H5 必须消费与小程序同名上下文 Token，不能保留另一套固定 surface fallback。",
+      "验证深色渐变必须滚动到遮罩实际可见并读取计算背景，不能只检查主题 class。"
+    ],
+    "tags": ["scroll-area", "dark-mode", "gradient-overlay", "theme-token", "h5-parity"]
+  }
+}

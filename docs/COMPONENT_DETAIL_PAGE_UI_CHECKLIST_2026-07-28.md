@@ -31,6 +31,7 @@
 | 20 | Dialog | Header/Content/Footer、内距与全宽 Footer 不正确 | 17 Props / 8 Slots；两侧 icon-only 圆形按钮；一/二列 Footer；清除 Popup 重复 padding | 模拟器实际打开并截图；Close 事件使父级 visible true→false；双列 Footer 完整 | H5 Overlay=391×620；Header 36/158/36；Footer 116/116、gap 14px | PUI-FB-0484 | 已验收；pending-device |
 | 21 | AreaChart / BarChart / Waffle | 重播动画无反应 | 先提交复位帧，再跨帧进入 | 三页真实实例均实测 `entered: true→false→true` | 三个 Replay 入口均实际点击，最终恢复 entered，无控制台错误 | PUI-FB-0485 | 已验收；pending-device |
 | 22 | Skeleton | 头像轮廓不是正圆 | 清除固定 `96rpx` 最小高度，`type="circle"` 允许 size 等轴覆盖并固定 `border-radius:50%`；API 不变 | 继续以 `rowCol + size` 复用真实 Skeleton，无页面 CSS | 最终汇总同步 `preview/styles.css` 最小高度/圆形几何与 `preview/app.js` size 宽高测试 | PUI-FB-0505 | 小程序完成：DevTools 390px 浅/深色、largeRadius 开关及 loading 往返通过；H5 待同步；pending-device |
+| 23 | BarChart / Me | BarChart 渐变过重；Me 应按每个版本着色、隐藏“规范”，长图默认折叠并平滑展开；页面不要顶部刻度或默认圆点图例，顶部摘要需要四项并校准到图表的间距 | 六色横纵填充改为 AreaChart 式 `0.04→0.42`，数据端实体 inset 线；12 Props / 0 Events / 0 Slots / `replay()` 不变 | 公告逐版本 Blue/Teal/Violet；过滤规范；关闭 Grid/Legend，以三个无框、同色 soft 纯色底的最小圆角 PUI Tag 只显示版本号；组件/样式/高级/新增四列真实数据，“新增”右侧组合 `20rpx` Violet Sparkles PUI Icon；三段垂直关系统一为 content-gap；有增量的高级置顶，真实 PUI Button 平滑展开/收起八类 | 最终汇总同步 `preview/styles.css` 六色横纵 Token、终点线及 390px 浅深测试；不复制 Me 业务 Tag、排序、四列摘要或折叠 | 更新 PUI-FB-0461 / PUI-FB-0488 / PUI-FB-0513；新增 PUI-FB-0514 / PUI-FB-0515 | DevTools 390px：旧图表几何 `210→378→210px`；四列实测各 `79px`、列间 `8px`，摘要→图表、viewport→Tag、Tag→操作均 `8px`；浅/深 Tag 无渐变/无框，小尺寸 Sparkles 位于“新增”右侧，实点展开→收起，高级置顶；pending-device |
 
 ## 门禁结果
 

@@ -15,7 +15,7 @@
         <slot name="close-btn"></slot>
       </view>
     </view>
-    <scroll-view scroll-y="{{contentScrollable}}" class="pui-popup__content {{contentScrollable ? '' : 'pui-popup__content--static'}}" enable-flex>
+    <scroll-view scroll-y="{{contentScrollable}}" class="pui-popup__content {{showHeader ? 'pui-popup__content--with-header' : ''}} {{contentScrollable ? '' : 'pui-popup__content--static'}}" enable-flex>
       <slot name="content"></slot>
       <slot></slot>
       <text wx:if="{{content}}" class="pui-popup__fallback">{{content}}</text>

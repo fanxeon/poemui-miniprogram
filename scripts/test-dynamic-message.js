@@ -31,6 +31,9 @@ function nextTimerDelay() {
 vm.runInNewContext(source, {
   require(request) {
     if (request === '../common/behaviors/theme') return {};
+    if (request === '../common/utils/platform-info') {
+      return { getWindowInfo: () => ({ statusBarHeight: 24 }) };
+    }
     throw new Error(`Unexpected DynamicMessage dependency: ${request}`);
   },
   Component(value) { definition = value; },
@@ -46,6 +49,8 @@ vm.runInNewContext(source, {
 }, { filename: 'dynamic-message/dynamic-message.js' });
 
 assert(definition, 'DynamicMessage definition must register');
+assert(source.includes("require('../common/utils/platform-info')"), 'DynamicMessage safe-area placement must reuse the shared platform reader');
+assert(!source.includes('getSystemInfoSync'), 'DynamicMessage must not restore the deprecated aggregate system API');
 const PUBLIC_PROPS = ['theme', 'title', 'message', 'icon', 'actionText', 'closable', 'duration', 'safeArea', 'shadow', 'frostedGlass', 'ariaLabel', 'reduceMotion'];
 assert.deepStrictEqual(Object.keys(definition.properties), PUBLIC_PROPS);
 

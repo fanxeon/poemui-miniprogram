@@ -8,6 +8,7 @@ const vm = require('vm');
 const root = path.resolve(__dirname, '..');
 const chartData = require(path.join(root, 'common/utils/chart-data'));
 const areaChartData = require(path.join(root, 'common/utils/area-chart-data'));
+const platformInfo = { getWindowInfo() { return { pixelRatio: 3 }; } };
 const source = fs.readFileSync(path.join(root, 'area-chart/area-chart.js'), 'utf8');
 let definition = null;
 
@@ -17,6 +18,7 @@ vm.runInNewContext(source, {
   require(request) {
     if (request.includes('area-chart-data')) return areaChartData;
     if (request.includes('chart-data')) return chartData;
+    if (request.includes('platform-info')) return platformInfo;
     return {};
   },
   Component(value) { definition = value; },
@@ -48,6 +50,8 @@ assert.strictEqual(definition.properties.animated.value, true);
 assert.strictEqual(definition.properties.duration.value, 500);
 assert.strictEqual(typeof definition.methods.replay, 'function');
 assert(source.includes('function resetCommitted()') && source.includes('this.data.reduceMotion ? 0 : 32'), 'AreaChart replay must commit a reset frame before re-entering');
+assert(source.includes("require('../common/utils/platform-info')"), 'AreaChart DPR must reuse the shared platform reader');
+assert(!source.includes('getSystemInfoSync'), 'AreaChart must not restore the deprecated aggregate system API');
 
 const normalized = areaChartData.normalizeAreaItems([
   { key: 'jan', label: '1月', segments: [{ key: 'desktop', label: '桌面', value: 10, theme: 'blue' }, { key: 'mobile', label: '移动', value: -2, theme: 'bad' }] },

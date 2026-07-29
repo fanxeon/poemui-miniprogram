@@ -81,7 +81,7 @@ fixed top layer（无 Overlay、不阻断页面）
 
 - 390px 下左右安全边界一致，标题、消息、Action、Close 不得相互覆盖或导致页面级横向溢出。
 - 通知中性深色身份在 light/dark 下都必须保持可读；`shadow/frostedGlass=null` 时跟随全局有效值，组件私有 `true/false` 可局部覆盖。border、largeRadius 与这些效果不得破坏紧凑几何。
-- safeArea=true 时优先读取微信胶囊和状态栏真实位置；读取失败才使用最小安全 fallback，不能硬编码某一机型。
+- safeArea=true 时通过 `common/utils/platform-info#getWindowInfo()` 读取状态栏，并结合微信胶囊真实位置；读取失败才使用最小安全 fallback，不能硬编码某一机型，也不得恢复 `wx.getSystemInfoSync()`。
 
 ## 10. 明确禁止
 
@@ -92,6 +92,6 @@ fixed top layer（无 Overlay、不阻断页面）
 
 ## 11. 修改闭环
 
-1. 同步审计 `dynamic-message/` 四件套、metadata、H5、API、兼容说明、独立小程序页、示例与安装产物。
+1. 同步审计 `dynamic-message/` 四件套、metadata、H5、API、兼容说明、共享平台读取器、独立小程序页、示例与安装产物。
 2. 运行 `node scripts/test-dynamic-message.js`、`npm run feedback:generate`、`npm run feedback:check`、`npm run site:build`、`npm run check`、`npm run pack:check`、`npm run example:install`。
 3. 浏览器与合法 AppID 真机分别验证 retained node、同 key update、队列、duration=0、action/close 顺序、安全区、390px、深浅色、外观开关和低动效。

@@ -1,5 +1,51 @@
 # PoemUI 组件交付进度
 
+## 2026-07-29 · ScrollArea 深色遮罩与小程序系统主题同步
+
+- **ScrollArea 根因与双端修复**：默认上下文色曾只在浅色 `page/.pui-theme--light` 声明；微信把该别名继承到深色 Provider 子树时仍可能保留浅色计算值，更新公告滚动后出现白色渐变条。`common/style/theme.wxss` 现在在 `.pui-theme--dark` 的深色容器色之后重新绑定同名 Token；H5 ScrollArea 根同步按当前 `--surface-solid` 解析，公开 Props、边缘状态机和滚动行为不变。
+- **系统主题链**：真实 `miniprogram/app.json` 启用 `darkmode:true + themeLocation=theme.json`。App 在 `onLaunch/onShow/onThemeChange` 通过发布包 `theme` helper 读取当前系统 light/dark，并以 `persist:false` 写入唯一 `visualConfig`；所有页面根 Provider 和 AppearanceSettings 订阅同一状态，不维护第二份开关。
+- **双端运行态**：H5 390px 深色实际滚动到 `scrollTop=544`，上下遮罩均可见，context/overlay 计算色均为 `rgb(24,24,27)`，ScrollArea 与 document 均无横向溢出，控制台与 exception 为空。微信官方 `miniprogram-automator` 连接真实工程，在 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 下确认冷启动 system/store 均为 light；临时把 Store 置 dark 后执行 `App.onShow` 会按系统重新写回 light，`App.onThemeChange({theme:'dark'})` 会写回 dark，Me 外观 Popup 的深色 Switch 同步为 `value=true / aria-checked=true`，恢复系统 light 后为未选中。深色更新公告截图确认旧白色渐变条消失。
+- **验证边界**：ScrollArea、首页、平台信息、ConfigProvider 与 Me 专项、`site:build`、全量 `check`、`pack:check=559 files / 367.6 kB`、微信 CLI `build-npm=1237ms / warnings=[]`、源码/dist/miniprogram_npm SHA-256 同源及双仓 diff 门禁通过。Ledger：`PUI-FB-0517/0518`，均保持 `resolved / pending-user`。开发者工具自动化没有操作宿主 macOS 的系统外观设置；系统设置到微信事件的系统级派发及 iOS/Android 真机仍为 `pending-device`。
+
+## 2026-07-29 · Me 按类别与增量改用 BarChart
+
+- **最新用户决定**：更新公告仍保留 Schema v2 的 `componentCount/categoryCounts`，但 Popup 不再直接展示组件总数或九类统计；这些字段改为 Me 仪表盘的图表数据源。此前三点 AreaChart 和 Popup 统计 Grid 只保留为历史证据。
+- **页面实现**：Me 页用真实 PUI BarChart 取代 AreaChart，配置为 `horizontal / stacked / small / max=19 / duration=1000 / showValue / showLegend=false`，页面不传默认 false 的 `showGrid`，所以顶部不再显示 `0 / 19`，底部也没有组件默认圆点图例。Card 顶部摘要扩为组件/样式/高级/新增四列，新增值直接读取生成型 `componentStatus.incrementTotal=3`，并在“新增”标签右侧组合 `20rpx` 的 Violet `sparkles` PUI Icon，以 `--pui-space-xxs` 紧密关联；透明父布局以唯一 `--pui-content-gap` 分隔摘要和图表，图表 viewport→Tag 与 Tag→展开操作同样各使用一次 `--pui-content-gap`。当前消费层按日期为 `v0.1.0 / v0.1.1 / v0.1.2` 建立 Blue/Teal/Violet 三段，并在图表下用无框最小圆角 PUI Tag 组合对应 accent 文字和同色 `--pui-color-*-soft` 纯色底，只保留版本号、不使用渐变；“规范”只在可见图表过滤，九类公告 Schema 与总数校验不变。八类先按是否存在基线后正增量稳定分组，当前高级 `5 + 3 + 0 = 8` 置顶，折叠态为高级/基础/布局/导航；PUI 透明 Button 平滑展开/收起全部八类。云公告加载成功后真实重算图表与 Tag；数据不可用时才回退生成型 component-status。
+- **API 与跨端边界**：不修改 BarChart 公共 Props、Events、Slots 或 Methods，不用页面 CSS 穿透组件。旧 AreaChart 的 Canvas 浮层卸载分支删除，因为 BarChart 是 View/WXSS 展示叶子。H5 不复制 Me 业务页；共享 BarChart 的 Area 式透明填充与实体终点线仍需最终同步 `preview/styles.css`。
+- **事实源与验证**：页面源码、BarChart/Me/Shared Cloud 合同、H5 同步边界、0.1.2 Changelog、专项测试和 Ledger `PUI-FB-0440/0461/0464/0488/0507/0510/0511/0513/0514/0515` 同步。微信开发者工具 Nightly 2.02.2607282 / SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 已显示 `74 / 组件、562 / 样式、8 / 高级、3 / 新增 + sparkles`；四列各 `79px`、列间 `8px`，摘要→图表、图表 viewport→Tag、Tag→展开操作均实测 `8px`。浅/深色下三个 Tag 都是同色纯色 soft 底、无 inset 框，并实点完成展开→收起；截图为 `/tmp/poemui-me-label-icon-light-390.png`、`/tmp/poemui-me-label-icon-dark-390.png`。清空旧日志并单独重开 Me 后为 `0 error / 4 warning`，仅自动热重载、既有 Dialog/Navbar selector 与 IntersectionObserver 慢路径。iOS/Android 真机保持 `pending-device`。
+
+## 2026-07-29 · 微信开发者工具内部 preload 警告分层
+
+- **真实复现**：Nightly 2.02.2607282 / 基础库 3.17.0 清空 Console 后重新打开 Me 页并等待四秒，`127.0.0.1:30855/__dev__/WAAutoService.js` 与 `WAServiceMainContext.js` 的未使用 preload 警告重新出现；Errors 为 0，Warnings 为 7。
+- **责任边界**：真实工程源码和 `project.config.json / project.private.config.json / app.json` 均没有创建这两个 preload；小程序运行时 console 缓冲区也无命中。它们由微信开发者工具 appservice 注入，不属于 PUI 组件、页面、npm 产物或公共 API。
+- **决定**：不关闭自动热重载、不删除 requiredComponents 懒加载、不修改生成目录，也不隐藏全部 warning。平台兼容文档和 Ledger `PUI-FB-0512` 固化“工具内部噪音与项目可操作警告分开报告”的规则；iOS/Android 真机保持 `pending-device`。
+
+## 2026-07-29 · 微信系统信息弃用告警回归修复
+
+- **真实回退点**：SDK 3.17.0 再次报告 `wx.getSystemInfoSync is deprecated`。源码审计定位到 AreaChart Canvas DPR、DynamicMessage 顶部安全区和快速样式页 rpx 换算三处后来新增的旧 API fallback；原专项扫描清单没有覆盖这些消费者。
+- **实现与 API 边界**：三处统一复用 `common/utils/platform-info#getWindowInfo()`；AreaChart 与 DynamicMessage 公共 Props、Events、Slots、Methods 均不变化，样式页仍由页面承担布局换算。读取失败继续使用各自既有安全默认值，不额外读取无业务需求的系统设置或授权状态。
+- **防回归与验收**：`scripts/test-platform-info.js` 从易漏的手工清单升级为自动遍历 74 个发布组件、共享运行时与真实小程序源码；AreaChart、DynamicMessage、Style Utilities 页面专项测试同步锁定共享读取器与旧 API 禁令。`miniprogram:build`、Feedback 493 条门禁与两仓 `git diff --check` 通过；微信 `build-npm=1047ms / warnings=[]`。SDK 3.17.0 / 390×844 / DPR=3 下依次打开 Me AreaChart、DynamicMessage 并真实开始通知、快速样式页，控制台对弃用、warning、error 与 exception 的过滤均为空。更新平台兼容合同、两个组件合同、0.1.2 变更记录和 Ledger `PUI-FB-0298`；iOS/Android 真机保持 `pending-device`。
+
+## 2026-07-29 · 74 个组件 Starter Usage 开箱合同
+
+- **根因与分层**：旧官网基础引用直接从 H5 当前 Props 与组件默认值过滤生成。Popup 等安全关闭态、数据组件空数组与命令式组件只挂载标签虽然适合作为运行时默认，却不能保证复制后立即看到结果。现新增 `metadata/component-starter-usage.js` 作为第三层真相源；它不修改组件源码默认值、H5 Showcase 初态、工具栏“复制当前效果”或小程序独立组件页。
+- **开箱内容**：74 个公开组件逐项提供真实 `pui-*` 根、必要 Slot、页面 data 或命令式 `show()`。同一数据生成官网常规模式的组件引用/基础用法/页面数据或逻辑，以及 `docs/COMPONENT_STARTER_USAGE.md` 中完整的 `page.json / page.wxml / page.js`。Popup 固定使用用户指定的可见调用 `<pui-popup visible="{{true}}" content="Popup 内容" />`。
+- **防回归边界**：专项测试校验组件全集无缺项、主组件 Props 来自真实源码、简单绑定都有页面数据、附加 PUI 组件已注册、无原生 Button/Input/Select/Textarea、浮层可见且 Toast/DynamicMessage 有真实命令式入口。`miniprogram/pages/components` 修改前后目录 SHA-1 均为 `965b4ef5682d36109ec72a16666534f07e0ffe41`。
+- **文档与验收**：H5 兼容、预览信息层级、全局 UI、Popup 合同、API、生成器、包检查与 Ledger `PUI-FB-0509` 已同步。Chrome DevTools 真实打开 Popup 页：390px 下 `innerWidth/clientWidth/scrollWidth=390/390/390`，PreviewDevice 宽 366px，刷新后控制台 0 条消息；点击“复制基础用法代码”后按钮回写“已复制”，系统剪贴板逐字节回读用户指定标签并保留 ` />`。`check/site:build/example:install/pack:check/feedback:check/diff --check` 均通过。74 份 Starter 尚未在微信中逐页新建并编译，iOS/Android 真机保持 `pending-device`，不以构建替代这两项。
+
+## 2026-07-29 · Me 全宽 AreaChart 三版本标注与首页无效分享配置修复（图表部分已由 PUI-FB-0513 取代）
+
+- **Me 图表语义**：旧 AreaChart 只有 `0.1.0=71 / 0.1.2=74` 两个累计点，第一版 Waffle 又偏离用户希望保留的原趋势表达。最终恢复原 AreaChart，并由生成型 `versions()` 提供 `0.1.0=71 / 0.1.1=74 / 0.1.2=74` 三个横轴点；图表根随 Card Content 以 `width:100%` 铺满，三列 `74 / 562 / 8` 摘要与唯一 Card 保持不变。
+- **API 与浮层边界**：不新增 Waffle 或 AreaChart 公共 API。Me 使用 `size=small / max=74 / duration=1000 / showGrid / showXAxis / showDots / showLegend=false`；单系列固定为 `components`。AreaChart 继续使用 Canvas，因此公告 Popup、商业授权 Dialog 与外观 Popup 可见时由页面 `wx:if` 卸载，关闭后恢复，避免 Canvas 穿透。
+- **首页警告**：当前微信开发者工具把 `pages/index/index.json` 的 `enableShareTimeline` 判为无效字段。页面 JSON 已删除该键，`onShareAppMessage` 与 `onShareTimeline` 的稳定首页载荷保持不变；专项测试同时锁定无效键不存在和两个生命周期。
+- **验证与边界**：Me、AreaChart、Waffle、首页与 Tabbar 专项通过；Ledger `PUI-FB-0507` 记录被用户明确否决的 Waffle 试案，`PUI-FB-0508/0510` 记录首页修复与最终 AreaChart 决定，并修正 `PUI-FB-0357/0464/0488` 的当前合同。微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 回读三点 `71/74/74`、`max=74`、`duration=1000`；图表根为 `left=25/top=169/340×145`，等于 Card Content 宽度。浅色与深色果味截图分别为 `/tmp/poemui-me-area-chart-three-versions-light-390.png`、`/tmp/poemui-me-area-chart-three-versions-dark-fruity-390.png`；三类浮层打开时 Canvas 均卸载、关闭后恢复，控制台目标警告/错误为空。生产共享云稳定文档原位更新 `updated=1` 并由页面以 `source=cloud` 回读。本段记录的是 0.1.2 发布后的工作树修改，尚未重新提交、上传或发布；iOS/Android 真机仍为 `pending-device`。
+
+## 2026-07-29 · 更新公告补齐组件总数与九类统计（可见统计区已由 PUI-FB-0513 取代）
+
+- **Schema 与真相源**：`pui_updatelog` 公告升级为 Schema v2，新增 `componentCount` 与 `categoryCounts[]`。包内 fallback 直接读取生成型 `component-status.js`：0.1.0 为 `71`，高级 `5`；0.1.1、0.1.2 为 `74`，高级 `8`；其余八类均为 `1/3/5/9/19/14/9/6`。每条九类合计必须严格等于组件总数。
+- **历史页面呈现**：更新公告 Popup 曾在改动列表前增加透明统计区；最新用户决定已经删除该可见 Grid，字段继续由 Service 校验并转供 Me BarChart 使用。Service 对云端、缓存和本地公告统一校验正整数总数、非负整数分类、唯一 key 与合计一致，并深拷贝统计数组。
+- **同步与验收**：本地三条公告、共享云稳定文档、缓存合同、专项测试、Shared Cloud 文档与 Ledger `PUI-FB-0511` 同步；H5 不复制 Me 业务页。生产云三条文档均写后回读 `updated=1 / schemaVersion=2 / categoryCount=9 / categoryTotal=componentCount`。微信开发者工具 SDK 3.17.0 / 390×844 以 `source=cloud` 回读 `0.1.2=74 / 0.1.1=74 / 0.1.0=71`；浅色首屏、滚动至 `y=760` 后固定 Footer、深色果味及控制台目标过滤均通过，截图为 `/tmp/poemui-me-announcement-counts-light-390.png`、`/tmp/poemui-me-announcement-counts-light-scroll-390.png`、`/tmp/poemui-me-announcement-counts-dark-fruity-390.png`。iOS/Android 真机仍为 `pending-device`。
+
 ## 2026-07-29 · Skeleton 头像轮廓正圆
 
 - **真实问题**：Skeleton 独立页给头像占位传入 `size=72rpx`，但共享 circle 样式的 `min-height=96rpx` 压过行内高度，计算盒模型成为 `72×96rpx` 椭圆；圆角还缺少不依赖继承 Token 的最终几何保证。
@@ -1437,3 +1483,15 @@
 - **浏览器实测**：AreaChart 切换后可访问总值从 `292/378/374/426/434/398` 改为 `394/378/442/442/452/488`，描边在 500ms 中出现非完成 dash offset；BarChart 从 `10/44/44/60` 改为 `62/16/62/48`，横纵两个根均出现真实 scale 中间帧；Waffle 从 32 格增至 86 格，首格出现 opacity/scale/translate 中间帧。三个页面的全宽 PUI Button 均为 `313px`，PreviewDevice 横向 overflow 为 `0`；浅色点阵仍保留渐变和 inset 轮廓，验收后恢复用户原深色偏好。
 - **小程序模拟器与边界**：微信开发者工具 Nightly `2.02.2607282` 的 iPhone 12/13 Pro 模拟器实点 AreaChart 后，按钮从“切换高波动数据”真实回写为“恢复初始数据”，两系列显示明显交叉峰谷；BarChart、Waffle 尚未在模拟器逐项实点，iOS/Android 真机仍未验证。
 - **事实源**：`preview/app.js`、`preview/styles.css`、`miniprogram/pages/components/{area-chart,bar-chart,waffle}/`、三个组件合同、四个专项测试与 Ledger `PUI-FB-0506`。发布、npm/GitHub 与远端 H5 继续等待 0.1.2 统一交付。
+## 2026-07-29 · BarChart Area 式透明填充与 Me 逐版本折叠
+
+- **共享视觉**：`common/style/theme.wxss` 将 BarChart 六色浅深横纵填充由 `0.28 → 0.66 → 1` 收敛为与 AreaChart 同义的 `0.04 → 0.42`；`bar-chart/bar-chart.wxss` 在横向数据端增加右侧实体 accent inset 线、纵向增加顶部实体线，保留明确长度边界而不恢复高饱和实体渐变。BarChart 根仍透明、无边框和外投影，12 Props / 0 Events / 0 Slots / `replay()` 不变。
+- **Me 消费页**：`pages/me/index` 按公告日期为每个有效版本建立独立 segment，当前 `v0.1.0 / v0.1.1 / v0.1.2` 分别使用 Blue/Teal/Violet；`getting-started / 规范` 只在可见图表过滤，九类 Schema 与 74 合计不变。默认四类，真实透明 PUI Button 通过实测 BarChart 高度以 normal/standard Token 平滑展开/收起八类；收起完成后才卸载后四类，低动效为 1ms。折叠属于页面组合，不增加 BarChart API。
+- **Me 页面级精简**：页面保持默认 `showGrid=false` 并显式传 `showLegend=false`，不再显示 BarChart 顶部 `0 / 19` 刻度或底部默认圆点图例；图表下改为真实 `size=small / shape=round` PUI Tag，复用每个分段的 Chart accent 文字和对应 `--pui-color-*-soft` 纯色背景，显式移除默认 inset 框且不使用渐变，文案只显示版本号，不附加“已有 / 新增”。八类以基线后是否存在正增量做稳定分组，当前“高级”置顶，其余类别保持公告原顺序；因此折叠态优先显示“高级 / 基础 / 布局 / 导航”。共享 BarChart 与 Tag 的默认和 API 均未改变。
+- **专项与运行态**：`scripts/test-bar-chart.js` 锁定六色浅深横纵透明度、实体终点线和 API；`scripts/test-miniprogram-me-page.js` 锁定八类、三个无框纯色 soft 版本 Tag、第四列真实 PUI Icon、三段 content gap、默认四类、增量优先排序、逐版本 0 值不造假和双向高度状态链。微信 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 的旧折叠/展开图表测量分别为 `340×210 / 340×378px`，受控慢速合成复核抓到 `341.875px` 中间高度；最新实点展开→收起后，浅色/深色均无顶部 `0 / 19`、默认圆点图例、Tag 渐变或 inset 框，三个 PUI Tag 只显示版本号，高级稳定置顶，摘要→图表、viewport→Tag、Tag→操作均为 `8px`。新截图为 `/tmp/poemui-me-tag-soft-no-frame-icon-light-390.png`、`/tmp/poemui-me-tag-soft-no-frame-icon-dark-390.png`。`miniprogram:build`、真实 tar 安装、`PUI_VERIFY_DIST=1`、Feedback 497 条、两仓 diff 与微信 `build-npm=944ms / warnings=[]` 为此前同批共享组件验证；页面级 Tag/Icon 精简不重复执行全库构建。
+- **未同步边界**：H5 不复制 Me 业务页；`preview/styles.css` 的六色 Token、终点线及 390px 浅深验收留待最终汇总。生产共享云 0.1.2 公告仍显示旧“九类/两段”说明，本地 fallback 已更新，本轮不做远端写入或体验版重传。Ledger：更新 `PUI-FB-0461/PUI-FB-0513`，新增 `PUI-FB-0514/PUI-FB-0515`；iOS/Android 真机为 `pending-device`。
+# 2026-07-29 · 0.1.2 全平台发布前真实示例门禁
+
+- `npm run example:install` 后的安装验证发现 `_example/miniprogram/pages/components/` 仍引用已退役 Tooltip / ButtonGroup，导致 npm 包安装成功但微信组件路径无法解析。
+- 已删除两个退役组件在示例中的注册、WXML、状态与样式；其余操作区继续组合真实 PUI Button，仅由透明 `example-action-group` 负责 Token 化 flex、换行和 gap。
+- `scripts/test-component-catalog-pruning.js` 新增示例四文件扫描，Ledger `PUI-FB-0519` 记录根因、决定和发布门禁。npm Registry、GitHub 与远端 H5 仍以本轮后续真实命令为准。

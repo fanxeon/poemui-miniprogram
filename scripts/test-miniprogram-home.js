@@ -18,6 +18,7 @@ var projectConfig = JSON.parse(read('miniprogram/project.config.json'));
 var pagePackage = JSON.parse(read('miniprogram/package.json'));
 var appJson = JSON.parse(read('miniprogram/app.json'));
 var appJs = read('miniprogram/app.js');
+var themeJson = JSON.parse(read('miniprogram/theme.json'));
 var iconCatalog = require(path.join(ROOT, 'icon/icon-font-catalog.js'));
 var packageVersion = JSON.parse(read('package.json')).version;
 var distVersionSource = read('miniprogram_dist/version.js');
@@ -313,19 +314,73 @@ assert.strictEqual(pageJson.usingComponents['pui-combobox'], 'poemui-miniprogram
 assert.strictEqual(pageJson.usingComponents['pui-overlay'], 'poemui-miniprogram/overlay/overlay');
 assert.strictEqual(pageJson.usingComponents['pui-popup'], 'poemui-miniprogram/popup/popup');
 assert.strictEqual(pageJson.usingComponents['pui-tabbar'], 'poemui-miniprogram/tabbar/tabbar');
-assert.strictEqual(pageJson.enableShareTimeline, true, '首页必须显式开启朋友圈分享');
+assert.strictEqual(Object.prototype.hasOwnProperty.call(pageJson, 'enableShareTimeline'), false, '当前微信页面 JSON 不接受 enableShareTimeline，首页必须只通过 Page 生命周期声明分享');
+assert.ok(pageJs.indexOf('onShareAppMessage: function') !== -1, '首页必须保留发送给朋友的 Page 生命周期');
+assert.ok(pageJs.indexOf('onShareTimeline: function') !== -1, '首页必须保留朋友圈分享的 Page 生命周期');
 assert.strictEqual(
   pagePackage.dependencies['poemui-miniprogram'],
   packageVersion,
   '真实产品小程序必须固定消费当前发布版本，不能退回本地 file:..'
 );
 assert.ok(appJs.indexOf("require('poemui-miniprogram/common/utils/visual-config')") !== -1, 'App 必须通过 npm 包路径恢复 visualConfig');
+assert.ok(appJs.indexOf("require('poemui-miniprogram/common/utils/theme')") !== -1, 'App 必须复用发布包 theme helper 读取当前系统主题');
+assert.strictEqual(appJson.darkmode, true, '真实小程序必须启用微信 DarkMode，系统主题事件才会触发');
+assert.strictEqual(appJson.themeLocation, 'theme.json', 'DarkMode 必须指向真实 theme.json');
+assert.deepStrictEqual(Object.keys(themeJson).sort(), ['dark', 'light'], 'theme.json 必须同时声明 light 与 dark 变量');
+assert.strictEqual(appJson.window.navigationBarTextStyle, '@navigationBarTextStyle');
+assert.strictEqual(appJson.window.backgroundColor, '@backgroundColor');
+assert.strictEqual(appJson.window.backgroundTextStyle, '@backgroundTextStyle');
+assert.strictEqual(themeJson.light.navigationBarTextStyle, 'black');
+assert.strictEqual(themeJson.dark.navigationBarTextStyle, 'white');
+assert.strictEqual(themeJson.light.backgroundColor, '#ffffff');
+assert.strictEqual(themeJson.dark.backgroundColor, '#09090b');
 assert.strictEqual(appJson.renderer, undefined, '当前小程序只支持默认 WebView，不能启用 Skyline renderer');
 assert.strictEqual(appJson.rendererOptions, undefined, '当前小程序不能保留 Skyline rendererOptions');
 assert.strictEqual(appJson.componentFramework, undefined, '当前小程序不能启用 glass-easel 组件框架');
 assert.strictEqual(projectConfig.appid, 'wx23aa017375535746');
 assert.strictEqual(projectConfig.setting.packNpmManually, true);
 assert.strictEqual(projectConfig.setting.packNpmRelationList[0].packageJsonPath, './package.json');
+
+var capturedApp = null;
+var appVisualTheme = 'light';
+var appVisualCalls = [];
+var systemTheme = 'dark';
+vm.runInNewContext(appJs, {
+  App: function App(definition) { capturedApp = definition; },
+  require: function requireAppDependency(request) {
+    if (request === 'poemui-miniprogram/common/utils/visual-config') {
+      return {
+        restore: function restore() {
+          appVisualCalls.push({ type: 'restore' });
+          return { config: { theme: appVisualTheme }, restored: true, error: null };
+        },
+        set: function set(patch, options) {
+          appVisualTheme = patch.theme;
+          appVisualCalls.push({ type: 'set', patch: patch, options: options });
+          return { config: { theme: appVisualTheme }, changed: true, persisted: options.persist !== false, error: null };
+        }
+      };
+    }
+    if (request === 'poemui-miniprogram/common/utils/theme') {
+      return {
+        getSystemTheme: function getSystemTheme() { return systemTheme; }
+      };
+    }
+    throw new Error('Unexpected app dependency: ' + request);
+  }
+}, { filename: 'miniprogram/app.js' });
+assert.ok(capturedApp, 'App runtime definition must be registered');
+capturedApp.onLaunch();
+assert.deepStrictEqual(appVisualCalls.map(function callType(call) { return call.type; }), ['restore', 'set'], 'launch must restore the Store before applying the current system theme');
+assert.strictEqual(appVisualTheme, 'dark', 'launch must resolve the current system dark theme into the shared visual state');
+assert.strictEqual(appVisualCalls[1].options.persist, false, 'system-derived theme must not overwrite the user storage record');
+systemTheme = 'light';
+capturedApp.onShow();
+assert.strictEqual(appVisualTheme, 'light', 'returning to the miniprogram must re-read and apply the current system theme');
+capturedApp.onThemeChange({ theme: 'dark' });
+assert.strictEqual(appVisualTheme, 'dark', 'App.onThemeChange must update the Store so Appearance settings and every Provider stay synchronized');
+capturedApp.onThemeChange({ theme: 'unexpected' });
+assert.strictEqual(appVisualTheme, 'light', 'invalid theme events must fail closed to light');
 
 var capturedPage;
 var navigations = [];

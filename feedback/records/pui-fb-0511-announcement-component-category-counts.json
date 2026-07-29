@@ -1,0 +1,158 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0511",
+  "title": "更新公告统计字段转为 Me 图表数据源",
+  "scope": "component",
+  "components": [
+    "miniprogram-me",
+    "update-announcement",
+    "catalog-metadata"
+  ],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "每条更新公告保留组件总数和各类别数量字段供图表使用，但更新公告 Popup 不再直接展示组件总数或九类统计。",
+  "environment": {
+    "surfaces": [
+      "miniprogram-me",
+      "update-announcement-popup",
+      "shared-cloud"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools",
+      "cloudbase"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "fruity"
+    ]
+  },
+  "reproduction": [
+    "进入 pages/me/index 并打开更新公告。",
+    "旧公告只包含版本、日期、摘要与 highlights。",
+    "云端、本地 fallback 和缓存均没有组件总数与九类数量字段。"
+  ],
+  "expected": "0.1.0、0.1.1、0.1.2 三条公告都有 componentCount 与全部九项 categoryCounts，类别之和等于组件总数；字段进入 Me BarChart 数据链，不在 Popup 可见层重复展示。",
+  "actual": "Schema v2 已有完整统计，但旧页面又在 Popup 中直接展示同一批字段，和仪表盘信息重复。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户要求更新公告条目新增组件数量和各类别数量。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/data/component-status.js",
+      "note": "生成型真相源记录当前 74、前序 71，以及九类当前值和 previousValue。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/services/update-announcements.js",
+      "note": "Schema v2 读取生成统计，克隆并校验 componentCount/categoryCounts。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/me/index.wxml",
+      "note": "公告可见层已删除统计区；同页 BarChart 消费公告 categoryCounts。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "专项锁定三版本统计、九类顺序、合计、深拷贝、云归一化、BarChart 消费与 Popup 无统计块。"
+    },
+    {
+      "kind": "file",
+      "ref": ".audit/cloud/pui-updatelog-schema-v2-counts-readback.json",
+      "note": "生产共享云三条稳定公告均局部更新为 Schema v2，写后回读 updated=1、九类齐全且合计正确。"
+    },
+    {
+      "kind": "browser",
+      "ref": "/tmp/poemui-me-announcement-counts-light-390.png",
+      "note": "微信开发者工具 390px 浅色公告首屏完整显示组件总数 74 和九类数量。"
+    }
+  ],
+  "rootCause": "Schema v2 的统计字段已经解决数据缺口，但页面把数据字段和公告阅读内容混在同一 Popup，又没有把它们用于解释类别增量。",
+  "decision": {
+    "outcome": "继续保留 Schema v2 的 componentCount 与 categoryCounts[{key,label,count}]：0.1.0 使用生成型 previousValue，0.1.1/0.1.2 使用当前分类值；Service 拒绝总数非法、类别缺失、key 重复或合计不一致的远端数据。Popup 删除统计 Grid；字段改由 PUI-FB-0513 的 Me BarChart 消费。",
+    "rationale": "仓库已有 component-status.js 真相源，不需要编造数字；把一致性校验放入 Service 可同时约束云端、缓存和本地 fallback。数据字段与公告可见内容分层后，Popup 更克制，图表则能直接表达类别增量。",
+    "alternativesRejected": [
+      "只把数字写进 description：字段不可查询，无法校验总数与分类合计。",
+      "页面手写九类数字：会与 metadata 生成目录漂移。",
+      "只给 0.1.2 增加字段：历史公告仍不满足同形 Schema。",
+      "为统计区再建 Card：公告 Popup 已是唯一 Surface，会形成卡片套卡片。",
+      "从 Schema 删除统计字段：会破坏已发布云数据合同和 BarChart 数据源。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/common/services/update-announcements.js",
+      "miniprogram/pages/me/index.wxml",
+      "miniprogram/pages/me/index.wxss",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.json",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md",
+      "feedback/records/pui-fb-0440-miniprogram-update-announcement-shared-cloud.json"
+    ],
+    "dependencies": [
+      "miniprogram/common/data/component-status.js",
+      "PUI Popup",
+      "PUI ScrollArea",
+      "PUI BarChart",
+      "WeChat Shared Cloud"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-miniprogram-tabbar-pages.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过",
+      "npm run feedback:generate && npm run feedback:check：通过，493 条 Ledger 记录",
+      "CloudBase Node SDK 3.18.3：0.1.0/0.1.1/0.1.2 三条稳定文档均 updated=1、schemaVersion=2、categoryCount=9、categoryTotal=componentCount",
+      "git diff --check && git -C miniprogram diff --check：通过"
+    ],
+    "browser": [
+      "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390x844：source=cloud、error=''；运行态回读 0.1.2=74、0.1.1=74、0.1.0=71，三条均 schemaVersion=2、categoryCount=9、categoryTotal 与 componentCount 一致。",
+      "旧 Popup 可见统计截图 /tmp/poemui-me-announcement-counts-light-390.png、/tmp/poemui-me-announcement-counts-dark-fruity-390.png 只作为已被取代的历史证据。",
+      "最新浅色与深色 Popup 均无统计节点，0.1.2 云端新说明可见；截图 /tmp/poemui-me-announcement-no-counts-light-390.png、/tmp/poemui-me-announcement-no-counts-dark-fruity-390.png。",
+      "ScrollArea 受控滚至 500 后 Footer 仍保持 left=27/top=772/336x45；控制台目标过滤为空。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的长公告滚动、读屏与弱网缓存仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "更新公告 Schema v2 继续包含组件总数与九类数量，但只供校验和 Me BarChart 使用，不在 Popup 直接展示。",
+    "rules": [
+      "公告统计优先读取 component-status.js，不手写或猜测当前分类数量。",
+      "每条公告必须包含 componentCount 和全部九项 categoryCounts。",
+      "categoryCounts 的 key 必须唯一，count 为非负整数，合计严格等于 componentCount。",
+      "本地 fallback、共享云、缓存、页面和专项测试必须保持同形 Schema。",
+      "Popup 不渲染 componentCount/categoryCounts；统计字段由 Me BarChart 消费。",
+      "无法取得历史分类证据时标记待补证，不得把合计不一致的数据发布为真实统计。"
+    ],
+    "tags": [
+      "announcement",
+      "component-count",
+      "category-counts",
+      "shared-cloud",
+      "generated-data",
+      "schema-v2"
+    ]
+  }
+}

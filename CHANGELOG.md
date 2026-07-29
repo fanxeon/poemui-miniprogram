@@ -6,6 +6,7 @@
 
 ## 0.1.2
 
+- 为 74 个公开组件新增统一 Starter Usage：官网常规模式与生成文档共用可复制的 `page.json / page.wxml / page.js` 最小示例；运行时安全默认、H5 当前效果和小程序独立组件页保持分层。Popup 开箱示例固定为 `<pui-popup visible="{{true}}" content="Popup 内容" />`。
 - 新增 `AreaChart`、`BarChart` 与 `Waffle` 三项高级图表；小程序与 H5 共用数据、主题渐变、零基线和可重播入场语义。
 - 修正 Navbar、Sticky、NavigationMenu、Breadcrumb、Tabs、Tabbar、Steps 与 Indexes 的锚点、宽度、滚动和选中状态。
 - 完善 Picker、DateTimePicker、Select、Field、Input、Search、Stepper 与 Textarea 的 Header、圆角、间距、实机布局和受控输入稳定性。

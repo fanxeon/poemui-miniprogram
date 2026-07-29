@@ -1,6 +1,7 @@
 var themeBehavior = require('../common/behaviors/theme');
 var chartData = require('../common/utils/chart-data');
 var areaChartData = require('../common/utils/area-chart-data');
+var platformInfo = require('../common/utils/platform-info');
 
 var LIGHT_FALLBACK = {
   neutral: '#71717a',
@@ -57,12 +58,7 @@ function queryFactory(component) {
 }
 
 function pixelRatio() {
-  if (typeof wx === 'undefined') return 1;
-  try {
-    if (wx.getWindowInfo) return Math.max(1, Number(wx.getWindowInfo().pixelRatio) || 1);
-    if (wx.getSystemInfoSync) return Math.max(1, Number(wx.getSystemInfoSync().pixelRatio) || 1);
-  } catch (error) {}
-  return 1;
+  return Math.max(1, Number(platformInfo.getWindowInfo().pixelRatio) || 1);
 }
 
 function trace(ctx, points, curve) {

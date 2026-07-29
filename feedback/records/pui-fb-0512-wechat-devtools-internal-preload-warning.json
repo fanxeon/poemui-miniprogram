@@ -1,0 +1,113 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0512",
+  "title": "微信开发者工具内部脚本产生未使用 preload 警告",
+  "scope": "global",
+  "components": ["wechat-devtools", "build-tooling", "miniprogram"],
+  "type": "compatibility",
+  "severity": "low",
+  "status": "wont-fix",
+  "acceptance": "not-required",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "确认 WAServiceMainContext.js 的 preload 警告是否来自 PoemUI，并在真实责任边界内消除可修复问题。",
+  "environment": {
+    "surfaces": ["wechat-devtools-console", "miniprogram-simulator"],
+    "platforms": ["wechat-devtools-nightly-2.02.2607282", "wechat-baselib-3.17.0"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "以微信开发者工具 Nightly 2.02.2607282 打开真实 miniprogram 工程，基础库选择 3.17.0。",
+    "清空 Console 后重新编译并打开 pages/me/index，等待超过四秒。",
+    "Console 重新出现 127.0.0.1:30855/__dev__/WAAutoService.js 与 WAServiceMainContext.js 的 link preload 未使用警告。",
+    "项目源码、配置和小程序运行时 console 缓冲区均未出现对应 preload 标签或警告。"
+  ],
+  "expected": "区分应用源码警告与开发者工具内部诊断；只有应用可控制的 preload 才修改项目代码，工具内部资源不得用页面补丁或关闭正常能力掩盖。",
+  "actual": "开发者工具本机模拟器为两个 __dev__ 内部脚本建立 preload，但当前启动路径没有在 Chromium 的时间阈值内消费它们，因此 DevTools Console 输出未使用 preload 警告。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "当前任务对话",
+      "note": "用户提供 WAServiceMainContext.js 未使用 preload 的完整 Console 警告。"
+    },
+    {
+      "kind": "browser",
+      "ref": "微信开发者工具 Console / pages/me/index / 2026-07-29",
+      "note": "清空后重新编译可稳定复现 WAAutoService.js 与 WAServiceMainContext.js 两条 127.0.0.1:30855/__dev__/ 警告；页面来源为 DevTools 内置 appservice。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/project.config.json",
+      "note": "真实工程配置没有声明 preload 标签或脚本资源。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/project.private.config.json",
+      "note": "本地设置 preloadBackgroundData=false；compileHotReLoad=true 是正常开发能力，不是应用 HTML preload 声明。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/app.json",
+      "note": "应用只启用 requiredComponents 懒加载，没有 preloadRule 或内部 __dev__ 脚本引用。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/index.html",
+      "note": "源码搜索后唯一业务 preload 是 H5 字体；该标签已具备 as=font，与微信 __dev__ 内部脚本无关。"
+    }
+  ],
+  "rootCause": "微信开发者工具 Nightly 的本机 appservice 宿主预载 __dev__ 内部脚本，但当前页面启动分支没有在 Chromium 的诊断时限内使用资源；preload 标签和资源服务器均不属于 PoemUI 工程。",
+  "decision": {
+    "outcome": "将该警告归类为微信开发者工具内部环境噪音，PoemUI 不修改组件、页面或构建产物；保留自动热重载、requiredComponents 懒加载与正常 Console 级别。",
+    "rationale": "应用无法为开发者工具内置 preload 补写 as 属性；牺牲热重载、关闭懒加载或过滤全部 warning 只会隐藏信号，不能修复资源发起方。",
+    "alternativesRejected": [
+      "在小程序页面添加 link/preload 不受原生小程序运行时支持，也无法控制 __dev__ 内部 HTML。",
+      "关闭 compileHotReLoad 可能减少 WAAutoService 分支，但会损失正常开发能力，且不能保证 WAServiceMainContext preload 消失。",
+      "清空或过滤全部 warning 会同时掩盖真实的 WXSS selector 与 IntersectionObserver 警告。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/project.config.json",
+      "miniprogram/project.private.config.json",
+      "miniprogram/app.json",
+      "docs/WECHAT_PLATFORM_API_COMPATIBILITY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/RELEASE_0.1.2_BATTLE_CHANGELOG.md",
+      "feedback/records/pui-fb-0512-wechat-devtools-internal-preload-warning.json"
+    ],
+    "dependencies": ["微信开发者工具 Nightly 2.02.2607282", "微信基础库 3.17.0", "Chromium preload diagnostics"]
+  },
+  "verification": {
+    "tests": [],
+    "commands": [
+      "node skills/poemui-miniprogram/scripts/inspect-project.mjs miniprogram",
+      "rg WAServiceMainContext|rel=preload|127.0.0.1:30855",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "git diff --check",
+      "git -C miniprogram diff --check"
+    ],
+    "browser": [
+      "清空 Console 前为 Errors=0 / Warnings=10，其中两条 preload 指向 127.0.0.1:30855/__dev__/WAAutoService.js 与 WAServiceMainContext.js。",
+      "清空后重新打开 pages/me/index 并等待四秒，Errors=0 / Warnings=7；两条内部 preload 警告重新出现，证明不是历史缓存。",
+      "miniprogram-automator 运行时 console 对 preload、WAServiceMainContext、warning、error、exception 的过滤为空，说明该诊断只存在于开发者工具 Chromium Console。"
+    ],
+    "deviceRisks": [
+      "该结论只覆盖当前 Nightly 2.02.2607282 与基础库 3.17.0；后续开发者工具可能修复或改变内部预载策略。",
+      "iOS/Android 真机未为这条工具内部诊断单独抓取日志，状态保持 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "127.0.0.1/__dev__/WAAutoService 或 WAServiceMainContext 未使用 preload 是开发者工具内部警告，不要用 PoemUI 源码或关闭正常能力伪修复。",
+    "rules": [
+      "先核对警告 URL：127.0.0.1/__dev__ 与 DevTools appservice 属于工具环境，pages/ 或 miniprogram_npm 路径才可能属于应用。",
+      "清空 Console 后重编译复现，并同时检查 miniprogram-automator 运行时 console，避免把历史缓存或工具外壳噪音归因于组件。",
+      "不得为消除工具内部 preload 警告关闭 compileHotReLoad、requiredComponents 懒加载或全部 warning。",
+      "报告 Console 时分开列出工具内部噪音与项目可操作警告，不能把目标过滤为空表述为完整 Console 零警告。"
+    ],
+    "tags": ["wechat-devtools", "preload", "WAServiceMainContext", "WAAutoService", "tooling", "console"]
+  }
+}

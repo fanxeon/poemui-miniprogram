@@ -88,12 +88,98 @@ function createPreviewData() {
     apiEvents: metadata.apiEvents,
     apiSlots: metadata.apiSlots,
     apiMethods: metadata.apiMethods,
+    starterUsage: createStarterUsageData(),
     packageComponents: metadata.packageComponents,
     shadcnComponents: shadcnComponents,
     colorTokens: readThemeColorTokens(),
     typographyTokens: readThemeTypographyTokens(),
     spacingTokens: readThemeSpacingTokens(),
   };
+}
+
+function starterComponentPath(id) {
+  return `poemui-miniprogram/${id}/${id}`;
+}
+
+function createStarterUsingComponents(id, entry) {
+  return {
+    [`pui-${id}`]: starterComponentPath(id),
+    ...(entry.components || {}),
+  };
+}
+
+function createStarterUsageSource(id, entry) {
+  const usingComponents = createStarterUsingComponents(id, entry);
+  const sections = [
+    JSON.stringify({ usingComponents }, null, 2),
+    entry.wxml,
+  ];
+  if (entry.data) {
+    sections.push(`// page.js\nPage({\n  data: ${JSON.stringify(entry.data, null, 2)}\n})`);
+  }
+  if (entry.pageJs) sections.push(`// page.js\n${entry.pageJs}`);
+  return sections.filter(Boolean).join('\n\n');
+}
+
+function createStarterUsageData() {
+  return Object.fromEntries(metadata.packageComponents.map((id) => {
+    const entry = metadata.starterUsage[id];
+    if (!entry) return [id, null];
+    return [id, {
+      ...entry,
+      source: createStarterUsageSource(id, entry),
+    }];
+  }));
+}
+
+function createStarterUsageMarkdown() {
+  const sections = metadata.groups.map((group) => {
+    const componentIds = Array.from(new Set(group.items
+      .map((item) => item.packageId || item.id)
+      .filter((id) => metadata.packageComponents.includes(id))));
+    if (!componentIds.length) return '';
+    return [
+      `## ${group.title}`,
+      '',
+      ...componentIds.flatMap((id) => {
+        const item = group.items.find((entry) => (entry.packageId || entry.id) === id);
+        const entry = metadata.starterUsage[id];
+        return [
+          `### ${item?.nameZh || item?.name || id} \`${id}\``,
+          '',
+          '#### page.json',
+          '',
+          '```json',
+          JSON.stringify({ usingComponents: createStarterUsingComponents(id, entry) }, null, 2),
+          '```',
+          '',
+          '#### page.wxml',
+          '',
+          '```xml',
+          entry.wxml,
+          '```',
+          '',
+          ...(entry.data ? [
+            '#### page.js',
+            '',
+            '```js',
+            `Page({\n  data: ${JSON.stringify(entry.data, null, 2)}\n})`,
+            '```',
+            '',
+          ] : []),
+          ...(entry.pageJs ? ['#### page.js', '', '```js', entry.pageJs, '```', ''] : []),
+        ];
+      }),
+    ].join('\n');
+  }).filter(Boolean);
+  return [
+    '# PoemUI 开箱用法',
+    '',
+    '> 本文件由 `metadata/component-starter-usage.js` 自动生成。Starter Usage 是复制后立即可见、可理解的最小调用，不等于组件运行时默认值，也不改变小程序独立组件页的展示状态。',
+    '',
+    ...sections,
+    '',
+  ].join('\n');
 }
 
 function createPreviewSource() {
@@ -191,6 +277,7 @@ function createShadcnCompatibilityMarkdown() {
 
 module.exports = {
   createCatalogMarkdown,
+  createStarterUsageMarkdown,
   createMatrixMarkdown,
   createShadcnCompatibilityMarkdown,
   createPreviewData,

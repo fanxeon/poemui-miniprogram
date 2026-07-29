@@ -211,8 +211,6 @@ Page({
     sheetError: false,
     sheetEmpty: false,
     sheetResult: '等待 open / close / drag / overlay / retry / scroll / after-*',
-    tooltipVisible: false,
-    tooltipResult: '等待 reference / input / change / content / after-*',
     actionSheetVisible: false,
     actionSheetResult: '等待 visible-change / selected / close / cancel',
     actionSheetItems: [
@@ -396,7 +394,6 @@ Page({
     deliveryDirection: 'ltr',
     deliveryDirectionLanguage: 'zh-CN',
     deliveryDirectionStatus: '等待 resolve / ready / change / after-change',
-    buttonGroupStatus: '等待子 Button click',
     cardStatus: '等待 Card click',
     cardFooterStatus: '等待 footer Button click',
     avatarStatus: '等待真实图片 error',
@@ -793,9 +790,6 @@ Page({
   },
   onIconError: function onIconError(event) {
     this.setData({ iconStatus: 'error 事件：' + (event.detail.name || 'unknown') });
-  },
-  onButtonGroupAction: function onButtonGroupAction(event) {
-    this.setData({ buttonGroupStatus: '子 Button click：' + event.currentTarget.dataset.action });
   },
   onDeliveryButtonClick: function onDeliveryButtonClick(event) {
     this.setData({ deliveryButtonStatus: 'click：source=' + event.detail.source + ' / theme=' + event.detail.theme + ' / formType=' + event.detail.formType });
@@ -1404,45 +1398,6 @@ Page({
   onPopoverVisibleChange: function onPopoverVisibleChange(event) {
     var detail = event && event.detail ? event.detail : {};
     this.setData({ popoverVisible: !!detail.visible, popoverResult: 'visible-change：' + !!detail.visible + '，页面已回写' });
-  },
-  showTooltip: function showTooltip() {
-    var tooltip = this.selectComponent('#deliveryTooltip');
-    if (tooltip) tooltip.show('programmatic');
-  },
-  hideTooltip: function hideTooltip() {
-    var tooltip = this.selectComponent('#deliveryTooltip');
-    if (tooltip) tooltip.hide('programmatic');
-  },
-  toggleTooltip: function toggleTooltip() {
-    var tooltip = this.selectComponent('#deliveryTooltip');
-    if (tooltip) tooltip.toggle('programmatic');
-  },
-  onTooltipInput: function onTooltipInput(event) {
-    this.setData({ tooltipVisible: !!event.detail.visible, tooltipResult: 'input：' + event.detail.source + ' · controlled=' + event.detail.controlled });
-  },
-  onTooltipChange: function onTooltipChange(event) {
-    this.setData({ tooltipVisible: !!event.detail.visible, tooltipResult: 'change：' + event.detail.source });
-  },
-  onTooltipShow: function onTooltipShow(event) {
-    this.setData({ tooltipResult: 'show：' + event.detail.source });
-  },
-  onTooltipHide: function onTooltipHide(event) {
-    this.setData({ tooltipResult: 'hide：' + event.detail.source });
-  },
-  onTooltipReferenceClick: function onTooltipReferenceClick(event) {
-    this.setData({ tooltipResult: 'reference-click：trigger=' + event.detail.trigger + ' · visible=' + event.detail.visible });
-  },
-  onTooltipReferenceLongpress: function onTooltipReferenceLongpress(event) {
-    this.setData({ tooltipResult: 'reference-longpress：trigger=' + event.detail.trigger + ' · visible=' + event.detail.visible });
-  },
-  onTooltipContentClick: function onTooltipContentClick(event) {
-    this.setData({ tooltipResult: 'content-click：close=' + event.detail.close });
-  },
-  onTooltipAfterShow: function onTooltipAfterShow(event) {
-    this.setData({ tooltipResult: 'after-show：' + event.detail.source });
-  },
-  onTooltipAfterHide: function onTooltipAfterHide(event) {
-    this.setData({ tooltipResult: 'after-hide：' + event.detail.source });
   },
   openActionSheet: function openActionSheet() {
     this.setData({ actionSheetVisible: true, actionSheetResult: '页面回写 visible=true' });

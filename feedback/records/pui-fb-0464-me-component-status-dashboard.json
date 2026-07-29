@@ -1,16 +1,16 @@
 {
   "$schema": "../schema.json",
   "id": "PUI-FB-0464",
-  "title": "Me 页使用真实版本总量接入 AreaChart 趋势仪表盘",
+  "title": "Me AreaChart 趋势仪表盘被类别增量 BarChart 取代",
   "scope": "component",
   "components": ["miniprogram", "me-page", "area-chart", "card", "catalog-metadata"],
   "type": "design-decision",
   "severity": "medium",
-  "status": "resolved",
+  "status": "wont-fix",
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-28",
-  "updatedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
   "userGoal": "第四 Tab 使用 AreaChart 精简展示 0.1.0 到 0.1.1 的真实组件增长；不虚构趋势点，也不保留与趋势语义无关的分类展开操作。",
   "environment": {
     "surfaces": ["me top-level page", "wechat-miniprogram", "catalog generation"],
@@ -49,7 +49,7 @@
     {
       "kind": "file",
       "ref": "miniprogram/pages/me/index.wxml",
-      "note": "页面以唯一 PUI Card 组合同一个 PUI AreaChart，保留版本横轴、圆点和唯一 ScrollArea，删除旧分类展开按钮，并在 Popup/Dialog 可见期间卸载原生 Canvas 防止穿透。"
+      "note": "该文件曾以唯一 PUI Card 组合 AreaChart 并在浮层可见时卸载 Canvas；当前已由 PUI-FB-0513 的 BarChart 结构取代。"
     },
     {
       "kind": "test",
@@ -59,7 +59,7 @@
   ],
   "rootCause": "旧 Me 方案把分类横向比较与版本增长混在同一 BarChart 中，并为分类折叠引入额外按钮、测量和高度动画；用户现在关注的是版本总量趋势，继续保留分类和展开交互会让页面语义与文案都过重。",
   "decision": {
-    "outcome": "保留 catalog 生成器的显式 release delta 作为 71→74 真相源；Me 页只把 previousVersion/previousTotal 与 currentVersion/total 转为同一 components 系列，在唯一 Card 中组合 small AreaChart，显示 Grid、XAxis 和 Dots，隐藏单系列冗余 Legend，显式 max=74。删除旧 BarChart、分类合并/排序、查看更多按钮、SelectorQuery 高度测量和过渡样式。服务 CellGroup 继续 margin-top:auto，超高由页面唯一 ScrollArea 滚动。微信 Canvas 的宿主 hidden 在 Popup 上方仍会留下原生绘制层，因此 Popup/Dialog 可见期间使用 wx:if 卸载 AreaChart，关闭后重新挂载。",
+    "outcome": "本条 AreaChart 方向只保留为历史证据；catalog 生成器与显式 release delta 继续作为版本总量真相源，当前 Me 改用 PUI-FB-0513 的类别增量 BarChart，不再保留 Canvas 浮层卸载分支。",
     "rationale": "AreaChart 适合连续版本趋势，BarChart 更适合分类横向比较。只有 0.1.0 与 0.1.1 两个发布事实，因此宁可保留两点和完整读屏名称，也不虚构月份或健康度。Card 继续提供唯一 Surface，AreaChart 保持透明叶子；Canvas 避让属于 Me 页面与浮层的组合边界，不应向共享 AreaChart 增加伪业务状态。",
     "alternativesRejected": [
       "页面硬编码九类数量：metadata 变化后会静默漂移。",
@@ -118,16 +118,16 @@
     ]
   },
   "ai": {
-    "summary": "Me 仪表盘只消费生成型真实组件目录与显式版本差集；AreaChart 只画有证据的版本总量，不虚构时间点或健康度。",
+    "summary": "本条 AreaChart 方向已被最新用户决定取代；当前 Me 图表合同只看 PUI-FB-0513。",
     "rules": [
       "组件总量必须由 metadata packageComponents 与显式 release delta 生成，页面不维护第二份数字。",
       "版本增量必须由显式 release delta 生成并验证 added component ID；不能按日期、文件数量或 UI 文案猜测。",
-      "AreaChart 版本趋势只使用已证实的 release delta 点，不得为了曲线丰富虚构时间点或监控指标。",
+      "版本里程碑继续保留为生成事实，但当前 Me 不再直接绘制三点趋势；最终规则见 PUI-FB-0513。",
       "单系列可以隐藏冗余 Legend，但版本横轴、圆点、摘要和读屏名称必须完整表达变化。",
       "版本只读取 poemui-miniprogram/version 轻量入口，不加载组件总入口或硬编码。",
-      "页面只允许一个仪表盘 Card；AreaChart 保持透明，服务 CellGroup 继续 margin-top:auto。",
-      "页面同时存在 Canvas 图表与 Popup/Dialog 时必须打开浮层检查真实合成层；hidden 不能保证原生层退出，必要时在浮层可见期间用 wx:if 卸载并验证关闭恢复。",
-      "H5 同步 Card/AreaChart 组件合同，不复制小程序业务页或伪造微信平台能力。",
+      "页面只允许一个仪表盘 Card；当前 BarChart 保持透明并占满 Card Content，服务 CellGroup 由标准 section gap 紧跟仪表盘。",
+      "当前 BarChart 是 View/WXSS 展示叶子，不得恢复历史 Canvas 浮层 wx:if 卸载分支。",
+      "H5 同步 Card/BarChart 公共组件合同，不复制小程序业务页或伪造微信平台能力。",
       "新增真实监控、版本增量或云端状态前必须先建立独立数据源、异常态和权限合同。"
     ],
     "tags": ["miniprogram", "me", "dashboard", "area-chart", "catalog", "generated-data", "version-trend"]

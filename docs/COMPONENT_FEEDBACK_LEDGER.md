@@ -2,7 +2,7 @@
 
 > 本文件由 `feedback/records/*.json` 自动生成，请勿手工编辑。工作流见 `docs/COMPONENT_FEEDBACK.md`。
 
-当前 488 条记录，数据更新至 2026-07-29：open 0、investigating 0、planned 0、needs-device 2、resolved 483；pending-user 296、accepted 183。
+当前 501 条记录，数据更新至 2026-07-29：open 0、investigating 0、planned 0、needs-device 2、resolved 492；pending-user 307、accepted 184。
 
 | ID | 范围 | 类型 | 严重度 | 状态 | 验收 | 问题 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -290,7 +290,7 @@
 | PUI-FB-0295 | tag, divider, miniprogram | bug | high | resolved | pending-user | Tag 全量 observer 在真实页面挂载后自触发更新循环 |
 | PUI-FB-0296 | cell, navbar, scroll-area, button, divider, icon, search, config-provider, miniprogram | capability-gap | high | resolved | pending-user | 首页基础组件 Cell 缺少真实独立用法页面 |
 | PUI-FB-0297 | button, icon, miniprogram | preview-parity | high | resolved | pending-user | 实色主要与危险 Button 的内置 Icon 对比度不足 |
-| PUI-FB-0298 | platform-runtime, icon, navbar, sheet, swipe-cell, rate, watermark, tabs, popover, direction, virtual-list, overlay, miniprogram | compatibility | high | resolved | pending-user | 组件库继续调用已弃用的 wx.getSystemInfoSync |
+| PUI-FB-0298 | platform-runtime, icon, navbar, sheet, swipe-cell, rate, watermark, tabs, popover, direction, virtual-list, overlay, area-chart, dynamic-message, style-utilities-page, miniprogram | compatibility | high | resolved | pending-user | 组件库继续调用已弃用的 wx.getSystemInfoSync |
 | PUI-FB-0299 | combobox, overlay, miniprogram-home, preview-site, theme | api-contract | medium | resolved | pending-user | 首页搜索入口需要圆形 Combobox 与可选背景模糊遮罩 |
 | PUI-FB-0300 | overlay, miniprogram-home, miniprogram-dist | compatibility | high | resolved | pending-user | Overlay 低动效通配选择器导致微信 WXSS 编译失败 |
 | PUI-FB-0301 | combobox, input, miniprogram-home, preview-site | api-contract | medium | resolved | pending-user | Combobox 延后展开时需使用真实 change 事件并允许满宽搜索行 |
@@ -427,7 +427,7 @@
 | PUI-FB-0437 | swiper, image | visual-layout | medium | resolved | pending-user | Swiper 演示缺少图片底板且错误重试未形成独立全宽行 |
 | PUI-FB-0438 | table, checkbox | visual-layout | medium | resolved | pending-user | Table 选择 Checkbox 被固定列边界塑造成独立容器 |
 | PUI-FB-0439 | brand-identity, icon | design-decision | medium | resolved | pending-user | 公司书写 Logo 以 poemcoder-mark 正式接入 pui-icon |
-| PUI-FB-0440 | miniprogram, cell, popup, tag, icon, top-loading, button, area-chart | capability-gap | medium | resolved | pending-user | 我的页缺少更新公告且共享云服务边界未建立 |
+| PUI-FB-0440 | miniprogram, cell, popup, tag, icon, top-loading, button, bar-chart | capability-gap | medium | resolved | pending-user | 我的页缺少更新公告且共享云服务边界未建立 |
 | PUI-FB-0441 | picker, popup, date-time-picker, preview-site, miniprogram | api-contract | high | resolved | pending-user | Picker / DateTimePicker 默认图标 Header 与 Classic 底部模式 |
 | PUI-FB-0442 | input, button, miniprogram-me, preview-site | api-contract | medium | resolved | pending-user | Input 尾部保存操作与清除按钮需要统一组件轨道 |
 | PUI-FB-0443 | top-loading, preview-site, miniprogram-advanced-page | api-contract | high | resolved | accepted | TopLoading 需要区分未知进度、精确零值与真实完成 |
@@ -451,7 +451,7 @@
 | PUI-FB-0461 | area-chart, bar-chart, waffle, theme-tokens | visual-layout | medium | resolved | pending-user | 渐变到透明的图表需要保留终点与低透明单元可读性 |
 | PUI-FB-0462 | bar-chart, miniprogram, npm-dist | compatibility | critical | resolved | pending-user | BarChart 条件循环 WXML 阻断微信页面编译 |
 | PUI-FB-0463 | bar-chart, theme-tokens, preview-site | visual-layout | medium | resolved | pending-user | BarChart 默认配色缺少层次且零基线不可见 |
-| PUI-FB-0464 | miniprogram, me-page, area-chart, card, catalog-metadata | design-decision | medium | resolved | pending-user | Me 页使用真实版本总量接入 AreaChart 趋势仪表盘 |
+| PUI-FB-0464 | miniprogram, me-page, area-chart, card, catalog-metadata | design-decision | medium | wont-fix | pending-user | Me AreaChart 趋势仪表盘被类别增量 BarChart 取代 |
 | PUI-FB-0465 | area-chart, preview-site, miniprogram, theme-tokens | capability-gap | high | resolved | pending-user | Area Chart 视觉参考需要转译为真实原生 AreaChart 组件 |
 | PUI-FB-0466 | area-chart, bar-chart, waffle, preview-site | capability-gap | medium | resolved | pending-user | 三类图表缺少统一且默认开启的优雅入场 API |
 | PUI-FB-0467 | navigation-menu | visual-layout | high | resolved | pending-user | NavigationMenu 根轨、双栏尾轨、Panel 与 Header 几何漂移 |
@@ -475,7 +475,7 @@
 | PUI-FB-0485 | area-chart, bar-chart, waffle | bug | high | resolved | pending-user | AreaChart BarChart Waffle 重播动画没有重新触发 |
 | PUI-FB-0486 | miniprogram-home, collapsible, scroll-area | visual-layout | medium | resolved | pending-user | 首页手动打开目录分区后标题没有进入顶部阅读位置 |
 | PUI-FB-0487 | miniprogram-me, miniprogram-codepage, navbar, button, popup, dialog, config-provider | design-decision | medium | resolved | pending-user | Me 与安装一级页 Navbar 缺少一致的双 Slot 操作和外观入口 |
-| PUI-FB-0488 | miniprogram, me-page, area-chart, card, style-utilities | visual-layout | medium | resolved | pending-user | Me 仪表盘移除冗余版头并增加三列真实数据摘要 |
+| PUI-FB-0488 | miniprogram, me-page, bar-chart, card, style-utilities | visual-layout | medium | resolved | pending-user | Me 仪表盘使用四列真实数据摘要与单一内容间距 |
 | PUI-FB-0489 | collapsible, config-provider, miniprogram-home, preview-site | visual-layout | medium | resolved | pending-user | 首页展开目录分区未作为可配置外观 Surface |
 | PUI-FB-0490 | indexes, button, miniprogram | bug | high | resolved | pending-user | Indexes 长索引轨产生灰色滚动条并破坏触摸映射 |
 | PUI-FB-0491 | indexes, miniprogram | capability-gap | medium | resolved | pending-user | Indexes 按住拖动缺少当前索引放大提示 |
@@ -494,6 +494,19 @@
 | PUI-FB-0504 | dynamic-message, preview-site, miniprogram-advanced-page | api-contract | medium | resolved | pending-user | DynamicMessage 需要组件私有阴影与毛玻璃覆盖 |
 | PUI-FB-0505 | skeleton | visual-layout | medium | resolved | pending-user | Skeleton 自定义 circle 被固定最小高度拉成椭圆 |
 | PUI-FB-0506 | area-chart, bar-chart, waffle | visual-layout | medium | resolved | pending-user | 图表演示数据变化幅度过小导致动画不明显 |
+| PUI-FB-0507 | miniprogram-me, waffle, area-chart | design-decision | medium | wont-fix | accepted | Me Waffle 版本构成试案被用户否决 |
+| PUI-FB-0508 | miniprogram-home | compatibility | medium | resolved | pending-user | 首页移除无效 enableShareTimeline 页面配置 |
+| PUI-FB-0509 | all-components, popup, preview-site | ai-usability | high | resolved | pending-user | 组件安全默认值与开箱引用混用导致基础代码不可见 |
+| PUI-FB-0510 | miniprogram-me, area-chart, catalog-metadata | design-decision | medium | wont-fix | pending-user | Me AreaChart 三版本方案被类别增量 BarChart 取代 |
+| PUI-FB-0511 | miniprogram-me, update-announcement, catalog-metadata | capability-gap | medium | resolved | pending-user | 更新公告统计字段转为 Me 图表数据源 |
+| PUI-FB-0512 | wechat-devtools, build-tooling, miniprogram | compatibility | low | wont-fix | not-required | 微信开发者工具内部脚本产生未使用 preload 警告 |
+| PUI-FB-0513 | miniprogram-me, bar-chart, update-announcement, catalog-metadata | design-decision | medium | resolved | pending-user | Me 使用公告分类数据展示逐版本增量 BarChart |
+| PUI-FB-0514 | bar-chart, area-chart, theme-tokens | visual-layout | medium | resolved | pending-user | BarChart 使用 AreaChart 式透明填充并保留实体终点 |
+| PUI-FB-0515 | miniprogram-me, bar-chart, button | visual-layout | medium | resolved | pending-user | Me 长 BarChart 默认折叠并平滑展开收起 |
+| PUI-FB-0516 | popup, scroll-area, miniprogram-me | visual-layout | medium | resolved | pending-user | Popup 标题正文重复间距与公告近全屏固定高度 |
+| PUI-FB-0517 | scroll-area, config-provider, preview-site, design-tokens | bug | high | resolved | pending-user | ScrollArea 深色主题继承浅色渐变上下文形成白条 |
+| PUI-FB-0518 | miniprogram, config-provider, visual-config, appearance-settings, platform-runtime | capability-gap | high | resolved | pending-user | 小程序进入前台未同步系统深浅色与外观开关 |
+| PUI-FB-0519 | example, package-install, tooltip, button-group | compatibility | critical | resolved | pending-user | 真实安装示例残留已退役组件导致开箱即用验证失败 |
 
 ## PUI-FB-0001 · Style Utilities 缺少显式深色条件变体
 
@@ -7896,11 +7909,11 @@ AI 必须遵守：
 ## PUI-FB-0298 · 组件库继续调用已弃用的 wx.getSystemInfoSync
 
 - 原始记录：`feedback/records/pui-fb-0298-deprecated-system-info-migration.json`
-- 范围：`global` / `platform-runtime`、`icon`、`navbar`、`sheet`、`swipe-cell`、`rate`、`watermark`、`tabs`、`popover`、`direction`、`virtual-list`、`overlay`、`miniprogram`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-24
+- 范围：`global` / `platform-runtime`、`icon`、`navbar`、`sheet`、`swipe-cell`、`rate`、`watermark`、`tabs`、`popover`、`direction`、`virtual-list`、`overlay`、`area-chart`、`dynamic-message`、`style-utilities-page`、`miniprogram`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
 - 用户目标：微信开发者工具不再输出 wx.getSystemInfoSync 已弃用告警，组件库应改用当前官方拆分接口。
-- 实际问题：组件分别从已弃用的聚合接口读取 windowWidth、windowHeight、statusBarHeight、language、theme 或 platform，导致真实开发者工具控制台报告弃用警告。
-- 决策：新增 platform-info 共享读取器：窗口几何统一 getWindowInfo，设备平台统一 getDeviceInfo，语言和主题统一 getAppBaseInfo；不调用无业务需要的 getSystemSetting 或 getAppAuthorizeSetting。
+- 实际问题：组件曾分别从已弃用的聚合接口读取 windowWidth、windowHeight、statusBarHeight、pixelRatio、language、theme 或 platform；首次迁移后又有三个未进入扫描清单的运行时消费者恢复旧 fallback，导致真实开发者工具控制台再次报告弃用警告。
+- 决策：platform-info 继续作为唯一共享读取器：窗口几何、状态栏、Canvas DPR 与页面 rpx 换算统一 getWindowInfo，设备平台统一 getDeviceInfo，语言和主题统一 getAppBaseInfo；2026-07-29 将专项门禁从手工清单升级为自动遍历全部发布组件、共享运行时与真实小程序源码，不调用无业务需要的 getSystemSetting 或 getAppAuthorizeSetting。
 - 理由：按字段使用官方拆分接口可消除弃用告警，保持读取最小化，并让失败回退由每个组件既有安全默认值负责。
 
 AI 必须遵守：
@@ -7909,19 +7922,19 @@ AI 必须遵守：
 - platform 使用 getDeviceInfo，language/theme 使用 getAppBaseInfo。
 - 只有真实需要系统设置或授权状态时才调用 getSystemSetting 或 getAppAuthorizeSetting。
 - 新组件不得直接读取平台信息；优先复用 common/utils/platform-info，并以专项扫描防回归。
+- 平台门禁必须自动覆盖发布组件与真实小程序运行时；不得退回由维护者手工追加消费者文件的易漏清单。
 
 验证与遗留风险：
 
 - 验证：`node scripts/test-platform-info.js`
+- 验证：`node scripts/test-area-chart.js`
+- 验证：`node scripts/test-dynamic-message.js`
+- 验证：`node scripts/test-miniprogram-style-utilities-page.js`
 - 验证：`npm run feedback:generate`
 - 验证：`npm run feedback:check`
-- 验证：`npm run site:build`
-- 验证：`npm run check`
+- 验证：`npm run miniprogram:build`
 - 验证：`npm run example:install`
-- 验证：`npm run pack:check`
 - 验证：`微信 CLI build-npm`
-- 验证：`node /tmp/pui-verify-home-button.js`
-- 验证：`node /tmp/pui-verify-icon.js`
 - 真机/兼容风险：开发者工具验证不能替代 iOS/Android 真机对不同基础库、窗口变化和系统主题的确认。
 - 真机/兼容风险：低于当前拆分接口支持范围的历史基础库不再调用旧接口；会使用组件既有安全默认值，兼容范围需由消费者按目标基础库确认。
 
@@ -9456,16 +9469,16 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0357-miniprogram-home-native-share.json`
 - 范围：`component` / `miniprogram-home`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-25
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
 - 用户目标：首页可以通过微信系统菜单稳定分享给好友，并在条件允许时分享到朋友圈。
-- 实际问题：首页没有声明任何原生分享返回载荷或朋友圈页面开关。
-- 决策：首页通过 onShareAppMessage 返回标题、/pages/index/index 与包内品牌图；通过 onShareTimeline 返回同源标题和品牌图，并在页面 JSON 开启 enableShareTimeline。
-- 理由：使用微信原生系统菜单可保证接收者进入可恢复首页，不增加重复分享按钮、前端成功提示或无法验证的统计。
+- 实际问题：首页最初没有声明原生分享载荷；随后加入的 enableShareTimeline 页面 JSON 键又被当前微信开发者工具判为无效配置。
+- 决策：首页通过 onShareAppMessage 返回标题、/pages/index/index 与包内品牌图，通过 onShareTimeline 返回同源标题和品牌图；页面 JSON 不声明当前开发者工具判为无效的 enableShareTimeline。
+- 理由：分享能力应由当前 Page 生命周期承载；删除无效页面键可消除真实控制台配置警告，同时不增加重复分享按钮、前端成功提示或无法验证的统计。
 
 AI 必须遵守：
 
 - 需要分享的页面必须实现 onShareAppMessage，并只返回可恢复的公开路径和包内或合规网络图片。
-- 需要朋友圈能力时，在页面 JSON 设置 enableShareTimeline=true，并实现 onShareTimeline。
+- 需要朋友圈能力时实现 onShareTimeline；不得向页面 JSON 写入当前开发者工具已判为无效的 enableShareTimeline。
 - 分享路径不得携带临时 UI 状态、用户偏好或未经同意的用户数据。
 - 分享发送结果与朋友圈可用性只能由合法 AppID 和真机确认，不能由 H5 或静态测试冒充。
 
@@ -11551,11 +11564,11 @@ AI 必须遵守：
 ## PUI-FB-0440 · 我的页缺少更新公告且共享云服务边界未建立
 
 - 原始记录：`feedback/records/pui-fb-0440-miniprogram-update-announcement-shared-cloud.json`
-- 范围：`component` / `miniprogram`、`cell`、`popup`、`tag`、`icon`、`top-loading`、`button`、`area-chart`
+- 范围：`component` / `miniprogram`、`cell`、`popup`、`tag`、`icon`、`top-loading`、`button`、`bar-chart`
 - 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
-- 用户目标：在我的页增加更新公告 Cell，点击后使用 Popup 陈列真实更新内容；接入共享环境 poemcoder-1gkbkid139b08f45 的 pui_updatelog，并突出版本、日期和组件改动。
+- 用户目标：在我的页增加更新公告 Cell，点击后使用 Popup 陈列真实更新内容；接入共享环境 poemcoder-1gkbkid139b08f45 的 pui_updatelog，并以统计字段驱动 Me 图表，而不是在 Popup 重复展示。
 - 实际问题：页面没有公告能力，共享云服务的环境共享、跨主体接入和权限分区也没有文档合同。
-- 决策：新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Popup 使用唯一滚动 Content，以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。0.1.1 与 0.1.2 公告均按稳定 _id/version 维护唯一记录；0.1.2 的云端写入、包内 fallback 和微信体验版可见内容使用同一 schema/content，最终文案压缩为高级图表、导航与表单、展示与反馈、浮层、小程序五组，Me 页内容同步为 AreaChart 的 71→74 真实趋势。微信 Canvas 会穿过普通浮层 Surface，Popup/Dialog 可见期间由 Me 页面用 wx:if 卸载图表，关闭后恢复。工作树版本、云公告、H5 或体验版均不冒充 npm Registry 已发布。后续 PUI 云集合统一使用 pui_ 前缀。
+- 决策：新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Schema v2 保留 componentCount 与九项 categoryCounts，Service 强制校验类别 key 唯一、数量为非负整数且合计等于组件总数；包内统计读取生成型 component-status.js。Popup 使用唯一滚动 Content，只以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button；统计字段由 PUI-FB-0513 的 Me BarChart 消费。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。0.1.0、0.1.1 与 0.1.2 公告均按稳定 _id/version 维护唯一记录。工作树版本、云公告、H5 或体验版均不冒充 npm Registry 已发布。后续 PUI 云集合统一使用 pui_ 前缀。
 - 理由：共享环境和集合已经由用户确认，直接使用微信环境共享可以复用现有生产资源；独立 Cloud 实例避免污染默认环境，稳定 Schema 与缓存保证弱网可读，来源字段防止 fallback 被误报为云端成功。
 
 AI 必须遵守：
@@ -11564,13 +11577,15 @@ AI 必须遵守：
 - Popup Content 是唯一公告滚动区，Footer Button 通过 block 使用全宽操作轨。
 - 公告请求使用受控 TopLoading；只有真实云端成功进入 success，缓存、本地回退和异常都回到 idle，不得保留居中 Spinner 或用停止加载推断成功。
 - 公告 Service 使用独立 Shared Cloud，返回副本并保持稳定 Schema；远程失败时不得把缓存或包内回退冒充刚从云端刷新。
+- 公告 Schema v2 必须包含 componentCount 与全部九项 categoryCounts；类别 key 唯一且合计严格等于组件总数，但 Popup 不直接展示这些字段。
+- 当前公告统计必须读取生成型 component-status.js；页面和云写入脚本不得维护另一份当前分类数字。
 - 新公告必须先按 version/_id 查重，再以 documents 数组写入并回读；包内 fallback 与云端保持同形。
 - 公告只写入可由源码、版本差集和验收证明的改动；本地 package 版本不等于 npm Registry 已发布。
 - 所有 PoemUI 专属云集合使用 pui_ 前缀；更新公告固定使用 pui_updatelog。
 - 同主体小程序可评估微信云开发环境共享；跨主体或多端使用独立 HTTPS/CloudBase HTTP 服务。
 - 共享用户、授权或订单必须由服务端按可信 AppID 和用户身份分区，不能信任客户端传入的 appId/openid。
 - 没有环境 ID、主体授权和部署证据时不得宣称云服务已经接入。
-- 页面下方存在微信 Canvas 时，必须实际打开浮层检查原生绘制层；宿主 hidden 若仍穿透，应在浮层可见期间卸载 Canvas，并验证关闭后恢复。
+- 当前 Me 使用 View/WXSS BarChart，打开 Popup 时保持图表挂载并验证遮罩层级；不得恢复历史 AreaChart 的 Canvas wx:if 分支。
 
 验证与遗留风险：
 
@@ -11587,7 +11602,7 @@ AI 必须遵守：
 - 验证：`node scripts/test-miniprogram-me-page.js：通过；锁定五组公告、云端 Schema、Popup 三段结构、AreaChart 浮层避让和关闭恢复`
 - 验证：`微信开发者工具 Nightly 2.02.2607282：构建 npm warnings=[]；上传应用版本 2.1.0 后界面显示代码上传成功；模拟器 Me 页打开 v0.1.2 公告并显示同义五组内容`
 - 真机/兼容风险：390x844 微信模拟器已验证 Popup 视觉层级、长公告 scrollTop=700、Footer 固定和关闭回写；iOS/Android 真机的 Canvas 合成与触摸滚动仍待验证。
-- 真机/兼容风险：Me 页浅色公告与深色果味 AreaChart 已分别验证；深色公告 Popup、边框、等距组合与系统低动效仍待真机回归。
+- 真机/兼容风险：Me 页浅色与深色 Popup、BarChart 遮罩层级已在 390px 模拟器验证；边框、等距组合与系统低动效仍待真机回归。
 - 真机/兼容风险：开发者工具已验证调用方能读 published 文档；客户端禁止读取草稿、写入、更新和删除的完整安全规则仍需在资源方控制台专项验收。
 - 真机/兼容风险：共享环境的配额、费用、日志、告警和备份仍需在资源方控制台治理。
 - 真机/兼容风险：体验版上传已成功，但 iOS/Android 真机对公告滚动、Canvas 卸载恢复、微信客服、隐私合同和外观组合仍为 pending-device。
@@ -12190,25 +12205,25 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0461-chart-gradient-transparency-readability.json`
 - 范围：`component` / `area-chart`、`bar-chart`、`waffle`、`theme-tokens`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
 - 用户目标：AreaChart、BarChart 和 Waffle 使用更优雅、圆润且渐变到透明的统一图表视觉。
 - 实际问题：修复前没有图表 Token 或组件，透明渐变的方向、最低值、轮廓和跨主题语义均未定义。
-- 决策：AreaChart 使用实体强调色描边与 0.42→0.04 竖向填充；BarChart 基线端 28%、中段 66%、数值端 100%；Waffle 每格使用实体到半透明单元渐变，目标 opacity 每段从 1 到 0.28 且保留语义轮廓。H5 与小程序使用同名 Token。
+- 决策：AreaChart 使用实体强调色描边与 0.42→0.04 竖向填充；BarChart 后续按 PUI-FB-0514 收敛为基线端 0.04、数据端 0.42 的透明填充，并以实体 accent inset 线锁定数据终点；Waffle 每格从 1 衰减到 0.28 且保留语义轮廓。H5 最终仍需同步同名 Token。
 - 理由：既保留用户要求的透明渐变和圆润感，又让条形长度、点阵格数和新增含义在两种主题及渐变背景上可读。
 
 AI 必须遵守：
 
-- BarChart 的实体端必须位于数值终点，不得把终点渐变为透明。
+- BarChart 使用 AreaChart 式低透明填充，但必须以实体 accent 终点线标明真实长度；不得让整条高饱和，也不得让数据端边界消失。
 - Waffle 的最低 opacity 不低于 0.28，并保留 chart fade outline。
 - 每个 segment 独立重启透明度梯度；新增量同时显示 label/legend/value。
 - 不得给图表根添加阴影、毛玻璃、边框或等距 Surface。
 
 验证与遗留风险：
 
-- 验证：`node scripts/test-bar-chart.js`
+- 验证：`node scripts/test-bar-chart.js：2026-07-29 新透明填充专项通过`
 - 验证：`node scripts/test-waffle.js`
-- 验证：`npm run site:build`
-- 验证：`npm run check`
+- 验证：`历史 npm run site:build`
+- 验证：`历史 npm run check`
 - 真机/兼容风险：不同 iPhone/Android 屏幕的最低透明度、弱视可读性和大字体标签换行仍需真机复核。
 
 ## PUI-FB-0462 · BarChart 条件循环 WXML 阻断微信页面编译
@@ -12269,26 +12284,26 @@ AI 必须遵守：
 - 验证：`微信开发者工具 build-npm：通过，cost=921ms，warnings=[]`
 - 真机/兼容风险：iOS/Android 真机的 Blue/Teal/Violet 色差、渐变抗锯齿、大字体标签和读屏顺序仍需验证。
 
-## PUI-FB-0464 · Me 页使用真实版本总量接入 AreaChart 趋势仪表盘
+## PUI-FB-0464 · Me AreaChart 趋势仪表盘被类别增量 BarChart 取代
 
 - 原始记录：`feedback/records/pui-fb-0464-me-component-status-dashboard.json`
 - 范围：`component` / `miniprogram`、`me-page`、`area-chart`、`card`、`catalog-metadata`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 状态：`wont-fix`，用户验收：`pending-user`，更新：2026-07-29
 - 用户目标：第四 Tab 使用 AreaChart 精简展示 0.1.0 到 0.1.1 的真实组件增长；不虚构趋势点，也不保留与趋势语义无关的分类展开操作。
 - 实际问题：页面没有仪表盘；若直接在页面手写数量，会与 metadata 漂移并形成 fake success。
-- 决策：保留 catalog 生成器的显式 release delta 作为 71→74 真相源；Me 页只把 previousVersion/previousTotal 与 currentVersion/total 转为同一 components 系列，在唯一 Card 中组合 small AreaChart，显示 Grid、XAxis 和 Dots，隐藏单系列冗余 Legend，显式 max=74。删除旧 BarChart、分类合并/排序、查看更多按钮、SelectorQuery 高度测量和过渡样式。服务 CellGroup 继续 margin-top:auto，超高由页面唯一 ScrollArea 滚动。微信 Canvas 的宿主 hidden 在 Popup 上方仍会留下原生绘制层，因此 Popup/Dialog 可见期间使用 wx:if 卸载 AreaChart，关闭后重新挂载。
+- 决策：本条 AreaChart 方向只保留为历史证据；catalog 生成器与显式 release delta 继续作为版本总量真相源，当前 Me 改用 PUI-FB-0513 的类别增量 BarChart，不再保留 Canvas 浮层卸载分支。
 - 理由：AreaChart 适合连续版本趋势，BarChart 更适合分类横向比较。只有 0.1.0 与 0.1.1 两个发布事实，因此宁可保留两点和完整读屏名称，也不虚构月份或健康度。Card 继续提供唯一 Surface，AreaChart 保持透明叶子；Canvas 避让属于 Me 页面与浮层的组合边界，不应向共享 AreaChart 增加伪业务状态。
 
 AI 必须遵守：
 
 - 组件总量必须由 metadata packageComponents 与显式 release delta 生成，页面不维护第二份数字。
 - 版本增量必须由显式 release delta 生成并验证 added component ID；不能按日期、文件数量或 UI 文案猜测。
-- AreaChart 版本趋势只使用已证实的 release delta 点，不得为了曲线丰富虚构时间点或监控指标。
+- 版本里程碑继续保留为生成事实，但当前 Me 不再直接绘制三点趋势；最终规则见 PUI-FB-0513。
 - 单系列可以隐藏冗余 Legend，但版本横轴、圆点、摘要和读屏名称必须完整表达变化。
 - 版本只读取 poemui-miniprogram/version 轻量入口，不加载组件总入口或硬编码。
-- 页面只允许一个仪表盘 Card；AreaChart 保持透明，服务 CellGroup 继续 margin-top:auto。
-- 页面同时存在 Canvas 图表与 Popup/Dialog 时必须打开浮层检查真实合成层；hidden 不能保证原生层退出，必要时在浮层可见期间用 wx:if 卸载并验证关闭恢复。
-- H5 同步 Card/AreaChart 组件合同，不复制小程序业务页或伪造微信平台能力。
+- 页面只允许一个仪表盘 Card；当前 BarChart 保持透明并占满 Card Content，服务 CellGroup 由标准 section gap 紧跟仪表盘。
+- 当前 BarChart 是 View/WXSS 展示叶子，不得恢复历史 Canvas 浮层 wx:if 卸载分支。
+- H5 同步 Card/BarChart 公共组件合同，不复制小程序业务页或伪造微信平台能力。
 - 新增真实监控、版本增量或云端状态前必须先建立独立数据源、异常态和权限合同。
 
 验证与遗留风险：
@@ -12874,28 +12889,34 @@ AI 必须遵守：
 - 真机/兼容风险：pending-device：iOS/Android 真机的胶囊镜像宽度、两个 extra-small 命中区、safe-area 和读屏仍需复核。
 - 真机/兼容风险：pending-device：open-type=contact 依赖小程序后台客服配置，Node 与模拟器不能证明客服会话可用。
 
-## PUI-FB-0488 · Me 仪表盘移除冗余版头并增加三列真实数据摘要
+## PUI-FB-0488 · Me 仪表盘使用四列真实数据摘要与单一内容间距
 
 - 原始记录：`feedback/records/pui-fb-0488-me-dashboard-metric-strip.json`
-- 范围：`component` / `miniprogram`、`me-page`、`area-chart`、`card`、`style-utilities`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
-- 用户目标：精简 Me 页图表版头，横轴版本不显示冗余 v，在图表上方用三列展示真实数量，延长图表入场，并让服务 Cell Card 以较大标准间距紧跟仪表盘。
-- 实际问题：旧实现的 Card description、v 前缀和摘要缺口已修正，但图表仍以默认 500ms 入场，服务集合仍被 auto margin 推到底部并在两个 Surface 之间留下过多空白。
-- 决策：删除 Card description 和 componentStatusSummary；在唯一 Card Content 顶部用透明三等分 Grid 展示组件、样式、高级三项，组件/高级读取 component-status，样式读取 style-utilities-catalog；AreaChart 横轴 label 改为纯版本号并在 Me 页显式传入 duration=1000；服务 CellGroup 删除 margin-top:auto，只由父级 --pui-section-gap 与仪表盘分隔。
-- 理由：三列摘要回答当前规模，AreaChart 回答版本变化，信息层次更直接。统计继续来自生成型真相源，透明 Grid 不创建第二层 Surface；1000ms 是组件公开上限，能延长本页入场而不破坏全局 500ms 默认；标准 section gap 足够建立分区，又能让服务集合跟随仪表盘。
+- 范围：`component` / `miniprogram`、`me-page`、`bar-chart`、`card`、`style-utilities`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：精简 Me 页图表版头，在图表上方用四列展示真实的组件、样式、高级与本版新增数量；在“新增”标签右侧组合较小的 PUI Icon，并确保数据块、图表、版本 Tag 与操作之间使用一致的语义间距。
+- 实际问题：旧三列摘要缺少独立的本版新增指标，并由摘要自身 margin-bottom 提供图表间距；关系成立但职责不够清楚，也容易在后续父级增加 gap 时形成叠加。
+- 决策：唯一 Card Content 顶部使用透明四等分 Grid 展示组件、样式、高级、新增；组件/高级/新增读取 component-status，样式读取 style-utilities-catalog。“新增”标签右侧组合 20rpx 的 PUI Sparkles Icon，使用最新版本 Violet accent，并以 --pui-space-xxs 紧密关联。透明 dashboard-content 以一次 --pui-content-gap 分隔摘要和 BarChart；dashboard-chart 用同一个 content-gap 分隔图表 viewport、版本 Tag 与展开操作。服务 CellGroup 继续只由页面父级 --pui-section-gap 与仪表盘分隔。
+- 理由：四列分别回答当前组件规模、工具样式规模、高级组件规模和当前发布增量，且全部来自生成真相源。Sparkles 能表达“新增”而不暗示财务涨跌；它属于标签语义，因此放在“新增”右侧而不是数字 3 右侧，可保持四个数值的纯数字对齐。摘要、图表、版本标识与操作属于同一信息流，统一 content-gap 可避免局部紧、局部松；布局仍保持单一透明父级，不创建第二层 Surface。
 
 AI 必须遵守：
 
-- 组件、高级和样式数量必须读取生成型 component-status 与 style-utilities-catalog，页面不得维护第二份数字。
+- 组件、高级、新增和样式数量必须读取生成型 component-status 与 style-utilities-catalog，页面不得维护第二份数字。
 - 当前规模摘要和历史趋势分层表达，不用 Card description 重复同一组件总量。
-- 图表前的摘要使用同一 Surface 内透明等分 Grid，不为每个数字新建 Card、边框或阴影。
-- 单页需要更长 AreaChart 入场时使用公开 duration，最长 1000ms，不改共享默认值。
+- 图表前的摘要使用同一 Surface 内透明四等分 Grid，不为每个数字新建 Card、边框或阴影。
+- 摘要与图表由唯一透明父布局消费一次 --pui-content-gap；摘要不得再叠加 margin-bottom。
+- 第四列在“新增”标签右侧组合 20rpx PUI Sparkles Icon，使用最新版本 Violet accent，并以 --pui-space-xxs 紧密关联；不要把 Icon 放回数值右侧，也不要给其余三列增加装饰噪音。
+- 图表 viewport→版本 Tag 与版本 Tag→展开操作继续使用 --pui-content-gap，避免同一卡片内出现两套垂直节奏。
+- 当前 BarChart 保留 1000ms 页面覆盖，共享组件默认仍为 500ms。
 - 服务集合跟随仪表盘时使用父级 section gap，删除历史 auto margin，不叠加私有间距。
-- AreaChart 原样显示 item.label；业务页决定是否保留版本前缀，并在 ariaLabel 中补足完整语义。
+- 当前 BarChart 必须在 ariaLabel 中补足基线版本、当前版本、各类总量与增量语义。
 - Me 是小程序应用页，消费层变化不复制 H5 业务壳；只有共享组件变化才同步 preview。
 
 验证与遗留风险：
 
+- 验证：`node --check miniprogram/pages/me/index.js：通过`
+- 验证：`node scripts/test-miniprogram-me-page.js：通过，锁定四列真实数据、四等分、Violet Sparkles PUI Icon 与三段 content-gap`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
 - 验证：`node scripts/test-miniprogram-me-page.js && node scripts/test-area-chart.js && node scripts/test-card.js：通过`
 - 验证：`微信 compile_wxml pages/me/index.wxml：success=true / codeLength=37963`
 - 验证：`npm run feedback:generate && npm run feedback:check：通过，470 条 Ledger 记录`
@@ -12904,7 +12925,7 @@ AI 必须遵守：
 - 验证：`npm run pack:check：通过；0.1.1 为 559 files / 361.8kB`
 - 验证：`git diff --check && git -C miniprogram diff --check：通过`
 - 验证：`npm run check：precheck 与本次 Me/AreaChart/Card/页面/生成链均通过，随后被本轮未修改的 H5 Search search-clear 私有原生按钮设计门禁阻断`
-- 真机/兼容风险：iOS/Android 真机的 Canvas 字体、rpx、读屏与滑动仍为 pending-device。
+- 真机/兼容风险：iOS/Android 真机的四列字体回流、rpx、读屏与滑动仍为 pending-device。
 
 ## PUI-FB-0489 · 首页展开目录分区未作为可配置外观 Surface
 
@@ -13409,4 +13430,366 @@ AI 必须遵守：
 - 验证：`npm run check：专项与前置门禁通过；在既有 scripts/test-miniprogram-home.js:316 失败，enableShareTimeline 期望 true、实际 undefined，与本条图表修改无关`
 - 验证：`npm run pack:check：通过，559 个文件，366.7kB，shasum b717af3f5fc36550a4560697eb71d1e215ebea5e`
 - 真机/兼容风险：本轮仅在微信开发者工具实点 AreaChart；BarChart、Waffle 尚未在模拟器逐项实点，iOS/Android 真机的 Canvas 重绘、连续点击与系统低动效仍待验证。
+
+## PUI-FB-0507 · Me Waffle 版本构成试案被用户否决
+
+- 原始记录：`feedback/records/pui-fb-0507-me-waffle-version-composition.json`
+- 范围：`component` / `miniprogram-me`、`waffle`、`area-chart`
+- 状态：`wont-fix`，用户验收：`accepted`，更新：2026-07-29
+- 用户目标：保留原来的 AreaChart 趋势表达，不采用 Waffle 替换方案。
+- 实际问题：Waffle 试案改变了图形类型，不符合用户最终选择。
+- 决策：撤销 Waffle 消费页试案，不发布 fluid API；Me 恢复 AreaChart，最终行为转由 PUI-FB-0510 约束。
+- 理由：用户对图形类型的明确选择优先；三个真实版本点已足以在原 AreaChart 中完成标注和全宽呈现。
+
+AI 必须遵守：
+
+- 用户要求保留原方式时，不得自行更换图表类型。
+- Waffle 仍是被用户否决的试案；当前 Me 图表合同只看 PUI-FB-0513。
+- 不得为已否决试案保留未使用的共享 API。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 真机/兼容风险：被否决的 Waffle 试案不再验收。
+- 真机/兼容风险：Waffle 试案不再验收；当前 BarChart 的 iOS/Android 真机风险见 PUI-FB-0513，仍为 pending-device。
+
+## PUI-FB-0508 · 首页移除无效 enableShareTimeline 页面配置
+
+- 原始记录：`feedback/records/pui-fb-0508-home-invalid-share-timeline-config.json`
+- 范围：`component` / `miniprogram-home`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：消除微信开发者工具对首页 page.json 的无效字段警告，同时保留真实好友分享与朋友圈生命周期。
+- 实际问题：index.json 声明 enableShareTimeline=true，但当前微信开发者工具把它判为无效 page.json 字段。
+- 决策：从 pages/index/index.json 删除 enableShareTimeline，不修改 onShareAppMessage 与 onShareTimeline 的标题、稳定首页路径或包内品牌图。
+- 理由：以真实开发者工具 schema 为当前工程兼容边界；移除无效配置能消除告警，又不会用页面按钮或 H5 假成功替代微信 Page 生命周期。
+
+AI 必须遵守：
+
+- page.json 配置必须以当前真实微信开发者工具 schema 为准，不能照搬旧合同或第三方框架配置。
+- 删除无效 enableShareTimeline 时必须保留并专项测试 onShareTimeline 生命周期。
+- 分享返回载荷只使用稳定公开路径和合规图片，不携带临时 UI 或用户数据。
+- 开发者工具无 warning 不等于朋友圈真机发送已通过，真机结果保持 pending-device。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-home.js：通过`
+- 真机/兼容风险：开发者工具重新编译后的控制台告警消失仍待本轮验收。
+- 真机/兼容风险：朋友圈入口、真实发送、卡片标题图片和回流路径仍需合法 AppID 的 iOS/Android 真机验证。
+
+## PUI-FB-0509 · 组件安全默认值与开箱引用混用导致基础代码不可见
+
+- 原始记录：`feedback/records/pui-fb-0509-component-starter-usage-source.json`
+- 范围：`global` / `all-components`、`popup`、`preview-site`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：全部公开组件都应提供复制后立即可见、可理解的开箱调用，同时保持运行时默认安全，并同步 H5 引用文档且不改变小程序独立组件页的既有演示效果。
+- 实际问题：修复前官网基础引用主要从 H5 当前 Props 和运行时默认过滤结果生成，Popup 被专项测试锁定为 `<pui-popup />`；安全关闭态与用户复制后应立即看到结果的开箱目标没有独立数据合同。
+- 决策：建立 `metadata/component-starter-usage.js` 作为第三层单一真相源。Starter 只驱动 H5 组件引用、基础用法、必要页面数据/逻辑和生成文档；运行时默认值、H5 Showcase 初态、小程序独立页以及工具栏当前效果复制保持独立。数据和命令式组件必须提供真实页面准备代码。
+- 理由：把安全默认与教学初值分开，既避免 Popup、Dialog 等组件安装后擅自弹出，也避免官网给用户一段不可见空标签；同一 metadata 同时生成 H5 与 Markdown，避免两端示例漂移。
+
+AI 必须遵守：
+
+- 新增公开组件时必须同时新增 Starter Usage，并通过全量覆盖测试。
+- Starter Usage 可以显式写入非默认 Prop，但不得改变组件源码默认值、H5 Showcase 初态或小程序独立页。
+- 数据驱动组件必须同时提供最小页面 data；命令式组件必须提供真实 show 或等价入口。
+- 基础用法不得绑定完整事件全集、手写原生控件或伪造业务成功。
+- 工具栏复制当前效果继续读取实时 Props，不得固定返回 Starter Usage。
+
+验证与遗留风险：
+
+- 验证：`npm run catalog:generate：通过，生成 7 个目录与文档产物`
+- 验证：`npm run test:component-starter-usage：通过，74 个组件全部覆盖`
+- 验证：`node scripts/test-preview-normal-code-card.js：通过`
+- 验证：`node scripts/test-popup.js：通过`
+- 验证：`npm run check：通过，含 74 组件设计、H5、页面与共享组件全量门禁`
+- 验证：`npm run site:build：通过，生成 74 个 miniprogram_dist 组件目录与 7 个目录产物`
+- 验证：`npm run example:install：通过，真实 0.1.2 tarball 安装且 0 vulnerabilities`
+- 验证：`npm run pack:check：通过，559 files / 367.4 kB / 1.8 MB`
+- 验证：`npm run feedback:check：通过，491 条记录`
+- 验证：`git diff --check 与 git -C miniprogram diff --check：通过`
+- 验证：`miniprogram/pages/components 修改前后目录整体 SHA-1 一致`
+- 真机/兼容风险：Starter Usage 是文档/引用层，不会自动挂载到独立组件页；微信开发者工具尚未逐项新建页面编译 74 份 Starter 片段。
+- 真机/兼容风险：iOS/Android 真机的组件加载、Slot、Canvas、滚动、弹层安全区和读屏仍为 pending-device。
+
+## PUI-FB-0510 · Me AreaChart 三版本方案被类别增量 BarChart 取代
+
+- 原始记录：`feedback/records/pui-fb-0510-waffle-fluid-version-rows.json`
+- 范围：`component` / `miniprogram-me`、`area-chart`、`catalog-metadata`
+- 状态：`wont-fix`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：保留原来的 AreaChart，让图表本体铺满 Card Content，并逐一标注 0.1.0、0.1.1、0.1.2。
+- 实际问题：三版本 AreaChart 已实现并验收，但用户随后明确要求用公告分类数据改为 BarChart。
+- 决策：本条三版本 AreaChart 方案标记为被取代；versions() 仍保留为生成型历史数据，但当前 Me 图表合同转由 PUI-FB-0513 的类别增量 BarChart 承接。
+- 理由：用户最新目标从版本累计趋势改为类别与增量，并明确指定 BarChart；旧方案已经完成的证据继续保留，但不得当作当前页面合同恢复。
+
+AI 必须遵守：
+
+- 不得把本条历史 AreaChart 恢复成当前 Me 图表；最新合同见 PUI-FB-0513。
+- 版本名称与总量必须来自 metadata release milestones 经生成器输出的 versions() 副本。
+- AreaChart 根已全宽，页面不得新增 fullWidth Prop 或穿透样式。
+- 三个点必须共享稳定 components 系列并显示 XAxis 与 Dots。
+- 0.1.1 可作为仓库历史工作树里程碑显示，但不得叙述为独立 npm Registry 发布证据。
+- Canvas 浮层卸载只适用于本条历史 AreaChart，不得套用到当前 View/WXSS BarChart。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 验证：`node scripts/test-area-chart.js：通过`
+- 验证：`node scripts/test-waffle.js：通过，确认未新增 fluid API`
+- 验证：`node scripts/test-miniprogram-home.js：通过`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
+- 真机/兼容风险：iOS/Android 真机的 Canvas 清晰度、触摸滚动、读屏和系统低动效仍为 pending-device。
+
+## PUI-FB-0511 · 更新公告统计字段转为 Me 图表数据源
+
+- 原始记录：`feedback/records/pui-fb-0511-announcement-component-category-counts.json`
+- 范围：`component` / `miniprogram-me`、`update-announcement`、`catalog-metadata`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：每条更新公告保留组件总数和各类别数量字段供图表使用，但更新公告 Popup 不再直接展示组件总数或九类统计。
+- 实际问题：Schema v2 已有完整统计，但旧页面又在 Popup 中直接展示同一批字段，和仪表盘信息重复。
+- 决策：继续保留 Schema v2 的 componentCount 与 categoryCounts[{key,label,count}]：0.1.0 使用生成型 previousValue，0.1.1/0.1.2 使用当前分类值；Service 拒绝总数非法、类别缺失、key 重复或合计不一致的远端数据。Popup 删除统计 Grid；字段改由 PUI-FB-0513 的 Me BarChart 消费。
+- 理由：仓库已有 component-status.js 真相源，不需要编造数字；把一致性校验放入 Service 可同时约束云端、缓存和本地 fallback。数据字段与公告可见内容分层后，Popup 更克制，图表则能直接表达类别增量。
+
+AI 必须遵守：
+
+- 公告统计优先读取 component-status.js，不手写或猜测当前分类数量。
+- 每条公告必须包含 componentCount 和全部九项 categoryCounts。
+- categoryCounts 的 key 必须唯一，count 为非负整数，合计严格等于 componentCount。
+- 本地 fallback、共享云、缓存、页面和专项测试必须保持同形 Schema。
+- Popup 不渲染 componentCount/categoryCounts；统计字段由 Me BarChart 消费。
+- 无法取得历史分类证据时标记待补证，不得把合计不一致的数据发布为真实统计。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
+- 验证：`npm run feedback:generate && npm run feedback:check：通过，493 条 Ledger 记录`
+- 验证：`CloudBase Node SDK 3.18.3：0.1.0/0.1.1/0.1.2 三条稳定文档均 updated=1、schemaVersion=2、categoryCount=9、categoryTotal=componentCount`
+- 验证：`git diff --check && git -C miniprogram diff --check：通过`
+- 真机/兼容风险：iOS/Android 真机的长公告滚动、读屏与弱网缓存仍为 pending-device。
+
+## PUI-FB-0512 · 微信开发者工具内部脚本产生未使用 preload 警告
+
+- 原始记录：`feedback/records/pui-fb-0512-wechat-devtools-internal-preload-warning.json`
+- 范围：`global` / `wechat-devtools`、`build-tooling`、`miniprogram`
+- 状态：`wont-fix`，用户验收：`not-required`，更新：2026-07-29
+- 用户目标：确认 WAServiceMainContext.js 的 preload 警告是否来自 PoemUI，并在真实责任边界内消除可修复问题。
+- 实际问题：开发者工具本机模拟器为两个 __dev__ 内部脚本建立 preload，但当前启动路径没有在 Chromium 的时间阈值内消费它们，因此 DevTools Console 输出未使用 preload 警告。
+- 决策：将该警告归类为微信开发者工具内部环境噪音，PoemUI 不修改组件、页面或构建产物；保留自动热重载、requiredComponents 懒加载与正常 Console 级别。
+- 理由：应用无法为开发者工具内置 preload 补写 as 属性；牺牲热重载、关闭懒加载或过滤全部 warning 只会隐藏信号，不能修复资源发起方。
+
+AI 必须遵守：
+
+- 先核对警告 URL：127.0.0.1/__dev__ 与 DevTools appservice 属于工具环境，pages/ 或 miniprogram_npm 路径才可能属于应用。
+- 清空 Console 后重编译复现，并同时检查 miniprogram-automator 运行时 console，避免把历史缓存或工具外壳噪音归因于组件。
+- 不得为消除工具内部 preload 警告关闭 compileHotReLoad、requiredComponents 懒加载或全部 warning。
+- 报告 Console 时分开列出工具内部噪音与项目可操作警告，不能把目标过滤为空表述为完整 Console 零警告。
+
+验证与遗留风险：
+
+- 验证：`node skills/poemui-miniprogram/scripts/inspect-project.mjs miniprogram`
+- 验证：`rg WAServiceMainContext|rel=preload|127.0.0.1:30855`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`git diff --check`
+- 验证：`git -C miniprogram diff --check`
+- 真机/兼容风险：该结论只覆盖当前 Nightly 2.02.2607282 与基础库 3.17.0；后续开发者工具可能修复或改变内部预载策略。
+- 真机/兼容风险：iOS/Android 真机未为这条工具内部诊断单独抓取日志，状态保持 pending-device。
+
+## PUI-FB-0513 · Me 使用公告分类数据展示逐版本增量 BarChart
+
+- 原始记录：`feedback/records/pui-fb-0513-me-category-increment-bar-chart.json`
+- 范围：`component` / `miniprogram-me`、`bar-chart`、`update-announcement`、`catalog-metadata`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：更新公告不展示组件总数；Me 的 BarChart 按业务类别和每一个公告版本分别着色表达增量，不展示“规范”类别；版本 Tag 保持无框、小尺寸，并使用与图表对应的纯色同色系背景而非渐变。
+- 实际问题：旧两段 BarChart 只保留最早基线和最新差值，丢失中间版本颜色；九类 Schema 原样进入展示层；后续逐版本页面又保留了顶部 0 / 19、冗余“已有 / 新增”与未按增量优先的分类顺序。
+- 决策：保留公告 Schema v2 的全部九类和总数校验；Me 只在可见消费层过滤 getting-started，按日期从旧到新为每个有效公告版本建立 segment，稳定主题序列为 blue/teal/violet/amber/pink/neutral。当前三版本分别是 Blue/Teal/Violet；segment label 只使用版本号。页面保持默认 showGrid=false，并显式传 showLegend=false；在图表 viewport 外组合真实 size=small、shape=round PUI Tag，文字使用对应 Chart accent，背景使用对应 --pui-color-*-soft 纯色 Token，并以 box-shadow:none 去除默认 inset 框。分类按基线后是否存在正增量稳定分组，有新增的置顶，同组保持公告原顺序。后续版本增量按前一累计值求非负差，并以当前分类总数封顶。
+- 理由：版本是图例中的一等语义，不能把中间版本合并进“最新增量”；默认圆点加文字的图例样式不符合当前页面，最小无框 Tag 能以克制形状承载版本身份。同色 soft 纯色背景仍保留 Blue/Teal/Violet 对应关系，但比 Chart 渐变更安静，也不会与图表实体竞争。顶部 0 / max 对当前紧凑分类比较没有额外决策价值；把真实增长类别置顶可让折叠首屏直接回答变化发生在哪里。展示过滤和排序不能反向破坏公告 Schema，现有 BarChart 与 Tag API 已完整表达需求。
+
+AI 必须遵守：
+
+- 公告 componentCount/categoryCounts 保留为数据合同，不在 Popup 可见层重复展示。
+- Me BarChart 必须按日期遍历全部有效公告版本；云公告加载后要重算 items/max/aria。
+- 版本主题使用稳定序列，负差值钳制为 0，累计分段不得超过当前分类总数；0 增量不得伪造宽度。
+- getting-started / 规范只在 Me 图表展示层过滤，不得删除或篡改公告九类 Schema。
+- 当前图表使用 horizontal/stacked/small、showValue 与 1000ms；页面保持默认 showGrid=false 并显式传 showLegend=false，不新增重复 BarChart API。
+- Me 版本标识使用无框最小圆角 PUI Tag，文字复用分段 Chart accent、背景使用同色 --pui-color-*-soft 纯色 Token，不使用渐变；label 只保留版本号。
+- 存在基线后正增量的分类稳定置顶，同组保持公告原顺序。
+- BarChart 是透明 View/WXSS 展示叶子，不使用旧 AreaChart 的浮层 wx:if 卸载分支。
+- H5 只同步 BarChart 公共组件合同，不复制 Me 业务页面。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js：通过，锁定八类、三版本、过滤规范和折叠状态链`
+- 验证：`node scripts/test-bar-chart.js：通过，确认公共 API 未改变`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
+- 验证：`node scripts/test-miniprogram-home.js：通过`
+- 验证：`微信 build-npm：944ms，warnings=[]`
+- 真机/兼容风险：iOS/Android 真机的字体回流、触摸滚动、读屏与系统低动效仍为 pending-device。
+
+## PUI-FB-0514 · BarChart 使用 AreaChart 式透明填充并保留实体终点
+
+- 原始记录：`feedback/records/pui-fb-0514-bar-chart-area-style-transparent-fill.json`
+- 范围：`component` / `bar-chart`、`area-chart`、`theme-tokens`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：BarChart 不再使用高饱和实体渐变，改为参考 AreaChart 的轻透明渐变，同时仍能准确识别每条数据的终点。
+- 实际问题：旧六色横纵 Token 使用 0.28→0.66→1 的高饱和三段渐变，整条数据段比 AreaChart 更重。
+- 决策：保留既有 --pui-chart-gradient-* Token 名与六种主题 RGB，只把 alpha 收敛为 0.04→0.42；BarChart segment 通过 inset box-shadow 使用 --pui-chart-accent 绘制实体终点线。横向/纵向分别标记右边/上边，不新增 DOM、Prop、事件或方法。
+- 理由：透明填充降低视觉重量，实体终点线继续给出准确长度；复用现有 Token 和 accent 保持浅深色、显式主题与 AreaChart 家族一致，又不引入外投影或第二层 Surface。
+
+AI 必须遵守：
+
+- 六色浅深横纵 BarChart 填充统一使用 0.04→0.42。
+- 横向数据端使用右侧实体 accent inset 线，纵向使用顶部实体线。
+- 终点线属于 segment 内部边界，不得变成组件根外投影或第二层 Surface。
+- 页面不得私有覆盖共享 BarChart 渐变；API 保持 items 驱动。
+- 最终 H5 同步必须更新 preview/styles.css 的同名 Token、终点线和 390px 测试。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-bar-chart.js：通过`
+- 验证：`node --check miniprogram/pages/me/index.js：通过`
+- 验证：`npm run miniprogram:build && npm run example:install：通过`
+- 验证：`PUI_VERIFY_DIST=1 node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过`
+- 验证：`微信 build-npm：944ms，warnings=[]`
+- 真机/兼容风险：iOS/Android 真机对 0.04 起点透明度、2rpx inset 抗锯齿、深色合成和弱视可读性仍为 pending-device。
+- 真机/兼容风险：H5 preview/styles.css 尚未同步六色横纵 Token 和终点线，按 0.1.2 最终汇总边界保持待同步。
+
+## PUI-FB-0515 · Me 长 BarChart 默认折叠并平滑展开收起
+
+- 原始记录：`feedback/records/pui-fb-0515-me-bar-chart-smooth-collapse.json`
+- 范围：`component` / `miniprogram-me`、`bar-chart`、`button`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：Me 的分类 BarChart 太长，默认只展示主要部分，并提供“查看更多/收起”的平滑动画，不破坏真实图表 API。
+- 实际问题：旧八类图表始终全量显示，没有展开入口或高度状态链。
+- 决策：Me 先把存在基线后正增量的类别稳定置顶，再默认取前四个业务类别；当前折叠态为高级、基础、布局、导航。透明 viewport 包住唯一 BarChart，页面通过组件内 SelectorQuery 实测当前根高度。展开先挂八类再 nextTick 测量目标高度；收起先把 viewport 动画回缓存四类高度，height transitionend 后再把 items 降为四类。PUI Button 在过渡期间 disabled，文案和图标真实回写“查看更多/收起”。
+- 理由：折叠是消费者对页面长度的控制，不应污染 BarChart 的通用数据 API。保留完整内容到收起动画结束可避免 DOM 先变短造成跳变，真实高度测量也不依赖行高魔法数。
+
+AI 必须遵守：
+
+- 长图表折叠属于消费者页面，禁止给 BarChart 增加 visibleCount/collapsed 业务 Prop。
+- 展开先挂完整内容并实测目标高度；收起先动画高度，结束后才卸载隐藏条目。
+- 展开入口必须复用真实 PUI Button，过渡期间禁用重复操作。
+- 折叠态前四类必须来自完成增量优先排序后的同一 items，不能另维护手写精选列表。
+- 高度动效使用 normal/standard Token，低动效固定 1ms，不使用高度魔法数。
+- H5 不复制 Me 业务页；只同步 BarChart 公共视觉合同。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 验证：`node --check miniprogram/pages/me/index.js：通过`
+- 验证：`微信 build-npm：944ms，warnings=[]`
+- 真机/兼容风险：iOS/Android 真机的大字体回流、快速重复触摸、滚动中展开、系统低动效和读屏 aria-expanded 仍为 pending-device。
+
+## PUI-FB-0516 · Popup 标题正文重复间距与公告近全屏固定高度
+
+- 原始记录：`feedback/records/pui-fb-0516-popup-compact-spacing-adaptive-announcement.json`
+- 范围：`component` / `popup`、`scroll-area`、`miniprogram-me`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：更新公告 Popup 的标题与滚动正文保持紧凑层级，短内容不要被撑成近全屏，长内容仍可滚动且 Footer 始终固定。
+- 实际问题：Header 到 Content 同时消费 section gap 与 panel padding；外层 Popup 和内部 ScrollArea 都使用固定大高度，造成标题空白和面板过高。
+- 决策：Popup Surface 不再排列分区 gap；Header 存在时 Content 顶部用 16rpx content gap，无 Header 时仍保留完整 panel padding，等距模式把该唯一 gap 映射为 surface inset。ScrollArea 新增 maxHeight 默认 320rpx，并让 height=auto 自然增长到上限后由唯一原生视口滚动。Me 公告使用 auto/60vh，Popup 只设置扣除实测 Navbar 后的 max-height。
+- 理由：同一邻接关系只应有一个 Token 所有者；有界自适应模式同时满足短内容紧凑与长内容可滚动，不需要负 margin、内容测量、重复 setData 或页面私有控件。
+
+AI 必须遵守：
+
+- 同一 Header→Content 邻接关系只能由一个 Token 所有，禁止同时叠加 Surface gap 与 Content 顶部 panel padding。
+- Popup 默认自然增高并受 max-height 约束，业务页不得同时固定 Popup 与内部 ScrollArea 的大视口高度。
+- 需要短内容自然高度和长内容局部滚动时，使用 ScrollArea height=auto / maxHeight，不使用负 margin 或测量后 setData。
+- Popup contentScrollable=false 后只能有一个同方向 ScrollArea；Footer 必须留在该滚动区之外。
+- H5 必须镜像 Header 邻接 class、单一间距与 auto/maxHeight 真实 overflow，不能只更改 DOM 状态变量。
+- TDesign 基础 Popup 只提供产品边界参考；PoemUI 三分区 API 与间距仍由本地合同决定。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-popup.js：通过`
+- 验证：`node scripts/test-scroll-area.js：通过`
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 验证：`node --check scroll-area/scroll-area.js：通过`
+- 验证：`node --check miniprogram/pages/me/index.js：通过`
+- 验证：`npm run site:build：通过`
+- 验证：`npm run check：通过`
+- 验证：`npm run pack:check：通过（559 files，367.6 kB）`
+- 验证：`微信 CLI build-npm：通过（1237ms，warnings=[]）`
+- 真机/兼容风险：iOS/Android 真机的 scroll-view auto/max-height、键盘/安全区、触摸惯性、读屏与系统大字体为 pending-device。
+
+## PUI-FB-0517 · ScrollArea 深色主题继承浅色渐变上下文形成白条
+
+- 原始记录：`feedback/records/pui-fb-0517-scroll-area-dark-gradient-context.json`
+- 范围：`component` / `scroll-area`、`config-provider`、`preview-site`、`design-tokens`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：ScrollArea 的固定阅读渐变在深色模式下必须使用当前深色容器色，不能在更新公告等滚动内容上出现白色横条。
+- 实际问题：组件根虽处于深色 Provider 子树，但默认上下文别名可能保留浅色根已经计算的白色值，导致渐变视觉与深色内容 Surface 断裂。
+- 决策：在 .pui-theme--dark 内紧随深色 --pui-bg-container 重新绑定 --pui-scroll-area-gradient-overlay-color-context；H5 helper 默认返回同名 Token，并在 ScrollArea 根将其绑定到当前 --surface-solid。
+- 理由：主题上下文别名应在消费主题作用域解析；保持同名 Token 可让页面壳继续选择容器色或画布色，也不需要新增 Prop、页面补丁或硬编码渐变色。
+
+AI 必须遵守：
+
+- 默认渐变色必须由 ScrollArea 组件主题 Token 解决，不得在消费页面硬编码深色补丁。
+- 依赖其他主题变量的上下文别名应在 light/dark 作用域分别声明并由计算样式验证。
+- H5 必须消费与小程序同名上下文 Token，不能保留另一套固定 surface fallback。
+- 验证深色渐变必须滚动到遮罩实际可见并读取计算背景，不能只检查主题 class。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-scroll-area.js：通过`
+- 验证：`node scripts/test-config-provider.js：通过`
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js：通过`
+- 验证：`node --check preview/app.js：通过`
+- 验证：`npm run site:build：通过`
+- 验证：`npm run check：通过`
+- 验证：`npm run pack:check：通过（559 files，367.6 kB）`
+- 验证：`微信 CLI build-npm：通过（1237ms，warnings=[]）`
+- 真机/兼容风险：iOS/Android 真机的自定义属性继承、enhanced scroll-view 合成、惯性与触摸穿透为 pending-device。
+
+## PUI-FB-0518 · 小程序进入前台未同步系统深浅色与外观开关
+
+- 原始记录：`feedback/records/pui-fb-0518-miniprogram-system-theme-sync.json`
+- 范围：`global` / `miniprogram`、`config-provider`、`visual-config`、`appearance-settings`、`platform-runtime`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：用户每次进入或重新回到小程序时检测当前系统深浅色，并让全部页面与外观设置中的深色开关保持同一状态；系统切换时无需重启即可同步。
+- 实际问题：App 仅恢复上次本地 Store；系统主题能力未在 app.json 启用，也没有 App 生命周期同步，页面与外观设置只能继续显示旧值。
+- 决策：新增 miniprogram/theme.json；app.json 启用 darkmode/themeLocation 并让窗口文字与背景读取 light/dark 变量。App 复用发布包 theme.getSystemTheme，在 onLaunch 恢复后同步、onShow 重新检测、onThemeChange 响应事件，三者都以 persist:false 更新 visualConfig。
+- 理由：App 是系统生命周期的唯一稳定入口，visualConfig 是跨页面唯一视觉事实源；每页 Provider 与共享外观设置已有订阅，无需复制页面状态或改变公共 Store 字段。
+
+AI 必须遵守：
+
+- 需要系统主题事件时必须先启用 app.json darkmode 并提供合法 themeLocation。
+- 启动先 restore，再读取 getAppBaseInfo 主题；回前台重读；系统变化使用 App.onThemeChange。
+- 系统派生主题写入 visualConfig 时使用 persist:false，不维护第二份页面或外观菜单状态。
+- 每页根仍必须挂 use-global-config Provider；App 生命周期不能替代 WXML Token 边界。
+- 系统主题读取继续使用 platform-info/theme helper，禁止恢复 getSystemInfoSync。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-home.js：通过`
+- 验证：`node scripts/test-platform-info.js：通过`
+- 验证：`node scripts/test-config-provider.js：通过`
+- 验证：`node --check miniprogram/app.js：通过`
+- 验证：`npm run check：通过`
+- 验证：`npm run pack:check：通过（559 files，367.6 kB）`
+- 验证：`微信 CLI build-npm：通过（1237ms，warnings=[]）`
+- 真机/兼容风险：开发者工具自动化已执行真实 App 生命周期和实际 AppearanceSettings 渲染，但没有操作宿主 macOS 的系统外观设置；系统设置切换到微信事件的系统级派发仍需人工或真机复核。
+- 真机/兼容风险：iOS/Android 真机在冷启动、后台恢复、系统主题切换、低基础库和窗口背景切换上的行为为 pending-device。
+
+## PUI-FB-0519 · 真实安装示例残留已退役组件导致开箱即用验证失败
+
+- 原始记录：`feedback/records/pui-fb-0519-example-retired-component-release-blocker.json`
+- 范围：`global` / `example`、`package-install`、`tooltip`、`button-group`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：全平台发布前，真实安装示例必须只引用 npm 包内仍公开的组件，安装后可以直接执行微信构建 npm，不能依赖已经从 0.1.2 发布面删除的目录。
+- 实际问题：组件源码、metadata、H5 和 miniprogram_dist 已删除 Tooltip 与 ButtonGroup，但 _example 仍注册并调用两个不存在的 npm 路径，导致真实安装验证在微信构建前失败。
+- 决策：彻底删除示例中的 Tooltip 与 ButtonGroup 注册、演示、状态和样式；其余并列操作只用透明 example-action-group 布局组合真实 PUI Button，并把四类示例文件加入退役组件回归扫描。
+- 理由：退役组件不能以示例兼容名义继续成为当前合同；透明布局只负责 flex、换行与标准 gap，不创建第二套按钮或 Surface，能够保持真实 PUI Button 语义。
+
+AI 必须遵守：
+
+- 删除组件后扫描 _example 的 usingComponents、WXML、JavaScript 与 WXSS，不能只检查 metadata 和 miniprogram_dist。
+- 真实安装验证失败时修复调用源，不得绕过验证器或恢复已退役组件。
+- 操作按钮分组可以使用透明 Token 化布局容器，但按钮本体必须继续复用 PUI Button。
+- 发布前必须先本地 tar 安装，再执行微信 build-npm 和安装验证。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-component-catalog-pruning.js：通过`
+- 验证：`node -e JSON.parse(_example/miniprogram/pages/components/index.json)：通过`
+- 真机/兼容风险：真实安装与微信 build-npm 将在本次全平台发布门禁中复验；iOS/Android 真机继续为 pending-device。
 

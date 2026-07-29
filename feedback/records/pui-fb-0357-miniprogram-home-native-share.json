@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-25",
-  "updatedAt": "2026-07-25",
+  "updatedAt": "2026-07-29",
   "userGoal": "首页可以通过微信系统菜单稳定分享给好友，并在条件允许时分享到朋友圈。",
   "environment": {
     "surfaces": ["wechat-miniprogram", "miniprogram-home"],
@@ -20,20 +20,22 @@
   },
   "reproduction": [
     "打开首页右上角微信系统菜单。",
-    "此前首页 Page 没有 onShareAppMessage 或 onShareTimeline，index.json 也没有 enableShareTimeline。"
+    "此前首页 Page 没有 onShareAppMessage 或 onShareTimeline。",
+    "接入分享后，微信开发者工具控制台报告 pages/index/index: invalid page.json [\"enableShareTimeline\"]。"
   ],
   "expected": "好友分享返回首页的稳定路径和品牌卡片；朋友圈能力在微信允许的类目、客户端与基础库中可用。",
-  "actual": "首页没有声明任何原生分享返回载荷或朋友圈页面开关。",
+  "actual": "首页最初没有声明原生分享载荷；随后加入的 enableShareTimeline 页面 JSON 键又被当前微信开发者工具判为无效配置。",
   "evidence": [
     {"kind": "user-report", "ref": "当前任务对话", "note": "用户要求首页能够分享。"},
     {"kind": "file", "ref": "miniprogram/pages/index/index.js", "note": "新增好友和朋友圈生命周期，分享载荷只包含稳定首页路径与包内品牌图。"},
-    {"kind": "file", "ref": "miniprogram/pages/index/index.json", "note": "首页显式开启 enableShareTimeline。"},
-    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "锁定页面开关以及两种原生分享返回载荷。"}
+    {"kind": "file", "ref": "miniprogram/pages/index/index.json", "note": "页面 JSON 已移除当前开发者工具不接受的 enableShareTimeline 键。"},
+    {"kind": "test", "ref": "scripts/test-miniprogram-home.js", "note": "锁定无效键不存在以及两种原生分享返回载荷。"},
+    {"kind": "user-report", "ref": "2026-07-29 当前任务", "note": "用户要求修复开发者工具显示的 invalid page.json enableShareTimeline。"}
   ],
   "rootCause": "首页只实现了应用内导航、搜索与外观交互，没有接入微信 Page 分享生命周期。",
   "decision": {
-    "outcome": "首页通过 onShareAppMessage 返回标题、/pages/index/index 与包内品牌图；通过 onShareTimeline 返回同源标题和品牌图，并在页面 JSON 开启 enableShareTimeline。",
-    "rationale": "使用微信原生系统菜单可保证接收者进入可恢复首页，不增加重复分享按钮、前端成功提示或无法验证的统计。",
+    "outcome": "首页通过 onShareAppMessage 返回标题、/pages/index/index 与包内品牌图，通过 onShareTimeline 返回同源标题和品牌图；页面 JSON 不声明当前开发者工具判为无效的 enableShareTimeline。",
+    "rationale": "分享能力应由当前 Page 生命周期承载；删除无效页面键可消除真实控制台配置警告，同时不增加重复分享按钮、前端成功提示或无法验证的统计。",
     "alternativesRejected": [
       "在首页新增页面私有分享按钮，会和微信系统胶囊菜单重复且需要额外命中区治理。",
       "把搜索词、外观、浮层或 Tab 状态编码进分享路径，会制造不可恢复或无产品价值的深链状态。",
@@ -54,7 +56,7 @@
     "summary": "页面分享是微信 Page 生命周期能力，必须返回稳定路由，不得以页面私有 UI 或 H5 假成功替代。",
     "rules": [
       "需要分享的页面必须实现 onShareAppMessage，并只返回可恢复的公开路径和包内或合规网络图片。",
-      "需要朋友圈能力时，在页面 JSON 设置 enableShareTimeline=true，并实现 onShareTimeline。",
+      "需要朋友圈能力时实现 onShareTimeline；不得向页面 JSON 写入当前开发者工具已判为无效的 enableShareTimeline。",
       "分享路径不得携带临时 UI 状态、用户偏好或未经同意的用户数据。",
       "分享发送结果与朋友圈可用性只能由合法 AppID 和真机确认，不能由 H5 或静态测试冒充。"
     ],
