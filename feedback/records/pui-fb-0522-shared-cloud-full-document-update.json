@@ -1,0 +1,118 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0522",
+  "title": "共享云更新必须按整文档语义写入",
+  "scope": "global",
+  "components": [
+    "miniprogram-codepage",
+    "update-announcement",
+    "shared-cloud"
+  ],
+  "type": "api-contract",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "agent-audit",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "0.1.3 更新公告、安装页和 PoemUI Skill 在共享云发布后仍保留完整内容，并由真实小程序页面读取。",
+  "environment": {
+    "surfaces": [
+      "pui_updatelog",
+      "pui-codepage",
+      "pages/codex/index",
+      "pages/me/index"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools",
+      "wechat-shared-cloud"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "向共享云 draft 文档执行只包含 status、publishedAt、updatedAt 的 update。",
+    "数据库写操作成功，但读后发现未提交的 kind、pageKey、content、capabilities、version 与公告正文均被移除。",
+    "重新进入 pages/codex/index，codePageLoadState 变为 empty，Skill 列表为空。"
+  ],
+  "expected": "发布状态更新不得裁掉业务字段；数据库全文回读和真实页面运行态都必须继续得到 0.1.3 的安装内容、Skill 与公告。",
+  "actual": "共享云写工具的 update 使用整文档替换语义；首次局部写入只保留了状态字段，静态写成功掩盖了运行页面内容为空。",
+  "evidence": [
+    {
+      "kind": "browser",
+      "ref": "pages/codex/index 运行态首次回读",
+      "note": "局部写入后 route 正确，但 codePageLoadState=empty、skills=[]。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/services/codex-page.js",
+      "note": "页面只接受 status=published、pageKey=codex、kind=page/skill 的完整文档。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/PUBLISH_AND_DEPLOY.md",
+      "note": "发布文档记录整文档恢复、数据库全文回读和真实小程序运行态证据。"
+    }
+  ],
+  "rootCause": "把共享云 write 工具的 update 错当成字段级 $set；该工具实际以传入 update 对象替换整条业务文档，只保留系统 _id。",
+  "decision": {
+    "outcome": "0.1.3 的 Page、旧/新 Skill 与更新公告全部使用完整文档恢复；旧 0.1.0 Skill 保留完整内容并标为 archived，新 0.1.3 Skill 和公告标为 published。以后共享云状态变化必须提交完整文档，并同时执行数据库全文回读与真实页面运行态回读。",
+    "rationale": "写请求成功只能证明数据库接受操作，不能证明消费者合同仍成立；完整字段和页面真实消费缺一不可。",
+    "alternativesRejected": [
+      "继续发送局部 update：会再次裁掉未提交字段。",
+      "只检查 status：无法发现正文、类型和索引字段已丢失。",
+      "依赖包内 fallback：会掩盖共享云生产数据已经损坏。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "docs/PUBLISH_AND_DEPLOY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "feedback/records/pui-fb-0522-shared-cloud-full-document-update.json"
+    ],
+    "dependencies": [
+      "pui_updatelog",
+      "pui-codepage",
+      "WeChat Shared Cloud"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-codex-page-cloud-service.js",
+      "scripts/test-miniprogram-me-page.js"
+    ],
+    "commands": [
+      "共享云全文回读：Page、0.1.0 archived Skill、0.1.3 published Skill 与 v0.1.3 published 公告字段完整。",
+      "npm run check：通过。"
+    ],
+    "browser": [
+      "复用现有微信开发者工具并热重载；pages/codex/index 回读 ready、installCode=@0.1.3、skillVersions=[0.1.3]。",
+      "pages/me/index 回读 announcementSource=cloud、latestAnnouncementVersion=v0.1.3、componentCount=74、highlights=4。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机的弱网缓存和云请求失败恢复仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "共享云 update 是整文档替换；状态发布必须提交完整文档，并用数据库全文和页面运行态双重回读。",
+    "rules": [
+      "不得把 cloud_db_write_doc update 当作字段级 $set。",
+      "更新共享云状态前必须先读取完整原文，并在 update 中保留全部业务字段。",
+      "写成功后必须全文回读 kind、索引字段、content、version、status 与消费者必需字段。",
+      "共享云页面必须再由真实小程序运行态读取，fallback 命中不能冒充云端成功。"
+    ],
+    "tags": [
+      "shared-cloud",
+      "full-document",
+      "codepage",
+      "announcement",
+      "release"
+    ]
+  }
+}

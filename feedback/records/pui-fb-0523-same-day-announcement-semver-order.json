@@ -1,0 +1,116 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0523",
+  "title": "同日更新公告必须按语义版本次排序",
+  "scope": "component",
+  "components": [
+    "miniprogram-me",
+    "update-announcement"
+  ],
+  "type": "bug",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "not-required",
+  "source": "regression",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "0.1.3 公告发布后，“我的”页必须稳定把 v0.1.3 识别为最新版本。",
+  "environment": {
+    "surfaces": [
+      "pages/me/index",
+      "pui_updatelog",
+      "update-announcements service"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "wechat-devtools",
+      "node"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "在 pui_updatelog 同时保留 date=2026-07-29 的 v0.1.2 与 v0.1.3 published 文档。",
+    "Service 只按 date 倒序，两个相同日期的文档保持云返回顺序。",
+    "进入 pages/me/index，announcementSource=cloud，但 latestAnnouncementVersion 偶尔仍为 v0.1.2。"
+  ],
+  "expected": "公告先按日期倒序；日期相同再按语义版本倒序，v0.1.3 稳定领先 v0.1.2。",
+  "actual": "旧 normalizeList 只比较 date，相同日期返回 0，最新公告取决于云数据库未承诺的返回顺序。",
+  "evidence": [
+    {
+      "kind": "browser",
+      "ref": "pages/me/index 运行态首次回读",
+      "note": "云源成功但 latestAnnouncementVersion=v0.1.2，首条公告也是 v0.1.2。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/services/update-announcements.js",
+      "note": "normalizeList 现按 date 倒序后使用 compareVersionLabels 作为同日次排序。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-me-page.js",
+      "note": "云 fixture 故意先返回同日 v0.1.2，再返回 v0.1.3，专项锁定 v0.1.3 必须排首位。"
+    }
+  ],
+  "rootCause": "公告日期只有日级精度，而排序合同没有同日稳定次键；Me 图表已有语义版本比较，但公告 Service 的 latest 链没有复用等价规则。",
+  "decision": {
+    "outcome": "在 update-announcements Service 增加纯语义版本比较；normalizeList 固定按日期倒序，再按版本倒序。Me 图表自己的升序里程碑规则保持不变。",
+    "rationale": "最新公告属于数据层合同，应在云、缓存和 fallback 共用的 Service 归一化阶段解决，不能由页面临时修补。",
+    "alternativesRejected": [
+      "修改 v0.1.3 的日期：会伪造发布日期。",
+      "依赖 publishedAt：本地 fallback 和旧文档不保证存在。",
+      "只在 Me 页面反转数组：Code、缓存与其他消费者仍会漂移。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/common/services/update-announcements.js",
+      "scripts/test-miniprogram-me-page.js",
+      "docs/PUBLISH_AND_DEPLOY.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": [
+      "pui_updatelog",
+      "Me dashboard",
+      "announcement cache"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-miniprogram-me-page.js"
+    ],
+    "commands": [
+      "node scripts/test-miniprogram-me-page.js：通过。",
+      "npm run check：通过。",
+      "独立小程序仓 main=88a3422 已推送。"
+    ],
+    "browser": [
+      "复用现有微信开发者工具热重载；pages/me/index 回读 source=cloud、latest=v0.1.3、首条标题=PoemUI v0.1.3 更新、74 个组件、4 条重点。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机更新公告 Popup 的弱网加载和缓存切换仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "公告日期只有日级精度；同日必须使用语义版本倒序作为稳定次键。",
+    "rules": [
+      "最新公告排序固定为 date DESC、semantic version DESC。",
+      "排序规则必须位于共享 Service，使云端、缓存和 fallback 同形。",
+      "专项 fixture 必须故意以旧版本在前，证明排序不依赖上游返回顺序。",
+      "运行态必须回读 latestAnnouncementVersion，不能只检查数据库文档存在。"
+    ],
+    "tags": [
+      "announcement",
+      "semver",
+      "sorting",
+      "shared-cloud",
+      "miniprogram-me"
+    ]
+  }
+}
