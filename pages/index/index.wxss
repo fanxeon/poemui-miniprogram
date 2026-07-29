@@ -130,7 +130,8 @@
   line-height: var(--pui-line-height-body-small);
 }
 
-.home-components {
+.home-components,
+.home-components__collapsible {
   width: 100%;
   min-width: 0;
 }

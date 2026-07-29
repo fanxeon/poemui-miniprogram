@@ -1,0 +1,22 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="Waffle 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="组件数量点阵" subtitle="圆润单元渐变到透明" description="低透明单元仍保留轮廓，新增长度同时由紫色与图例文字表达。">
+            <pui-waffle id="waffle-demo" items="{{waffleItems}}" shape="{{waffleShape}}" columns="10" aria-label="PoemUI 组件总量" />
+            <view class="component-page__row component-page__row--actions">
+              <pui-button block size="small" content="{{highVariance ? '恢复初始数据' : '切换高波动数据'}}" theme="primary" bind:click="onToggleWaffleData" />
+              <pui-button block size="small" content="{{waffleShape === 'rounded' ? '切换圆形' : '切换圆润'}}" variant="outline" bind:click="onToggleWaffleShape" />
+              <pui-button block size="small" content="重播动画" variant="outline" bind:click="onReplay" />
+            </view>
+          </component-page-section>
+          <component-page-section title="大数据缩放" subtitle="单位必须可见" description="超过渲染上限时自动提高每格单位，并明确展示 1 格代表的数值。">
+            <pui-waffle items="{{scaledWaffleItems}}" max-cells="80" columns="10" aria-label="测试用例数量" />
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

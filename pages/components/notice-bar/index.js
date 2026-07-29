@@ -10,7 +10,7 @@ Page(createComponentPage({
   methods: {
     onNoticeClick: function (event) {
       var trigger = event && event.detail ? event.detail.trigger : '';
-      if (trigger === 'operation') {
+      if (trigger === 'suffix-icon') {
         this.setData({ noticeVisible: false, noticeStatus: '公告已由页面隐藏。' });
       }
     },

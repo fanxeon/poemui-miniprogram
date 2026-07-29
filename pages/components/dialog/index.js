@@ -22,6 +22,9 @@ Page(createComponentPage({
     ]
   },
   methods: {
+    onDialogHeaderLeft: function () {
+      this.setData({ dialogStatus: '已触发 Header 左侧附加操作；Dialog 保持打开。' });
+    },
     onOpenDialog: function () {
       this.setData({
         dialogVisible: true,

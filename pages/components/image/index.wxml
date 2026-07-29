@@ -1,1 +1,23 @@
-<pui-config-provider class="component-config-provider" use-global-config><view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}"><view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view><view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};"><pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay><view class="component-page__content"><component-page-section title="展示组件品牌图片" subtitle="核心示例" description="真实图片加载完成后自然显现，长按可使用微信图片菜单。"><pui-image src="/assets/poemui-moon-lines-black.png" width="240rpx" height="240rpx" shape="round" error="{{imageError}}" show-menu-by-longpress bind:load="onImageLoad" bind:error="onImageError" /><text class="component-page__status">{{imageStatus}}</text></component-page-section><component-page-section title="图片不可用时给出说明" subtitle="错误状态" description="失败状态清楚说明图片不可见；恢复后重新展示真实资源。"><pui-button content="{{imageError ? '恢复图片' : '模拟图片不可用'}}" theme="primary" block bind:click="onToggleImageError" /></component-page-section></view></pui-scroll-area></view></view></pui-config-provider>
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar">
+      <component-page-navbar title="{{pageTitle}}" bind:back="onBack" />
+    </view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay>
+        <view class="component-page__content">
+          <component-page-section title="展示组件品牌图片" subtitle="核心示例" description="进入视口后懒加载真实资源；请求期间显示加载态，长按保留微信图片菜单。">
+            <pui-image src="/assets/poemui-moon-lines-black.png" width="240rpx" height="240rpx" shape="round" lazy loading="{{imageLoading}}" error="{{imageError}}" show-menu-by-longpress bind:load="onImageLoad" bind:error="onImageError" />
+            <text class="component-page__status">{{imageStatus}}</text>
+          </component-page-section>
+          <component-page-section title="资源状态" subtitle="加载、失败与恢复" description="外部 loading/error 均由页面回写，原生 load/error 继续提供真实资源结果。">
+            <view class="component-page__row component-page__row--actions">
+              <pui-button content="{{imageLoading ? '结束加载' : '重新加载'}}" theme="primary" block bind:click="onToggleImageLoading" />
+              <pui-button content="{{imageError ? '恢复图片' : '模拟图片不可用'}}" variant="outline" block bind:click="onToggleImageError" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

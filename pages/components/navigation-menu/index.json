@@ -5,6 +5,7 @@
     "pui-navigation-menu": "poemui-miniprogram/navigation-menu/navigation-menu",
     "pui-switch": "poemui-miniprogram/switch/switch",
     "component-page-navbar": "/components/component-page-navbar/component-page-navbar",
-    "component-page-section": "/components/component-page-section/component-page-section"
+    "component-page-section": "/components/component-page-section/component-page-section",
+    "component-page-feedback": "/components/component-page-feedback/component-page-feedback"
   }
 }

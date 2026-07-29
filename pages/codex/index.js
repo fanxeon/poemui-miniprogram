@@ -1,6 +1,7 @@
 var tabbarNavigation = require('../../common/utils/tabbar-navigation');
 var backgroundPreference = require('../../common/utils/page-background-preference');
 var codexPage = require('../../common/services/codex-page');
+var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
 
 function getWindowHeight() {
   return wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
@@ -15,6 +16,13 @@ Page({
     codePageLoadState: 'loading',
     codePageLoadingState: 'idle',
     codePageError: '',
+    infoDialogVisible: false,
+    infoDialogConfirmBtn: {
+      content: '知道了',
+      theme: 'primary',
+      ariaLabel: '关闭安装页说明'
+    },
+    appearancePopupVisible: false,
     backgroundGradientEnabled: backgroundPreference.get(),
     contentHeight: '1px',
     layoutReady: false
@@ -75,6 +83,35 @@ Page({
   onTabChange: function onTabChange(event) {
     var value = event && event.detail ? event.detail.value : '';
     tabbarNavigation.navigateToTab(value, this.data.activeTab);
+  },
+
+  onOpenInfo: function onOpenInfo() {
+    this.setData({
+      appearancePopupVisible: false,
+      infoDialogVisible: true
+    });
+  },
+
+  onCloseInfo: function onCloseInfo() {
+    this.setData({ infoDialogVisible: false });
+  },
+
+  onOpenAppearance: function onOpenAppearance() {
+    this.setData({
+      infoDialogVisible: false,
+      appearancePopupVisible: true
+    });
+  },
+
+  onAppearancePopupVisibleChange: function onAppearancePopupVisibleChange(event) {
+    this.setData({
+      appearancePopupVisible: Boolean(event && event.detail && event.detail.visible)
+    });
+  },
+
+  onResetAppearance: function onResetAppearance() {
+    backgroundPreference.set(false, { source: 'miniprogram-codepage:appearance-reset' });
+    visualConfig.reset({ source: 'miniprogram-codepage:appearance-reset' });
   },
 
   loadCodePage: function loadCodePage() {

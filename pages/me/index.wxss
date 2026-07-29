@@ -50,19 +50,43 @@
   padding-bottom: calc(var(--pui-panel-padding) + var(--pui-scroll-area-gradient-overlay-size-md));
 }
 
-.me-profile {
-  display: flex;
-  align-items: center;
-  gap: var(--pui-content-gap);
+.me-page__dashboard {
+  box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  padding-bottom: 4vh;
 }
 
-.me-profile__editor {
-  flex: 1 1 0;
+.me-page__dashboard-metrics {
+  display: grid;
+  box-sizing: border-box;
   width: 100%;
   min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pui-content-gap);
+  margin-bottom: var(--pui-content-gap);
+}
+
+.me-page__dashboard-metric {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--pui-space-xs);
+  text-align: center;
+}
+
+.me-page__dashboard-metric-value {
+  color: var(--pui-text-primary);
+  font-size: var(--pui-font-size-title-medium);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--pui-font-weight-semibold);
+  line-height: var(--pui-line-height-title-medium);
+}
+
+.me-page__dashboard-metric-label {
+  color: var(--pui-text-secondary);
+  font-size: var(--pui-font-size-body-small);
+  line-height: var(--pui-line-height-body-small);
 }
 
 .me-page__services {
@@ -72,7 +96,6 @@
   min-width: 0;
   flex-direction: column;
   gap: var(--pui-content-gap);
-  margin-top: var(--pui-section-gap);
 }
 
 .me-announcement-popup__content {

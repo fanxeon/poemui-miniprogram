@@ -8,7 +8,34 @@
         capsule="{{true}}"
         safe-area-inset-top="{{true}}"
         bordered="{{false}}"
-      />
+      >
+        <view slot="left" class="pui-flex pui-items-center pui-gap-xxs pui-min-w-0">
+          <pui-button
+            id="codex-info"
+            theme="default"
+            variant="text"
+            surface="transparent"
+            size="extra-small"
+            shape="circle"
+            icon="info-circle"
+            icon-only
+            aria-label="查看安装页说明"
+            bind:click="onOpenInfo"
+          />
+          <pui-button
+            id="codex-appearance-menu"
+            theme="default"
+            variant="text"
+            surface="transparent"
+            size="extra-small"
+            shape="circle"
+            icon="menu"
+            icon-only
+            aria-label="打开外观设置"
+            bind:click="onOpenAppearance"
+          />
+        </view>
+      </pui-navbar>
     </view>
 
     <view class="codex-page__content-row" style="height: {{contentHeight}};">
@@ -105,6 +132,47 @@
         </view>
       </pui-scroll-area>
     </view>
+
+    <pui-dialog
+      id="codex-info-dialog"
+      visible="{{infoDialogVisible}}"
+      title="关于安装"
+      content="安装示例与 Skill 均从共享云端读取，仅展示已发布内容。"
+      close-btn="{{true}}"
+      close-on-overlay-click
+      confirm-btn="{{infoDialogConfirmBtn}}"
+      using-custom-navbar
+      aria-label="安装页说明"
+      bind:confirm="onCloseInfo"
+      bind:close="onCloseInfo"
+    />
+
+    <pui-popup
+      id="codex-appearance-popup"
+      visible="{{appearancePopupVisible}}"
+      placement="bottom"
+      card="{{true}}"
+      show-header
+      title="外观"
+      blur-overlay
+      prevent-scroll-through
+      z-index="11010"
+      aria-label="外观设置"
+      bind:visible-change="onAppearancePopupVisibleChange"
+    >
+      <pui-button
+        slot="header-left"
+        theme="primary"
+        variant="base"
+        shape="circle"
+        size="small"
+        icon="refresh"
+        icon-only
+        aria-label="恢复默认外观"
+        bind:click="onResetAppearance"
+      />
+      <appearance-settings />
+    </pui-popup>
 
     <view id="codex-tabbar" class="codex-page__tabbar">
       <pui-tabbar

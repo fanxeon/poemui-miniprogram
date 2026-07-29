@@ -55,42 +55,45 @@
                 aria-label="月下成行标记"
               />
             </view>
-            <text class="home-brand__description">原生小程序组件库，按需组合。</text>
+            <text class="home-brand__description">面向 AI 的原生小程序组件库。</text>
             <text class="home-brand__catalog">组件目录 / {{catalogSummary.componentCount}} 个组件 / {{catalogSummary.guideCount}} 份规范</text>
           </view>
 
           <block wx:for="{{catalogSections}}" wx:for-item="section" wx:key="key">
-            <pui-collapsible
-              id="home-section-{{section.key}}"
-              class="home-components"
-              label="{{section.label}}"
-              aria-label="{{section.ariaLabel}}"
-              open="{{activeCatalogSection === section.key}}"
-              custom-trigger="{{section.hasPremiumIcon}}"
-              data-section="{{section.key}}"
-              custom-content="{{true}}"
-              bind:change="onCatalogSectionChange"
-            >
-              <view wx:if="{{section.hasPremiumIcon}}" slot="trigger" class="home-components__advanced-trigger">
-                <text class="home-components__advanced-label">{{section.label}}</text>
-                <pui-icon name="premium" size="30" custom-class="home-components__advanced-icon" />
-              </view>
-              <view class="home-component-list">
-                <block wx:for="{{section.items}}" wx:for-item="component" wx:key="key">
-                  <pui-cell
-                    title="{{component.name}}"
-                    description="{{component.description}}"
-                    left-icon="{{component.icon}}"
-                    arrow
-                    clickable
-                    hover
-                    url="{{component.url}}"
-                    jump-type="navigateTo"
-                    aria-label="{{'打开 ' + component.name + (component.kind === 'guide' ? '规范页面' : '组件页面')}}"
-                  />
-                </block>
-              </view>
-            </pui-collapsible>
+            <view id="home-section-{{section.key}}" class="home-components">
+              <pui-collapsible
+                class="home-components__collapsible"
+                label="{{section.label}}"
+                aria-label="{{section.ariaLabel}}"
+                open="{{activeCatalogSection === section.key}}"
+                duration="{{catalogSectionMotionDuration}}"
+                shadow
+                custom-trigger="{{section.hasPremiumIcon}}"
+                data-section="{{section.key}}"
+                custom-content="{{true}}"
+                bind:change="onCatalogSectionChange"
+              >
+                <view wx:if="{{section.hasPremiumIcon}}" slot="trigger" class="home-components__advanced-trigger">
+                  <text class="home-components__advanced-label">{{section.label}}</text>
+                  <pui-icon name="premium" size="30" custom-class="home-components__advanced-icon" />
+                </view>
+                <view class="home-component-list">
+                  <block wx:for="{{section.items}}" wx:for-item="component" wx:key="key">
+                    <pui-cell
+                      title="{{component.name}}"
+                      description="{{component.description}}"
+                      left-icon="{{component.icon}}"
+                      arrow
+                      clickable
+                      hover
+                      url="{{component.url}}"
+                      jump-type="navigateTo"
+                      aria-label="{{'打开 ' + component.name + (component.kind === 'guide' ? '规范页面' : '组件页面')}}"
+                    />
+                  </block>
+                </view>
+              </pui-collapsible>
+            </view>
           </block>
         </view>
       </pui-scroll-area>

@@ -1,0 +1,9 @@
+<pui-dynamic-message
+  id="page-feedback-message"
+  duration="{{duration}}"
+  safe-area="{{safeArea}}"
+  reduce-motion="{{reduceMotion}}"
+  bind:click="onMessageClick"
+  bind:action="onMessageAction"
+  bind:close="onMessageClose"
+/>

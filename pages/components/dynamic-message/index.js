@@ -6,6 +6,8 @@ Page(createComponentPage({
     notificationStatus: '选择一个真实入口查看通知；页面滚动不会被阻断。',
     updatePercent: 0,
     reduceMotion: false,
+    messageShadow: true,
+    messageFrostedGlass: true,
     feedRows: [1, 2, 3, 4, 5, 6, 7, 8]
   },
   methods: {
@@ -68,6 +70,20 @@ Page(createComponentPage({
     },
     onNotificationClose: function (event) {
       this.setData({ notificationStatus: 'close：' + event.detail.key + '，原因 ' + event.detail.reason + '。' });
+    },
+    onMessageShadowChange: function (event) {
+      var checked = Boolean(event && event.detail && event.detail.checked);
+      this.setData({
+        messageShadow: checked,
+        notificationStatus: checked ? 'DynamicMessage 私有阴影已开启。' : 'DynamicMessage 私有阴影已关闭。'
+      });
+    },
+    onMessageFrostedGlassChange: function (event) {
+      var checked = Boolean(event && event.detail && event.detail.checked);
+      this.setData({
+        messageFrostedGlass: checked,
+        notificationStatus: checked ? 'DynamicMessage 私有毛玻璃已开启。' : 'DynamicMessage 私有毛玻璃已关闭。'
+      });
     },
     onToggleMotion: function () {
       var reduceMotion = !this.data.reduceMotion;

@@ -11,6 +11,9 @@
     "pui-loading": "poemui-miniprogram/loading/loading",
     "pui-top-loading": "poemui-miniprogram/top-loading/top-loading",
     "pui-button": "poemui-miniprogram/button/button",
+    "pui-popup": "poemui-miniprogram/popup/popup",
+    "pui-dialog": "poemui-miniprogram/dialog/dialog",
+    "appearance-settings": "/components/appearance-settings/appearance-settings",
     "component-page-section": "/components/component-page-section/component-page-section",
     "code-snippet": "/components/code-snippet/code-snippet"
   }

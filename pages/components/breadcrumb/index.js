@@ -10,7 +10,12 @@ Page(createComponentPage({
       { label: 'Breadcrumb', value: 'breadcrumb', icon: 'route' }
     ],
     breadcrumbValue: 'breadcrumb',
+    breadcrumbError: true,
+    breadcrumbLoading: false,
     breadcrumbStatus: '当前位置：Breadcrumb。'
+  },
+  onUnload: function onUnload() {
+    clearTimeout(this._breadcrumbRetryTimer);
   },
   methods: {
     onBreadcrumbChange: function onBreadcrumbChange(event) {
@@ -19,7 +24,19 @@ Page(createComponentPage({
       this.setData({ breadcrumbValue: value, breadcrumbStatus: '当前位置：' + (labels[value] || value) + '。' });
     },
     onBreadcrumbRetry: function onBreadcrumbRetry() {
-      this.setData({ breadcrumbStatus: '正在重新加载路径。' });
+      clearTimeout(this._breadcrumbRetryTimer);
+      this.setData({
+        breadcrumbError: false,
+        breadcrumbLoading: true,
+        breadcrumbStatus: '正在重新加载路径。'
+      });
+      this._breadcrumbRetryTimer = setTimeout(function finishBreadcrumbReload() {
+        this._breadcrumbRetryTimer = null;
+        this.setData({
+          breadcrumbLoading: false,
+          breadcrumbStatus: '路径已重新加载。'
+        });
+      }.bind(this), 600);
     }
   }
 }));

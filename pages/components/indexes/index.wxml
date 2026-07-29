@@ -4,12 +4,13 @@
     <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
       <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay gradient-overlay-size="md" aria-label="Indexes 组件用法">
         <view class="component-page__content">
-          <component-page-section title="快速定位组件首字母" subtitle="核心示例" description="点击右侧字母跳到对应分组，也可以直接滚动列表浏览。">
-            <pui-indexes items="{{indexGroups}}" current="{{indexCurrent}}" height="680" sticky="{{true}}" index-position="right" aria-label="组件索引" bind:change="onIndexesChange" bind:item-click="onIndexesItemClick" />
+          <component-page-section title="快速定位组件首字母" subtitle="核心示例" description="按住并滑过右侧索引会放大当前字母，也可以直接滚动列表浏览。">
+            <pui-indexes id="indexes-primary" items="{{indexGroups}}" current="{{indexCurrent}}" height="680" sticky="{{true}}" index-position="right" aria-label="组件索引" bind:change="onIndexesChange" bind:item-click="onIndexesItemClick" />
             <text class="navigation-page__status" aria-live="polite">{{indexesStatus}}</text>
           </component-page-section>
           <component-page-section title="索引暂时无法读取" subtitle="恢复入口" description="错误区域保留重新加载入口，点击后等待页面提供新数据。">
-            <pui-indexes items="{{indexGroups}}" error="{{true}}" height="360" retry-text="重新加载索引" aria-label="错误索引" bind:retry="onIndexesRetry" />
+            <pui-indexes id="indexes-recovery" items="{{indexesRecoveryItems}}" error="{{indexesRecoveryError}}" loading="{{indexesRecoveryLoading}}" height="360" retry-text="重新加载索引" aria-label="错误索引" bind:retry="onIndexesRetry" />
+            <text class="navigation-page__status" aria-live="polite">{{indexesStatus}}</text>
           </component-page-section>
         </view>
       </pui-scroll-area>

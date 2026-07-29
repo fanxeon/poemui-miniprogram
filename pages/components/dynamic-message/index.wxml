@@ -6,14 +6,24 @@
     <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
       <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="DynamicMessage 组件用法">
         <view class="component-page__content dynamic-message-page__content">
+          <component-page-section title="通知外观" subtitle="组件私有开关" description="这里的设置只影响 DynamicMessage；关闭后不改写页面的全局外观。">
+            <pui-cell-group aria-label="DynamicMessage 外观设置">
+              <pui-cell title="通知阴影" description="让通知与下方页面形成清晰层级">
+                <pui-switch slot="right" value="{{messageShadow}}" aria-label="通知阴影" bind:change="onMessageShadowChange" />
+              </pui-cell>
+              <pui-cell title="通知毛玻璃" description="保留黑色身份面并模糊背后内容">
+                <pui-switch slot="right" value="{{messageFrostedGlass}}" aria-label="通知毛玻璃" bind:change="onMessageFrostedGlassChange" />
+              </pui-cell>
+            </pui-cell-group>
+          </component-page-section>
           <component-page-section title="生成任务通知" subtitle="同 key 原位更新" description="通知不使用遮罩，页面内容和滚动始终可用。">
             <view class="dynamic-message-page__actions">
-              <pui-button content="开始生成" theme="primary" block bind:click="onStartTask" />
-              <pui-button content="更新进度" variant="outline" block bind:click="onUpdateTask" />
-              <pui-button content="真实成功" variant="outline" block bind:click="onCompleteTask" />
-              <pui-button content="真实失败" theme="danger" variant="outline" block bind:click="onFailTask" />
-              <pui-button content="加入队列" variant="outline" block bind:click="onQueueMessage" />
-              <pui-button content="关闭当前" variant="outline" block bind:click="onCloseCurrent" />
+              <pui-button id="dynamic-message-start" content="开始生成" theme="primary" block bind:click="onStartTask" />
+              <pui-button id="dynamic-message-update" content="更新进度" variant="outline" block bind:click="onUpdateTask" />
+              <pui-button id="dynamic-message-success" content="真实成功" variant="outline" block bind:click="onCompleteTask" />
+              <pui-button id="dynamic-message-error" content="真实失败" theme="danger" variant="outline" block bind:click="onFailTask" />
+              <pui-button id="dynamic-message-queue" content="加入队列" variant="outline" block bind:click="onQueueMessage" />
+              <pui-button id="dynamic-message-close" content="关闭当前" variant="outline" block bind:click="onCloseCurrent" />
             </view>
             <text class="component-page__status" aria-live="polite">{{notificationStatus}}</text>
           </component-page-section>
@@ -26,6 +36,6 @@
         </view>
       </pui-scroll-area>
     </view>
-    <pui-dynamic-message id="dynamic-message" duration="3000" safe-area reduce-motion="{{reduceMotion}}" bind:click="onNotificationClick" bind:action="onNotificationAction" bind:close="onNotificationClose" />
+    <pui-dynamic-message id="dynamic-message" duration="3000" safe-area shadow="{{messageShadow}}" frosted-glass="{{messageFrostedGlass}}" reduce-motion="{{reduceMotion}}" bind:click="onNotificationClick" bind:action="onNotificationAction" bind:close="onNotificationClose" />
   </view>
 </pui-config-provider>

@@ -1,0 +1,22 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="BarChart 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="组件分类增量" subtitle="共享零基线比较" description="蓝色表示已有组件，青色表示本次新增；参考刻度从 0 开始，所有分类使用同一最大值。">
+            <pui-bar-chart id="bar-chart-demo" items="{{chartItems}}" mode="{{chartMode}}" show-grid aria-label="组件分类数量" />
+            <view class="component-page__row component-page__row--actions">
+              <pui-button block size="small" content="{{highVariance ? '恢复初始数据' : '切换高波动数据'}}" theme="primary" bind:click="onToggleChartData" />
+              <pui-button block size="small" content="{{chartMode === 'stacked' ? '切换并列' : '切换堆叠'}}" variant="outline" bind:click="onToggleChartMode" />
+              <pui-button block size="small" content="重播动画" variant="outline" bind:click="onReplay" />
+            </view>
+          </component-page-section>
+          <component-page-section title="纵向比较" subtitle="同一数据，不同方向" description="纵向模式仍保持共享比例，不会对每根条形单独放大。">
+            <pui-bar-chart items="{{chartItems}}" orientation="vertical" size="large" aria-label="纵向组件分类数量" />
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

@@ -1,0 +1,20 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="AreaChart 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="连续趋势" subtitle="描边清晰，填充渐隐" description="面积从强调色自然过渡到透明；横向参考线和所有系列共用从 0 开始的比例。">
+            <pui-area-chart id="area-chart-demo" items="{{trendItems}}" curve="{{curve}}" stacked="{{stacked}}" show-grid show-x-axis show-legend aria-label="六个月访问趋势" />
+            <view class="component-page__row component-page__row--actions">
+              <pui-button block size="small" content="{{highVariance ? '恢复初始数据' : '切换高波动数据'}}" theme="primary" bind:click="onToggleData" />
+              <pui-button block size="small" content="重播动画" variant="outline" bind:click="onReplay" />
+              <pui-button block size="small" content="曲线：{{curve}}" variant="outline" bind:click="onToggleCurve" />
+              <pui-button block size="small" content="{{stacked ? '切换叠加' : '切换堆叠'}}" variant="outline" bind:click="onToggleStacked" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

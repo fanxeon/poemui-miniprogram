@@ -1,36 +1,90 @@
 var tabbarNavigation = require('../../common/utils/tabbar-navigation');
 var backgroundPreference = require('../../common/utils/page-background-preference');
-var userProfile = require('../../common/utils/user-profile');
 var updateAnnouncements = require('../../common/services/update-announcements');
+var componentStatus = require('../../common/data/component-status');
+var styleUtilitiesCatalog = require('../../common/data/style-utilities-catalog');
+var visualConfig = require('poemui-miniprogram/common/utils/visual-config');
 
 var SHISHANG_APP_ID = 'wxa1b9a4d6549c6cd1';
+var LICENSE_PAGE_ROUTE = '/pages/license/index';
 var ANNOUNCEMENTS = updateAnnouncements.initial();
 var LATEST_ANNOUNCEMENT = updateAnnouncements.latest(ANNOUNCEMENTS);
 
-function getWindowHeight() {
-  return wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
+function dashboardTrendItems() {
+  return [
+    {
+      key: componentStatus.previousVersion,
+      label: componentStatus.previousVersion,
+      segments: [{
+        key: 'components',
+        label: '组件总数',
+        value: componentStatus.previousTotal,
+        theme: 'blue'
+      }]
+    },
+    {
+      key: componentStatus.currentVersion,
+      label: componentStatus.currentVersion,
+      segments: [{
+        key: 'components',
+        label: '组件总数',
+        value: componentStatus.total,
+        theme: 'blue'
+      }]
+    }
+  ];
 }
 
-function avatarText(nickname) {
-  return Array.from(String(nickname || userProfile.DEFAULT_NICKNAME))[0] || 'P';
+function componentCategoryValue(key) {
+  var items = componentStatus.items();
+  for (var index = 0; index < items.length; index += 1) {
+    if (items[index].key === key) return Number(items[index].value) || 0;
+  }
+  return 0;
+}
+
+function dashboardMetrics() {
+  return [
+    { key: 'components', label: '组件', value: componentStatus.total },
+    { key: 'styles', label: '样式', value: styleUtilitiesCatalog.items.length },
+    { key: 'advanced', label: '高级', value: componentCategoryValue('advanced') }
+  ];
+}
+
+function getWindowHeight() {
+  return wx.getWindowInfo ? Number(wx.getWindowInfo().windowHeight) : 0;
 }
 
 Page({
   data: {
     activeTab: 'me',
     tabbarItems: tabbarNavigation.getItems(),
-    nickname: userProfile.DEFAULT_NICKNAME,
-    nicknameDraft: userProfile.DEFAULT_NICKNAME,
-    nicknameError: '',
-    avatarText: 'P',
+    componentStatusMetrics: dashboardMetrics(),
+    componentStatusTrendItems: dashboardTrendItems(),
+    componentStatusMaximum: componentStatus.total,
+    componentStatusAnimationDuration: 1000,
+    componentStatusMetricsAriaLabel: 'PoemUI 当前有 ' + componentStatus.total + ' 个组件、' + styleUtilitiesCatalog.items.length + ' 个样式和 ' + componentCategoryValue('advanced') + ' 个高级组件',
+    componentStatusAriaLabel: 'PoemUI 组件总数从版本 ' + componentStatus.previousVersion + ' 的 ' + componentStatus.previousTotal + ' 个增长到版本 ' + componentStatus.currentVersion + ' 的 ' + componentStatus.total + ' 个，本版新增 ' + componentStatus.incrementTotal + ' 个',
     announcements: ANNOUNCEMENTS,
     latestAnnouncementVersion: LATEST_ANNOUNCEMENT ? LATEST_ANNOUNCEMENT.version : '',
     announcementSource: 'local',
     announcementSyncError: '',
     announcementLoadingState: 'idle',
     announcementPopupVisible: false,
+    appearancePopupVisible: false,
     announcementScrollTop: 0,
     announcementPopupStyle: '',
+    licenseDialogVisible: false,
+    licenseNavigating: false,
+    licenseDialogCancelBtn: {
+      content: '取消',
+      ariaLabel: '取消打开商业授权详情'
+    },
+    licenseDialogConfirmBtn: {
+      content: '前往查看',
+      theme: 'primary',
+      ariaLabel: '前往 PoemUI 商业授权详情'
+    },
     backgroundGradientEnabled: backgroundPreference.get(),
     contentHeight: '1px',
     layoutReady: false
@@ -44,12 +98,10 @@ Page({
     });
     this._windowResizeHandler = this.onWindowResize.bind(this);
     if (wx.onWindowResize) wx.onWindowResize(this._windowResizeHandler);
-    this.restoreProfile();
     this.loadAnnouncements();
   },
 
   onShow: function onShow() {
-    this.restoreProfile();
     this.scheduleMeasureLayout();
   },
 
@@ -63,49 +115,53 @@ Page({
     if (wx.offWindowResize && this._windowResizeHandler) wx.offWindowResize(this._windowResizeHandler);
   },
 
-  restoreProfile: function restoreProfile() {
-    var profile = userProfile.restore();
-    var nickname = profile.nickname || userProfile.DEFAULT_NICKNAME;
+  onPurchaseLicense: function onPurchaseLicense() {
     this.setData({
-      nickname: nickname,
-      nicknameDraft: nickname,
-      nicknameError: '',
-      avatarText: avatarText(nickname)
+      appearancePopupVisible: false,
+      licenseDialogVisible: true
     });
-  },
-
-  onNicknameChange: function onNicknameChange(event) {
-    var value = event && event.detail ? String(event.detail.value || '') : '';
-    this.setData({ nicknameDraft: value, nicknameError: '' });
-  },
-
-  onSaveNickname: function onSaveNickname(event) {
-    var eventValue = event && event.detail && event.detail.value;
-    var draft = eventValue === undefined ? this.data.nicknameDraft : eventValue;
-    var nickname = String(draft || '').trim();
-    if (!nickname) {
-      this.setData({ nicknameError: '昵称不能为空' });
-      this.showToast('请输入昵称', 'warning');
-      return false;
-    }
-    var result = userProfile.setNickname(nickname);
-    if (!result.saved) {
-      this.setData({ nicknameError: '昵称保存失败，请重试' });
-      this.showToast('昵称保存失败', 'error');
-      return false;
-    }
-    this.setData({
-      nickname: result.profile.nickname,
-      nicknameDraft: result.profile.nickname,
-      nicknameError: '',
-      avatarText: avatarText(result.profile.nickname)
-    });
-    this.showToast('昵称已保存', 'success');
     return true;
   },
 
-  onPurchaseLicense: function onPurchaseLicense() {
-    this.showToast('授权详情正在准备中', 'warning');
+  onLicenseDialogClose: function onLicenseDialogClose() {
+    if (this.data.licenseNavigating) return false;
+    this.setData({ licenseDialogVisible: false });
+    return true;
+  },
+
+  setLicenseNavigating: function setLicenseNavigating(navigating) {
+    this.setData({
+      licenseNavigating: Boolean(navigating),
+      licenseDialogConfirmBtn: {
+        content: navigating ? '正在打开' : '前往查看',
+        theme: 'primary',
+        loading: Boolean(navigating),
+        disabled: Boolean(navigating),
+        ariaLabel: '前往 PoemUI 商业授权详情'
+      }
+    });
+  },
+
+  onConfirmLicense: function onConfirmLicense() {
+    var self = this;
+    if (this.data.licenseNavigating) return false;
+    if (typeof wx.navigateTo !== 'function') {
+      this.showToast('当前微信版本无法打开授权详情', 'error');
+      return false;
+    }
+    this.setLicenseNavigating(true);
+    wx.navigateTo({
+      url: LICENSE_PAGE_ROUTE,
+      success: function success() {
+        self.setLicenseNavigating(false);
+        self.setData({ licenseDialogVisible: false });
+      },
+      fail: function fail() {
+        self.setLicenseNavigating(false);
+        self.showToast('暂时无法打开商业授权详情', 'error');
+      }
+    });
+    return true;
   },
 
   onOpenOrders: function onOpenOrders() {
@@ -113,8 +169,30 @@ Page({
   },
 
   onOpenAnnouncements: function onOpenAnnouncements() {
-    this.setData({ announcementPopupVisible: true, announcementScrollTop: 0 });
+    this.setData({
+      appearancePopupVisible: false,
+      announcementPopupVisible: true,
+      announcementScrollTop: 0
+    });
     this.loadAnnouncements();
+  },
+
+  onOpenAppearance: function onOpenAppearance() {
+    this.setData({
+      announcementPopupVisible: false,
+      appearancePopupVisible: true
+    });
+  },
+
+  onAppearancePopupVisibleChange: function onAppearancePopupVisibleChange(event) {
+    this.setData({
+      appearancePopupVisible: Boolean(event && event.detail && event.detail.visible)
+    });
+  },
+
+  onResetAppearance: function onResetAppearance() {
+    backgroundPreference.set(false, { source: 'miniprogram-me:appearance-reset' });
+    visualConfig.reset({ source: 'miniprogram-me:appearance-reset' });
   },
 
   loadAnnouncements: function loadAnnouncements() {

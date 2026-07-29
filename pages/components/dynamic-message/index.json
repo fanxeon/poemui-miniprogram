@@ -5,6 +5,8 @@
     "pui-dynamic-message": "poemui-miniprogram/dynamic-message/dynamic-message",
     "pui-button": "poemui-miniprogram/button/button",
     "pui-cell": "poemui-miniprogram/cell/cell",
+    "pui-cell-group": "poemui-miniprogram/cell/cell-group",
+    "pui-switch": "poemui-miniprogram/switch/switch",
     "component-page-navbar": "/components/component-page-navbar/component-page-navbar",
     "component-page-section": "/components/component-page-section/component-page-section"
   }

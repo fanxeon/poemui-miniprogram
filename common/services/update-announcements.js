@@ -5,6 +5,88 @@ var CACHE_KEY = 'poemui-update-announcements';
 
 var FALLBACK_ANNOUNCEMENTS = [
   {
+    id: 'pui-v0-1-2-20260729',
+    version: 'v0.1.2',
+    date: '2026-07-29',
+    title: 'PoemUI v0.1.2 更新',
+    summary: '新增高级图表，完成组件交互与跨端体验修缮。',
+    highlights: [
+      {
+        component: '高级图表',
+        icon: 'activity',
+        title: 'AreaChart / BarChart / Waffle',
+        description: '新增三项图表，支持主题渐变、真实数据回写和可重播入场。'
+      },
+      {
+        component: '导航与表单',
+        icon: 'progress',
+        title: '锚点、圆角与输入稳定',
+        description: '修正导航宽度、吸顶、索引轨以及选择、步进和输入布局。'
+      },
+      {
+        component: '展示与反馈',
+        icon: 'dashboard',
+        title: '状态与操作闭环',
+        description: '补齐加载、更多菜单、展开、滑动、倒计时和通知动画。'
+      },
+      {
+        component: '浮层',
+        icon: 'popup',
+        title: 'Header 与 Footer 统一',
+        description: 'Picker、Dialog 与 Popup 统一三段结构、全宽操作和外观语义。'
+      },
+      {
+        component: '小程序',
+        icon: 'cloud',
+        title: '安装与状态页升级',
+        description: '安装内容云端读取；“我的”以 AreaChart 展示 71 → 74。'
+      }
+    ],
+    status: 'published',
+    schemaVersion: 1
+  },
+  {
+    id: 'pui-v0-1-1-20260728',
+    version: 'v0.1.1',
+    date: '2026-07-28',
+    title: 'PoemUI v0.1.1 更新',
+    summary: '新增高级图表，集中优化组件交互与小程序体验。',
+    highlights: [
+      {
+        component: '高级图表',
+        icon: 'activity',
+        title: 'AreaChart / BarChart / Waffle',
+        description: '新增三项图表，支持小程序与 H5、主题渐变和可重播入场。'
+      },
+      {
+        component: '导航',
+        icon: 'progress',
+        title: '导航与布局修正',
+        description: '修正连接线、菜单宽度、面包屑、底栏和索引选中态。'
+      },
+      {
+        component: '表单',
+        icon: 'search',
+        title: '输入选择更稳',
+        description: '统一输入、选择、步进器的间距、圆角与实机布局。'
+      },
+      {
+        component: '展示与反馈',
+        icon: 'dashboard',
+        title: '状态与操作闭环',
+        description: '补齐加载和更多状态，修正滑动操作、倒计时、通知与对话框。'
+      },
+      {
+        component: '小程序',
+        icon: 'cloud',
+        title: '安装与状态页升级',
+        description: '安装内容改为云端读取；“我的”以 AreaChart 展示 71 → 74 的真实组件增长。'
+      }
+    ],
+    status: 'published',
+    schemaVersion: 1
+  },
+  {
     id: 'pui-v0-1-0-20260727',
     version: 'v0.1.0',
     date: '2026-07-27',
@@ -14,8 +96,8 @@ var FALLBACK_ANNOUNCEMENTS = [
       {
         component: '我的',
         icon: 'user',
-        title: '账户与服务页',
-        description: '支持昵称保存、更新公告与服务导航。'
+        title: '服务与信息页',
+        description: '集中提供更新公告、授权信息与平台服务入口。'
       },
       {
         component: 'Popup',

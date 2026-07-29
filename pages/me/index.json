@@ -4,16 +4,17 @@
     "pui-navbar": "poemui-miniprogram/navbar/navbar",
     "pui-scroll-area": "poemui-miniprogram/scroll-area/scroll-area",
     "pui-tabbar": "poemui-miniprogram/tabbar/tabbar",
-    "pui-card": "poemui-miniprogram/card/card",
-    "pui-avatar": "poemui-miniprogram/avatar/avatar",
-    "pui-input": "poemui-miniprogram/input/input",
     "pui-button": "poemui-miniprogram/button/button",
+    "pui-card": "poemui-miniprogram/card/card",
+    "pui-area-chart": "poemui-miniprogram/area-chart/area-chart",
     "pui-cell": "poemui-miniprogram/cell/cell",
     "pui-cell-group": "poemui-miniprogram/cell/cell-group",
+    "pui-dialog": "poemui-miniprogram/dialog/dialog",
     "pui-popup": "poemui-miniprogram/popup/popup",
     "pui-tag": "poemui-miniprogram/tag/tag",
     "pui-icon": "poemui-miniprogram/icon/icon",
     "pui-top-loading": "poemui-miniprogram/top-loading/top-loading",
-    "pui-toast": "poemui-miniprogram/toast/toast"
+    "pui-toast": "poemui-miniprogram/toast/toast",
+    "appearance-settings": "/components/appearance-settings/appearance-settings"
   }
 }

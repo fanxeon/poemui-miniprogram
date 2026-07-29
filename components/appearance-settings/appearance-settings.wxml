@@ -3,20 +3,17 @@
     <pui-cell title="果味" description="一键应用视觉组合">
       <pui-switch slot="right" value="{{fruitFlavorEnabled}}" aria-label="一键果味" bind:change="onFruitFlavorChange" />
     </pui-cell>
-    <pui-cell title="视觉效果" description="暂停阴影、毛玻璃和大圆角">
-      <pui-switch slot="right" value="{{visualConfig.effectsEnabled}}" aria-label="视觉效果总开关" bind:change="onAppearanceSwitchChange" data-setting="effectsEnabled" />
-    </pui-cell>
     <pui-cell title="边框">
       <pui-switch slot="right" value="{{visualConfig.bordered}}" aria-label="组件边框" bind:change="onAppearanceSwitchChange" data-setting="bordered" />
     </pui-cell>
     <pui-cell title="阴影">
-      <pui-switch slot="right" value="{{visualConfig.shadow}}" disabled="{{visualConfig.effectsEnabled === false}}" aria-label="组件阴影" bind:change="onAppearanceSwitchChange" data-setting="shadow" />
+      <pui-switch slot="right" value="{{visualConfig.shadow}}" aria-label="组件阴影" bind:change="onAppearanceSwitchChange" data-setting="shadow" />
     </pui-cell>
     <pui-cell title="毛玻璃">
-      <pui-switch slot="right" value="{{visualConfig.frostedGlass}}" disabled="{{visualConfig.effectsEnabled === false}}" aria-label="组件毛玻璃" bind:change="onAppearanceSwitchChange" data-setting="frostedGlass" />
+      <pui-switch slot="right" value="{{visualConfig.frostedGlass}}" aria-label="组件毛玻璃" bind:change="onAppearanceSwitchChange" data-setting="frostedGlass" />
     </pui-cell>
     <pui-cell title="大圆角">
-      <pui-switch slot="right" value="{{visualConfig.largeRadius}}" disabled="{{visualConfig.effectsEnabled === false}}" aria-label="组件大圆角" bind:change="onAppearanceSwitchChange" data-setting="largeRadius" />
+      <pui-switch slot="right" value="{{visualConfig.largeRadius}}" aria-label="组件大圆角" bind:change="onAppearanceSwitchChange" data-setting="largeRadius" />
     </pui-cell>
     <pui-cell title="间距相等" description="让容器结构块共享同一间距">
       <pui-switch slot="right" value="{{visualConfig.equalSpacing}}" aria-label="间距相等" bind:change="onAppearanceSwitchChange" data-setting="equalSpacing" />

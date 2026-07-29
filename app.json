@@ -4,6 +4,7 @@
     "pages/styles/index",
     "pages/codex/index",
     "pages/me/index",
+    "pages/license/index",
     "pages/components/button/index",
     "pages/components/divider/index",
     "pages/components/icon/index",
@@ -41,6 +42,9 @@
     ,"pages/components/pull-refresh/index"
     ,"pages/components/virtual-list/index"
     ,"pages/components/watermark/index"
+    ,"pages/components/area-chart/index"
+    ,"pages/components/bar-chart/index"
+    ,"pages/components/waffle/index"
     ,"pages/components/avatar/index"
     ,"pages/components/badge/index"
     ,"pages/components/card/index"

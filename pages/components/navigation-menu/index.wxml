@@ -11,7 +11,7 @@
           >
             <pui-navigation-menu
               id="horizontal-menu-demo"
-              items="{{menuItems}}"
+              items="{{horizontalMenuItems}}"
               visible="{{horizontalMenuVisible}}"
               value="{{horizontalMenuValue}}"
               expanded-value="{{horizontalMenuExpandedValue}}"
@@ -31,7 +31,6 @@
               bind:checked-change="onHorizontalMenuCheckedChange"
               bind:radio-change="onHorizontalMenuRadioChange"
             />
-            <text class="navigation-page__status" aria-live="polite">{{horizontalMenuStatus}}</text>
           </component-page-section>
 
           <component-page-section
@@ -61,7 +60,6 @@
               bind:checked-change="onVerticalMenuCheckedChange"
               bind:radio-change="onVerticalMenuRadioChange"
             />
-            <text class="navigation-page__status" aria-live="polite">{{verticalMenuStatus}}</text>
           </component-page-section>
 
           <component-page-section
@@ -83,7 +81,7 @@
             </view>
             <pui-navigation-menu
               id="error-menu-demo"
-              items="{{menuItems}}"
+              items="{{horizontalMenuItems}}"
               visible="{{errorMenuVisible}}"
               expanded-value="{{errorMenuExpandedValue}}"
               error="{{errorMenuError}}"
@@ -97,10 +95,10 @@
               bind:expanded-change="onErrorMenuExpandedChange"
               bind:retry="onErrorMenuRetry"
             />
-            <text class="navigation-page__status" aria-live="polite">{{errorMenuStatus}}</text>
           </component-page-section>
         </view>
       </pui-scroll-area>
     </view>
+    <component-page-feedback id="component-page-feedback" />
   </view>
 </pui-config-provider>

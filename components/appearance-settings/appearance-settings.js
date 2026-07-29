@@ -24,6 +24,11 @@ Component({
     attached: function attached() {
       var self = this;
       visualConfig.restore();
+      if (visualConfig.get().effectsEnabled === false) {
+        visualConfig.set({ effectsEnabled: true }, {
+          source: 'miniprogram-appearance-settings:hidden-effects-gate-migration'
+        });
+      }
       backgroundPreference.restore();
       this._unsubscribeVisualConfig = visualConfig.subscribe(function onVisualConfigChange(nextConfig) {
         self.syncState(nextConfig, backgroundPreference.get());
@@ -54,7 +59,6 @@ Component({
       var checked = Boolean(event && event.detail && event.detail.checked);
       var patch = {};
       if (setting === 'theme') patch.theme = checked ? 'dark' : 'light';
-      if (setting === 'effectsEnabled') patch.effectsEnabled = checked;
       if (setting === 'bordered') patch.bordered = checked;
       if (setting === 'shadow') patch.shadow = checked;
       if (setting === 'frostedGlass') patch.frostedGlass = checked;

@@ -1,9 +1,6 @@
 var createComponentPage = require('../../../utils/component-page');
 
-Page(createComponentPage({
-  title: 'Indexes',
-  data: {
-    indexGroups: [
+var INDEX_GROUPS = [
       { index: 'A', title: 'A', children: [{ label: 'Alert', value: 'alert', description: '页面提示', icon: 'info-circle', clickable: true }] },
       { index: 'B', title: 'B', children: [{ label: 'Badge', value: 'badge', description: '数量与提醒点', icon: 'circle', clickable: true }, { label: 'Breadcrumb', value: 'breadcrumb', description: '层级路径', icon: 'route', badge: 2, clickable: true }] },
       { index: 'C', title: 'C', children: [{ label: 'Calendar', value: 'calendar', description: '日期选择', icon: 'calendar', clickable: true }, { label: 'Checkbox', value: 'checkbox', description: '多项选择', icon: 'check-circle', clickable: true }] },
@@ -18,9 +15,20 @@ Page(createComponentPage({
       { index: 'S', title: 'S', children: [{ label: 'Search', value: 'search', description: '关键词检索', icon: 'search', clickable: true }, { label: 'Switch', value: 'switch', description: '独立开关', icon: 'toggle-right', clickable: true }] },
       { index: 'T', title: 'T', children: [{ label: 'Tabs', value: 'tabs', description: '内容分类', icon: 'list-bullet', clickable: true }, { label: 'Toast', value: 'toast', description: '短暂反馈', icon: 'message-circle', clickable: true }] },
       { index: 'U', title: 'U', children: [{ label: 'Upload', value: 'upload', description: '附件选择', icon: 'upload', clickable: true }] }
-    ],
+];
+
+Page(createComponentPage({
+  title: 'Indexes',
+  data: {
+    indexGroups: INDEX_GROUPS,
     indexCurrent: 'A',
-    indexesStatus: '当前分组：A。'
+    indexesStatus: '当前分组：A。',
+    indexesRecoveryItems: [],
+    indexesRecoveryLoading: false,
+    indexesRecoveryError: true
+  },
+  onUnload: function onUnload() {
+    clearTimeout(this._indexesRetryTimer);
   },
   methods: {
     onIndexesChange: function onIndexesChange(event) {
@@ -32,7 +40,35 @@ Page(createComponentPage({
       this.setData({ indexesStatus: '已选择：' + (detail.valueText || detail.value || '条目') + '。' });
     },
     onIndexesRetry: function onIndexesRetry() {
-      this.setData({ indexesStatus: '正在重新加载组件索引。' });
+      if (this.data.indexesRecoveryLoading) return;
+      clearTimeout(this._indexesRetryTimer);
+      this.setData({
+        indexesRecoveryError: false,
+        indexesRecoveryLoading: true,
+        indexesStatus: '正在重新加载组件索引。'
+      });
+      this._indexesRetryTimer = setTimeout(function finishIndexesReload() {
+        this._indexesRetryTimer = null;
+        var source = Array.isArray(this.data.indexGroups) ? this.data.indexGroups : [];
+        var recovered = source.filter(function filterGroup(group) {
+          return group && (typeof group.index === 'string' || typeof group.index === 'number');
+        });
+        if (!recovered.length) {
+          this.setData({
+            indexesRecoveryItems: [],
+            indexesRecoveryLoading: false,
+            indexesRecoveryError: true,
+            indexesStatus: '组件索引仍未读取成功，请重试。'
+          });
+          return;
+        }
+        this.setData({
+          indexesRecoveryItems: recovered.slice(),
+          indexesRecoveryLoading: false,
+          indexesRecoveryError: false,
+          indexesStatus: '组件索引已重新加载。'
+        });
+      }.bind(this), 600);
     }
   }
 }));

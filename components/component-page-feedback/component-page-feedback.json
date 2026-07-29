@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "pui-dynamic-message": "poemui-miniprogram/dynamic-message/dynamic-message"
+  }
+}

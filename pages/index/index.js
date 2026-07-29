@@ -76,6 +76,9 @@ var OVERLAY_COMPONENTS = [
 ];
 
 var ADVANCED_COMPONENTS = [
+  { key: 'area-chart', name: 'AreaChart', description: '用描边与透明渐变展示连续趋势。', icon: 'activity', url: '/pages/components/area-chart/index', keywords: 'area-chart 面积图 趋势 曲线 渐变' },
+  { key: 'bar-chart', name: 'BarChart', description: '用共享零基线比较分类数量和增量。', icon: 'activity', url: '/pages/components/bar-chart/index', keywords: 'bar-chart 条形图 柱状图 增量' },
+  { key: 'waffle', name: 'Waffle', description: '用圆润点阵展示总量和新增单元。', icon: 'grid', url: '/pages/components/waffle/index', keywords: 'waffle 点阵图 组件数量' },
   { key: 'top-loading', name: 'TopLoading', description: '在当前卡片顶边反馈任务进度。', icon: 'progress', url: '/pages/components/top-loading/index', keywords: 'top-loading 顶部 加载 卡片 进度' },
   { key: 'dynamic-message', name: 'DynamicMessage', description: '在页面顶部展示可原位更新的实时通知。', icon: 'bell', url: '/pages/components/dynamic-message/index', keywords: 'dynamic-message 灵动岛 灵动通知 队列' },
   { key: 'pull-refresh', name: 'PullRefresh', description: '在列表顶部发出刷新请求。', icon: 'refresh', url: '/pages/components/pull-refresh/index', keywords: 'pull-refresh 下拉刷新' },
@@ -136,6 +139,8 @@ var CATALOG_SECTIONS = [
 
 var SEARCH_OVERLAY_DURATION = 500;
 var HOME_OVERLAY_AUTO_EXPAND_DELAY = 2000;
+var HOME_CATALOG_SECTION_MOTION_DURATION = 500;
+var HOME_CATALOG_SECTION_TOP_OFFSET_RPX = 48;
 var HOME_CATALOG_SECTION_STORAGE_KEY = 'poemui.home.activeCatalogSection';
 var HOME_SHARE_TITLE = 'Poem UI · 原生小程序组件库';
 var HOME_SHARE_IMAGE_URL = '/assets/poemui-moon-lines-black.png';
@@ -218,6 +223,10 @@ function getWindowHeight() {
   return wx.getWindowInfo ? wx.getWindowInfo().windowHeight : 0;
 }
 
+function getWindowWidth() {
+  return wx.getWindowInfo ? wx.getWindowInfo().windowWidth : 0;
+}
+
 function isCatalogSectionKey(value) {
   return CATALOG_SECTIONS.some(function matches(section) {
     return section.key === value;
@@ -253,6 +262,7 @@ Page({
     navbarRightBtn: { icon: 'menu', ariaLabel: '打开外观设置' },
     catalogSections: CATALOG_SECTIONS,
     activeCatalogSection: '',
+    catalogSectionMotionDuration: HOME_CATALOG_SECTION_MOTION_DURATION,
     homeScrollIntoView: '',
     homeScrollTop: 0,
     searchOverlayVisible: false,
@@ -352,15 +362,32 @@ Page({
     }.bind(this), HOME_OVERLAY_AUTO_EXPAND_DELAY);
   },
 
-  scheduleCatalogSectionScroll: function (section) {
+  scheduleCatalogSectionScroll: function (section, delay) {
     if (!isCatalogSectionKey(section)) return;
     clearTimeout(this._catalogSectionScrollTimer);
     this.setData({ homeScrollIntoView: '' });
     this._catalogSectionScrollTimer = setTimeout(function scrollToCatalogSection() {
       this._catalogSectionScrollTimer = null;
       if (this.data.activeCatalogSection !== section) return;
-      this.setData({ homeScrollIntoView: 'home-section-' + section });
-    }.bind(this), 0);
+      if (!this.createSelectorQuery) return;
+      var query = this.createSelectorQuery();
+      query.select('.home-scroll-row').boundingClientRect();
+      query.select('#home-section-' + section).boundingClientRect();
+      query.exec(function resolveCatalogSectionPosition(rects) {
+        if (this.data.activeCatalogSection !== section) return;
+        var viewportRect = rects && rects[0];
+        var sectionRect = rects && rects[1];
+        if (!viewportRect || !sectionRect) return;
+        var currentScrollTop = Math.max(0, Number(this._homeScrollTop) || Number(this.data.homeScrollTop) || 0);
+        var topOffsetPx = HOME_CATALOG_SECTION_TOP_OFFSET_RPX * Math.max(0, Number(getWindowWidth()) || 0) / 750;
+        var targetScrollTop = Math.max(0, Math.round(currentScrollTop + Number(sectionRect.top) - Number(viewportRect.top) - topOffsetPx));
+        this._homeScrollTop = targetScrollTop;
+        this.setData({
+          homeScrollIntoView: '',
+          homeScrollTop: targetScrollTop
+        });
+      }.bind(this));
+    }.bind(this), Math.max(0, Number(delay) || 0));
   },
 
   measureLayout: function () {
@@ -534,6 +561,13 @@ Page({
     this._overlayAutoExpandTimer = null;
     if (open) persistCatalogSection(section);
     this.setData({ activeCatalogSection: open ? section : (this.data.activeCatalogSection === section ? '' : this.data.activeCatalogSection) });
+    if (open) {
+      this.scheduleCatalogSectionScroll(section, HOME_CATALOG_SECTION_MOTION_DURATION);
+      return;
+    }
+    clearTimeout(this._catalogSectionScrollTimer);
+    this._catalogSectionScrollTimer = null;
+    this.setData({ homeScrollIntoView: '' });
   },
 
   onHomeScroll: function (event) {

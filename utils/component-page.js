@@ -100,6 +100,26 @@ function createComponentPage(config) {
           wx.reLaunch({ url: '/pages/index/index' });
         }
       });
+    },
+
+    getPageFeedback: function () {
+      if (typeof this.selectComponent !== 'function') return null;
+      return this.selectComponent('#component-page-feedback');
+    },
+
+    showPageFeedback: function (options) {
+      var feedback = this.getPageFeedback();
+      return feedback && typeof feedback.show === 'function' ? feedback.show(options) : '';
+    },
+
+    updatePageFeedback: function (key, patch) {
+      var feedback = this.getPageFeedback();
+      return Boolean(feedback && typeof feedback.update === 'function' && feedback.update(key, patch));
+    },
+
+    hidePageFeedback: function (key) {
+      var feedback = this.getPageFeedback();
+      return Boolean(feedback && typeof feedback.hide === 'function' && feedback.hide(key));
     }
   };
 
