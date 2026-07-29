@@ -21,7 +21,6 @@ for (const [file, forbidden] of [
   ['preview/styles.css', '.pui-label-showcase'],
   ['preview/components-data.js', 'shadcn-label'],
   ['docs/SHADCN_COMPATIBILITY.md', '| Label | `poemui-miniprogram/label/label`'],
-  ['docs/COMPONENT_CATALOG.md', '| Label | done | `poemui-miniprogram/label/label`'],
   ['docs/COMPONENT_MATRIX.md', '| Label | done | `poemui-miniprogram/label/label`'],
 ]) {
   assert(read(file).includes(forbidden), `${file} must restore the standalone Label component`);

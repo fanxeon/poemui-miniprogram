@@ -2,7 +2,7 @@
 
 PoemUI 的运行时边界是 WXML、WXSS、`Component.properties` 和 `triggerEvent`。它借鉴 shadcn/ui 的目录和组合方式，但不把 Web 专属交互伪装为微信小程序能力。
 
-自动生成的 [COMPONENT_CATALOG.md](./COMPONENT_CATALOG.md) 是属性名与 npm 引入路径的唯一清单；本文件说明 API 约定和目前已独立验收的组件行为。
+自动生成的 [COMPONENT_MATRIX.md](./COMPONENT_MATRIX.md) 是组件状态、npm 引入路径与公开 Props 的唯一清单；本文件说明 API 约定和目前已独立验收的组件行为。
 
 ## 发布层级
 
@@ -10,7 +10,7 @@ PoemUI 的运行时边界是 WXML、WXSS、`Component.properties` 和 `triggerEv
 - `beta`：具有独立原生实现、可传参属性、事件和官网调参预览；升级时仍可能出现非破坏性调整。
 - `experimental`：仅保留目录和迁移入口，不是生产 API，不能据此文档推断能力。
 
-组件状态以自动生成的 [COMPONENT_CATALOG.md](./COMPONENT_CATALOG.md) 与 [COMPONENT_MATRIX.md](./COMPONENT_MATRIX.md) 为准。业务应只依赖 `done` 和 `beta`。
+组件状态以自动生成的 [COMPONENT_MATRIX.md](./COMPONENT_MATRIX.md) 为准。业务应只依赖 `done` 和 `beta`。
 
 ## 属性与事件约定
 

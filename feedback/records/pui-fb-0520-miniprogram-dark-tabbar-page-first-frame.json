@@ -1,0 +1,172 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0520",
+  "title": "深色 Tabbar 页面切换白闪与纵向抖动",
+  "scope": "component",
+  "components": ["tabbar", "config-provider", "miniprogram"],
+  "type": "bug",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "real-device",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "真机深色模式进入小程序并切换四个底部目的地时，页面首帧直接保持深色，Tabbar 从第一帧就稳定贴底，不出现白屏或先上后下。",
+  "environment": {
+    "surfaces": ["miniprogram app launch", "four tabbar destination pages", "config-provider first frame"],
+    "platforms": ["wechat-miniprogram", "real-device", "wechat-devtools", "node"],
+    "viewports": ["390x844", "real-device"],
+    "themes": ["system-dark", "system-light"]
+  },
+  "reproduction": [
+    "在真机深色模式进入 PoemUI 小程序。",
+    "依次点击首页、快速样式、安装、我的四个 PUI Tabbar 目的地。",
+    "旧实现使用 wx.redirectTo 创建目标页；新页面先出现白色空帧，Tabbar 短暂位于页面上方，随后测高完成才落到底部。",
+    "首轮同步首帧主题与预估几何后，用户真机复看确认大幅跳动已解决，但 Tabbar 仍会轻微上下抖动。"
+  ],
+  "expected": "App 原生窗口、页面根、ConfigProvider 与 Tabbar 页面壳从首次绘制就使用同一深色；一级 Tabbar 通过组件 fixed API 从第一帧稳定贴底，ScrollArea 高度变化不得推动它。",
+  "actual": "虽然首轮已消除默认浅色首帧并同步预估内容高度，但四页仍把非 fixed Tabbar 放在内容轨道之后，并在 onShow/onReady 用 SelectorQuery 再次测量；JS 预估、WXSS rpx/env 与实测取整的 1—2px 差异继续推动整条 Tabbar 轻微上下移动。改为 fixed 后，normal 根原有的完全透明合同还会暴露 fixed 元素下方的窗口画布，运行时主题先于系统 color-scheme 时可能在深色页底部露出浅色带。",
+  "evidence": [
+    {
+      "kind": "real-device",
+      "ref": "2026-07-29 用户真机报告",
+      "note": "用户明确指出深色 Tabbar 页面切换先闪白，Tabbar 先显示在上方再置底。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/app.wxss",
+      "note": "旧 page 背景仍由 common theme 的默认浅色 Token 决定，覆盖了 app.json/theme.json 已有的 DarkMode 窗口色。"
+    },
+    {
+      "kind": "file",
+      "ref": "config-provider/config-provider.js",
+      "note": "旧 useGlobalConfig Observer 在 attached 前直接返回，首帧继续使用默认 pui-theme--light。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.wxss",
+      "note": "四个内容轨道需要明确 px 高度，但旧运行态初值只有 1px；在无确定父高度的 Provider 宿主中改用 flex:1 同样会塌陷。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-miniprogram-tabbar-pages.js",
+      "note": "专项锁定原生窗口深浅色同步、Provider attached 前 Store 快照和四页同步首帧几何。"
+    },
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 用户真机复看",
+      "note": "用户确认大部分问题已解决，但切换时 Tabbar 仍会轻微上下抖动，并批准改为 bottom:0 fixed。"
+    },
+    {
+      "kind": "file",
+      "ref": "miniprogram/pages/index/index.wxml",
+      "note": "四个一级页最终统一显式消费 fixed=true、placeholder=false 与 safeAreaInsetBottom=true。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/utils/tabbar-page-layout.js",
+      "note": "同步几何同时服务首帧和窗口变化；页面不再依赖 fixed Tabbar 的零高包装器执行异步测量。"
+    },
+    {
+      "kind": "file",
+      "ref": "tabbar/tabbar.wxss",
+      "note": "fixed normal 根消费 --pui-bg-page 延续当前主题页面画布，不引入 round 才有的 Surface 材质。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 fixed normal 镜像消费 --page，保留普通流 normal 透明和 round 独立 Surface 的边界。"
+    }
+  ],
+  "rootCause": "问题包含三层：DarkMode 起初只配置到微信 window，未贯通 page CSS 与 ConfigProvider 首帧；首轮修复后，非 fixed Tabbar 仍处于可变内容轨道之后，且页面保留 onShow/onReady 异步实测。预估 Math.round、页面 Math.floor、Navbar 0.5px、112rpx 与 env 安全区取整不完全同源，因此剩余微小校准会直接变成 Tabbar 位移。切换为 fixed 后，normal 根若继续完全透明，会把脱离页面文档流后的窗口底色直接暴露出来，运行时深色配置与系统媒体查询不同步时形成浅色底带。",
+  "decision": {
+    "outcome": "保留 App 原生窗口、page 深色启动底与 Provider attached 前 Store 快照；四个真实一级页统一通过 PUI Tabbar 的 fixed=true、placeholder=false、safeAreaInsetBottom=true 固定到底部。共享 tabbar-page-layout 提供首帧与窗口变化的同源同步几何，ScrollArea 第一帧直接挂载；删除页面对 Navbar/Tabbar 的 scheduleMeasureLayout/measureLayout、SelectorQuery 与相同值重复 setData。组件层为 fixed normal 根补充页面画布背景：小程序消费 --pui-bg-page，H5 消费 --page；它只填补窗口，不获得阴影、毛玻璃或圆角 Surface。",
+    "rationale": "主题层只解决白闪，一级目的地的纵向稳定应由 Tabbar 自身屏幕附着语义负责。固定后内容轨道调整不会再移动 Tabbar；同步 helper 继续为 ScrollArea 扣除 Navbar、112rpx 导航内容与真实安全区，避免遮挡或双占位。页面画布延续属于 fixed Tabbar 的跨消费者组件语义，不能由四个页面分别补底色。",
+    "alternativesRejected": [
+      "只把 fixed=false 改为 true、却保留对外层 Tabbar 包装器的 SelectorQuery：fixed 子树不再贡献普通流高度，包装器会返回 0 并让 layoutReady 无法闭环。",
+      "fixed=true 同时 placeholder=true 并继续从 ScrollArea 高度扣除 Tabbar：会对同一底部空间双重补偿。",
+      "页面手写 position:fixed/bottom:0：绕过 Tabbar 已有 API、安全区、zIndex 和 H5 语义。",
+      "继续追求预估与实测逐像素一致：无法消除 JS、rpx、env 与设备像素的跨层取整差异，且保留二次布局。",
+      "只把 page 永久设为深色会让浅色模式反向黑闪。",
+      "只延迟 redirectTo 会增加交互阻塞，仍不能保证目标页第一帧几何。",
+      "在四个页面分别维护 theme 字段会复制 visualConfig，并继续存在 Provider 默认浅色窗口。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "config-provider/config-provider.js",
+      "miniprogram/app.js",
+      "miniprogram/app.wxss",
+      "tabbar/tabbar.wxss",
+      "preview/styles.css",
+      "common/utils/tabbar-page-layout.js",
+      "miniprogram/pages/index/index.js",
+      "miniprogram/pages/index/index.wxml",
+      "miniprogram/pages/styles/index.js",
+      "miniprogram/pages/styles/index.wxml",
+      "miniprogram/pages/codex/index.js",
+      "miniprogram/pages/codex/index.wxml",
+      "miniprogram/pages/me/index.js",
+      "miniprogram/pages/me/index.wxml",
+      "docs/components/CONFIG-PROVIDER.md",
+      "docs/components/TABBAR.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/WECHAT_PLATFORM_API_COMPATIBILITY.md",
+      "docs/MINIPROGRAM_HOME.md",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "scripts/test-miniprogram-tabbar-pages.js",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-style-utilities-page.js",
+      "scripts/test-miniprogram-me-page.js"
+    ],
+    "dependencies": ["wx.setBackgroundColor", "visualConfig", "ConfigProvider", "PUI Tabbar", "platform-info"]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-config-provider.js",
+      "scripts/test-miniprogram-home.js",
+      "scripts/test-miniprogram-tabbar-pages.js",
+      "scripts/test-tabbar.js"
+    ],
+    "commands": [
+      "node scripts/test-config-provider.js：通过",
+      "node scripts/test-miniprogram-home.js：通过",
+      "node scripts/test-miniprogram-style-utilities-page.js：通过",
+      "node scripts/test-miniprogram-me-page.js：通过",
+      "node scripts/test-miniprogram-tabbar-pages.js：通过",
+      "node scripts/test-tabbar.js：通过",
+      "npm run example:install：通过；生成 74 个 miniprogram_dist 组件目录并把 0.1.3 tarball 安装到真实示例。",
+      "微信 DevTools build-npm --project miniprogram：通过，1213ms，warnings=[]。",
+      "npm run check：通过；全仓设计合同、组件专项、H5 预览与真实小程序静态/运行合同门禁无新增失败。",
+      "npm run pack:check：通过；poemui-miniprogram@0.1.3 打包 575 个文件，包体 385.7 kB，解包 1.8 MB。",
+      "git diff --check 与 git -C miniprogram diff --check：通过"
+    ],
+    "browser": [
+      "复用现有微信开发者工具 Nightly 2.02.2607282 / SDK 3.17.0 / iPhone 12/13 (Pro) 390x844 会话，没有重开或关闭 IDE；在首页外观 Popup 实点深色 Switch 后关闭。",
+      "实点首页→快速样式、快速样式→安装、安装→我的、我的→首页；目标 route 已切换而新页尚未稳定的截图中，上一页内容继续保持深色，Tabbar 始终位于底部，没有白色中间帧或上方 Tabbar。证据为 /tmp/poemui-dark-transition-home-to-styles.png、/tmp/poemui-dark-transition-styles-to-codex.png、/tmp/poemui-dark-transition-codex-to-me.png、/tmp/poemui-dark-transition-me-to-home.png。",
+      "四页稳定态均保持深色且 Tabbar 贴底；Me 稳定态截图 /tmp/poemui-dark-me-settled.png。Console 为 No errors；可见 warnings 来自灰度基础库、既有 Navbar selector、IntersectionObserver、自动热重载、preload 与 Codex text selectable 弃用提示。"
+      ,
+      "最终组件级 fixed normal 补底后，复用同一微信开发者工具 Nightly 2.02.2607282 会话实点 Me→首页：Me 深色稳定态 /tmp/poemui-fixed-tabbar-me-dark-final.png、首页深色稳定态 /tmp/poemui-fixed-tabbar-home-dark-final.png 中 Tabbar 均贴住 390×844 视口底部，背景连续为深色且无白带；未重开或关闭 IDE。",
+      "H5 390×844 实际打开 Tabbar 路由并读取计算样式：fixed normal 为 position=absolute、bottom=0px；浅色背景 rgb(250,250,250)，深色背景 rgb(9,9,11)，document clientWidth/scrollWidth=375/375，控制台 error/warning 为空。"
+    ],
+    "deviceRisks": [
+      "用户报告来自真机，但修复后尚未由同一真机复测；iOS/Android 页面创建合成、safe area 与宿主系统主题事件继续标记 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "真机深色切页必须同时稳定原生窗口、page CSS、ConfigProvider 初始主题和 fixed Tabbar 页面壳。",
+    "rules": [
+      "启用 darkmode/themeLocation 后仍要检查 app.wxss 是否用默认浅色 Token 覆盖原生窗口。",
+      "use-global-config 必须在 attached 前读取 Store 快照，禁止先绘制默认 light 根。",
+      "应用一级目的地使用 PUI Tabbar fixed=true、placeholder=false 与真实安全区，禁止页面手写 fixed。",
+      "唯一 ScrollArea 从同步几何扣除 Tabbar 时不得再建立 placeholder；页面不得在 onShow/onReady 二次测量 fixed Tabbar 包装器。",
+      "同步高度未变化时不得重复 setData；窗口变化继续读取同一个 tabbar-page-layout 真相源。",
+      "fixed normal Tabbar 必须延续当前页面画布，流内 normal 仍透明；该补底不能升级为独立 Surface，也不能交给页面私有 CSS。",
+      "PUI-FB-0290/0304/0308 中非 fixed 三行页面壳只保留为历史证据，当前四个真实目的地以本记录为准。",
+      "H5 没有微信 attached 与原生窗口层，不复制平台定时补丁；仅保持同一最终主题和 Tabbar 语义。",
+      "开发者工具通过不能替代 iOS/Android 真机复测。"
+    ],
+    "tags": ["tabbar", "darkmode", "first-frame", "config-provider", "redirect-to", "real-device"]
+  }
+}

@@ -13,6 +13,7 @@
 
 ## 2026-07-29：发布后工作树修正（体验版已重传，源码未提交）
 
+- Me 商业授权：点击“高级版商业授权”先打开真实 PUI Dialog，提示桌面端浏览体验更佳；Dialog 使用双 `actions` 提供“复制链接 / 直接访问”。复制动作通过 `wx.setClipboardData` 写入固定 `https://poemcoder.com/poem-ui`，成功才关闭并反馈，失败保留 Dialog；直接访问通过 `wx.navigateTo` 进入固定 `pages/license/index` WebView，导航期间双动作禁用、主动作 loading，失败恢复。390px 浅/深色 Dialog 和复制运行态已验，固定 WebView 路由已进入，但当前 AppID 仍被微信业务域名校验拒绝；iOS/Android 与生产业务域名继续 `pending-device`。Ledger 更新 `PUI-FB-0457`，不新增公共组件 API，不复制 H5 Me 业务页。
 - 更新公告：Schema v2 的 `componentCount` 与九项 `categoryCounts` 继续保留在三条公告、共享云、缓存与包内 fallback 中，Service 继续强制校验九类合计等于总数；最新用户决定是不在 Popup 中直接展示总数或九类统计，这些字段只驱动 Me 图表。此前统计 Grid 的 390px 截图只保留为历史证据。
 - Me Tab：真实 PUI BarChart 按公告日期为 `v0.1.0 / v0.1.1 / v0.1.2` 分别建立 Blue/Teal/Violet segment，不再把中间版本合并掉；`规范` 只在图表展示层过滤，公告九类 Schema 与总数校验不变。全宽水平堆叠 small 保持 `max=19`、1000ms 与 Value；页面关闭 Grid/Legend，并在图表下用最小圆角 PUI Tag 消费同色 Chart Token，只显示版本号。当前高级为 `5 + 3 + 0 = 8` 并稳定置顶，折叠态显示高级/基础/布局/导航；PUI 透明 Button 以实测高度和 normal/standard Token 平滑展开/收起全部八类，收起动画结束后才卸载后四类。0.1.2 零增量不伪造宽度；没有新增 BarChart 或 Tag 公共 API，也不复制 H5 Me 业务页。
 - BarChart 视觉：共享小程序六色横纵渐变从原高饱和 `0.28 → 0.66 → 1` 改为 AreaChart 式 `0.04 → 0.42` 透明填充，并以数据端 `2rpx` 实体 accent inset 线保留长度边界；根仍透明、无外投影。H5 `preview/styles.css` 的同名 Token 与 segment 终点线、390px 浅深验收留待全部小程序 Battle 后统一同步。

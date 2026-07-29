@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-26",
-  "updatedAt": "2026-07-26",
+  "updatedAt": "2026-07-29",
   "userGoal": "普通全宽 Tabbar 应是透明的屏幕附着导航，不应在设备底部呈现一张独立面板。",
   "environment": {
     "surfaces": ["miniprogram home tabbar", "h5 tabbar preview"],
@@ -22,18 +22,18 @@
     "在首页以 shape=normal、split=true 渲染无文案的全宽 Tabbar。",
     "旧实现虽让每个 PUI Button 透明，但 Tabbar 根仍使用 glass surface、edge-bottom shadow 与 frosted filter。"
   ],
-  "expected": "普通 Tabbar 与屏幕底部连续，只有图标、活动短横和微分隔可见；round 形态仍可作为独立悬浮 Surface。",
+  "expected": "普通 Tabbar 与屏幕底部连续，只有图标、活动短横和微分隔可见；fixed normal 可延续页面画布但不能成为独立 Surface，round 形态仍可作为独立悬浮 Surface。",
   "actual": "普通 Tabbar 根像一张浮起的白色面板，视觉上与设备底部和内容区断裂。",
   "evidence": [
     {"kind": "user-report", "ref": "2026-07-26 当前任务截图", "note": "截图显示无文案 Tabbar 整体有独立白色面板的排列感。"},
     {"kind": "file", "ref": "tabbar/tabbar.wxss", "note": "normal 根恢复透明、无投影、无毛玻璃；round 专门消费 Surface Token。"},
     {"kind": "file", "ref": "preview/styles.css", "note": "H5 镜像同步 normal 与 round 的 Surface 资格，page-mode 不再恢复 normal 边缘阴影。"},
-    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "锁定跨端 normal 透明边界与 round 独立 Surface 资格。"}
+    {"kind": "test", "ref": "scripts/test-tabbar.js", "note": "锁定跨端流内 normal 透明边界、fixed normal 页面画布延续与 round 独立 Surface 资格。"}
   ],
   "rootCause": "此前只清除了 Tabbar 内部 Button 的默认 Surface，未区分 normal 屏幕附着布局根与 round 独立悬浮 Surface 的材质资格。",
   "decision": {
-    "outcome": "shape=normal 固定为透明、无外投影、无毛玻璃的屏幕附着布局；glass、shadow、frosted filter 仅由 shape=round 根消费。",
-    "rationale": "全宽贴边导航不是脱离内容流的独立容器；把 Surface 材质限定给 round 可以保留浮动变体，同时消除底部面板断裂。",
+    "outcome": "shape=normal 的流内根固定为透明、无外投影、无毛玻璃的屏幕附着布局；fixed normal 只消费当前页面画布 Token 填补脱离文档流后暴露的窗口区域。glass、shadow、frosted filter 仍仅由 shape=round 根消费。",
+    "rationale": "全宽贴边导航不是脱离内容流的独立容器；fixed 元素必须遮住窗口底色才能与页面连续，但页面画布色不等于面板材质。把 Surface 材质限定给 round 可以保留浮动变体，同时消除底部面板断裂。",
     "alternativesRejected": [
       "只在首页用页面 CSS 覆盖会让其他 normal Tabbar 继续漂移。",
       "只降低阴影而保留半透明玻璃底色仍会形成独立面板。",
@@ -54,7 +54,7 @@
     "summary": "normal Tabbar 是透明屏幕附着布局，只有 round Tabbar 可以成为独立悬浮 Surface。",
     "rules": [
       "不要用页面 CSS 修 normal Tabbar 的根材质；在组件根和 H5 镜像同步限定 Surface 资格。",
-      "normal 不得消费背景、外投影或毛玻璃；bordered=true 只恢复中性顶部分割线。",
+      "流内 normal 不得消费背景、外投影或毛玻璃；fixed normal 只延续页面画布，bordered=true 只恢复中性顶部分割线。",
       "round 才消费 glass、floating shadow、frosted filter 和语义圆角，条目本身始终透明。"
     ],
     "tags": ["tabbar", "surface-eligibility", "transparent", "round", "miniprogram"]

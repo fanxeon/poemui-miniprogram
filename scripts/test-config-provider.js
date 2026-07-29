@@ -228,6 +228,10 @@ vm.runInNewContext(provider, {
   wx: runtimeWx,
 });
 assert(providerDefinition, 'ConfigProvider runtime definition must be captured');
+assert(
+  provider.includes('if (!this._isAttached) {\n        this.updateTheme();'),
+  'use-global-config 必须在 attached 前同步 Store 主题，不能先绘制默认浅色首帧'
+);
 
 function createProviderInstance(overrides) {
   const data = {
@@ -266,6 +270,23 @@ assert(globalProvider.data.rootClass.includes('pui-theme--dark'));
 assert(globalProvider.data.rootClass.includes('pui-shadow--off'), 'effectsEnabled=false must pause stored shadows');
 assert(globalProvider.data.rootClass.includes('pui-border--off'), 'global bordered=false must override local bordered=true');
 assert(globalProvider.data.rootClass.includes('pui-spacing--equal'), 'global equalSpacing=true must reach the Provider root');
+const preAttachedGlobalProvider = {
+  data: {
+    theme: 'light', customClass: '', customStyle: '', frostedGlass: false, shadow: false,
+    largeRadius: false, bordered: true, equalSpacing: false, useGlobalConfig: true,
+    actualTheme: providerDefinition.data.actualTheme,
+    globalVisualConfig: providerDefinition.data.globalVisualConfig,
+    rootClass: providerDefinition.data.rootClass,
+  },
+  setData(patch, callback) { Object.assign(this.data, patch); if (callback) callback.call(this); },
+  triggerEvent() {},
+};
+Object.assign(preAttachedGlobalProvider, providerDefinition.methods);
+providerDefinition.observers.useGlobalConfig.call(preAttachedGlobalProvider);
+assert(
+  preAttachedGlobalProvider.data.rootClass.includes('pui-theme--dark'),
+  'use-global-config Observer 必须在 attached 前用 Store 深色快照替换默认浅色 rootClass'
+);
 const globalEventCount = globalProvider.events.length;
 storeState = { ...storeState, effectsEnabled: true };
 storeListeners.slice().forEach((listener) => listener({ ...storeState }, { source: 'set' }));

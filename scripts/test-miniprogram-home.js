@@ -35,12 +35,13 @@ assert.ok(wxml.indexOf('<scroll-view') === -1, '首页只能由 pui-scroll-area 
 assert.ok(wxml.indexOf('title="Poem UI"') !== -1, 'Navbar 标题不正确');
 assert.ok(wxml.indexOf('left-arrow="{{false}}"') !== -1, 'Navbar 必须关闭返回箭头');
 assert.ok(wxml.indexOf('capsule="{{true}}"') !== -1, 'Navbar 必须尊重原生胶囊');
-assert.ok(wxml.indexOf('fixed="{{false}}"') !== -1, 'Navbar/Tabbar 不应使用 fixed');
-assert.ok(wxml.indexOf('<view id="home-tabbar" class="home-tabbar">') !== -1, 'Tabbar 高度必须由全宽普通 view 测量，不能直接测量小程序的虚拟组件节点');
+assert.ok(/<pui-navbar[\s\S]*?fixed="\{\{false\}\}"/.test(wxml), 'Navbar 必须继续作为页面首行参与布局');
+assert.ok(wxml.indexOf('<view id="home-tabbar" class="home-tabbar">') !== -1, 'Tabbar 必须保留稳定的页面语义锚点');
 var homeTabbarWxml = wxml.slice(wxml.indexOf('<view id="home-tabbar"'), wxml.indexOf('</view>\n  </view>\n</pui-config-provider>'));
 assert.ok(homeTabbarWxml.indexOf('theme="normal"') !== -1, '首页 Tabbar 必须使用组件 normal 短横活动形态');
 assert.ok(homeTabbarWxml.indexOf('shape="normal"') !== -1, '首页 Tabbar 必须保持 normal 全宽容器形态');
 assert.ok(homeTabbarWxml.indexOf('split="{{true}}"') !== -1, '首页 Tabbar 必须显式启用组件的微分隔线');
+assert.ok(homeTabbarWxml.indexOf('fixed="{{true}}"') !== -1 && homeTabbarWxml.indexOf('placeholder="{{false}}"') !== -1, '首页必须通过 PUI Tabbar fixed API 固定到底部且不建立双占位');
 assert.ok(wxml.indexOf('left-btn="{{navbarLeftBtn}}"') !== -1, '搜索入口必须通过 Navbar leftBtn 配置');
 assert.ok(wxml.indexOf('right-btn="{{navbarRightBtn}}"') !== -1, '外观入口必须通过 Navbar rightBtn 配置');
 assert.ok(wxml.indexOf('bind:leftBtn="onOpenSearch"') !== -1, '搜索按钮必须直接监听 Navbar leftBtn 事件');
@@ -280,8 +281,8 @@ assert.ok(pageJs.indexOf('Typography') === -1, '首页不能伪造 Typography �
   assert.ok(pageJs.indexOf(method + ': function') !== -1, '首页缺少真实交互方法 ' + method);
 });
 assert.ok(pageJs.indexOf('getWindowInfo') !== -1, '首页必须读取真实窗口高度');
-assert.ok(pageJs.indexOf("select('#home-navbar')") !== -1, '首页必须测量 Navbar');
-assert.ok(pageJs.indexOf("select('#home-tabbar')") !== -1, '首页必须测量 Tabbar');
+assert.ok(pageJs.indexOf('tabbarPageLayout.getLayout()') !== -1 && pageJs.indexOf('tabbarPageLayout.getContentHeight()') !== -1, '首页必须通过共享 helper 同步计算首帧与窗口变化后的高度');
+assert.ok(pageJs.indexOf("select('#home-navbar')") === -1 && pageJs.indexOf("select('#home-tabbar')") === -1, '首页不得再对 Navbar/Tabbar 执行二次页面测高');
 assert.ok(wxss.indexOf('var(--pui-') !== -1, '首页样式必须使用 PUI Token');
 assert.ok(wxss.indexOf('#') === -1, '首页样式不能写入私有颜色');
 assert.ok(wxss.indexOf('.home-page--gradient') !== -1, '渐变只能由首页画布 class 承担');
@@ -344,9 +345,16 @@ assert.strictEqual(projectConfig.setting.packNpmRelationList[0].packageJsonPath,
 var capturedApp = null;
 var appVisualTheme = 'light';
 var appVisualCalls = [];
+var appVisualListeners = [];
+var nativeBackgroundCalls = [];
 var systemTheme = 'dark';
 vm.runInNewContext(appJs, {
   App: function App(definition) { capturedApp = definition; },
+  wx: {
+    setBackgroundColor: function setBackgroundColor(options) {
+      nativeBackgroundCalls.push(options);
+    }
+  },
   require: function requireAppDependency(request) {
     if (request === 'poemui-miniprogram/common/utils/visual-config') {
       return {
@@ -357,13 +365,22 @@ vm.runInNewContext(appJs, {
         set: function set(patch, options) {
           appVisualTheme = patch.theme;
           appVisualCalls.push({ type: 'set', patch: patch, options: options });
+          appVisualListeners.slice().forEach(function notify(listener) {
+            listener({ theme: appVisualTheme });
+          });
           return { config: { theme: appVisualTheme }, changed: true, persisted: options.persist !== false, error: null };
+        },
+        subscribe: function subscribe(listener) {
+          appVisualListeners.push(listener);
+          listener({ theme: appVisualTheme });
+          return function unsubscribe() {};
         }
       };
     }
     if (request === 'poemui-miniprogram/common/utils/theme') {
       return {
-        getSystemTheme: function getSystemTheme() { return systemTheme; }
+        getSystemTheme: function getSystemTheme() { return systemTheme; },
+        resolveTheme: function resolveTheme(theme) { return theme === 'dark' ? 'dark' : 'light'; }
       };
     }
     throw new Error('Unexpected app dependency: ' + request);
@@ -374,11 +391,16 @@ capturedApp.onLaunch();
 assert.deepStrictEqual(appVisualCalls.map(function callType(call) { return call.type; }), ['restore', 'set'], 'launch must restore the Store before applying the current system theme');
 assert.strictEqual(appVisualTheme, 'dark', 'launch must resolve the current system dark theme into the shared visual state');
 assert.strictEqual(appVisualCalls[1].options.persist, false, 'system-derived theme must not overwrite the user storage record');
+assert.strictEqual(nativeBackgroundCalls[nativeBackgroundCalls.length - 1].backgroundColor, '#09090b', '冷启动必须在页面组件挂载前把微信原生窗口背景同步为深色');
+assert.strictEqual(nativeBackgroundCalls[nativeBackgroundCalls.length - 1].backgroundColorTop, '#09090b', '冷启动必须同步原生窗口顶部深色背景');
+assert.strictEqual(nativeBackgroundCalls[nativeBackgroundCalls.length - 1].backgroundColorBottom, '#09090b', '冷启动必须同步原生窗口底部深色背景');
 systemTheme = 'light';
 capturedApp.onShow();
 assert.strictEqual(appVisualTheme, 'light', 'returning to the miniprogram must re-read and apply the current system theme');
+assert.strictEqual(nativeBackgroundCalls[nativeBackgroundCalls.length - 1].backgroundColor, '#ffffff', '回到前台切为浅色时必须同步原生窗口背景');
 capturedApp.onThemeChange({ theme: 'dark' });
 assert.strictEqual(appVisualTheme, 'dark', 'App.onThemeChange must update the Store so Appearance settings and every Provider stay synchronized');
+assert.strictEqual(nativeBackgroundCalls[nativeBackgroundCalls.length - 1].backgroundColor, '#09090b', '系统切换深色时必须先同步原生窗口背景');
 capturedApp.onThemeChange({ theme: 'unexpected' });
 assert.strictEqual(appVisualTheme, 'light', 'invalid theme events must fail closed to light');
 
@@ -458,6 +480,14 @@ var sandbox = {
   require: function (request) {
     if (request === 'poemui-miniprogram/version') return packageVersion;
     if (request === 'poemui-miniprogram/common/utils/visual-config') return visualConfigMock;
+    if (request === 'poemui-miniprogram/common/utils/tabbar-page-layout') {
+      return {
+        getLayout: function () {
+          return { navbarHeight: 87, tabbarHeight: 92, contentHeightStyle: '665px' };
+        },
+        getContentHeight: function () { return '665px'; }
+      };
+    }
     if (request === '../../common/utils/page-background-preference') return backgroundPreferenceMock;
     if (request === '../../common/utils/tabbar-navigation') return tabbarNavigationMock;
     throw new Error('Unexpected page dependency: ' + request);
@@ -537,17 +567,9 @@ assert.deepStrictEqual(
 );
 assert.strictEqual(capturedPage.data.tabbarItems.length, 4, '首页 Tabbar 必须有四个等宽目的地');
 assert.deepStrictEqual(capturedPage.data.tabbarItems, tabbarNavigationMock.getItems(), '首页必须读取共享的四个真实目的地');
-capturedPage.createSelectorQuery = function () {
-  var query = {
-    select: function () { return query; },
-    boundingClientRect: function () { return query; },
-    exec: function (callback) { callback([{ height: 96 }, { height: 112 }]); }
-  };
-  return query;
-};
-capturedPage.measureLayout();
-assert.strictEqual(capturedPage.data.scrollAreaHeight, '604px');
-assert.strictEqual(capturedPage.data.layoutReady, true);
+assert.strictEqual(capturedPage.data.scrollAreaHeight, '665px');
+assert.strictEqual(capturedPage.data.layoutReady, true, '首页首帧必须直接挂载 ScrollArea，不能等待异步测高');
+assert.strictEqual(capturedPage.syncPageLayout(), false, '同步几何未变化时不得重复 setData 触发布局');
 capturedPage.onOpenSearch();
 assert.strictEqual(capturedPage.data.searchOverlayVisible, true);
 assert.strictEqual(capturedPage.data.searchOverlayDuration, 500);

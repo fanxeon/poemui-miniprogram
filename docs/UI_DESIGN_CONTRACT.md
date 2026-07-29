@@ -95,7 +95,7 @@
 Popup 是 PoemUI 的“操作面板”基础原语，不是业务表单、确认框或成功提示。所有 Popup 及其官网镜像必须遵守以下组合顺序：
 
 1. **Surface 只有一层**：Popup 根负责唯一可见 Surface、主题、边框、圆角、阴影和毛玻璃；Header、Content、Footer 是同一 Surface 内的结构分区，不再套 Card 或第二层面板。
-2. **卡片与贴边是同一 Surface 的定位选择**：`card=true` 默认保留 `--pui-space-step-12` 视口留白；`card=false` 只让 Surface 贴合弹出边缘并把贴边圆角归零，不能删除 Header、Content、Footer 的既有内边距或另造一层容器。
+2. **卡片与贴边是同一 Surface 的定位选择**：`card=true` 默认保留 `--pui-space-step-12` 视口留白，并固定消费半透明 `--pui-glass-tint`，不能在毛玻璃关闭时退回纯色实底；`card=false` 只让稳固 Surface 贴合弹出边缘并把贴边圆角归零，不能删除 Header、Content、Footer 的既有内边距或另造一层容器。
 3. **遮罩模糊只属于遮罩**：`blurOverlay=true` 仅在 `showOverlay=true` 的完整遮罩上应用 `--pui-popup-overlay-blur`，不得改写 Popup Surface、全局毛玻璃偏好或用半透明颜色假装模糊。
 4. **Header 三列稳定对齐**：左列放调用方提供的带底色圆形 `pui-button` 主要执行操作，右列放带 muted 弱填充的 `close-btn` 或默认圆形 `pui-button` 关闭操作，中间只放标题与副标题。左右列始终等宽，按钮顶部对齐且共享上间距，标题区域自身垂直水平居中；没有左操作时保留空轨道，不能用绝对定位补位。
 5. **Content 只有一个滚动上下文**：Content 是 Popup 内唯一可滚动区，表单、Cell、Loading、Empty 等业务内容必须通过 Slot 组合；Popup 不穿透修改 Slot 子组件的 padding、圆角、尺寸或状态。`content` 文本只作为没有 Slot 内容时的轻量回退。
@@ -167,7 +167,7 @@ Dialog Surface
 - 复合组件中的 PUI Icon、Loading 必须通过共享 helper 的尺寸参数传递原生几何；父组件只管理排列、颜色和位置，不得穿透修改子组件的 `width/height/padding/border-radius`，更不得用 `!important` 抢占组件合同。
 - Button 内 Icon/Loading 必须按原生四档 `22/26/32/38rpx` 镜像；Checkbox 标记按 `24/28/32rpx`、Switch Thumb 子图标按 `20/24/28rpx`，Tabbar/Steps 等组件使用各自 WXML/WXSS 的明确尺寸，禁止回退为一个通用 small 值。
 - BackTop 等 fixed 浮动操作必须避开同页底部 Tabbar：Tabbar 内容高度统一读取 `--pui-tabbar-content-height:112rpx / 56px`，BackTop 通过 `--pui-back-top-bottom-offset` 组合导航高度、系统安全区和标准操作间距。不得让浮动按钮覆盖目的地导航，也不得恢复任意 `bottom` 公共 Prop。无文案 BackTop 固定是 primary 圆形 IconButton，默认 `arrow-up`，并使用真实 `iconOnly` 结构。
-- Tabbar 的 `shape="normal"` 是透明屏幕附着布局根，不是独立 Surface：默认无背景、外投影和毛玻璃，`bordered=true` 只恢复中性顶部分割线；只有 `shape="round"` 可以作为独立悬浮 Surface 消费 glass、floating shadow、frosted filter 与语义圆角。不得让 normal 因全局阴影或毛玻璃开关重新呈现底部面板。
+- Tabbar 的 `shape="normal"` 是透明屏幕附着布局根，不是独立 Surface：流内默认无背景、外投影和毛玻璃；fixed normal 只消费当前页面画布 Token（小程序 `--pui-bg-page`、H5 `--page`）填补脱离文档流后暴露的底部窗口，`bordered=true` 只恢复中性顶部分割线。只有 `shape="round"` 可以作为独立悬浮 Surface 消费 glass、floating shadow、frosted filter 与语义圆角。不得让 normal 因全局阴影或毛玻璃开关重新呈现底部面板。
 - 预览默认只呈现用户路径：入口、组件本体、必要结果。`open()`、`close()`、事件链、状态枚举等工程诊断只能出现在 API 或 PROP。
 - 单行省略统一使用 `pui-text-cut`；`pui-text-truncate` 仅为兼容别名。关键操作、主要状态和布局错误不得通过 text-cut 隐藏。
 
@@ -220,6 +220,8 @@ Dialog Surface
 
 - 跨页面组件视觉统一使用包入口公开的 `visualConfig` Store；每个页面根挂载 `<pui-config-provider use-global-config>`，由 Provider 订阅同一 Store 并把 Token 传给该页面组件树。
 - 小程序不存在覆盖所有页面的 App 级 WXML 根；`App.onLaunch` 可负责 `visualConfig.restore()` 和消费者级系统主题同步，但不能替代页面根 Provider，也不能宣称在 App 配置一次就自动包裹所有页面。需要跟随系统的产品必须启用微信 `darkmode/themeLocation`，在启动、回前台和系统主题变化时写入唯一 Store；系统派生写入不得另建页面状态或静默覆盖持久偏好。
+- DarkMode 必须覆盖页面创建的完整首帧：`theme.json` 提供微信原生窗口色，App 订阅唯一 Store 并调用 `wx.setBackgroundColor` 同步顶部/底部窗口背景，`app.wxss` 通过 `prefers-color-scheme:dark` 在 Provider 挂载前保持深色页面底，`use-global-config` Provider 在 `attached` 前读取 Store 快照。任何一层先绘制默认浅色都会在真机冷启动或 `redirectTo` 时形成白闪。
+- 应用一级目的地的自定义 PUI Tabbar 使用组件公开的 `fixed=true / placeholder=false / safeAreaInsetBottom=true` 固定在视口底部；唯一 ScrollArea 的同步高度扣除 Tabbar 内容与真实安全区。禁止让 Tabbar 作为异步测高内容轨道后的普通流节点，也禁止页面手写 `position:fixed/bottom:0`、建立 placeholder 后再次扣高或在 `onShow/onReady` 重复 SelectorQuery 校准。
 - 公共配置固定为 `theme / effectsEnabled / shadow / frostedGlass / largeRadius / bordered / equalSpacing`。`effectsEnabled=false` 只暂停 shadow、frostedGlass、largeRadius；theme、bordered 与 equalSpacing 保持独立，重新开启后恢复此前保存的单项值。31 个真实根组件与 Search/Combobox 内嵌 Input 的具体资格必须遵守 [外观资格矩阵](./APPEARANCE_CONTRACT_MATRIX.md)，不得只切换 Provider class 就声称所有组件都应获得外投影。
 - Overlay 默认是半透明纯颜色遮罩；Provider 的 `frostedGlass=true` 让其子树 Overlay 自动消费 `--pui-overlay-blur`，调用方仍可通过 Overlay 的 `blur=true` 单独请求同一效果。有效模糊为全局毛玻璃与局部 API 的并集，二者均关闭时不得保留 blur；这不改变 Overlay 的遮罩色、层级、Slot、事件或几何。
 - `equalSpacing` 只作用于具备独立 Surface 资格的结构块：四向 inset、直接结构块 gap、Header/Content/Footer 分区 gap 使用该 Surface 的 `--pui-surface-inset`；不得覆写全局 `--pui-space-*`、`--pui-content-gap`、`--pui-section-gap`，不得污染连续列表行、展示叶子、控件内部微间距或 PreviewDevice 基础设施。

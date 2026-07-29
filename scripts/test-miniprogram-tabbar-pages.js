@@ -11,6 +11,7 @@ function read(relativePath) {
 }
 
 var appJson = JSON.parse(read('miniprogram/app.json'));
+var appWxss = read('miniprogram/app.wxss');
 var navigation = require(path.join(ROOT, 'miniprogram/common/utils/tabbar-navigation'));
 var expectedItems = [
   { label: '', value: 'home', icon: 'home', ariaLabel: '首页' },
@@ -25,6 +26,72 @@ assert.notStrictEqual(navigation.getItems(), navigation.getItems(), 'Tabbar 条�
   assert.ok(appJson.pages.indexOf(route) !== -1, 'app.json 缺少真实 Tabbar 页面 ' + route);
 });
 assert.strictEqual(appJson.pages.indexOf('pages/explore/index'), -1, '旧探索空白页必须从真实路由移除');
+assert(
+  /@media\s*\(prefers-color-scheme:\s*dark\)[\s\S]*?page\s*\{[\s\S]*?background:\s*#09090b;/.test(appWxss),
+  '真实 Tabbar 页必须在 ConfigProvider 挂载前提供深色原生页面首帧'
+);
+
+[
+  ['miniprogram/pages/index/index.js', 'miniprogram/pages/index/index.wxml', 'miniprogram/pages/index/index.wxss', '.home-scroll-row', 'scrollAreaHeight', 'home-tabbar'],
+  ['miniprogram/pages/styles/index.js', 'miniprogram/pages/styles/index.wxml', 'miniprogram/pages/styles/index.wxss', '.styles-page__workspace', 'scrollAreaHeight', 'styles-tabbar'],
+  ['miniprogram/pages/codex/index.js', 'miniprogram/pages/codex/index.wxml', 'miniprogram/pages/codex/index.wxss', '.codex-page__content-row', 'contentHeight', 'codex-tabbar'],
+  ['miniprogram/pages/me/index.js', 'miniprogram/pages/me/index.wxml', 'miniprogram/pages/me/index.wxss', '.me-page__content-row', 'contentHeight', 'me-tabbar']
+].forEach(function (entry) {
+  var pageSource = read(entry[0]);
+  var pageWxml = read(entry[1]);
+  var source = read(entry[2]);
+  var escapedSelector = entry[3].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var rule = source.match(new RegExp(escapedSelector + '\\s*\\{([\\s\\S]*?)\\}'));
+  var tabbarStart = pageWxml.indexOf('id="' + entry[5] + '"');
+  var tabbarBlock = pageWxml.slice(tabbarStart, pageWxml.indexOf('</view>', tabbarStart));
+  assert(rule, 'Tabbar 页面缺少内容轨道 ' + entry[3]);
+  assert(/flex:\s*0 0 auto;/.test(rule[1]), entry[3] + ' 必须继续消费同步计算的明确 px 高度');
+  assert(/min-height:\s*0;/.test(rule[1]), entry[3] + ' 必须允许内部 ScrollArea 在固定视口内收缩');
+  assert(
+    pageSource.indexOf("require('poemui-miniprogram/common/utils/tabbar-page-layout')") !== -1,
+    entry[0] + ' 必须复用组件包的首帧页面几何 helper'
+  );
+  assert(
+    pageSource.indexOf(entry[4] + ': INITIAL_TABBAR_PAGE_LAYOUT.contentHeightStyle') !== -1 &&
+      pageSource.indexOf('layoutReady: true') !== -1,
+    entry[0] + ' 必须在首帧直接挂载同步内容轨道'
+  );
+  assert(
+    tabbarBlock.indexOf('fixed="{{true}}"') !== -1 &&
+      tabbarBlock.indexOf('placeholder="{{false}}"') !== -1 &&
+      tabbarBlock.indexOf('safe-area-inset-bottom="{{true}}"') !== -1,
+    entry[1] + ' 必须通过 PUI Tabbar API 固定到底部且避免文档流双占位'
+  );
+  assert(
+    pageSource.indexOf("select('#" + entry[5] + "')") === -1 &&
+      pageSource.indexOf('measureLayout: function') === -1 &&
+      pageSource.indexOf('scheduleMeasureLayout: function') === -1,
+    entry[0] + ' 不得再用 fixed Tabbar 的零高包装器触发二次页面测高'
+  );
+});
+
+var previousWx = global.wx;
+global.wx = {
+  getWindowInfo: function () {
+    return {
+      windowWidth: 390,
+      windowHeight: 844,
+      statusBarHeight: 47,
+      safeArea: { top: 47, bottom: 810 }
+    };
+  },
+  getMenuButtonBoundingClientRect: function () {
+    return { top: 51, bottom: 83, height: 32 };
+  }
+};
+var layoutHelperPath = path.join(ROOT, 'common/utils/tabbar-page-layout.js');
+delete require.cache[require.resolve(layoutHelperPath)];
+var initialLayout = require(layoutHelperPath).getInitialLayout();
+assert.strictEqual(initialLayout.navbarHeight, 87, '首帧 Navbar 高度必须复用状态栏与胶囊的同源几何');
+assert.strictEqual(Math.round(initialLayout.tabbarHeight), 92, '首帧 Tabbar 高度必须包含 112rpx 内容与真实底部安全区');
+assert.strictEqual(initialLayout.contentHeightStyle, '665px', '390x844 首帧必须直接得到稳定的中间内容高度');
+assert.strictEqual(require(layoutHelperPath).getContentHeight(), '665px', '窗口变化时必须复用同一同步几何真相源');
+global.wx = previousWx;
 
 var redirectCalls = [];
 global.wx = {
@@ -147,6 +214,14 @@ vm.runInNewContext(codexJs, {
         reset: function (options) {
           codexVisualConfigResetCalls.push(options);
         }
+      };
+    }
+    if (request === 'poemui-miniprogram/common/utils/tabbar-page-layout') {
+      return {
+        getLayout: function () {
+          return { navbarHeight: 87, tabbarHeight: 92, contentHeightStyle: '665px' };
+        },
+        getContentHeight: function () { return '665px'; }
       };
     }
     throw new Error('unexpected Codex page require ' + request);

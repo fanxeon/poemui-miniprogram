@@ -31,15 +31,17 @@ Tabbar wrapper
 
 ## 3. PUI 组合与依赖
 
-- 每个目的地必须组合 PUI Button；`item-wrap` 内的 PUI Button 外部宿主本身是透明满宽的 Flex 等分轨道，Button 使用 `block` 填满该宿主，并固定组合 `variant="transparent" + surface="transparent"`：前者表达无底色、无边界、无外投影的 Button 视觉，后者由 Button 自身移除圆角、阴影与毛玻璃。`shape="normal"` 的 Tabbar 根同样是透明屏幕附着布局，不是 Surface；仅 `shape="round"` 的根承担唯一独立 Surface。`surface=transparent` 必须在 Button 自己的原生根显式清除 `background-color` 与 `::after` 边框，不能依赖跨组件 `custom-class`、页面包装器或 Button 内容宽度决定轨道。图标与 badge/badgeDot 都进入 Button 的 `icon` Slot，标签只进入默认 Slot；`badge=0` 必须真实展示。显式 `label: ''` 的纯图标项必须传入 Button `iconOnly`，从真实组件树移除固定生成的空默认内容/后缀轨道，不能靠页面偏移或 CSS 隐藏补偿。
-- 普通小程序组件节点不可直接被页面 SelectorQuery 测高；消费者需要测量 Tabbar 高度时，使用明确全宽的普通 view 包装器作为测量节点。该包装器只承担布局和测量，不能提供对齐补丁。
+- 每个目的地必须组合 PUI Button；`item-wrap` 内的 PUI Button 外部宿主本身是透明满宽的 Flex 等分轨道，Button 使用 `block` 填满该宿主，并固定组合 `variant="transparent" + surface="transparent"`：前者表达无底色、无边界、无外投影的 Button 视觉，后者由 Button 自身移除圆角、阴影与毛玻璃。`shape="normal"` 的 Tabbar 根在流内是透明屏幕附着布局，不是 Surface；仅 `shape="round"` 的根承担唯一独立 Surface。固定 normal 根只使用页面画布 Token 填补脱离文档流后暴露的窗口区域，不获得 Surface 材质。`surface=transparent` 必须在 Button 自己的原生根显式清除 `background-color` 与 `::after` 边框，不能依赖跨组件 `custom-class`、页面包装器或 Button 内容宽度决定轨道。图标与 badge/badgeDot 都进入 Button 的 `icon` Slot，标签只进入默认 Slot；`badge=0` 必须真实展示。显式 `label: ''` 的纯图标项必须传入 Button `iconOnly`，从真实组件树移除固定生成的空默认内容/后缀轨道，不能靠页面偏移或 CSS 隐藏补偿。
+- 普通小程序组件节点不可直接被页面 SelectorQuery 测高；确实使用非 fixed Tabbar 的消费者若需要测高，只能使用明确全宽的普通 view 包装器。该包装器只承担布局和测量，不能提供对齐补丁。
+- 应用一级目的地默认采用 `fixed=true + placeholder=false + safeAreaInsetBottom=true`：Tabbar 由组件自身固定在视口底部，不随中间内容轨道校准而移动。拥有唯一 ScrollArea 的页面必须在滚动视口高度中扣除 `112rpx + env(safe-area-inset-bottom)`，或在内容末尾预留同等安全空间，二者只能选一条；PoemUI 四个真实目的地使用前者，不再建立 placeholder 或页面私有 `bottom:0`。
+- PoemUI 示例页调用 `common/utils/tabbar-page-layout`，按窗口、状态栏、原生胶囊、`112rpx` Tabbar 内容与底部安全区同步计算首帧与窗口变化后的内容高度。ScrollArea 从首帧直接挂载；页面不得在 `onShow/onReady` 再用 SelectorQuery 测量 Navbar/Tabbar 并二次改写内容轨道，也不得对相同高度重复 `setData`。这条 fixed 页面壳决定取代旧的“非 fixed 三行布局 + 包装器实测”示例决定。
 - WXML 与 H5 都不得手写另一套 Button、Badge、Icon 或字符图标；H5 必须调用 `buttonSample.defaultSlot`、`iconComponent` 和 `badgeSample`。
 - 不公开 action Slot。应用级创建操作应放在页面 Navbar、FAB 或内容区，不能混入目的地选择语义。
 
 ## 4. Token、间距与排版
 
 - Surface、边界、阴影、毛玻璃、文字、禁用色、圆角和间距必须使用 PUI Token；H5 按 `1px≈2rpx` 镜像。
-- `shape="normal"` 是贴合设备 viewport 的透明导航布局：默认无背景、无外投影、无毛玻璃，且 `bordered=false` 时无顶边；不能因为阴影或毛玻璃全局开关获得面板材质。`shape="round"` 才是独立悬浮 Surface，消费 glass surface、border、floating shadow、frosted filter 与语义圆角；它们都保持受全局视觉配置控制。
+- `shape="normal"` 是贴合设备 viewport 的透明导航布局：流内默认无背景、无外投影、无毛玻璃，且 `bordered=false` 时无顶边；`fixed=true` 时消费当前页面画布 Token（小程序 `--pui-bg-page`、H5 `--page`）补齐底部窗口，但不能因为阴影或毛玻璃全局开关获得面板材质。`shape="round"` 才是独立悬浮 Surface，消费 glass surface、border、floating shadow、frosted filter 与语义圆角；它们都保持受全局视觉配置控制。
 - 导航内容高度固定 112rpx / 56px，并公开为跨端语义 Token `--pui-tabbar-content-height`，供 BackTop 等屏幕浮动操作计算避让；它不是新的 Tabbar 高度 Prop。图标、标签和活动指示器在这一高度内垂直居中并保留标准 `space-xs` 内距。当任意目的地存在文案时，整条 Tabbar 的所有活动短横都固定使用带文案基线，纯图标目的地不得单独上移短横；只有全部目的地都没有文案时，根才进入 `all-icon-only` 节奏，把所有图标下移 `8rpx / 4px`、短横统一上收至底部 `40rpx / 20px`。消费者不得用页面 margin 或新增公开定位 Prop 覆盖。split 分隔使用 `56rpx / 28px` 的短线和专属低对比 Token，不得贯穿整高。round 使用标准页面内距和 xxlarge 圆角，不公开 height、floatingOffset、activeColor 或 inactiveColor 私有调参。
 - Tabbar 内部 PUI Button 与其内容容器必须允许 Badge 的定位外扩可见；普通形态的根节点也不得裁切这一外扩区域。仅 `shape="round"` 的胶囊外轮廓可以裁切自身内容；不得用共享 Button 的 `overflow:hidden` 裁掉 badge=0、数字徽标或红点，也不得为规避裁切而删除标准 `space-xs` 内距、缩小 Badge、增加私有 padding 或降级成手写标记。
 - 动效固定为 `500ms + --pui-ease-standard`；`reduceMotion=true` 和系统低动效压缩为 1ms，不公开 duration/easing。
@@ -84,8 +86,9 @@ Tabbar wrapper
 ## 10. 响应式、主题与视觉配置
 
 - 390px 下目的地等分并压缩标签，禁止页面级横向溢出；条目过多应由产品精简，不公开 scrollable 掩盖信息架构问题。
-- light/dark、边框、阴影、毛玻璃、大圆角和渐变背景下，`shape="normal"` 保持透明屏幕附着根，不消费背景、外投影或毛玻璃；它的 `bordered=true` 仅恢复中性顶部分割线。`shape="round"` 才保持单一独立 Tabbar 根 Surface 并消费 floating shadow、glass surface、frosted filter 与全局语义圆角。选中、非选中和禁用条目始终透明，禁用只降低语义色与可交互性，不能因共享 Button 的 disabled 后置规则、theme=tag 或全局外观开关重新获得底色、边界、阴影、毛玻璃或圆角。split 是 Divider 语义，`bordered=false` 也不得移除相邻项之间的微隔断。
+- light/dark、边框、阴影、毛玻璃、大圆角和渐变背景下，`shape="normal"` 的流内根保持透明；fixed normal 只延续当前页面画布，不消费外投影或毛玻璃，它的 `bordered=true` 仅恢复中性顶部分割线。`shape="round"` 才保持单一独立 Tabbar 根 Surface 并消费 floating shadow、glass surface、frosted filter 与全局语义圆角。选中、非选中和禁用条目始终透明，禁用只降低语义色与可交互性，不能因共享 Button 的 disabled 后置规则、theme=tag 或全局外观开关重新获得底色、边界、阴影、毛玻璃或圆角。split 是 Divider 语义，`bordered=false` 也不得移除相邻项之间的微隔断。
 - safeAreaInsetBottom 只增加系统安全区，不应用固定魔法高度冒充真实设备 inset。
+- 微信真机深色首帧属于消费者 App 与 ConfigProvider 的共同边界：`app.json darkmode/themeLocation`、原生窗口背景、`page` 的 `prefers-color-scheme:dark` 启动底色和 `use-global-config` 的 attached 前快照必须一致。Tabbar 不公开页面背景 Prop，也不通过自身 Surface 遮盖错误的白色首帧；页面切换的纵向稳定由组件 `fixed` 布局承担，不由主题层或异步测高掩盖。
 
 ## 11. TDesign 取舍与明确禁止
 

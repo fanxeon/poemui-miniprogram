@@ -1,0 +1,101 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0521",
+  "title": "Popup card 在毛玻璃关闭时退回实底",
+  "scope": "component",
+  "components": ["popup", "preview-site", "appearance-settings"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-29",
+  "updatedAt": "2026-07-29",
+  "userGoal": "Popup 使用 card 模式时保持可感知的透明层次，不应因为全局毛玻璃关闭而变成纯白或纯深灰实底。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram appearance popup", "h5 popup preview"],
+    "platforms": ["wechat-miniprogram", "browser", "node"],
+    "viewports": ["390x844"],
+    "themes": ["light", "dark"]
+  },
+  "reproduction": [
+    "在小程序“我的”页打开外观设置 Popup。",
+    "保持 card=true 且关闭全局毛玻璃。",
+    "浅色或深色下观察 Popup Surface，旧实现分别呈现 #fff 或 #18181b 的不透明实底。"
+  ],
+  "expected": "card=true 的 Popup 始终使用当前主题的半透明 tint；毛玻璃开关只决定是否增加背景模糊，card=false 贴边模式继续保持稳固 Surface。",
+  "actual": "card 只控制外侧 inset，根背景仍使用 --pui-glass-surface-strong；毛玻璃关闭后该 Token 没有 alpha 通道。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-29 当前任务",
+      "note": "用户在深色外观设置 Popup 运行态中指出 card 面板有实底并要求组件级透明。"
+    },
+    {
+      "kind": "file",
+      "ref": "popup/popup.wxss",
+      "note": "card 根和顶部 card 内层 Surface 改为消费 --pui-glass-tint；edge 继续使用原稳固背景。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "H5 增加同名浅深色 tint，并同步 card 与 top 内层 Surface。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-popup.js",
+      "note": "专项锁定原生与 H5 不得把 card 恢复为实底 Surface Token。"
+    }
+  ],
+  "rootCause": "旧合同只区分 card 的视口留白和 edge 的贴边几何，没有单独约束 card 的背景透明度；Popup 根因此沿用适合稳固 Surface 的 --pui-glass-surface-strong。",
+  "decision": {
+    "outcome": "保留 card:Boolean=true 与全部几何/API；card=true 的普通根和顶部特殊内层 Surface统一使用 --pui-glass-tint。H5 声明同名 light/dark Token 并使用相同选择器语义；card=false 不变。",
+    "rationale": "半透明 tint 在毛玻璃关闭时仍保留卡片与遮罩后的视觉联系，打开毛玻璃后继续由既有 backdrop-filter 增强；同一 Token 可保证浅深色与 H5 镜像一致。",
+    "alternativesRejected": [
+      "直接使用 background:transparent 会让浅色正文落在深色遮罩与复杂底层内容上，降低可读性。",
+      "强制 card 永远开启 backdrop-filter 会绕过用户的毛玻璃外观设置。",
+      "只在 Me 页面覆盖 Popup 背景会让其他 card Popup 和 H5 继续保留旧实底。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "popup/popup.wxss",
+      "preview/styles.css",
+      "scripts/test-popup.js",
+      "docs/components/POPUP.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md"
+    ],
+    "dependencies": ["pui-config-provider", "--pui-glass-tint", "visualConfig"]
+  },
+  "verification": {
+    "tests": ["scripts/test-popup.js"],
+    "commands": [
+      "node scripts/test-popup.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check",
+      "npm run example:install",
+      "微信开发者工具 build-npm"
+    ],
+    "browser": [
+      "微信开发者工具 Nightly 2.02.2607282 / SDK 3.17.0 / iPhone 12/13 (Pro) 390×844 中，深色与浅色外观分别打开 Me 的真实外观 Popup；card 外壳可见底层层次，不再呈现纯 #18181b/#fff 实底。证据为 /tmp/poemui-popup-card-translucent-dark.png 与 /tmp/poemui-popup-card-translucent-light.png。",
+      "H5 390×844 实际打开 Popup、关闭果味使毛玻璃为 none：深色 card 计算 backgroundColor=rgba(24,24,27,0.72)，浅色 card=rgba(255,255,255,0.72)，backdropFilter 均为 none；面板 x=25、width=325、right=350，document clientWidth/scrollWidth=375/375，控制台 error/warning 为空。"
+    ],
+    "deviceRisks": [
+      "iOS/Android 真机对半透明 Surface、backdrop-filter、遮罩和底层内容的合成仍需复核。"
+    ]
+  },
+  "ai": {
+    "summary": "Popup card 是半透明 inset Surface；edge 是稳固贴边 Surface，毛玻璃只控制 blur。",
+    "rules": [
+      "card=true 必须消费 --pui-glass-tint，不能回退 --pui-glass-surface-strong 或纯色 Surface。",
+      "card=false 只改变贴边几何并保留稳固背景，不得跟随 card 的半透明覆盖。",
+      "顶部 card 的透明外层与内层 Surface 必须分开：外层透明承载，内层消费同一个 tint。",
+      "小程序与 H5 必须使用同名 tint Token，并实际读取 alpha 计算样式验收。"
+    ],
+    "tags": ["popup", "card", "translucent", "surface", "dark-mode", "appearance"]
+  }
+}

@@ -18,6 +18,8 @@ PoemUI 不再调用已弃用的 `wx.getSystemInfoSync()`。运行时信息由 `c
 
 `miniprogram/app.js` 在 `onLaunch` 先恢复 `visualConfig`，随后在 `onLaunch/onShow` 读取当前系统主题，并在 `onThemeChange` 使用事件中的合法 `light/dark`。三条路径都写入唯一 Store，`persist:false` 保证系统运行态不会覆盖用户保存记录；页面根 `use-global-config` Provider 与共享 AppearanceSettings 通过订阅同步显示，不能复制页面私有 theme 状态。该入口同步不替代每页 Provider，也不改变 npm Store 的公开默认值。
 
+真机首帧还需要处理微信原生窗口与 WXML 子树之间的时间差：App 订阅同一 Store 并用 `wx.setBackgroundColor` 同步 `backgroundColor/backgroundColorTop/backgroundColorBottom`；`app.wxss` 在 `prefers-color-scheme:dark` 下直接提供 `#09090b` 启动底；ConfigProvider 的 `useGlobalConfig` Observer 在 `attached` 前生成真实主题根类。只配置 `darkmode/themeLocation` 仍不足以阻止页面 CSS 默认浅色 Token 或 Provider 默认 `light` 覆盖原生深色首帧。
+
 官方依据：[DarkMode 适配指南](https://developers.weixin.qq.com/miniprogram/dev/framework/ability/darkmode.html)、[`wx.getAppBaseInfo()`](https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getAppBaseInfo.html)、[`wx.onThemeChange`](https://developers.weixin.qq.com/miniprogram/dev/api/base/app/app-event/wx.onThemeChange.html)。
 
 2026-07-29 的回归审计补充覆盖 `area-chart/area-chart.js` 的 Canvas DPR、`dynamic-message/dynamic-message.js` 的顶部安全区，以及 `miniprogram/pages/styles/index.js` 的 rpx 换算。三处均复用 `platform-info`；专项门禁不再维护易漏的手工文件清单，而是自动遍历 74 个发布组件、`common/` 与真实小程序 `common/components/pages/utils` 运行时源码。

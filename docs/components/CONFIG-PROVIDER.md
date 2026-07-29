@@ -60,6 +60,7 @@ view.pui-config-provider + theme/effect classes
 - 事件 detail 固定包含 `theme/source/frostedGlass/shadow/largeRadius/bordered/equalSpacing/effectsEnabled/global`。
 - `theme=auto` 监听 `wx.onThemeChange`，detached 时必须取消系统监听和 Store 订阅。
 - 需要“每次进入都跟随系统”的消费者必须在 `app.json` 启用 `darkmode` 并提供 `themeLocation`，在 `App.onLaunch`、`App.onShow` 与 `App.onThemeChange` 读取 `common/utils/theme#getSystemTheme()` 或事件中的合法 `light/dark`，再写入唯一 `visualConfig` Store。系统派生写入应使用 `persist:false`，避免把运行时系统状态静默覆盖为用户持久偏好；所有外观菜单只订阅同一个 Store，禁止维护第二份深浅色状态。PoemUI 示例小程序以 `miniprogram/app.js` 为参考实现。
+- `useGlobalConfig=true` 的属性 Observer 必须在 `attached` 前读取当前 Store 快照并生成实际主题根类，不能先以默认 `pui-theme--light` 绘制一帧再订阅。消费者 App 还必须同步微信原生窗口背景；Provider 只能保证 WXML 子树首帧，不能替代页面创建前的原生窗口底色。
 
 ## 8. 可访问性
 
@@ -73,6 +74,7 @@ view.pui-config-provider + theme/effect classes
 - H5 的局部模式直接读取 Props；`useGlobalConfig=true` 时读取官网同源外观设置，局部视觉 Props暂停生效，镜像 Store 优先级。
 - 常规模式基础 WXML只展示最小 Provider 包裹，不出现 `bind:*`；Store 恢复、预设和错误处理进入 API/属性文档。
 - H5 不执行真实 `wx.onThemeChange` 或 `wx` storage；该平台差异必须明确保留，不得伪造微信回调成功。
+- H5 没有微信自定义组件的 `attached` 延迟和原生窗口背景层，因此本次首帧修复不复制一套浏览器定时逻辑；H5 仍须在首次 render 直接使用当前全局主题。
 
 ## 10. 响应式、主题与视觉配置
 

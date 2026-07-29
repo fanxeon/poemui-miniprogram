@@ -14,6 +14,7 @@
   --surface-strong: rgba(255, 255, 255, 0.86);
   --surface-soft: rgba(255, 255, 255, 0.46);
   --surface-solid: #ffffff;
+  --pui-glass-tint: rgba(255, 255, 255, 0.72);
   --text: #1f2025;
   --muted: #565a63;
   --subtle: #8f8f96;
@@ -340,6 +341,7 @@ body,
   --surface-strong: #09090b;
   --surface-soft: #18181b;
   --surface-solid: #18181b;
+  --pui-glass-tint: rgba(24, 24, 27, 0.72);
   --text: #fafafa;
   --muted: #d4d4d8;
   --subtle: #71717a;
@@ -2168,6 +2170,7 @@ button {
   --surface-strong: #ffffff;
   --surface-soft: #f4f4f5;
   --surface-solid: #ffffff;
+  --pui-glass-tint: rgba(255, 255, 255, 0.72);
   --text: #18181b;
   --muted: #52525b;
   --subtle: #a1a1aa;
@@ -2212,6 +2215,7 @@ button {
   --surface-strong: #18181b;
   --surface-soft: #27272a;
   --surface-solid: #18181b;
+  --pui-glass-tint: rgba(24, 24, 27, 0.72);
   --text: #fafafa;
   --muted: #d4d4d8;
   --subtle: #71717a;
@@ -10097,6 +10101,8 @@ body .app-shell[data-page-mode] .preview-stage .pui-steps-scenario__tab.is-activ
 
 .pui-tabbar-preview.is-fixed { position: absolute; right: 0; bottom: 0; left: 0; }
 
+.pui-tabbar-preview.is-fixed.pui-tabbar-preview--shape-normal { background: var(--page); }
+
 .pui-tabbar-preview--shape-round {
   overflow: hidden;
   background: var(--surface-strong);
@@ -17759,6 +17765,10 @@ body .app-shell[data-page-mode] .preview-stage .pui-popup-preview {
   will-change: opacity, transform;
 }
 
+body .app-shell[data-page-mode] .preview-stage .pui-popup-preview--card {
+  background: var(--pui-glass-tint);
+}
+
 body .app-shell[data-page-mode] .preview-stage .overlay-box--bottom .pui-popup-preview {
   top: auto;
   right: var(--pui-preview-space-step-12);
@@ -17809,7 +17819,7 @@ body .app-shell[data-page-mode] .preview-stage .pui-popup-preview__surface-top {
 }
 
 body .app-shell[data-page-mode] .preview-stage .overlay-box--top .pui-popup-preview--card .pui-popup-preview__surface {
-  background: var(--surface-solid);
+  background: var(--pui-glass-tint);
   border: 1px solid var(--border);
   border-radius: var(--pui-preview-radius-card);
   box-shadow: var(--preview-shadow-card);

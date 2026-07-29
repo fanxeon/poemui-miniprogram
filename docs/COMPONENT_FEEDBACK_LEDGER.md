@@ -2,7 +2,7 @@
 
 > 本文件由 `feedback/records/*.json` 自动生成，请勿手工编辑。工作流见 `docs/COMPONENT_FEEDBACK.md`。
 
-当前 501 条记录，数据更新至 2026-07-29：open 0、investigating 0、planned 0、needs-device 2、resolved 492；pending-user 307、accepted 184。
+当前 505 条记录，数据更新至 2026-07-29：open 0、investigating 0、planned 0、needs-device 2、resolved 496；pending-user 309、accepted 184。
 
 | ID | 范围 | 类型 | 严重度 | 状态 | 验收 | 问题 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -444,7 +444,7 @@
 | PUI-FB-0454 | miniprogram, button, icon, tabbar | visual-layout | low | resolved | pending-user | 我的页客服入口应进入 Navbar 左 Slot |
 | PUI-FB-0455 | h5, miniprogram, npm, skill, documentation | ai-usability | high | resolved | accepted | 公共发布准备需要真实快速开始、Beta 边界与 AI Skill |
 | PUI-FB-0456 | config-provider, miniprogram, preview-site, switch | design-decision | medium | resolved | accepted | 用户外观菜单不应暴露含糊的总效果闸门 |
-| PUI-FB-0457 | miniprogram, dialog, cell, button | bug | high | needs-device | pending-user | 高级版商业授权未进入已发布落地页 |
+| PUI-FB-0457 | miniprogram, dialog, cell, button | bug | high | needs-device | pending-user | 高级版商业授权提供桌面复制与 WebView 访问双路径 |
 | PUI-FB-0458 | input, search, preview-site, documentation | api-contract | medium | resolved | pending-user | Input Clear 默认应只在真实聚焦时显示 |
 | PUI-FB-0459 | miniprogram, tabbar, cell, cell-group, navbar | design-decision | medium | resolved | pending-user | 第四 Tab 不是用户中心并应移除本地头像昵称资料链 |
 | PUI-FB-0460 | area-chart, bar-chart, waffle, preview-site, miniprogram | capability-gap | high | resolved | pending-user | 历史 Chart 文档例外不能继续替代真实图表组件 |
@@ -507,6 +507,10 @@
 | PUI-FB-0517 | scroll-area, config-provider, preview-site, design-tokens | bug | high | resolved | pending-user | ScrollArea 深色主题继承浅色渐变上下文形成白条 |
 | PUI-FB-0518 | miniprogram, config-provider, visual-config, appearance-settings, platform-runtime | capability-gap | high | resolved | pending-user | 小程序进入前台未同步系统深浅色与外观开关 |
 | PUI-FB-0519 | example, package-install, tooltip, button-group | compatibility | critical | resolved | pending-user | 真实安装示例残留已退役组件导致开箱即用验证失败 |
+| PUI-FB-0520 | tabbar, config-provider, miniprogram | bug | high | resolved | pending-user | 深色 Tabbar 页面切换白闪与纵向抖动 |
+| PUI-FB-0521 | popup, preview-site, appearance-settings | visual-layout | medium | resolved | pending-user | Popup card 在毛玻璃关闭时退回实底 |
+| PUI-FB-0522 | miniprogram-codepage, update-announcement, shared-cloud | api-contract | high | resolved | not-required | 共享云更新必须按整文档语义写入 |
+| PUI-FB-0523 | miniprogram-me, update-announcement | bug | medium | resolved | not-required | 同日更新公告必须按语义版本次排序 |
 
 ## PUI-FB-0001 · Style Utilities 缺少显式深色条件变体
 
@@ -10461,16 +10465,16 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0395-tabbar-normal-transparent-layout-root.json`
 - 范围：`component` / `tabbar`、`preview-site`、`miniprogram-home`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-26
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
 - 用户目标：普通全宽 Tabbar 应是透明的屏幕附着导航，不应在设备底部呈现一张独立面板。
 - 实际问题：普通 Tabbar 根像一张浮起的白色面板，视觉上与设备底部和内容区断裂。
-- 决策：shape=normal 固定为透明、无外投影、无毛玻璃的屏幕附着布局；glass、shadow、frosted filter 仅由 shape=round 根消费。
-- 理由：全宽贴边导航不是脱离内容流的独立容器；把 Surface 材质限定给 round 可以保留浮动变体，同时消除底部面板断裂。
+- 决策：shape=normal 的流内根固定为透明、无外投影、无毛玻璃的屏幕附着布局；fixed normal 只消费当前页面画布 Token 填补脱离文档流后暴露的窗口区域。glass、shadow、frosted filter 仍仅由 shape=round 根消费。
+- 理由：全宽贴边导航不是脱离内容流的独立容器；fixed 元素必须遮住窗口底色才能与页面连续，但页面画布色不等于面板材质。把 Surface 材质限定给 round 可以保留浮动变体，同时消除底部面板断裂。
 
 AI 必须遵守：
 
 - 不要用页面 CSS 修 normal Tabbar 的根材质；在组件根和 H5 镜像同步限定 Surface 资格。
-- normal 不得消费背景、外投影或毛玻璃；bordered=true 只恢复中性顶部分割线。
+- 流内 normal 不得消费背景、外投影或毛玻璃；fixed normal 只延续页面画布，bordered=true 只恢复中性顶部分割线。
 - round 才消费 glass、floating shadow、frosted filter 和语义圆角，条目本身始终透明。
 
 验证与遗留风险：
@@ -12090,35 +12094,33 @@ AI 必须遵守：
 - 真机/兼容风险：H5 首项焦点恢复和真实刷新后的旧存储迁移由契约测试覆盖，尚未在浏览器通过注入旧 localStorage 做破坏性复核。
 - 真机/兼容风险：小程序跨页面恢复及 iOS/Android 真机仍需验证；当前仅完成微信开发者工具 390px 热重载验收。
 
-## PUI-FB-0457 · 高级版商业授权未进入已发布落地页
+## PUI-FB-0457 · 高级版商业授权提供桌面复制与 WebView 访问双路径
 
 - 原始记录：`feedback/records/pui-fb-0457-miniprogram-license-dialog-webview.json`
 - 范围：`component` / `miniprogram`、`dialog`、`cell`、`button`
-- 状态：`needs-device`，用户验收：`pending-user`，更新：2026-07-28
-- 用户目标：点击“高级版商业授权”后先明确确认，再真实打开 https://poemcoder.com/poem-ui 查阅授权范围与版本权益。
-- 实际问题：onPurchaseLicense 仍沿用旧占位 Toast，已发布且 HTTP 200 的生产落地页没有接入小程序用户链路。
-- 决策：Cell 继续使用“查阅详情”而不是购买文案；点击先打开受控 PUI Dialog，确认后进入固定 pages/license/index，由微信 WebView 加载生产落地页。导航期间 Confirm loading/disabled；navigateTo 失败保留 Dialog，WebView 加载失败提供复制链接恢复。
-- 理由：当前能力是查阅已发布授权信息而不是支付。Dialog 能在离开当前页面前清楚告知目标，固定 WebView 路由避免任意外部 URL，真实平台回调保证没有假成功。
+- 状态：`needs-device`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：点击“高级版商业授权”后先提示桌面端浏览体验更佳，并允许复制 https://poemcoder.com/poem-ui 或直接进入小程序 WebView 查看。
+- 实际问题：固定 WebView 与加载失败恢复已存在，但访问前提示和桌面端复制路径不符合用户最新决定。
+- 决策：Cell 继续使用“查阅详情”语义。点击后打开 PUI Dialog，标题为“查看商业授权详情”，正文说明桌面端浏览体验更佳；左侧“复制链接”写入固定生产 URL，右侧“直接访问”进入固定 WebView 路由。复制成功关闭 Dialog 并反馈，复制失败保留 Dialog；导航期间两个动作 disabled，直接访问按钮 loading，导航失败恢复双动作。WebView 加载失败继续提供返回与复制链接。
+- 理由：授权详情是信息查阅，不是支付确认。双路径让桌面阅读成为清晰建议，同时保留小程序内直接查看；固定 URL 与真实平台回调避免开放跳转和假成功。
 
 AI 必须遵守：
 
-- 高级版商业授权 Cell 必须先打开受控 PUI Dialog，确认后才进入 WebView。
-- WebView 地址固定为 https://poemcoder.com/poem-ui，不接受任意 query URL。
-- wx.navigateTo 成功后才能关闭 Dialog；失败必须恢复 Confirm 并保留重试或取消。
+- 高级版商业授权 Cell 必须先打开受控 PUI Dialog，展示“复制链接 / 直接访问”两个真实动作。
+- 复制与 WebView 地址都固定为 https://poemcoder.com/poem-ui，不接受任意 query URL。
+- 复制成功才能关闭 Dialog 并显示成功反馈；失败保留 Dialog。
+- 直接访问导航期间两个动作都禁用；navigateTo 失败恢复 Dialog，WebView 加载失败提供返回或复制链接。
 - 没有支付后端时继续使用“查阅详情”语义，不创建价格、订单、授权成功或支付成功状态。
 - 业务域名与 iOS/Android 真机未验证时必须明确标记 pending-device。
 
 验证与遗留风险：
 
+- 验证：`node --check miniprogram/pages/me/index.js：通过。`
 - 验证：`node scripts/test-miniprogram-me-page.js：通过。`
 - 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过。`
-- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过，PoemUI 0.1.0、路径与微信 npm 产物可解析。`
-- 验证：`微信开发者工具 build-npm：872ms，warnings=[]。`
-- 验证：`curl -I https://poemcoder.com/poem-ui：HTTP/2 200。`
-- 验证：`npm run site:build、npm run pack:check、npm run example:install：通过。`
-- 验证：`npm run check：precheck 与 439 条 Ledger 等前序门禁通过，随后被范围外首页版头旧断言阻断。`
-- 真机/兼容风险：当前开发者工具已经复现 WebView 拒绝；生产 AppID 必须确认不是个人类型，并在微信公众平台把 poemcoder.com 配置为业务域名后才能闭环。
-- 真机/兼容风险：iOS/Android 真机仍需验证 Dialog 取消、确认、WebView 首屏、返回栈、加载失败与复制链接。
+- 验证：`curl -I -L https://poemcoder.com/poem-ui：HTTP/2 200。`
+- 真机/兼容风险：当前开发者工具已经复现 WebView 拒绝；生产 AppID 必须确认主体与类目支持 WebView，并在微信公众平台把 poemcoder.com 配置为业务域名后才能闭环。
+- 真机/兼容风险：iOS/Android 真机仍需验证 Cell 实点、Dialog Close、复制链接、WebView 首屏、返回栈、加载失败与系统剪贴板提示。
 - 真机/兼容风险：WebView 页面使用微信原生导航栏承接返回；深浅色导航栏跟随平台，不能由 PUI ConfigProvider 控制。
 
 ## PUI-FB-0458 · Input Clear 默认应只在真实聚焦时显示
@@ -13803,4 +13805,117 @@ AI 必须遵守：
 - 验证：`Registry 干净安装 poemui-miniprogram@0.1.2：componentCount=74，Popup/ScrollArea 存在，Tooltip/ButtonGroup 不存在。`
 - 真机/兼容风险：_example 使用 touristappid，官方微信 CLI build-npm 返回 code 10；合法 AppID 的真实 miniprogram 工程已构建成功。
 - 真机/兼容风险：iOS/Android 真机继续为 pending-device。
+
+## PUI-FB-0520 · 深色 Tabbar 页面切换白闪与纵向抖动
+
+- 原始记录：`feedback/records/pui-fb-0520-miniprogram-dark-tabbar-page-first-frame.json`
+- 范围：`component` / `tabbar`、`config-provider`、`miniprogram`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：真机深色模式进入小程序并切换四个底部目的地时，页面首帧直接保持深色，Tabbar 从第一帧就稳定贴底，不出现白屏或先上后下。
+- 实际问题：虽然首轮已消除默认浅色首帧并同步预估内容高度，但四页仍把非 fixed Tabbar 放在内容轨道之后，并在 onShow/onReady 用 SelectorQuery 再次测量；JS 预估、WXSS rpx/env 与实测取整的 1—2px 差异继续推动整条 Tabbar 轻微上下移动。改为 fixed 后，normal 根原有的完全透明合同还会暴露 fixed 元素下方的窗口画布，运行时主题先于系统 color-scheme 时可能在深色页底部露出浅色带。
+- 决策：保留 App 原生窗口、page 深色启动底与 Provider attached 前 Store 快照；四个真实一级页统一通过 PUI Tabbar 的 fixed=true、placeholder=false、safeAreaInsetBottom=true 固定到底部。共享 tabbar-page-layout 提供首帧与窗口变化的同源同步几何，ScrollArea 第一帧直接挂载；删除页面对 Navbar/Tabbar 的 scheduleMeasureLayout/measureLayout、SelectorQuery 与相同值重复 setData。组件层为 fixed normal 根补充页面画布背景：小程序消费 --pui-bg-page，H5 消费 --page；它只填补窗口，不获得阴影、毛玻璃或圆角 Surface。
+- 理由：主题层只解决白闪，一级目的地的纵向稳定应由 Tabbar 自身屏幕附着语义负责。固定后内容轨道调整不会再移动 Tabbar；同步 helper 继续为 ScrollArea 扣除 Navbar、112rpx 导航内容与真实安全区，避免遮挡或双占位。页面画布延续属于 fixed Tabbar 的跨消费者组件语义，不能由四个页面分别补底色。
+
+AI 必须遵守：
+
+- 启用 darkmode/themeLocation 后仍要检查 app.wxss 是否用默认浅色 Token 覆盖原生窗口。
+- use-global-config 必须在 attached 前读取 Store 快照，禁止先绘制默认 light 根。
+- 应用一级目的地使用 PUI Tabbar fixed=true、placeholder=false 与真实安全区，禁止页面手写 fixed。
+- 唯一 ScrollArea 从同步几何扣除 Tabbar 时不得再建立 placeholder；页面不得在 onShow/onReady 二次测量 fixed Tabbar 包装器。
+- 同步高度未变化时不得重复 setData；窗口变化继续读取同一个 tabbar-page-layout 真相源。
+- fixed normal Tabbar 必须延续当前页面画布，流内 normal 仍透明；该补底不能升级为独立 Surface，也不能交给页面私有 CSS。
+- PUI-FB-0290/0304/0308 中非 fixed 三行页面壳只保留为历史证据，当前四个真实目的地以本记录为准。
+- H5 没有微信 attached 与原生窗口层，不复制平台定时补丁；仅保持同一最终主题和 Tabbar 语义。
+- 开发者工具通过不能替代 iOS/Android 真机复测。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-config-provider.js：通过`
+- 验证：`node scripts/test-miniprogram-home.js：通过`
+- 验证：`node scripts/test-miniprogram-style-utilities-page.js：通过`
+- 验证：`node scripts/test-miniprogram-me-page.js：通过`
+- 验证：`node scripts/test-miniprogram-tabbar-pages.js：通过`
+- 验证：`node scripts/test-tabbar.js：通过`
+- 验证：`npm run example:install：通过；生成 74 个 miniprogram_dist 组件目录并把 0.1.3 tarball 安装到真实示例。`
+- 验证：`微信 DevTools build-npm --project miniprogram：通过，1213ms，warnings=[]。`
+- 验证：`npm run check：通过；全仓设计合同、组件专项、H5 预览与真实小程序静态/运行合同门禁无新增失败。`
+- 验证：`npm run pack:check：通过；poemui-miniprogram@0.1.3 打包 575 个文件，包体 385.7 kB，解包 1.8 MB。`
+- 验证：`git diff --check 与 git -C miniprogram diff --check：通过`
+- 真机/兼容风险：用户报告来自真机，但修复后尚未由同一真机复测；iOS/Android 页面创建合成、safe area 与宿主系统主题事件继续标记 pending-device。
+
+## PUI-FB-0521 · Popup card 在毛玻璃关闭时退回实底
+
+- 原始记录：`feedback/records/pui-fb-0521-popup-card-translucent-surface.json`
+- 范围：`component` / `popup`、`preview-site`、`appearance-settings`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
+- 用户目标：Popup 使用 card 模式时保持可感知的透明层次，不应因为全局毛玻璃关闭而变成纯白或纯深灰实底。
+- 实际问题：card 只控制外侧 inset，根背景仍使用 --pui-glass-surface-strong；毛玻璃关闭后该 Token 没有 alpha 通道。
+- 决策：保留 card:Boolean=true 与全部几何/API；card=true 的普通根和顶部特殊内层 Surface统一使用 --pui-glass-tint。H5 声明同名 light/dark Token 并使用相同选择器语义；card=false 不变。
+- 理由：半透明 tint 在毛玻璃关闭时仍保留卡片与遮罩后的视觉联系，打开毛玻璃后继续由既有 backdrop-filter 增强；同一 Token 可保证浅深色与 H5 镜像一致。
+
+AI 必须遵守：
+
+- card=true 必须消费 --pui-glass-tint，不能回退 --pui-glass-surface-strong 或纯色 Surface。
+- card=false 只改变贴边几何并保留稳固背景，不得跟随 card 的半透明覆盖。
+- 顶部 card 的透明外层与内层 Surface 必须分开：外层透明承载，内层消费同一个 tint。
+- 小程序与 H5 必须使用同名 tint Token，并实际读取 alpha 计算样式验收。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-popup.js`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`npm run site:build`
+- 验证：`npm run check`
+- 验证：`npm run pack:check`
+- 验证：`npm run example:install`
+- 验证：`微信开发者工具 build-npm`
+- 真机/兼容风险：iOS/Android 真机对半透明 Surface、backdrop-filter、遮罩和底层内容的合成仍需复核。
+
+## PUI-FB-0522 · 共享云更新必须按整文档语义写入
+
+- 原始记录：`feedback/records/pui-fb-0522-shared-cloud-full-document-update.json`
+- 范围：`global` / `miniprogram-codepage`、`update-announcement`、`shared-cloud`
+- 状态：`resolved`，用户验收：`not-required`，更新：2026-07-29
+- 用户目标：0.1.3 更新公告、安装页和 PoemUI Skill 在共享云发布后仍保留完整内容，并由真实小程序页面读取。
+- 实际问题：共享云写工具的 update 使用整文档替换语义；首次局部写入只保留了状态字段，静态写成功掩盖了运行页面内容为空。
+- 决策：0.1.3 的 Page、旧/新 Skill 与更新公告全部使用完整文档恢复；旧 0.1.0 Skill 保留完整内容并标为 archived，新 0.1.3 Skill 和公告标为 published。以后共享云状态变化必须提交完整文档，并同时执行数据库全文回读与真实页面运行态回读。
+- 理由：写请求成功只能证明数据库接受操作，不能证明消费者合同仍成立；完整字段和页面真实消费缺一不可。
+
+AI 必须遵守：
+
+- 不得把 cloud_db_write_doc update 当作字段级 $set。
+- 更新共享云状态前必须先读取完整原文，并在 update 中保留全部业务字段。
+- 写成功后必须全文回读 kind、索引字段、content、version、status 与消费者必需字段。
+- 共享云页面必须再由真实小程序运行态读取，fallback 命中不能冒充云端成功。
+
+验证与遗留风险：
+
+- 验证：`共享云全文回读：Page、0.1.0 archived Skill、0.1.3 published Skill 与 v0.1.3 published 公告字段完整。`
+- 验证：`npm run check：通过。`
+- 真机/兼容风险：iOS/Android 真机的弱网缓存和云请求失败恢复仍为 pending-device。
+
+## PUI-FB-0523 · 同日更新公告必须按语义版本次排序
+
+- 原始记录：`feedback/records/pui-fb-0523-same-day-announcement-semver-order.json`
+- 范围：`component` / `miniprogram-me`、`update-announcement`
+- 状态：`resolved`，用户验收：`not-required`，更新：2026-07-29
+- 用户目标：0.1.3 公告发布后，“我的”页必须稳定把 v0.1.3 识别为最新版本。
+- 实际问题：旧 normalizeList 只比较 date，相同日期返回 0，最新公告取决于云数据库未承诺的返回顺序。
+- 决策：在 update-announcements Service 增加纯语义版本比较；normalizeList 固定按日期倒序，再按版本倒序。Me 图表自己的升序里程碑规则保持不变。
+- 理由：最新公告属于数据层合同，应在云、缓存和 fallback 共用的 Service 归一化阶段解决，不能由页面临时修补。
+
+AI 必须遵守：
+
+- 最新公告排序固定为 date DESC、semantic version DESC。
+- 排序规则必须位于共享 Service，使云端、缓存和 fallback 同形。
+- 专项 fixture 必须故意以旧版本在前，证明排序不依赖上游返回顺序。
+- 运行态必须回读 latestAnnouncementVersion，不能只检查数据库文档存在。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-miniprogram-me-page.js：通过。`
+- 验证：`npm run check：通过。`
+- 验证：`独立小程序仓 main=88a3422 已推送。`
+- 真机/兼容风险：iOS/Android 真机更新公告 Popup 的弱网加载和缓存切换仍为 pending-device。
 

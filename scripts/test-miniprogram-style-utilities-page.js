@@ -133,6 +133,14 @@ vm.runInNewContext(js, {
     if (request === '../../common/utils/tabbar-navigation') return navigation;
     if (request === '../../common/data/style-utilities-catalog') return catalog;
     if (request === 'poemui-miniprogram/common/utils/visual-config') return visualConfig;
+    if (request === 'poemui-miniprogram/common/utils/tabbar-page-layout') {
+      return {
+        getLayout: function () {
+          return { navbarHeight: 87, tabbarHeight: 92, contentHeightStyle: '665px' };
+        },
+        getContentHeight: function () { return '665px'; }
+      };
+    }
     if (request === 'poemui-miniprogram/common/utils/platform-info') return platformInfo;
     if (request === '../../common/utils/page-background-preference') return backgroundPreference;
     throw new Error('unexpected require ' + request);

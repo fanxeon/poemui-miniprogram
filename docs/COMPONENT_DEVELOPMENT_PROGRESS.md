@@ -1,11 +1,18 @@
 # PoemUI 组件交付进度
 
+## 2026-07-29 · Popup card 半透明 Surface
+
+- **根因与组件级修复**：Popup 的 `card` 过去只改变五向 inset，根背景仍消费 `--pui-glass-surface-strong`；毛玻璃关闭时该 Token 在浅/深色分别解析为 `#fff / #18181b`，因此外观设置 Popup 呈现实底。`card=true` 现在统一消费 `--pui-glass-tint`，顶部特殊承载结构的内层 Surface 同步；`card=false` 贴边模式仍保持稳固 Surface。H5 镜像使用同名 Token，未修改 Popup API、页面组合或外观设置业务状态。
+- **验证边界**：专项测试锁定原生/H5 card alpha Token 与 top 内层一致性；浅色、深色、毛玻璃开关和 390px 运行态继续在本轮验收。Ledger：`PUI-FB-0521`，保持 `resolved / pending-user`；iOS/Android 真机 backdrop-filter 合成继续为 `pending-device`。
+
 ## 2026-07-29 · 0.1.3 组件、Skill 与多端发布口径
 
 - **版本事实**：包版本升级为 `0.1.3`，组件总数仍为 74；`metadata/component-release-deltas.js` 将 `0.1.2=74 → 0.1.3=74` 记录为 0 组件增量，避免把治理与交付工作伪装成新增组件。
 - **Skill 同包**：npm `files` 新增 `skills/poemui-miniprogram`，同时把 Skill 的完整引用、检查脚本和结构纳入包检查与发布门禁。官网快速开始、README、小程序共享云安装页和 GitHub 固定版本目录统一指向 `0.1.3`。
 - **公告与仪表盘**：包内 fallback 新增稳定公告 `pui-v0-1-3-20260729`；Me BarChart 在同日公告下增加语义版本次排序，按 `0.1.0 / 0.1.1 / 0.1.2 / 0.1.3` 展示 Blue/Teal/Violet/Amber 四个里程碑，0.1.3 分段为 0。
-- **验证边界**：本节只在 npm Registry、GitHub Tag、共享云写后回读、H5/落地页生产回读和微信构建各自完成后记录发布证据；构建成功不得替代这些外部验证，iOS/Android 真机仍单列。
+- **npm / GitHub 证据**：`poemui-miniprogram@0.1.3` 已公开发布，Registry shasum 为 `3af715daca26d645cca647436467f65d64708ee0`；干净安装回读 74 个组件、15 个 Skill 文件且无 Tooltip。公共分支 `codex/public-beta-0.1.3` 与 `v0.1.3` 均固定到提交 `6ec6a2395320b8a53584c5a1fde12128b682f975`，GitHub Release 已发布。
+- **H5 / 落地页证据**：生产 H5 已切换到 `poemui-h5:20260729-0.1.3-001`，落地页已切换到 `poemcoder-web-v2:20260729-poemui-0.1.3-r8`；旧 `0.1.2` H5 与上一版落地页均保留停止状态回滚容器。公网 H5、健康端点和落地页返回 200；显式 390px 下两页无横向溢出、console error/warning 为空，安装复制操作真实回写成功。
+- **共享云与微信证据**：共享云首次使用局部 `update` 时暴露整文档替换语义，已用完整文档恢复并读后校验。真实小程序运行态中安装页为 `ready / installCode=...@0.1.3 / skillVersions=[0.1.3]`，Me 为 `source=cloud / latest=v0.1.3 / 74 个组件 / 4 条重点`；同日公告服务新增语义版本次排序，专项测试与热重载运行态通过。微信 `build-npm` 已成功，独立小程序仓 `main=88a3422`；iOS/Android 真机仍单列 `pending-device`。
 
 ## 2026-07-29 · 0.1.2 npm / GitHub / H5 全平台发布
 
@@ -1469,6 +1476,12 @@
 - **真实独立页**：页面默认展示 roll，并允许在同一计时器运行期间切换 pulse/roll；暂停/继续、finish 与验证码业务边界仍由父级真实回写。页面没有用 CSS 或第二套计时数据模拟效果。
 - **同步边界**：合同、API、TDesign 对照、metadata、详情 Checklist、0.1.2 changelog、专项测试与 Ledger `PUI-FB-0503` 同步；H5 `preview/app.js`、`preview/styles.css`、生成 metadata、390px 浏览器和最终 npm/GitHub/远端发布按当前 Battle 规则留待统一批次。
 - **验证状态**：CountDown 组件专项、数据展示页、组件页与 62 页质量测试、JS 语法、Feedback 和范围 diff 通过；`miniprogram:build`、真实 tar 安装校验、微信 `build-npm=1299ms / warnings=[]` 与 `PUI_VERIFY_DIST=1` 通过。JS/JSON/WXML/WXSS 在源码、dist、node_modules、`miniprogram_npm` 四路哈希一致。Nightly 2.02.2607282 / iPhone 12/13 (Pro) 390px 实测 roll `01:00→00:59`，运行中 roll→pulse→roll 到 `00:46/00:41` 不重置，暂停 `00:35` 保持；浅/深及 shadow/frost/largeRadius/bordered 可读，清空历史记录后复跑 `Errors=0 / Warnings=0`。iOS/Android 真机保持 `pending-device`。
+
+## 2026-07-29 · Tabbar 一级页固定视口底部
+
+- **用户复看与根因**：深色首帧修复后，真机切换仍有轻微纵向抖动。四页虽然同步预估首帧内容高度，但 `onShow/onReady` 仍通过 SelectorQuery 实测 Navbar/Tabbar，并以不同取整路径二次回写；非 fixed Tabbar 位于内容轨道之后，因此会随 1—2px 校准移动。
+- **组件与页面决定**：Tabbar 已有 `fixed/placeholder/safeAreaInsetBottom` API 足够表达屏幕附着语义，不新增 Prop。首页、快速样式、安装、我的统一改为 `fixed=true / placeholder=false`；共享 `tabbar-page-layout` 同时提供首帧与窗口变化的同步几何，ScrollArea 第一帧直接挂载，页面删除 Navbar/Tabbar 异步测量和重复 `setData`。Navbar 仍为非 fixed 首行，BackTop 继续使用既有 Tabbar 高度 Token 避让。
+- **跨端边界**：这是微信真实 App Shell 的组件组合修正；Tabbar 公共默认与 H5 组件镜像没有改变，不复制一套浏览器页面路由。合同、首页/Me 文档、页面专项和 Ledger `PUI-FB-0520` 同步；运行态、构建与真机证据以本轮最终回写为准。
 
 ## 2026-07-29 · Bubble 展开文案真实右下对齐
 

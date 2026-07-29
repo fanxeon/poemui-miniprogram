@@ -162,6 +162,8 @@ assert(wxss.includes('transform: translate(-32rpx, -50%)'));
 assert(wxss.includes('transform: translate(32rpx, -50%)'));
 assert(wxss.includes('width: 68vw; max-width: 68vw; height: 70vh; max-height: 70vh'));
 assert(wxss.includes('.pui-popup--top.pui-popup--card { overflow: visible; background: transparent; border: 0; box-shadow: none;'));
+assert(wxss.includes('.pui-popup--card { background: var(--pui-glass-tint); }'), 'card Popup must use the shared translucent tint instead of the solid Surface token');
+assert(wxss.includes('.pui-popup--top.pui-popup--card .pui-popup__surface { background: var(--pui-glass-tint);'), 'top card Popup inner Surface must mirror the same translucent tint');
 assert(wxss.includes('.pui-popup--custom-navbar.pui-popup--top .pui-popup__content'));
 assert(wxss.includes('--pui-popup-navbar-space'));
 assert(wxss.includes('.pui-popup--custom-navbar.pui-popup--top.pui-popup--card .pui-popup__surface { margin-top: var(--pui-popup-navbar-space); }'));
@@ -255,6 +257,8 @@ assert(/\.pui-popup-preview__scroll--with-header\s*\{[^}]*padding-top:\s*var\(--
 assert(previewStyles.includes('.pui-popup-preview__surface-top {') && previewStyles.includes('inset: 0 0 auto;'), 'H5 surface-top mirror must attach to the Surface top edge');
 assert(previewStyles.includes('.pui-popup-preview--custom-navbar'));
 assert(previewStyles.includes('.pui-popup-preview--edge'));
+assert(previewStyles.includes('.pui-popup-preview--card {\n  background: var(--pui-glass-tint);'), 'H5 card Popup must use the shared translucent tint');
+assert(previewStyles.includes('.overlay-box--top .pui-popup-preview--card .pui-popup-preview__surface {\n  background: var(--pui-glass-tint);'), 'H5 top card Popup inner Surface must mirror the translucent tint');
 assert(previewStyles.includes('.pui-popup-preview__mask--blurred'));
 assert(previewStyles.includes('--pui-popup-overlay-blur'));
 assert(/\.pui-popup-preview__mask\s*\{[\s\S]{0,300}?opacity:\s*0;[\s\S]{0,300}?transition:\s*opacity/.test(previewStyles), 'H5 mirror keeps the mask-owned opacity transition used by the mini-program Popup');

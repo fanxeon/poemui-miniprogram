@@ -20,7 +20,7 @@
 - 当前微信开发者工具会把页面 JSON 中的 `enableShareTimeline` 判为无效字段，因此 `index.json` 不再声明该键；朋友圈载荷只由 `Page.onShareTimeline` 提供同源标题和品牌图。分享继续只依赖微信系统菜单；不在首页增加第二个页面级分享按钮、分享成功 Toast 或前端统计伪闭环。
 - 朋友圈入口和最终卡片样式取决于微信客户端、类目、基础库及上线配置；专项测试只锁定 JSON 中没有无效键、两个 Page 生命周期及其返回载荷，不能替代真机发送。
 
-首页采用固定三行布局：
+首页采用“Navbar 首行 + 同步内容视口 + fixed Tabbar”布局：
 
 - 第一行是非 fixed 的 `pui-navbar`。组件读取胶囊完整矩形、窗口宽度和状态栏高度，左侧搜索与外观菜单两个 `pui-button + pui-icon` 操作作为同一组位于胶囊宽度的镜像区域内；右侧仍不放业务内容。
 - 中间唯一滚动上下文是 `pui-scroll-area`。页面运行时测量 Navbar、Tabbar 与窗口高度后回写有效 px 高度。
@@ -31,7 +31,8 @@
 - 搜索过滤同一目录中的 74 个真实组件路由与 5 个规范路由；清空或关闭会恢复完整目录。
 - 每条组件 Cell 显式显示 `chevron-right`，由 Cell 自身的 `url + jumpType=navigateTo` 执行真实导航，不在页面维护第二套点击跳转。
 - 每个目录分区继续复用共享 Collapsible，并显式开启其 `shadow` 公共能力：只有当前唯一展开分区消费 ConfigProvider 的卡片阴影；关闭分区保持扁平，毛玻璃与阴影分别跟随全局有效 Token，页面不增加私有 Surface 或阴影样式。
-- 底部是非 fixed 的纯图标 `pui-tabbar`：使用组件原生 `normal + normal + split` 形态，全宽短横选中态和条目间微分隔均由组件负责。normal 是透明的屏幕附着导航布局，不带面板底色、阴影或毛玻璃；仅 round 是独立悬浮 Surface。四个真实目的地依次为首页、快速样式（`palette`）、安装（`code`）和我的；第二项是 `pages/styles/index`，第三项是 `pages/codex/index`，第四项 `pages/me/index` 只保留服务 Cell，不展示或读取头像、昵称、OpenID 等本地身份资料。页面消费者继续通过 `change → wx.redirectTo` 路由，不让 Tabbar 组件承担自动导航。
+- 底部是 fixed 的纯图标 `pui-tabbar`：显式使用 `fixed=true / placeholder=false / safeAreaInsetBottom=true`，由组件自身固定到视口底部，不随 ScrollArea 高度更新上下移动。组件继续使用原生 `normal + normal + split` 形态，全宽短横选中态和条目间微分隔均由组件负责；normal 的条目与流内根保持透明，fixed 根只消费 `--pui-bg-page` 延续页面画布，不带面板阴影或毛玻璃，仅 round 是独立悬浮 Surface。四个真实目的地依次为首页、快速样式（`palette`）、安装（`code`）和我的；页面消费者继续通过 `change → wx.redirectTo` 路由，不让 Tabbar 组件承担自动导航。
+- 四页从第一帧调用发布包 `common/utils/tabbar-page-layout`，同步扣除 Navbar、`112rpx` Tabbar 内容和真实底部安全区后直接挂载唯一 ScrollArea；窗口变化时只在高度真实变化后回写。页面不再通过 SelectorQuery 测量 Tabbar 包装器，避免 fixed 子树零高和二次校准引发切页抖动。
 
 ## 快速样式第二 Tab
 

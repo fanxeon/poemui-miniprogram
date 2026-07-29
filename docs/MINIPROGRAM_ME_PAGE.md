@@ -12,7 +12,7 @@
 
 ## 2. PUI 组合
 
-页面根使用 `pui-config-provider use-global-config`，结构固定为非 fixed PUI Navbar、唯一 PUI ScrollArea 与非 fixed PUI Tabbar。示例 App 在启动、重新进入前台和系统主题变化时通过唯一 `visualConfig` Store 同步当前系统 light/dark，AppearanceSettings 的深色开关因此与页面实际主题一致；页面不得复制私有 theme 状态。当前正文组合：
+页面根使用 `pui-config-provider use-global-config`，结构固定为非 fixed PUI Navbar、唯一 PUI ScrollArea 与 `fixed=true / placeholder=false` PUI Tabbar。ScrollArea 首帧高度由发布包 `common/utils/tabbar-page-layout` 同步扣除 Navbar、Tabbar 与底部安全区，页面不再通过 SelectorQuery 二次测量底栏。示例 App 在启动、重新进入前台和系统主题变化时通过唯一 `visualConfig` Store 同步当前系统 light/dark，AppearanceSettings 的深色开关因此与页面实际主题一致；页面不得复制私有 theme 状态。当前正文组合：
 
 - `pui-card + 透明四列摘要 + pui-bar-chart + pui-tag`：唯一仪表盘 Surface。Card 不显示标题或 description；Content 顶部使用同一行四等分透明数据块，依次以较强数字和次级标签展示“74 / 组件”“562 / 样式”“8 / 高级”“3 / 新增”，四项均在运行时读取生成型真相源。BarChart 使用 `horizontal + stacked + small`，每一类别按公告时间轴生成 `version-0...n` 分段；`max=19`、`duration=1000`，只显示每行 Value。页面不传默认即为 false 的 Grid，并显式传 `showLegend=false` 关闭默认即为 true 的 Legend；顶部不再显示 `0 / max` 刻度，底部不再使用圆点/色块加文字的默认标识。
 - BarChart 根自身 `width:100%`，随 Card Content 占满可用宽度；页面不得用私有 CSS 穿透或修改共享组件几何。每个有效版本使用稳定主题序列 `blue → teal → violet → amber → pink → neutral`，版本超过六个时才循环；当前三个版本分别使用 Blue/Teal/Violet。页面在图表 viewport 外组合真实 `size=small / shape=round` PUI Tag，文字消费对应 `--pui-chart-accent-*`，背景使用同色 `--pui-color-*-soft` 纯色 Surface，并显式移除默认 inset 框；Tag 只显示版本号，不使用 Chart 渐变。云端公告真实加载后必须按日期重算 items、max、版本 Tag 与 ariaLabel；后续版本不能被合并进“最新增量”。若公告统计不可用，才回退生成型 `component-status.js`。

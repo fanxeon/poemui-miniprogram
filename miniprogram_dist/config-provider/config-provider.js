@@ -70,7 +70,12 @@ Component({
       this.updateTheme();
     },
     useGlobalConfig: function useGlobalConfigObserver() {
-      if (!this._isAttached) return;
+      // 属性 Observer 会早于 attached 执行。先同步一次 Store 快照，避免
+      // use-global-config 页面用默认 light rootClass 绘制错误的首帧。
+      if (!this._isAttached) {
+        this.updateTheme();
+        return;
+      }
       this.bindGlobalVisualConfig();
     },
   },

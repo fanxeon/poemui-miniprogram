@@ -28,7 +28,8 @@ PoemUI 面向微信小程序原生开发，不依赖 Vue、React 或跨端运行
 `metadata/components.js` 是组件目录、状态和对外维护 Props 的单一来源。`npm run site:build` 先刷新 `miniprogram_dist/`，再生成目录产物，避免目录读取上一轮发布 Props；它会生成：
 
 - `preview/components-data.js`：官网目录、状态和参数面板的数据来源。
-- `docs/COMPONENT_CATALOG.md`：npm 引入路径与当前公开 Props 表。
+- `docs/COMPONENT_MATRIX.md`：按用户分区呈现 npm 引入路径、当前公开 Props 与发布状态。
+- `docs/COMPONENT_API.md`：公共 API 约定与已验收的组件行为。
 
 `npm run check` 会读取每个小程序组件的真实 `properties`，拒绝生成出“官网展示了但组件不能传”的 Props。组件的 `.wxml/.wxss/.js` 仍是运行时实现的唯一来源；官网只是兼容镜像，不能反向替代小程序组件代码。
 

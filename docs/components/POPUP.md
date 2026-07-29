@@ -36,9 +36,9 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 
 ## 4. Token、间距与排版
 
-- 内容 Surface 读取现有 PUI Surface、Border、Radius、Shadow、Frost 和排版 Token；不自定义第二套蓝灰浮层主题。
+- 内容 Surface 读取现有 PUI Surface、Border、Radius、Shadow、Frost 和排版 Token；不自定义第二套蓝灰浮层主题。`card=true` 固定消费半透明 `--pui-glass-tint`，即使全局毛玻璃关闭也不能退回 `--pui-glass-surface-strong` 实底；毛玻璃只决定是否增加 backdrop blur。`card=false` 的贴边 Surface 继续使用稳固背景，以维持屏幕边缘内容的连续性和可读性。
 - Popup WXSS 不得导入 `common/style/theme.wxss`：该全局文件含 `page` 默认 Token，会触发微信组件 WXSS 的标签选择器编译错误。Token 由消费者 `app.wxss` 的 npm 主题入口和外层 `pui-config-provider` 继承；H5 保持同名 Token 镜像，不建立第二条主题链。
-- `card=true` 时五向 Surface 均保留至少 `--pui-space-step-12` 的视口安全距离；`card=false` 时 Surface 贴合其弹出边缘，贴边的角为 0，远离边缘的角继续读取 `--pui-radius-xlarge`。`scroll-view` 只在内容自然超过最大高度时滚动。
+- `card=true` 时五向 Surface 均保留至少 `--pui-space-step-12` 的视口安全距离，并使用主题对应的半透明 tint；`card=false` 时 Surface 贴合其弹出边缘，贴边的角为 0，远离边缘的角继续读取 `--pui-radius-xlarge`。`scroll-view` 只在内容自然超过最大高度时滚动。
 - Popup 不设置业务固定高度；默认随 Header、Content、Footer 自然增长并受视口 `max-height` 约束。调用方需要长内容时，应关闭 Popup Content 自身滚动并组合一个 `height="auto" + maxHeight` 的 PUI ScrollArea，不能同时固定 Popup 近全屏高度与内部 `vh` 高度。
 - 动效由 `duration` 控制，默认 500ms，正常范围为 0–1000ms；`reduceMotion=true` 固定为 1ms。低动效只缩短 Popup 自己的 Mask 与 Surface；Slot 内 PUI 子组件各自遵循自己的低动效合同。`blurOverlay=true` 时 Blur 在 Layer 挂载时立即参与背景合成，不能等待色遮 opacity 完成后才出现；禁止给 `height:auto` 或 `display` 添加 transition。
 
@@ -84,7 +84,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 ## 10. 响应式、主题与视觉配置
 
 - 390px 下 Surface、关闭轨道和 Slot 内容不得造成页面级横向溢出；内容过长只能在 Popup 内容区局部滚动。
-- light/dark、边框、阴影、毛玻璃、大圆角和渐变均通过已有视觉 Token 作用于真实 Surface；关闭边框只透明化中性边线，不得改变浮层尺寸或状态边界。`blurOverlay` 是 Popup 显式遮罩效果，独立于全局毛玻璃开关，但仍必须在深浅色下使用同一中性 Token。
+- light/dark、边框、阴影、毛玻璃、大圆角和渐变均通过已有视觉 Token 作用于真实 Surface；card 的浅色/深色 tint 分别保持可计算的 alpha 通道，不能被全局基础样式覆盖为 `#fff / #18181b`。关闭边框只透明化中性边线，不得改变浮层尺寸或状态边界。`blurOverlay` 是 Popup 显式遮罩效果，独立于全局毛玻璃开关，但仍必须在深浅色下使用同一中性 Token。
 - Popup 本体不通过外观开关新增或移除业务控件；其几何在各外观下保持稳定。
 - Popup 是等距与阴影治理的 reference Surface：默认消费 `--pui-surface-inset` 与 `--pui-surface-stack-gap`；Surface 自身不再给 Header/Content/Footer 添加 section gap。`pui-spacing--equal` 把 Header→Content 的唯一紧凑 gap、Footer 顶部间距与四向 inset 统一为 `--pui-surface-inset`，不改变内容 Slot 内连续 Cell 行的微间距。
 - Popup 的外投影必须按 `placement` 选择 `--pui-shadow-edge-top/bottom/left/right`；`center` 使用 `--pui-shadow-floating`。H5 与小程序不得继续把所有方向复用正向底部阴影。
