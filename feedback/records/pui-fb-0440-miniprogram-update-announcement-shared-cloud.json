@@ -10,7 +10,7 @@
   "acceptance": "pending-user",
   "source": "user-report",
   "reportedAt": "2026-07-27",
-  "updatedAt": "2026-07-28",
+  "updatedAt": "2026-07-29",
   "userGoal": "在我的页增加更新公告 Cell，点击后使用 Popup 陈列真实更新内容；接入共享环境 poemcoder-1gkbkid139b08f45 的 pui_updatelog，并突出版本、日期和组件改动。",
   "environment": {
     "surfaces": ["miniprogram me page", "update announcement popup"],
@@ -67,6 +67,11 @@
       "note": "0.1.1 公告沿用唯一 _id pui-v0-1-1-20260728；生产共享云原位更新为五组精简内容，写后回读 total=1。"
     },
     {
+      "kind": "file",
+      "ref": ".audit/cloud/pui-updatelog-v0.1.2-readback.json",
+      "note": "0.1.2 公告以唯一 _id pui-v0-1-2-20260729 写入生产共享云，写后按 ID 与版本查询均回读 total=1、status=published 和五组同形内容。"
+    },
+    {
       "kind": "browser",
       "ref": "wechat devtools pages/me/index runtime announcementSource=cloud",
       "note": "PoemUI 调用方使用 Shared Cloud 真实读到同一公告，客户端权限与缓存链路已生效。"
@@ -79,7 +84,7 @@
   ],
   "rootCause": "我的页由空白目的地刚迁为账户页，尚未建立应用级公告入口；共享环境随后才由用户授权并创建 pui_updatelog，客户端仍缺少独立 Shared Cloud、缓存和组件化公告 Schema。",
   "decision": {
-    "outcome": "新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Popup 使用唯一滚动 Content，以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。0.1.1 公告按稳定 _id/version 更新同一记录，云端写入与包内 fallback 使用同一 schema/content；最终文案压缩为高级图表、导航、表单、展示与反馈、小程序五组，Me 页内容同步为 AreaChart 的 71→74 真实趋势。微信 Canvas 会穿过普通浮层 Surface，Popup/Dialog 可见期间由 Me 页面用 wx:if 卸载图表，关闭后恢复。工作树版本不冒充 npm Registry 已发布。后续 PUI 云集合统一使用 pui_ 前缀。",
+    "outcome": "新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Popup 使用唯一滚动 Content，以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。0.1.1 与 0.1.2 公告均按稳定 _id/version 维护唯一记录；0.1.2 的云端写入、包内 fallback 和微信体验版可见内容使用同一 schema/content，最终文案压缩为高级图表、导航与表单、展示与反馈、浮层、小程序五组，Me 页内容同步为 AreaChart 的 71→74 真实趋势。微信 Canvas 会穿过普通浮层 Surface，Popup/Dialog 可见期间由 Me 页面用 wx:if 卸载图表，关闭后恢复。工作树版本、云公告、H5 或体验版均不冒充 npm Registry 已发布。后续 PUI 云集合统一使用 pui_ 前缀。",
     "rationale": "共享环境和集合已经由用户确认，直接使用微信环境共享可以复用现有生产资源；独立 Cloud 实例避免污染默认环境，稳定 Schema 与缓存保证弱网可读，来源字段防止 fallback 被误报为云端成功。",
     "alternativesRejected": [
       "在页面直接手写公告浮层：绕过 Popup 三段结构、遮罩和外观合同。",
@@ -121,19 +126,23 @@
       "cloud_db_read_doc：写后回读唯一文档成功",
       "cloud_db_read_doc version=v0.1.1：写前 total=0；cloud_db_write_doc documents[]：insertedCount=1、insertedIds=[pui-v0-1-1-20260728]；按 _id 写后回读 total=1",
       "cloud_db_write_doc：requestId=8f382a5a-978d-40b7-b244-7989f586fce8，matchedCount=1、modifiedCount=1；cloud_db_read_doc：requestId=e7d485f7-6b24-4a70-af42-a78d0af92fb2，按稳定 _id 回读 total=1 与五组精简 highlights",
+      "CloudBase Node SDK 3.18.3：写前 version=v0.1.2 count=0；按稳定 _id=pui-v0-1-2-20260729 set 后，按 ID 与版本写后回读均为 total=1、status=published、五组 highlights",
       "微信开发者工具 pages/me/index：announcementSource=cloud、announcementSyncError 为空，版本与五组 highlights 来自共享集合",
-      "node scripts/test-miniprogram-me-page.js：通过；锁定五组公告、云端 Schema、Popup 三段结构、AreaChart 浮层避让和关闭恢复"
+      "node scripts/test-miniprogram-me-page.js：通过；锁定五组公告、云端 Schema、Popup 三段结构、AreaChart 浮层避让和关闭恢复",
+      "微信开发者工具 Nightly 2.02.2607282：构建 npm warnings=[]；上传应用版本 2.1.0 后界面显示代码上传成功；模拟器 Me 页打开 v0.1.2 公告并显示同义五组内容"
     ],
     "browser": [
       "/tmp/poemui-me-update-cloud-popup-390-final.png",
       "2026-07-27 390px 热重载实测公告 TopLoading loading 根为 336x2px、offset=(27,178)，双不确定进度轨真实挂载；恢复真实请求后 announcementSource=cloud、announcementLoadingState=success、announcementSyncError 为空。截图 /tmp/poemui-me-announcement-top-loading-390.png。",
-      "2026-07-28 390px 重新编译后真实回读 v0.1.1 + v0.1.0 两条公告，最新 Cell 显示 v0.1.1；Popup 首屏五组精简内容见 /tmp/poemui-me-v011-announcement-compact-390.png。修复 Canvas 穿透后首屏无 AreaChart 绘制层，受控 scrollTop=700 后 Footer 仍固定 left=27/top=772，截图 /tmp/poemui-me-v011-announcement-scroll-390.png；通过真实 click 事件打开与关闭，visible 为 false→true→false。"
+      "2026-07-28 390px 重新编译后真实回读 v0.1.1 + v0.1.0 两条公告，最新 Cell 显示 v0.1.1；Popup 首屏五组精简内容见 /tmp/poemui-me-v011-announcement-compact-390.png。修复 Canvas 穿透后首屏无 AreaChart 绘制层，受控 scrollTop=700 后 Footer 仍固定 left=27/top=772，截图 /tmp/poemui-me-v011-announcement-scroll-390.png；通过真实 click 事件打开与关闭，visible 为 false→true→false。",
+      "2026-07-29 微信开发者工具 390px：Me 页显示 74/562/8 与 AreaChart 0.1.0 71→0.1.2 74；点击更新公告后可见 v0.1.2、2026-07-29 和五组内容。生产云唯一文档回读与可见 UI 分别作为数据写入和呈现证据。"
     ],
     "deviceRisks": [
       "390x844 微信模拟器已验证 Popup 视觉层级、长公告 scrollTop=700、Footer 固定和关闭回写；iOS/Android 真机的 Canvas 合成与触摸滚动仍待验证。",
       "Me 页浅色公告与深色果味 AreaChart 已分别验证；深色公告 Popup、边框、等距组合与系统低动效仍待真机回归。",
       "开发者工具已验证调用方能读 published 文档；客户端禁止读取草稿、写入、更新和删除的完整安全规则仍需在资源方控制台专项验收。",
-      "共享环境的配额、费用、日志、告警和备份仍需在资源方控制台治理。"
+      "共享环境的配额、费用、日志、告警和备份仍需在资源方控制台治理。",
+      "体验版上传已成功，但 iOS/Android 真机对公告滚动、Canvas 卸载恢复、微信客服、隐私合同和外观组合仍为 pending-device。"
     ]
   },
   "ai": {

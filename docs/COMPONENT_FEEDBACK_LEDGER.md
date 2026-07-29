@@ -11552,10 +11552,10 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0440-miniprogram-update-announcement-shared-cloud.json`
 - 范围：`component` / `miniprogram`、`cell`、`popup`、`tag`、`icon`、`top-loading`、`button`、`area-chart`
-- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-28
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-29
 - 用户目标：在我的页增加更新公告 Cell，点击后使用 Popup 陈列真实更新内容；接入共享环境 poemcoder-1gkbkid139b08f45 的 pui_updatelog，并突出版本、日期和组件改动。
 - 实际问题：页面没有公告能力，共享云服务的环境共享、跨主体接入和权限分区也没有文档合同。
-- 决策：新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Popup 使用唯一滚动 Content，以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。0.1.1 公告按稳定 _id/version 更新同一记录，云端写入与包内 fallback 使用同一 schema/content；最终文案压缩为高级图表、导航、表单、展示与反馈、小程序五组，Me 页内容同步为 AreaChart 的 71→74 真实趋势。微信 Canvas 会穿过普通浮层 Surface，Popup/Dialog 可见期间由 Me 页面用 wx:if 卸载图表，关闭后恢复。工作树版本不冒充 npm Registry 已发布。后续 PUI 云集合统一使用 pui_ 前缀。
+- 决策：新增更新公告 Cell、受控底部 PUI Popup 和独立公告 Service；Service 使用 wx.cloud.Cloud 的 resourceAppid/resourceEnv 读取共享生产环境 pui_updatelog，只消费 published 公告，成功缓存，失败回退缓存或包内同形数据并保留来源。Popup 使用唯一滚动 Content，以组件 Tag、Icon、标题和说明突出组件改动，Content 顶部使用受控 TopLoading 表达请求状态，Footer 为全宽 Button。只有真实 cloud 且无 error 的结果进入 success，缓存、本地回退或异常直接回到 idle。0.1.1 与 0.1.2 公告均按稳定 _id/version 维护唯一记录；0.1.2 的云端写入、包内 fallback 和微信体验版可见内容使用同一 schema/content，最终文案压缩为高级图表、导航与表单、展示与反馈、浮层、小程序五组，Me 页内容同步为 AreaChart 的 71→74 真实趋势。微信 Canvas 会穿过普通浮层 Surface，Popup/Dialog 可见期间由 Me 页面用 wx:if 卸载图表，关闭后恢复。工作树版本、云公告、H5 或体验版均不冒充 npm Registry 已发布。后续 PUI 云集合统一使用 pui_ 前缀。
 - 理由：共享环境和集合已经由用户确认，直接使用微信环境共享可以复用现有生产资源；独立 Cloud 实例避免污染默认环境，稳定 Schema 与缓存保证弱网可读，来源字段防止 fallback 被误报为云端成功。
 
 AI 必须遵守：
@@ -11582,12 +11582,15 @@ AI 必须遵守：
 - 验证：`cloud_db_read_doc：写后回读唯一文档成功`
 - 验证：`cloud_db_read_doc version=v0.1.1：写前 total=0；cloud_db_write_doc documents[]：insertedCount=1、insertedIds=[pui-v0-1-1-20260728]；按 _id 写后回读 total=1`
 - 验证：`cloud_db_write_doc：requestId=8f382a5a-978d-40b7-b244-7989f586fce8，matchedCount=1、modifiedCount=1；cloud_db_read_doc：requestId=e7d485f7-6b24-4a70-af42-a78d0af92fb2，按稳定 _id 回读 total=1 与五组精简 highlights`
+- 验证：`CloudBase Node SDK 3.18.3：写前 version=v0.1.2 count=0；按稳定 _id=pui-v0-1-2-20260729 set 后，按 ID 与版本写后回读均为 total=1、status=published、五组 highlights`
 - 验证：`微信开发者工具 pages/me/index：announcementSource=cloud、announcementSyncError 为空，版本与五组 highlights 来自共享集合`
 - 验证：`node scripts/test-miniprogram-me-page.js：通过；锁定五组公告、云端 Schema、Popup 三段结构、AreaChart 浮层避让和关闭恢复`
+- 验证：`微信开发者工具 Nightly 2.02.2607282：构建 npm warnings=[]；上传应用版本 2.1.0 后界面显示代码上传成功；模拟器 Me 页打开 v0.1.2 公告并显示同义五组内容`
 - 真机/兼容风险：390x844 微信模拟器已验证 Popup 视觉层级、长公告 scrollTop=700、Footer 固定和关闭回写；iOS/Android 真机的 Canvas 合成与触摸滚动仍待验证。
 - 真机/兼容风险：Me 页浅色公告与深色果味 AreaChart 已分别验证；深色公告 Popup、边框、等距组合与系统低动效仍待真机回归。
 - 真机/兼容风险：开发者工具已验证调用方能读 published 文档；客户端禁止读取草稿、写入、更新和删除的完整安全规则仍需在资源方控制台专项验收。
 - 真机/兼容风险：共享环境的配额、费用、日志、告警和备份仍需在资源方控制台治理。
+- 真机/兼容风险：体验版上传已成功，但 iOS/Android 真机对公告滚动、Canvas 卸载恢复、微信客服、隐私合同和外观组合仍为 pending-device。
 
 ## PUI-FB-0441 · Picker / DateTimePicker 默认图标 Header 与 Classic 底部模式
 

@@ -4,6 +4,20 @@
 
 每条记录必须包含：用户问题、行为变化、源码文件、专项验证、待同步面和真机风险。已同步但未验证的事项不能标记完成。
 
+## 0.1.2 统一同步与发布状态
+
+### 2026-07-29：组件源码、H5、共享云公告与微信体验版完成同步
+
+- 发布内容：版本由公开 `0.1.0 / 71 个组件` 更新为 `0.1.2 / 74 个组件`，新增 AreaChart、BarChart、Waffle；本文件所列组件 battle 进入同一发布批次。`0.1.1` 只保留为历史公告，不伪装成 npm Registry 发布版本。
+- 构建门禁：`npm run site:build`、`npm run miniprogram:build`、`npm run pack:check`、`npm run check`、`npm run feedback:check` 与两仓 `git diff --check` 均通过。最终 tarball dry-run 为 `559 files / 367.0kB / unpacked 1.8MB / shasum 530605a480029f0ac7270ab3c0cc0ea2aff599da`。
+- GitHub：公开发布分支 `codex/public-beta-0.1.2` 已推送至远端，远端提交为 `8aea7c4bd6556d9962ce677e2d1373d489c9f5e8`；真实小程序嵌套仓 `main` 已推送 `c2e7bae`。公开分支主动排除本地审计材料与无关 workflow 变动。
+- H5：生产容器已切换为 `poemui-h5:20260729-0.1.2`，只监听 `127.0.0.1:3102`；直接回滚点为停止状态的 `poemui-h5-rollback-20260729-public-registry-r3`。Canary、容器健康检查、`openresty -t`、公网 HTML/CSS/JS 回读均通过，入口缓存指纹为 `0.1.2-20260729-001`。
+- H5 真实交互：`https://poemcoder.com/poem-ui/docs/#/components/indexes` 在 390px 下长按 A 显示放大提示、拖到 C 同步选中并在释放后关闭提示，页面横向溢出为 0；页面自身无 console error/warning。其余本轮组件的 390px、深色果味与真实交互证据分别记录在下方条目。
+- 共享云：生产环境 `poemcoder-1gkbkid139b08f45` 的 `pui_updatelog` 已写入并回读唯一 `_id=pui-v0-1-2-20260729`，`version=v0.1.2 / status=published / date=2026-07-29`，五组内容与包内 fallback 同形。
+- 微信体验版：微信开发者工具 Nightly 2.02.2607282 使用 AppID `wx23aa017375535746` 完成“构建 npm”，CLI 返回 `warnings=[]`；随后通过开发者工具上传，界面明确显示“代码上传成功”。体验版应用版本为 `2.1.0`，包含 PoemUI 组件库 `0.1.2`。模拟器首页真实显示 74 个组件及三项高级图表；Me 页显示 `74 / 562 / 8`、AreaChart `0.1.0 71 → 0.1.2 74`，更新公告 Popup 显示云端同义五组内容。
+- npm 边界：本地 npm 登录已失效，`npm whoami` 返回 `E401 Unauthorized`；官方 WebAuthn 页面要求使用手机或平板扫描安全密钥二维码。由于没有完成账户持有人认证，`poemui-miniprogram@0.1.2` 尚未发布到 Registry，也尚未执行 Registry 干净安装、示例依赖切换、`v0.1.2` Tag 或 GitHub Release。这是当前唯一发布阻塞，不能用本地 tarball、云公告、H5 或体验版替代。
+- 设备边界：微信开发者工具与 H5 浏览器通过不等于真机通过；iOS/Android 的触摸、Canvas 合成、系统低动效、读屏与微信平台能力继续标记 `pending-device`。
+
 ## AreaChart / BarChart / Waffle
 
 ### 2026-07-29：演示数据使用可辨识的高波动前后态
