@@ -9,7 +9,7 @@
 - 发布前 `node skills/poemui-miniprogram/scripts/verify-install.mjs _example` 真实阻断：`_example/miniprogram/pages/components/` 仍注册并调用 0.1.2 已退役的 Tooltip 与 ButtonGroup，npm 安装后对应组件路径不存在。
 - 示例已彻底删除两个退役组件的注册、演示、状态和样式；其余并列操作改用透明、Token 化的 `example-action-group` 布局承载真实 PUI Button，不恢复私有按钮或第二层 Surface。
 - `scripts/test-component-catalog-pruning.js` 现同时扫描示例 JSON / JavaScript / WXML / WXSS，禁止退役组件名和 npm 路径重新出现。Ledger 新增 `PUI-FB-0519`（resolved / pending-user）。
-- 本条只记录发布阻塞修复；npm Registry、GitHub 与远端 H5 的真实发布结果将在全部门禁完成后回写，不能以本地测试替代。
+- 本条发布阻塞已随 0.1.2 全平台发布闭环；npm Registry、GitHub 与远端 H5 的真实结果记录在下方统一发布状态，不能以本地测试替代。
 
 ## 2026-07-29：发布后工作树修正（体验版已重传，源码未提交）
 
@@ -29,13 +29,13 @@
 ### 2026-07-29：组件源码、H5、共享云公告与微信体验版完成同步
 
 - 发布内容：版本由公开 `0.1.0 / 71 个组件` 更新为 `0.1.2 / 74 个组件`，新增 AreaChart、BarChart、Waffle；本文件所列组件 battle 进入同一发布批次。`0.1.1` 只保留为历史公告，不伪装成 npm Registry 发布版本。
-- 构建门禁：`npm run site:build`、`npm run miniprogram:build`、`npm run pack:check`、`npm run check`、`npm run feedback:check` 与两仓 `git diff --check` 均通过。最终 tarball dry-run 为 `559 files / 367.0kB / unpacked 1.8MB / shasum 530605a480029f0ac7270ab3c0cc0ea2aff599da`。
-- GitHub：公开发布分支 `codex/public-beta-0.1.2` 已推送至远端，远端提交为 `8aea7c4bd6556d9962ce677e2d1373d489c9f5e8`；真实小程序嵌套仓 `main` 已推送 `c2e7bae`。公开分支主动排除本地审计材料与无关 workflow 变动。
-- H5：生产容器已切换为 `poemui-h5:20260729-0.1.2`，只监听 `127.0.0.1:3102`；直接回滚点为停止状态的 `poemui-h5-rollback-20260729-public-registry-r3`。Canary、容器健康检查、`openresty -t`、公网 HTML/CSS/JS 回读均通过，入口缓存指纹为 `0.1.2-20260729-001`。
-- H5 真实交互：`https://poemcoder.com/poem-ui/docs/#/components/indexes` 在 390px 下长按 A 显示放大提示、拖到 C 同步选中并在释放后关闭提示，页面横向溢出为 0；页面自身无 console error/warning。其余本轮组件的 390px、深色果味与真实交互证据分别记录在下方条目。
+- 构建门禁：最终 `npm run prepublishOnly` 全链通过，生成 74 个组件；tarball dry-run 为 `559 files / 367.6kB / unpacked 1.8MB / shasum 1c506dc981a1261043eb9194a9385677efee718e`。`npm run check`、`npm run pack:check`、`npm run feedback:check`、真实小程序 npm 构建与两仓 diff 门禁均通过。
+- GitHub：公开发布分支 `codex/public-beta-0.1.2` 已推送；代码提交为 `c313121`，发布证据随 `v0.1.2` Tag 固定。真实小程序嵌套仓 `main` 已推送 `bbe9f99`。公开分支主动排除本地审计材料与无关 workflow 变动。
+- H5：生产容器已切换为 `poemui-h5:20260729-0.1.2-002`，只监听 `127.0.0.1:3102`；直接回滚点为停止状态的 `poemui-h5-rollback-20260729-0.1.2-001`。Canary、容器健康检查、`openresty -t`、公网 HTML/CSS/JS 回读均通过，入口缓存指纹为 `0.1.2-20260729-002`。
+- H5 真实交互：公网生产站在 390px 下真实操作 ScrollArea、Popup 与 BarChart。ScrollArea 深色渐变为 `rgb(24,24,27)`，End 滚动到 `scrollTop=636.5/636` 后顶部遮罩显示、底部遮罩隐藏；Popup 从底部打开后为 `340×280px`，Header→Scroll 与 Scroll→Footer 均为 `0px`，单按钮宽 `318px` 与内容区同宽；BarChart 点击切换后四项值由 `10/44/44/60` 变为 `62/16/62/48`。三页 document 横向溢出均为 0，console error/warning 均为空。
 - 共享云：生产环境 `poemcoder-1gkbkid139b08f45` 的 `pui_updatelog` 已写入并回读唯一 `_id=pui-v0-1-2-20260729`，`version=v0.1.2 / status=published / date=2026-07-29`，五组内容与包内 fallback 同形。
 - 微信体验版：微信开发者工具 Nightly 2.02.2607282 使用 AppID `wx23aa017375535746` 完成“构建 npm”，CLI 返回 `warnings=[]`；随后通过开发者工具上传，界面明确显示“代码上传成功”。体验版应用版本为 `2.1.0`，包含 PoemUI 组件库 `0.1.2`。模拟器首页真实显示 74 个组件及三项高级图表；Me 页显示 `74 / 562 / 8`、AreaChart `0.1.0 71 → 0.1.2 74`，更新公告 Popup 显示云端同义五组内容。
-- npm 边界：本地 npm 登录已失效，`npm whoami` 返回 `E401 Unauthorized`；官方 WebAuthn 页面要求使用手机或平板扫描安全密钥二维码。由于没有完成账户持有人认证，`poemui-miniprogram@0.1.2` 尚未发布到 Registry，也尚未执行 Registry 干净安装、示例依赖切换、`v0.1.2` Tag 或 GitHub Release。这是当前唯一发布阻塞，不能用本地 tarball、云公告、H5 或体验版替代。
+- npm：账号 `poemcoder` 完成官方浏览器认证后已发布 `poemui-miniprogram@0.1.2`；Registry 回读 `latest=0.1.2`、shasum `1c506dc981a1261043eb9194a9385677efee718e`。干净目录安装后回读 `version=0.1.2 / componentCount=74`，Popup 与 ScrollArea 存在，退役 Tooltip 与 ButtonGroup 不存在。
 - 设备边界：微信开发者工具与 H5 浏览器通过不等于真机通过；iOS/Android 的触摸、Canvas 合成、系统低动效、读屏与微信平台能力继续标记 `pending-device`。
 
 ## AreaChart / BarChart / Waffle

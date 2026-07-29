@@ -84,6 +84,7 @@
     "browser": [
       "H5 390px 深色 ScrollArea 实际滚动到 scrollTop=544；上下遮罩 opacity 均为 1，context 与 overlay 计算色均为 rgb(24,24,27)，渐变背景由该色过渡到 transparent。",
       "H5 ScrollArea viewport clientWidth/scrollWidth=271/271，document clientWidth/scrollWidth=375/375，fresh navigation 的 Runtime/Log console 与 exception 均为空。",
+      "公网生产 https://poemcoder.com/poem-ui/docs/#/components/scroll-area 在 390×844 深色实测：初始顶部/底部遮罩 opacity=0/1，真实按 End 后 scrollTop=636.5（max=636），遮罩变为 1/0，计算上下文色为 rgb(24,24,27)；document=390/390，无横向溢出，console error/warning 为空。",
       "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 深色 Me 更新公告截图确认 ScrollArea 顶底过渡与 #18181b 内容 Surface 连续，没有旧白色横条。"
     ],
     "deviceRisks": [

@@ -12016,9 +12016,9 @@ AI 必须遵守：
 
 - 原始记录：`feedback/records/pui-fb-0455-public-beta-quick-start-ai-skill.json`
 - 范围：`global` / `h5`、`miniprogram`、`npm`、`skill`、`documentation`
-- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-28
+- 状态：`resolved`，用户验收：`accepted`，更新：2026-07-29
 - 用户目标：把 PoemUI 从本地完成态推进到可公开验证的受限 Beta：H5 提供真实快速开始与 AI Skill，公告不混淆 MIT Core、未来 Pro、本地构建和公共发布。
-- 实际问题：H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成；公共 npm 0.1.0 与 GitHub 仓库已公开并通过 Registry 安装、微信 build-npm 和公开回读。共享云 Page 与 Skill 均由微信 CLI 精确更新并完成管理端及真实 PoemUI 消费端回读。正式小程序码与真机继续保持独立未验证状态。
+- 实际问题：H5 快速开始、Beta 公告、标准 Skill、PoemCoder 落地页和独立 H5 公网容器已经完成；公共 npm 已更新为 0.1.2，GitHub 公开发布分支、v0.1.2 Tag/Release 与真实小程序仓同步，并通过 Registry 干净安装、微信 build-npm 和公开回读。共享云 Page 与 Skill 均由微信 CLI 精确更新并完成管理端及真实 PoemUI 消费端回读。正式小程序码与真机继续保持独立未验证状态。
 - 决策：采用 MIT Core + 未来独立 Pro；H5 安装入口升级为快速开始；建立 poemui-miniprogram Skill 与两个只读验证脚本；npm/GitHub 发布前禁用动作，发布且通过独立回读后才开放固定版本入口。
 - 理由：将用户可执行动作绑定到 Registry、公开仓库、浏览器和微信运行态证据，既保留当前 Beta 的开放体验，也不追溯限制已经以 MIT 交付的代码。
 
@@ -12049,6 +12049,11 @@ AI 必须遵守：
 - 验证：`wechatide cloud_db_read_doc：Page 与 Skill 管理端回读内容准确。`
 - 验证：`wechatide automation_page_action：真实 PoemUI /pages/codex/index 回读 codePageLoadState=ready、三段 snippets 与唯一 poemui-miniprogram@0.1.0 Skill。`
 - 验证：`poemui-h5:20260728-public-registry-r3：本地与远端 Canary、生产健康、OpenResty -t、缓存指纹和完整 npm 地址检查通过。`
+- 验证：`npm publish --access public：poemui-miniprogram@0.1.2 发布成功。`
+- 验证：`npm view poemui-miniprogram：回读 latest=0.1.2、shasum=1c506dc981a1261043eb9194a9385677efee718e。`
+- 验证：`全新临时目录 npm install poemui-miniprogram@0.1.2 --save-exact：通过；回读 componentCount=74，Popup/ScrollArea 存在，Tooltip/ButtonGroup 不存在。`
+- 验证：`真实 miniprogram 工程微信 CLI build-npm：1127ms，warnings=[]。`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过。`
 - 验证：`node skills/poemui-miniprogram/scripts/inspect-project.mjs .`
 - 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs .`
 - 真机/兼容风险：_example 使用 touristappid，微信 CLI 返回 code 10，不存在此 AppID；真实 AppID 工程已通过，但游客安装示例未生成 miniprogram_npm。
@@ -13791,5 +13796,11 @@ AI 必须遵守：
 
 - 验证：`node scripts/test-component-catalog-pruning.js：通过`
 - 验证：`node -e JSON.parse(_example/miniprogram/pages/components/index.json)：通过`
-- 真机/兼容风险：真实安装与微信 build-npm 将在本次全平台发布门禁中复验；iOS/Android 真机继续为 pending-device。
+- 验证：`npm run prepublishOnly：通过；74 个组件，559 files，367.6 kB，shasum 1c506dc981a1261043eb9194a9385677efee718e。`
+- 验证：`npm run example:install：通过，0 vulnerabilities。`
+- 验证：`真实 miniprogram 工程微信 CLI build-npm：1127ms，warnings=[]。`
+- 验证：`node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过。`
+- 验证：`Registry 干净安装 poemui-miniprogram@0.1.2：componentCount=74，Popup/ScrollArea 存在，Tooltip/ButtonGroup 不存在。`
+- 真机/兼容风险：_example 使用 touristappid，官方微信 CLI build-npm 返回 code 10；合法 AppID 的真实 miniprogram 工程已构建成功。
+- 真机/兼容风险：iOS/Android 真机继续为 pending-device。
 

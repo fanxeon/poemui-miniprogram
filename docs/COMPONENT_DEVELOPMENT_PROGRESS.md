@@ -1,5 +1,12 @@
 # PoemUI 组件交付进度
 
+## 2026-07-29 · 0.1.2 npm / GitHub / H5 全平台发布
+
+- **npm**：`poemui-miniprogram@0.1.2` 已由 `poemcoder` 发布；Registry 回读 `latest=0.1.2`、shasum `1c506dc981a1261043eb9194a9385677efee718e`。干净目录安装回读 74 个组件，Popup/ScrollArea 存在，退役 Tooltip/ButtonGroup 不存在。
+- **GitHub 与真实小程序仓**：公共发布分支 `codex/public-beta-0.1.2` 的代码提交为 `c313121`，最终发布证据由 `v0.1.2` Tag 固定；独立 `miniprogram/` 仓库 `main` 已推送 `bbe9f99`。公开分支继续排除本地审计材料和无关 workflow。
+- **H5 生产**：`poemui-h5:20260729-0.1.2-002` 已切换到 `127.0.0.1:3102`，缓存指纹为 `0.1.2-20260729-002`；停止状态的 `poemui-h5-rollback-20260729-0.1.2-001` 是直接回滚点。公网 390px 真实完成 ScrollArea 深色滚动、Popup 开关及满宽单按钮、BarChart 数据切换，三页均无横向溢出和 console error/warning。
+- **发布门禁与边界**：`prepublishOnly`、全量 `check`、`pack:check`、Feedback、真实小程序 npm 构建和安装核验通过。`_example` 仍使用 `touristappid`，官方 CLI 返回 code 10；真实 `miniprogram/` 已以合法 AppID 构建成功。微信 iOS/Android 真机继续标记 `pending-device`。
+
 ## 2026-07-29 · ScrollArea 深色遮罩与小程序系统主题同步
 
 - **ScrollArea 根因与双端修复**：默认上下文色曾只在浅色 `page/.pui-theme--light` 声明；微信把该别名继承到深色 Provider 子树时仍可能保留浅色计算值，更新公告滚动后出现白色渐变条。`common/style/theme.wxss` 现在在 `.pui-theme--dark` 的深色容器色之后重新绑定同名 Token；H5 ScrollArea 根同步按当前 `--surface-solid` 解析，公开 Props、边缘状态机和滚动行为不变。
