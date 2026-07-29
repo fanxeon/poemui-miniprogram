@@ -155,6 +155,7 @@
     "browser": [
       "H5 390px 浅色普通间距实测 Header→Content=8px、ScrollArea 上下及 Footer 间距=8px、单按钮 Footer 满宽，Popup 面板高 280px，无横向溢出。",
       "H5 390px 深色果味+equalSpacing 实测 Header→Content、ScrollArea 上下及 Footer 间距均为 14px、单按钮 Footer 满宽，Popup 面板高 304px，无横向溢出，控制台无 error/warning。",
+      "公网生产 https://poemcoder.com/poem-ui/docs/#/components/popup 在 390×844 真实点击底部打开：面板 340×280px，Header 高 59px、ScrollArea 高 156px、Footer 高 63px；Header→Scroll 与 Scroll→Footer 均为 0px，首内容内距 8px，单按钮 318px 与内容宽度相等。关闭后 Popup DOM 卸载，document 横向溢出为 0，console error/warning 为空。",
       "微信开发者工具 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 打开 Me 更新公告：Header、可滚动内容和固定满宽 Footer 均落在同一 Popup Surface，深色截图未出现内容或按钮越界。"
     ],
     "deviceRisks": [

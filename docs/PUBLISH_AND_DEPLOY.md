@@ -19,7 +19,7 @@ npm install
 npm run prepublishOnly
 ```
 
-该流程会生成官网目录和 `miniprogram_dist/` 小程序运行时目录，按 metadata 当前清单校验组件四件套、公开 Props 与真实 `properties` 对齐，并检查最终 tarball 内容。当前发布候选为 `0.1.2`，包含 74 个组件；已经发布到 npm Registry 的 `0.1.0` 历史快照仍是 71 个，`0.1.1` 未曾发布。`0.1.2` 在完成发布动作与 Registry 回读前只能称为“发布候选”，不能以源码版本或公告冒充公共包已经发布，也不能移动或重写既有 `v0.1.0` 事实。通过后，由具备 npm 发布权限的账号执行：
+该流程会生成官网目录和 `miniprogram_dist/` 小程序运行时目录，按 metadata 当前清单校验组件四件套、公开 Props 与真实 `properties` 对齐，并检查最终 tarball 内容。当前公开版本为 `poemui-miniprogram@0.1.2`，包含 74 个组件；npm Registry 的 `latest` 已回读为 `0.1.2`，tarball shasum 为 `1c506dc981a1261043eb9194a9385677efee718e`。`0.1.0` 是 71 个组件的历史快照，`0.1.1` 未曾发布；不得移动或重写既有 `v0.1.0` 事实。后续版本通过本地门禁后，由具备 npm 发布权限的账号执行：
 
 ```bash
 npm login
@@ -74,16 +74,18 @@ docker buildx build \
 生产容器只监听宿主机 `127.0.0.1:3102`，容器端口为 `8080`；OpenResty 的 `/poem-ui/docs/` location 负责去掉前缀后转发。`/healthz` 是容器级健康检查，公网发布仍须逐项验证 HTML、CSS、JS、字体、hash 路由、390px、light/dark 和真实组件交互。服务器内存有限，禁止在远端构建 Node/Next 镜像；必须在本机生成 `linux/amd64` 镜像后传输。
 
 2026-07-29 的 0.1.2 当前生产基线为
-`poemui-h5:20260729-0.1.2`。活动容器 `poemui-h5` 仅绑定
+`poemui-h5:20260729-0.1.2-002`。活动容器 `poemui-h5` 仅绑定
 `127.0.0.1:3102`，直接回滚点为停止状态的
-`poemui-h5-rollback-20260729-public-registry-r3`；更早的回滚容器继续保留。
+`poemui-h5-rollback-20260729-0.1.2-001`；更早的回滚容器继续保留。
 镜像为 `linux/amd64`，ID 为
-`sha256:1b2d9286ed184e51e81e3b69bbdd119b7e2c0afaa0a3b0f74db69a711283d614`。
+`sha256:2f9ca42d5c97c0713de6a11098a8cd17f4b5c96e6bd80aa9f584103540534e2d`。
 本地 `3182` Canary 与远端 `3106` Canary 均先通过健康检查，再切换生产；OpenResty
 容器内 `openresty -t` 通过，公网 `/poem-ui/docs/` 与 `/healthz` 返回 200，入口资源
-缓存指纹为 `0.1.2-20260729-001`。生产浏览器在 390px 深色果味下真实操作 Indexes：
-长按 A 显示放大提示、拖到 C 后提示与选中同步、释放后提示关闭，页面横向溢出为 0，
-页面自身无 console error/warning。以后发布不得复用这个状态描述代替当次远端只读审计、
+缓存指纹为 `0.1.2-20260729-002`。生产浏览器在 390px 下完成三条真实交互：ScrollArea
+深色渐变使用 `rgb(24,24,27)`，按 End 滚至底部后上下遮罩可见性正确；Popup 从底部打开后
+面板为 `340×280px`，Header/滚动区/Footer 无多余分区间距且单按钮宽度等于 `318px` 内容宽度；
+BarChart 切换数据后四项可访问值由 `10/44/44/60` 变为 `62/16/62/48`。三页均无横向溢出，
+console error/warning 为空。以后发布不得复用这个状态描述代替当次远端只读审计、
 Canary、健康检查和浏览器交互；npm Registry 是否发布必须独立回读，不能由 H5 版本推断。
 
 ## 发布后验收

@@ -73,11 +73,17 @@
     "tests": ["scripts/test-component-catalog-pruning.js", "skills/poemui-miniprogram/scripts/verify-install.mjs"],
     "commands": [
       "node scripts/test-component-catalog-pruning.js：通过",
-      "node -e JSON.parse(_example/miniprogram/pages/components/index.json)：通过"
+      "node -e JSON.parse(_example/miniprogram/pages/components/index.json)：通过",
+      "npm run prepublishOnly：通过；74 个组件，559 files，367.6 kB，shasum 1c506dc981a1261043eb9194a9385677efee718e。",
+      "npm run example:install：通过，0 vulnerabilities。",
+      "真实 miniprogram 工程微信 CLI build-npm：1127ms，warnings=[]。",
+      "node skills/poemui-miniprogram/scripts/verify-install.mjs miniprogram：通过。",
+      "Registry 干净安装 poemui-miniprogram@0.1.2：componentCount=74，Popup/ScrollArea 存在，Tooltip/ButtonGroup 不存在。"
     ],
     "browser": [],
     "deviceRisks": [
-      "真实安装与微信 build-npm 将在本次全平台发布门禁中复验；iOS/Android 真机继续为 pending-device。"
+      "_example 使用 touristappid，官方微信 CLI build-npm 返回 code 10；合法 AppID 的真实 miniprogram 工程已构建成功。",
+      "iOS/Android 真机继续为 pending-device。"
     ]
   },
   "ai": {
