@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  createCatalogMarkdown,
   createMatrixMarkdown,
   createPreviewSource,
   createShadcnCompatibilityMarkdown,
@@ -30,7 +29,6 @@ const requiredRootFiles = [
   'docs/COMPONENT_API.md',
   'docs/COMPONENT_STARTER_USAGE.md',
   'docs/COMPONENT_DEVELOPMENT_PROGRESS.md',
-  'docs/COMPONENT_CATALOG.md',
   'docs/STYLE_UTILITIES.md',
   'docs/TYPOGRAPHY.md',
   'docs/SPACING.md',
@@ -68,6 +66,21 @@ const requiredRootFiles = [
   '_example/miniprogram/pages/components/index.json',
   '_example/miniprogram/pages/components/index.wxml',
   '_example/miniprogram/pages/components/index.wxss',
+  'skills/poemui-miniprogram/SKILL.md',
+  'skills/poemui-miniprogram/agents/openai.yaml',
+  'skills/poemui-miniprogram/references/installation.md',
+  'skills/poemui-miniprogram/references/component-selection.md',
+  'skills/poemui-miniprogram/references/composition-rules.md',
+  'skills/poemui-miniprogram/references/styling-and-theme.md',
+  'skills/poemui-miniprogram/references/platform-boundaries.md',
+  'skills/poemui-miniprogram/references/examples.md',
+  'skills/poemui-miniprogram/references/library-workflow.md',
+  'skills/poemui-miniprogram/references/ui-governance.md',
+  'skills/poemui-miniprogram/references/quality-gates.md',
+  'skills/poemui-miniprogram/references/validation-matrix.md',
+  'skills/poemui-miniprogram/scripts/check-skill.mjs',
+  'skills/poemui-miniprogram/scripts/inspect-project.mjs',
+  'skills/poemui-miniprogram/scripts/verify-install.mjs',
 ];
 const missing = [];
 
@@ -93,7 +106,7 @@ for (const component of components) {
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-const requiredPackageFiles = ['miniprogram_dist', 'README.md', 'CHANGELOG.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md'];
+const requiredPackageFiles = ['miniprogram_dist', 'README.md', 'CHANGELOG.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'skills/poemui-miniprogram'];
 
 for (const file of requiredPackageFiles) {
   if (!packageJson.files || !packageJson.files.includes(file)) {
@@ -176,7 +189,6 @@ for (const component of components) {
 
 const generatedArtifacts = [
   ['preview/components-data.js', createPreviewSource()],
-  ['docs/COMPONENT_CATALOG.md', createCatalogMarkdown()],
   ['docs/COMPONENT_MATRIX.md', createMatrixMarkdown()],
   ['docs/SHADCN_COMPATIBILITY.md', createShadcnCompatibilityMarkdown()],
 ];

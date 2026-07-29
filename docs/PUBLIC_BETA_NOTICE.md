@@ -1,8 +1,8 @@
 # PoemUI 受限 Beta 与授权边界
 
 > 状态日期：2026-07-29
-> 当前包版本：`poemui-miniprogram@0.1.2`
-> 公共 npm：`poemui-miniprogram@0.1.2`
+> 当前包版本：`poemui-miniprogram@0.1.3`
+> 公共 npm：`poemui-miniprogram@0.1.3`
 > 公共 GitHub：<https://github.com/fanxeon/poemui-miniprogram>
 > H5 文档：已发布至 <https://poemcoder.com/poem-ui/docs/>
 > 产品落地页：已发布至 <https://poemcoder.com/poem-ui>
@@ -17,7 +17,7 @@ Beta 期间，当前已经开放的组件与功能均可免费体验和评估，
 
 ## 当前 Core / Pro 清单
 
-### MIT Core（当前 0.1.2）
+### MIT Core（当前 0.1.3）
 
 - `miniprogram_dist/` 当前公开入口中的 74 个包组件。
 - Theme、Style Utilities、Icon 字体与 `visualConfig`。

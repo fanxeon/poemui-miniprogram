@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  createCatalogMarkdown,
   createMatrixMarkdown,
   createPreviewSource,
   createShadcnCompatibilityMarkdown,
@@ -78,13 +77,16 @@ function createMiniprogramComponentStatusSource() {
       total: Number(entry.total),
     }))
     : [];
+  const previousMilestone = versions.find((entry) => entry.version === releaseDelta.previousVersion);
   if (
     versions.length < 2
-    || versions[0].version !== releaseDelta.previousVersion
-    || versions[0].total !== previousTotal
+    || !previousMilestone
+    || previousMilestone.total !== previousTotal
     || versions[versions.length - 1].version !== packageJson.version
     || versions[versions.length - 1].total !== total
     || versions.some((entry) => !entry.version || !Number.isFinite(entry.total) || entry.total < 0)
+    || new Set(versions.map((entry) => entry.version)).size !== versions.length
+    || versions.some((entry, index) => index > 0 && entry.total < versions[index - 1].total)
   ) {
     throw new Error(`Invalid version milestone series for ${packageJson.version}`);
   }
@@ -104,7 +106,6 @@ function createMiniprogramComponentStatusSource() {
 
 const outputs = [
   ['preview/components-data.js', createPreviewSource()],
-  ['docs/COMPONENT_CATALOG.md', createCatalogMarkdown()],
   ['docs/COMPONENT_MATRIX.md', createMatrixMarkdown()],
   ['docs/SHADCN_COMPATIBILITY.md', createShadcnCompatibilityMarkdown()],
   ['docs/COMPONENT_STARTER_USAGE.md', createStarterUsageMarkdown()],

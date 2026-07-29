@@ -1,5 +1,12 @@
 # PoemUI 组件交付进度
 
+## 2026-07-29 · 0.1.3 组件、Skill 与多端发布口径
+
+- **版本事实**：包版本升级为 `0.1.3`，组件总数仍为 74；`metadata/component-release-deltas.js` 将 `0.1.2=74 → 0.1.3=74` 记录为 0 组件增量，避免把治理与交付工作伪装成新增组件。
+- **Skill 同包**：npm `files` 新增 `skills/poemui-miniprogram`，同时把 Skill 的完整引用、检查脚本和结构纳入包检查与发布门禁。官网快速开始、README、小程序共享云安装页和 GitHub 固定版本目录统一指向 `0.1.3`。
+- **公告与仪表盘**：包内 fallback 新增稳定公告 `pui-v0-1-3-20260729`；Me BarChart 在同日公告下增加语义版本次排序，按 `0.1.0 / 0.1.1 / 0.1.2 / 0.1.3` 展示 Blue/Teal/Violet/Amber 四个里程碑，0.1.3 分段为 0。
+- **验证边界**：本节只在 npm Registry、GitHub Tag、共享云写后回读、H5/落地页生产回读和微信构建各自完成后记录发布证据；构建成功不得替代这些外部验证，iOS/Android 真机仍单列。
+
 ## 2026-07-29 · 0.1.2 npm / GitHub / H5 全平台发布
 
 - **npm**：`poemui-miniprogram@0.1.2` 已由 `poemcoder` 发布；Registry 回读 `latest=0.1.2`、shasum `1c506dc981a1261043eb9194a9385677efee718e`。干净目录安装回读 74 个组件，Popup/ScrollArea 存在，退役 Tooltip/ButtonGroup 不存在。
@@ -235,7 +242,7 @@
 
 - **真实账户资料**：`pages/me/index` 删除旧 `tabbar-placeholder` 空白壳，组合 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Avatar、Input、Button、Cell/CellGroup、Toast 与 Tabbar。昵称由 `common/utils/user-profile.js` 统一恢复和持久化；当前 Store 只读写 `nickname`，OpenID Cell、页面状态、复制方法、`App.globalData`/旧存储读取和 `setOpenId` 桥接均已按用户最新决策删除。
 - **平台边界**：用户私隐协议调用 `wx.openPrivacyContract`；关于诗上调用 `wx.navigateToMiniProgram` 进入正式版 `wxa1b9a4d6549c6cd1`。若以后引入登录，必须另建服务端身份合同，不能把身份字段重新塞回昵称资料 Store。
-- **无假业务**：高级版商业授权 Cell 使用“查阅详情”语义，点击先打开受控 PUI Dialog，确认后通过真实 `wx.navigateTo` 进入固定授权 WebView，并加载 `https://poemcoder.com/poem-ui`；失败恢复确认按钮并提供重试/取消，WebView 加载失败可复制链接。我的订单仍在真实订单查询链完成前提示尚未开放。该链路不创建假支付、假订单或静态成功；页面不复制为 H5 组件页，生产落地页本身是 H5 真相源。390px 开发者工具已确认 Dialog 与路由生效，但当前 AppID 的 WebView 被微信拒绝，仍需确认非个人主体并在公众平台配置 `poemcoder.com` 业务域名。专项合同见 `docs/MINIPROGRAM_ME_PAGE.md`，Ledger：`PUI-FB-0421`（resolved）与 `PUI-FB-0457`（needs-device / pending-user）。
+- **无假业务**：高级版商业授权 Cell 使用“查阅详情”语义，点击先打开受控 PUI Dialog，提示桌面端浏览体验更佳，并提供“复制链接 / 直接访问”两个真实动作。复制成功才关闭 Dialog 并反馈；直接访问才通过真实 `wx.navigateTo` 进入固定授权 WebView，并加载 `https://poemcoder.com/poem-ui`。导航失败恢复双动作，WebView 加载失败可返回或复制链接。我的订单仍在真实订单查询链完成前提示尚未开放。该链路不创建假支付、假订单、假复制或静态成功；页面不复制为 H5 组件页，生产落地页本身是 H5 真相源。390px 开发者工具已确认浅/深色 Dialog、复制运行态与固定路由生效，但当前 AppID 的 WebView 被微信拒绝，仍需确认主体/类目支持 WebView 并在公众平台配置 `poemcoder.com` 业务域名。专项合同见 `docs/MINIPROGRAM_ME_PAGE.md`，Ledger：`PUI-FB-0421`（resolved）与 `PUI-FB-0457`（needs-device / pending-user）。
 - **更新公告、客服与共享云边界**：“更新公告”作为第五个真实服务 Cell 打开受控 PUI Popup；Header 展示版本，Content 显式关闭 Popup 自滚动并由最大 `78vh` 的唯一 PUI ScrollArea 承担滚动，以 Tag + Icon 突出组件名、改动标题和说明，并由 Content 顶部的受控 TopLoading 表达真实同步状态，Footer 使用全宽 PUI Button。只有云端成功进入 success，缓存、本地回退或异常回到 idle。`common/services/update-announcements.js` 通过独立 `wx.cloud.Cloud` 连接资源 AppID `wxa1b9a4d6549c6cd1` 的共享生产环境 `poemcoder-1gkbkid139b08f45`，读取 `pui_updatelog`，成功缓存，失败回退缓存/包内同形公告并保留来源。所有 PUI 云集合使用 `pui_` 前缀；用户、授权和订单仍不因公告接入而默认共享。服务 CellGroup 相对资料卡增加标准内容间距；低频客服入口从正文彻底移入 Navbar 最左侧 `left` Slot，以 `text/transparent/small/circle/iconOnly` PUI Button 继续承载真实 `open-type="contact"` 与失败回调，不显示灰底、边框或外投影。`capsule=true` 下它使用左侧胶囊镜像轨，右 Slot 继续为空，也不以 `leftBtn` 普通点击冒充平台开放能力。方案见 `docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md`，Ledger：`PUI-FB-0421`、`PUI-FB-0440`、`PUI-FB-0447`、`PUI-FB-0454`（resolved / pending-user）。
 - **公告验收状态**：专项 Me/Popup/Cell/Tag/Icon/Loading 合同、Feedback Ledger、站点构建、示例安装、打包检查和微信 npm 构建通过。首条云文档 `_id=pui-v0-1-0-20260727` 已写入并由管理 API 回读唯一完整记录；现有开发者工具窗口在 390×844 通过 Shared Cloud 再次读取，`announcementSource=cloud` 且同步错误为空。截图 `/tmp/poemui-me-update-cloud-popup-390-final.png` 验证版本、日期、五组组件改动、自然换行、实测 Navbar/胶囊安全区、唯一内容滚动区和固定全宽 Footer。完整 `npm run check` 当前被范围外 `preview/styles.css` 未定义 `--blur-soft` Token 阻断，不能报告全绿。深浅色/全部外观组合、长内容真实滚动、草稿/写操作安全规则和 iOS/Android 真机仍未验证。
 - **验证状态**：`scripts/test-miniprogram-me-page.js` 已覆盖 PUI 组合、昵称单字段持久化、旧 OpenID 字段/存储键不再读取、隐私/跨小程序 API 参数、未开放业务与 Tabbar 路由。微信开发者工具 390×844 的 `.me-page__content` 运行树只有昵称资料和五个服务 Cell，截图 `/tmp/poemui-me-no-openid-390-final.png` 同时确认第四 Tab 图标完整；真机与全部外观组合仍待验收。

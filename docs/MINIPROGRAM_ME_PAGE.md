@@ -6,7 +6,7 @@
 
 - 该一级目的地不是用户中心，不展示头像、昵称或其他本地身份资料，也不提供资料编辑与持久化。
 - 页面只保留真实组件状态、服务与信息入口。正文以实测 `contentHeight` 作为最小高度；服务 CellGroup 在正常文档流中紧跟仪表盘，并由父级唯一 `--pui-section-gap` 保留较大的分区间距，不再用 `margin-top:auto` 把空白塞在两个 Surface 之间。内容超过可用高度时仍由页面唯一 ScrollArea 正常滚动。
-- 服务列表上方使用一张 PUI Card 组合透明四列数据摘要与一个全宽 PUI BarChart。组件、高级和本版新增数量来自 `scripts/generate-catalog.js` 生成的 `miniprogram/common/data/component-status.js`；样式数量直接读取同一生成链产出的 `miniprogram/common/data/style-utilities-catalog.js`。页面依次显示“组件 / 样式 / 高级 / 新增”与当前真实数量；BarChart 从公告 Schema v2 的 `categoryCounts` 读取数据，按日期从旧到新为每个有效公告版本建立独立 segment 与稳定颜色。`getting-started / 规范` 只在 Me 图表展示层过滤，公告九类 Schema、合计校验和组件总数不变。当前显示 `v0.1.0 / v0.1.1 / v0.1.2` 三种颜色，真实增量只有高级类 `5 + 3 + 0 = 8`，顶部“新增”为生成状态的 `3`；任何 0 增量都不得伪造可见长度。
+- 服务列表上方使用一张 PUI Card 组合透明四列数据摘要与一个全宽 PUI BarChart。组件、高级和本版新增数量来自 `scripts/generate-catalog.js` 生成的 `miniprogram/common/data/component-status.js`；样式数量直接读取同一生成链产出的 `miniprogram/common/data/style-utilities-catalog.js`。页面依次显示“组件 / 样式 / 高级 / 新增”与当前真实数量；BarChart 从公告 Schema v2 的 `categoryCounts` 读取数据，先按日期、再按语义版本从旧到新为每个有效公告版本建立独立 segment 与稳定颜色。`getting-started / 规范` 只在 Me 图表展示层过滤，公告九类 Schema、合计校验和组件总数不变。当前显示 `v0.1.0 / v0.1.1 / v0.1.2 / v0.1.3` 四种颜色，真实增量只有高级类 `5 + 3 + 0 + 0 = 8`，顶部“新增”为当前 0.1.3 生成状态的 `0`；任何 0 增量都不得伪造可见长度。
 - 页面不展示、读取、缓存或复制 OpenID，也不读取历史 `poemui-user-profile` 本地键。旧本地值不主动删除，但已没有代码消费者。
 - “更新公告”从诗上共享云环境的 `pui_updatelog` 读取并打开受控 PUI Popup；每条 Schema v2 公告必须包含 `componentCount` 与九项 `categoryCounts`，这些字段用于 BarChart 计算和一致性校验，不在公告 Popup 内重复展示。Popup 只呈现版本、日期、摘要与组件改动；云端失败时依次回退缓存和包内同形公告，来源不得伪装。
 
@@ -20,7 +20,7 @@
 - 四列摘要只是 Card Content 内的页面编排，不建立第二个 Card、边框、背景、阴影或毛玻璃；数值使用 PUI title Token 与等宽数字，标签使用 PUI body-small/secondary Token。第四列在“新增”标签右侧组合 `20rpx` 的 PUI `sparkles` Icon，以最新版本 Violet accent 提示“新增”，Icon 为装饰语义，完整读屏名仍由数据块父级提供。四列 Grid 的列间距消费 `--pui-content-gap`，数值与标签消费 `--pui-space-xs`，“新增”与 Icon 消费更紧密的 `--pui-space-xxs`；摘要→图表、图表 viewport→版本 Tag、版本 Tag→展开操作均使用 `--pui-content-gap`，摘要自身不得再叠加 `margin-bottom`。八个类别 label、只含纯版本号的无框最小 PUI Tag、每行总值和完整 `ariaLabel` 共同表达当前规模、版本和折叠状态；Tag 不附加“已有 / 新增”，0 增量不得被伪造成增长。
 - `pui-cell-group + pui-cell`：授权、订单、更新公告、隐私协议与关于诗上五个服务入口；服务区在正常文档流中直接跟随仪表盘，二者只由父级标准 `--pui-section-gap` 分隔，不额外叠加 margin 或第二层容器。
 - Navbar `left` Slot：使用共享 Flex/紧密 gap 组合两个 `extra-small + text + transparent + circle + iconOnly` PUI Button。第一项 `comment + open-type="contact"` 真实交给微信客服会话能力，平台失败通过 Button `error` 事件进入 PUI Toast；第二项 `menu` 打开与首页同源的外观 Popup。两项都由 `capsule=true` 的左侧胶囊镜像轨定位，右 Slot 保持为空，不增加页面私有偏移、底色、边框、外投影或悬浮入口。
-- `pui-dialog`：点击“高级版商业授权”先打开受控确认框，明确告知即将离开小程序页面并进入 PoemUI 官网；取消与 Close 只回写 `visible=false`，确认后才调用 `wx.navigateTo` 进入注册在 `app.json` 的授权 WebView 页面。导航进行中 Confirm 使用自身 loading/disabled，失败恢复可操作并保留重试或取消路径。
+- `pui-dialog`：点击“高级版商业授权”先打开受控访问方式框，明确提示“桌面端浏览体验更佳”。Footer 使用 Dialog `actions` 组合“复制链接 / 直接访问”两个真实 PUI Button：复制调用 `wx.setClipboardData` 写入固定生产 URL，成功才关闭 Dialog，失败保留重试；直接访问调用 `wx.navigateTo` 进入注册在 `app.json` 的授权 WebView 页面。导航进行中两个动作同时 disabled，直接访问动作 loading；导航失败恢复双动作，Close 只回写 `visible=false`。
 - `pui-popup + pui-scroll-area + pui-tag + pui-icon + pui-top-loading + pui-button`：公告 Header、`height=auto / maxHeight=60vh` 的唯一有界滚动内容区、组件改动层级、Surface 顶边同步状态与全宽 Footer。Popup 外层只设置扣除实测 Navbar 后的 `max-height`，不再固定成近全屏高度；短公告自然收紧，长公告超过 60vh 后才滚动。Popup 不直接渲染 `componentCount/categoryCounts`，避免和仪表盘图表重复；字段仍由 Service 校验并供图表消费。Popup 必须设 `contentScrollable=false`，避免与内部 ScrollArea 竞争滚动。TopLoading 必须通过 Popup `surface-top` Slot 贴住面板顶边，不能放进 Content；它只在请求开始时进入 `loading`，真实云端成功后进入 `success`，缓存、本地回退或异常直接回到 `idle`。
 - `pui-popup + appearance-settings`：Navbar 菜单打开与首页一致的 Bottom Card 外观面板，Header 左侧使用 primary 圆形 Refresh PUI Button 调用共享 `visualConfig.reset()` 并同步关闭页面渐变，右侧沿用 Popup 默认 Close；正文只挂共享 `appearance-settings`，不复制第二套开关或配置 Store。外观 Popup 与公告 Popup 互斥。
 - `pui-toast`：只反馈真实平台回调、输入错误或明确的未开放状态。
@@ -31,7 +31,7 @@
 
 | Cell | 真实动作 | 当前边界 |
 | --- | --- | --- |
-| 高级版商业授权 | Cell 显示“查阅详情”；点击打开受控 PUI Dialog，确认后通过 `wx.navigateTo` 进入 `pages/license/index`，由微信 `<web-view>` 加载 `https://poemcoder.com/poem-ui` | 只提供真实授权信息入口，不创建支付或订单；生产小程序后台必须把 `poemcoder.com` 配置为业务域名 |
+| 高级版商业授权 | Cell 显示“查阅详情”；点击打开受控 PUI Dialog，提示桌面端浏览体验更佳。用户可复制固定 `https://poemcoder.com/poem-ui`，或选择“直接访问”通过 `wx.navigateTo` 进入 `pages/license/index`，由微信 `<web-view>` 加载同一地址 | 只提供真实授权信息入口，不创建支付或订单；生产小程序主体/类目必须支持 WebView，并在后台把 `poemcoder.com` 配置为业务域名 |
 | 我的订单 | PUI Toast 提示“订单服务尚未开放” | 没有订单数据源，不创建假列表或假路由 |
 | 更新公告 | 受控 PUI Popup 陈列版本、日期和按组件分组的改动；打开时刷新共享云公告。统计字段不在 Popup 直接展示，只驱动仪表盘 BarChart | 共享环境 `poemcoder-1gkbkid139b08f45`，集合 `pui_updatelog`；失败时回退缓存/包内内容 |
 | 用户私隐协议 | `wx.openPrivacyContract` | 依赖当前微信基础库与小程序隐私配置 |
@@ -60,7 +60,7 @@ node scripts/test-miniprogram-home.js
 npm run check
 ```
 
-开发者工具需使用 390×844 验证头像、昵称和本地资料入口不存在；Navbar 左侧客服与菜单两个圆形操作完整命中，菜单打开首页同源外观 Popup，重置和关闭真实回写；仪表盘没有旧版头文案，图表上方同一行完整显示 `74 / 组件`、`562 / 样式`、`8 / 高级`、`3 / 新增 + sparkles`，四列与图表之间只存在父布局的单个 `content-gap`。唯一 BarChart 默认显示“高级 / 基础 / 布局 / 导航”，没有“规范”和顶部 `0 / 19` 刻度，也没有组件默认圆点图例；底部以三个无框、同色 soft 纯色底的最小圆角 PUI Tag 只标注 `v0.1.0 / v0.1.1 / v0.1.2`，不出现渐变、“已有 / 新增”。图表 viewport→Tag 与 Tag→操作也必须各自只有一个 `content-gap`。实点“查看更多”后平滑展开全部八类，实点“收起”后平滑恢复四类；高级行为 `5 + 3 + 0 = 8`，其余版本增量为 0，0 值不得获得假宽度。根宽等于 Card Content 可用宽度，且不存在 Waffle、AreaChart、嵌套 Surface 或 BarChart 业务 API。打开公告 Popup 时不出现组件总数或九类统计块，BarChart 继续保留且不得越过浮层；服务列表必须在标准 `section-gap` 后紧跟仪表盘，内容超过可用高度时由页面唯一 ScrollArea 滚动。五个服务 Cell、商业授权 Dialog 的取消/确认/失败恢复、WebView 页面、更新公告 Popup、外观 Popup、Tabbar，以及浅色/深色和外观组合均保持可用。客服会话、隐私合同、WebView 业务域名、跨小程序跳转、读屏、系统低动效与 iOS/Android 真机必须单独验证；模拟器、Node 测试或编译成功不能替代真机。
+开发者工具需使用 390×844 验证头像、昵称和本地资料入口不存在；Navbar 左侧客服与菜单两个圆形操作完整命中，菜单打开首页同源外观 Popup，重置和关闭真实回写；仪表盘没有旧版头文案，图表上方同一行完整显示 `74 / 组件`、`562 / 样式`、`8 / 高级`、`3 / 新增 + sparkles`，四列与图表之间只存在父布局的单个 `content-gap`。唯一 BarChart 默认显示“高级 / 基础 / 布局 / 导航”，没有“规范”和顶部 `0 / 19` 刻度，也没有组件默认圆点图例；底部以三个无框、同色 soft 纯色底的最小圆角 PUI Tag 只标注 `v0.1.0 / v0.1.1 / v0.1.2`，不出现渐变、“已有 / 新增”。图表 viewport→Tag 与 Tag→操作也必须各自只有一个 `content-gap`。实点“查看更多”后平滑展开全部八类，实点“收起”后平滑恢复四类；高级行为 `5 + 3 + 0 = 8`，其余版本增量为 0，0 值不得获得假宽度。根宽等于 Card Content 可用宽度，且不存在 Waffle、AreaChart、嵌套 Surface 或 BarChart 业务 API。打开公告 Popup 时不出现组件总数或九类统计块，BarChart 继续保留且不得越过浮层；服务列表必须在标准 `section-gap` 后紧跟仪表盘，内容超过可用高度时由页面唯一 ScrollArea 滚动。五个服务 Cell、商业授权 Dialog 的 Close/复制链接/直接访问/失败恢复、WebView 页面、更新公告 Popup、外观 Popup、Tabbar，以及浅色/深色和外观组合均保持可用。客服会话、隐私合同、WebView 业务域名、跨小程序跳转、读屏、系统低动效与 iOS/Android 真机必须单独验证；模拟器、Node 测试或编译成功不能替代真机。
 
 2026-07-27 至 2026-07-28 的头像昵称排版截图只保留为历史证据；用户随后明确判定该页不是用户中心，所有资料版头规则已由 `PUI-FB-0459` 取代。
 

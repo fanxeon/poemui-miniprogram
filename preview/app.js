@@ -3293,7 +3293,7 @@ function makeUsageCode(detail, props) {
     return `// shadcn/ui ${detail.title}\n// 当前条目仅用于组件分类与微信平台边界说明。\n// 该能力尚未生成可安装的 PoemUI 原生目录。\n\n// 兼容矩阵：docs/SHADCN_COMPATIBILITY.md`;
   }
   if (detail.id === 'getting-started') {
-    return `/* npm i poemui-miniprogram@0.1.2 -S --production */
+    return `/* npm i poemui-miniprogram@0.1.3 -S --production */
 {
   "usingComponents": {
     "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
@@ -6999,7 +6999,7 @@ function configProviderShowcase(props) {
 }
 
 const guideCopySources = {
-  install: `npm i poemui-miniprogram@0.1.2 -S --production`,
+  install: `npm i poemui-miniprogram@0.1.3 -S --production`,
   registry: `https://www.npmjs.com/package/poemui-miniprogram`,
   reference: `{
   "usingComponents": {
@@ -7021,8 +7021,9 @@ App({
     visualConfig.restore();
   }
 });`,
-  skill: `git clone --depth 1 --branch v0.1.2 https://github.com/fanxeon/poemui-miniprogram.git
-cp -R poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/`,
+  skill: `npm i poemui-miniprogram@0.1.3 -S --production
+mkdir -p ~/.codex/skills
+cp -R node_modules/poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/`,
 };
 
 function guideCodeBlockSample(key, title, description) {
@@ -7055,7 +7056,7 @@ function gettingStartedGuide() {
       <header class="pui-guide__hero">
         <div class="pui-guide__eyebrow">
           ${tagSample({ content: '受限 Beta', variant: 'warning', size: 'small' })}
-          <span>poemui-miniprogram@0.1.2</span>
+          <span>poemui-miniprogram@0.1.3</span>
         </div>
         <h2>用真实组件完成第一个小程序页面</h2>
         <p>PoemUI 正在快速迭代。API、样式、文档和在线服务仍可能调整，当前暂不提供正式 SLA。</p>
@@ -7074,12 +7075,12 @@ function gettingStartedGuide() {
           <span>01</span>
           <div>
             <h2 id="guideInstallTitle">安装与微信构建</h2>
-            <p>固定安装 0.1.2，不使用 latest 漂移当前组件合同。</p>
+            <p>固定安装 0.1.3，不使用 latest 漂移当前组件合同。</p>
           </div>
         </header>
         <div class="pui-guide__status-grid">
           <div><span>包名</span><strong>poemui-miniprogram</strong></div>
-          <div><span>当前版本</span><strong>0.1.2</strong></div>
+          <div><span>当前版本</span><strong>0.1.3</strong></div>
           <div><span>npm Registry</span><strong>已发布</strong></div>
           <div><span>微信 build-npm</span><strong>公共包已验证</strong></div>
         </div>
@@ -7136,8 +7137,8 @@ function gettingStartedGuide() {
           <div class="pui-guide__skill-icon">${iconComponent('ai', { size: 'large' })}</div>
           <div>
             <strong>poemui-miniprogram Skill</strong>
-            <span>适配 0.1.2 · 公开可用</span>
-            <p>公开真相源为 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/v0.1.2/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>；安装后仍需让 AI 运行合同测试和微信构建。</p>
+            <span>适配 0.1.3 · npm 同包交付</span>
+            <p>安装包内置完整 Skill，固定版本源码仍可在 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/v0.1.3/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>核对；安装后仍需让 AI 运行合同测试和微信构建。</p>
           </div>
         </div>
         ${guideCodeBlockSample('skill', '安装 PoemUI Skill', 'Terminal')}
