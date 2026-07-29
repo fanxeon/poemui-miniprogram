@@ -73,15 +73,18 @@ docker buildx build \
 
 生产容器只监听宿主机 `127.0.0.1:3102`，容器端口为 `8080`；OpenResty 的 `/poem-ui/docs/` location 负责去掉前缀后转发。`/healthz` 是容器级健康检查，公网发布仍须逐项验证 HTML、CSS、JS、字体、hash 路由、390px、light/dark 和真实组件交互。服务器内存有限，禁止在远端构建 Node/Next 镜像；必须在本机生成 `linux/amd64` 镜像后传输。
 
-2026-07-28 受限 Beta 当前生产基线为
-`poemui-h5:20260728-public-registry-r3`。活动容器 `poemui-h5` 仅绑定
+2026-07-29 的 0.1.2 当前生产基线为
+`poemui-h5:20260729-0.1.2`。活动容器 `poemui-h5` 仅绑定
 `127.0.0.1:3102`，直接回滚点为停止状态的
-`poemui-h5-rollback-20260728-public-registry-r2`；更早的回滚容器继续保留。
-OpenResty 容器内 `openresty -t` 通过，公网 `/poem-ui/docs/` 与容器 `/healthz`
-返回 200。r3 将入口资源缓存指纹更新为 `0.1.0-20260728-002`，快速开始完整展示
-<https://www.npmjs.com/package/poemui-miniprogram>；生产浏览器在 390px 下实点复制，
-剪贴板精确得到同一地址，页面横向溢出为 0 且 console 无告警。以后发布不得复用这个
-状态描述代替当次远端只读审计、Canary、健康检查和浏览器交互。
+`poemui-h5-rollback-20260729-public-registry-r3`；更早的回滚容器继续保留。
+镜像为 `linux/amd64`，ID 为
+`sha256:1b2d9286ed184e51e81e3b69bbdd119b7e2c0afaa0a3b0f74db69a711283d614`。
+本地 `3182` Canary 与远端 `3106` Canary 均先通过健康检查，再切换生产；OpenResty
+容器内 `openresty -t` 通过，公网 `/poem-ui/docs/` 与 `/healthz` 返回 200，入口资源
+缓存指纹为 `0.1.2-20260729-001`。生产浏览器在 390px 深色果味下真实操作 Indexes：
+长按 A 显示放大提示、拖到 C 后提示与选中同步、释放后提示关闭，页面横向溢出为 0，
+页面自身无 console error/warning。以后发布不得复用这个状态描述代替当次远端只读审计、
+Canary、健康检查和浏览器交互；npm Registry 是否发布必须独立回读，不能由 H5 版本推断。
 
 ## 发布后验收
 
