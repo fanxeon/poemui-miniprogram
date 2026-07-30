@@ -1,10 +1,10 @@
 # PoemUI 0.1.4 组件级变更记录
 
-> 状态：`release candidate`
+> 状态：`published`
 >
 > 日期：2026-07-30
 >
-> 本文记录 0.1.4 相对 0.1.3 的组件级变化；公开安装命令固定为 `poemui-miniprogram@0.1.4`，Registry、Git Tag、GitHub Release 与生产 H5 的最终证据在发布后回写。
+> 本文记录 0.1.4 相对 0.1.3 的组件级变化；公开安装命令固定为 `poemui-miniprogram@0.1.4`。npm Registry、Git Tag/GitHub Release、生产 H5 与共享云安装页均已完成发布后回读。
 
 ## 变更级别
 
@@ -64,14 +64,16 @@
 - README、H5 快速开始与 PoemUI Skill 的公开安装命令统一使用固定版本 `0.1.4`。
 - 用户已授权 npm、GitHub 与生产 H5 发布，并明确排除微信小程序上传；每个平台必须在发布后独立回读，云公告 `published` 不能替代 Registry、Tag/Release 或生产站点证据。
 
-## 本地交付证据
+## 交付证据
 
-- 0.1.4 基线中，`npm run site:build`、`npm run check`、`npm run pack:check`、`npm run example:install` 均通过；组件目录为 `78` 个，H5 公开路由为 `84` 个。正式发布前须在最终提交上重跑。
-- 最新 `npm run pack:check` dry-run 回读 `poemui-miniprogram-0.1.4.tgz`：`595` 个文件、压缩后 `402.9 kB`、解包后 `1.9 MB`，shasum 为 `f63f4249374fca49d3591f62448a53191262168d`；本轮没有执行 `npm publish`。
-- tarball 已安装到全新临时目录，安装包版本、包内 Skill、四个新组件目录、四件套文件和公开入口引用均通过检查；安装审计为 `0 vulnerabilities`。
+- `npm run site:build`、`npm run check`、`npm run pack:check`、`npm run example:install` 与最终 `prepublishOnly` 均通过；组件目录为 `78` 个，H5 公开路由为 `84` 个。
+- `poemui-miniprogram@0.1.4` 已公开发布。npm Registry 回读 `latest=0.1.4`、shasum `f182c4c42ab3882859526f159e56a347e320521d`、integrity `sha512-YMLEGO/n+baqeBjkdLLvQVgDjWuvlmripgL1bCB4e+xCPf39HxVyLy/vJxZkKE0tZCnRNsv+jEOrT3ERrxbwiw==`。
+- Registry tarball 已安装到全新临时目录，回读版本 `0.1.4`、78 个组件目录与 15 个 Skill 文件；退役 Tooltip、ButtonGroup 均不在安装包中。
+- Git 分支 `codex/public-beta-0.1.4` 已推送；`v0.1.4` 的 peeled commit 为 `0d6f443b91fa5df6d84f236c46269eb19987d13d`，公开 GitHub Release 已回读为非 Draft、非 Prerelease。
 - 微信开发者工具复用现有 IDE 服务对真实 `miniprogram/` 执行标准 `build-npm`；本次 ScrollArea 材质修复后复跑耗时 `1249ms`、`warnings: []`，没有开关或重启开发者工具。
 - DonutChart、RadarChart、SortableList、Tour 的 JS/JSON/WXML/WXSS 已在源码、`miniprogram_dist`、真实小程序 `node_modules` 与微信 `miniprogram_npm` 四路逐文件 SHA-256 一致。
 - 共享生产环境 `poemcoder-1gkbkid139b08f45` 的 `pui_updatelog` 已按稳定 `_id=pui-v0-1-4-20260730` 写入；写前同版本 0 条，写后 `version/status` 唯一命中 1 条，九类合计 78。完整可版本化回读见 `docs/evidence/cloud/pui-updatelog-v0.1.4-readback.json`。H5 `#/updates` 由 `scripts/generate-release-notes.js` 生成同源数据，并由 `scripts/test-release-notes.js` 对齐云端最终文档。
+- `pui-codepage` 已发布 0.1.4 安装命令与同版本 Skill，并归档 0.1.3 Skill。首次事务的 `{ data: ... }` 语义错误由发布断言拦截，随后全量事务修复；最终一条 Page、一条 Skill 为 published，三个目标文档均无嵌套 `data`。证据见 `docs/evidence/cloud/pui-codepage-v0.1.4-readback.json`。
 - ScrollArea 材质上下文在 390px H5 运行态完成实底、浅色毛玻璃、深色毛玻璃、Popup card 与显式 `gradientOverlayColor` 五条路径验证；浏览器 console error/warning 为 0。该证据不替代微信真机。
 
 ## 验收状态说明

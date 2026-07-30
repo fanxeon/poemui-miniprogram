@@ -19,7 +19,7 @@ npm install
 npm run prepublishOnly
 ```
 
-该流程会生成官网目录和 `miniprogram_dist/` 小程序运行时目录，按 metadata 当前清单校验组件四件套、公开 Props 与真实 `properties` 对齐，并检查最终 tarball 内容。当前公开版本为 `poemui-miniprogram@0.1.3`，包含 74 个组件与同版本 PoemUI Skill；npm Registry 的 `latest` 已回读为 `0.1.3`，tarball shasum 为 `3af715daca26d645cca647436467f65d64708ee0`。干净目录安装回读为 74 个组件目录、15 个 Skill 文件，退役 Tooltip 不在包中。`0.1.0` 是 71 个组件的历史快照，`0.1.1` 未曾发布；不得移动或重写既有 `v0.1.0` 事实。后续版本通过本地门禁后，由具备 npm 发布权限的账号执行：
+该流程会生成官网目录和 `miniprogram_dist/` 小程序运行时目录，按 metadata 当前清单校验组件四件套、公开 Props 与真实 `properties` 对齐，并检查最终 tarball 内容。当前公开版本为 `poemui-miniprogram@0.1.4`，包含 78 个组件与同版本 PoemUI Skill；npm Registry 的 `latest` 已回读为 `0.1.4`，tarball shasum 为 `f182c4c42ab3882859526f159e56a347e320521d`。干净目录安装回读为 78 个组件目录、15 个 Skill 文件，退役 Tooltip、ButtonGroup 均不在包中。`0.1.0` 是 71 个组件的历史快照，`0.1.1` 未曾发布；不得移动或重写既有 `v0.1.0` 事实。后续版本通过本地门禁后，由具备 npm 发布权限的账号执行：
 
 ```bash
 npm login
@@ -73,22 +73,19 @@ docker buildx build \
 
 生产容器只监听宿主机 `127.0.0.1:3102`，容器端口为 `8080`；OpenResty 的 `/poem-ui/docs/` location 负责去掉前缀后转发。`/healthz` 是容器级健康检查，公网发布仍须逐项验证 HTML、CSS、JS、字体、hash 路由、390px、light/dark 和真实组件交互。服务器内存有限，禁止在远端构建 Node/Next 镜像；必须在本机生成 `linux/amd64` 镜像后传输。
 
-2026-07-29 的 0.1.3 当前生产基线为
-`poemui-h5:20260729-0.1.3-001`。活动容器 `poemui-h5` 仅绑定
-`127.0.0.1:3102`，直接回滚点为停止状态的
-`poemui-h5-rollback-20260729-0.1.2-002`；更早的回滚容器继续保留。
-镜像为 `linux/amd64`，远端镜像 ID 为
-`sha256:5cacfd439bd75bee945e9ac6dabd9f8cee3cacb3cdbcff0922c278ad101f7b82`。
-远端 `3106` Canary 先通过健康检查和 `0.1.3` 资源回读，再切换生产；OpenResty
-容器内 `openresty -t` 通过，公网 `/poem-ui/docs/`、`/poem-ui/docs/healthz`
-与产品落地页 `/poem-ui` 均返回 200。公网 H5 的品牌、安装命令和 Skill 固定目录均为
-`0.1.3`，复制安装命令真实回写“已复制”；产品落地页显示 74 个组件与 `0.1.3`。
-浏览器显式设置 390px 后，两页 `innerWidth=390`、文档/Body `clientWidth=scrollWidth=375`，
-无页面级横向溢出，console error/warning 为空。Next.js 产品页生产镜像为
-`poemcoder-web-v2:20260729-poemui-0.1.3-r8`，直接回滚点为停止状态的
-`poemcoder-web-v2-rollback-20260729-poemui-catalog-r7`；后台容器 ID、镜像与运行状态
-在切换前后保持不变。以后发布不得复用这个状态描述代替当次远端只读审计、Canary、
-健康检查和浏览器交互；npm Registry 是否发布必须独立回读，不能由 H5 版本推断。
+2026-07-30 的 0.1.4 当前生产基线为 `poemui-h5:20260730-0.1.4-001`。
+活动容器 `poemui-h5` 仅绑定 `127.0.0.1:3102`，直接回滚点为停止状态的
+`poemui-h5-rollback-20260729-0.1.3-001`。同次发布的产品落地页镜像为
+`poemcoder-web-v2:20260730-poemui-0.1.4-r1`，直接回滚点为
+`poemcoder-web-v2-rollback-20260729-poemui-0.1.3-r8`。两条产线均由本机生成
+`linux/amd64` 镜像，远端独立 Canary 通过后切换生产；OpenResty 容器内
+`openresty -t` 通过，公网 `/poem-ui/docs/` 与 `/poem-ui` 均返回 200。
+公网 H5 回读 0.1.4 资源指纹与正式更新公告，产品页回读 78 个组件、固定 npm
+`0.1.4` 和 `v0.1.4` Skill 链接。浏览器显式设置 390×844 后，两页
+document/body 均为 `clientWidth=scrollWidth=375`，无页面级横向溢出，
+console error/warning 为空，DonutChart 数据切换真实回写。以后发布不得复用这个状态描述
+代替当次远端只读审计、Canary、健康检查和浏览器交互；npm Registry 是否发布必须独立回读，
+不能由 H5 版本推断。
 
 ### 0.1.3 小程序与共享云回读
 
@@ -105,9 +102,11 @@ docker buildx build \
 
 ### 0.1.4 页内更新公告与 H5 本地页面
 
-0.1.4 当前仍是未发布工作树，npm Registry、Git Tag、GitHub Release、体验版和生产 H5 都保持 0.1.3 口径；本轮没有执行这些发布动作。用户单独授权了页内公告写入：共享生产环境 `poemcoder-1gkbkid139b08f45` 的 `pui_updatelog` 已写入稳定 `_id=pui-v0-1-4-20260730`，写前同版本为 0 条，写后 `version=v0.1.4 + status=published` 唯一命中 1 条，完整可版本化回读见 `docs/evidence/cloud/pui-updatelog-v0.1.4-readback.json`。
+0.1.4 已完成 npm Registry、GitHub Tag/Release、生产 H5 和产品落地页发布；npm 回读 `latest=0.1.4`，Git Tag `v0.1.4` 的 peeled commit 为 `0d6f443b91fa5df6d84f236c46269eb19987d13d`，公开 Release 为 `https://github.com/fanxeon/poemui-miniprogram/releases/tag/v0.1.4`，生产站点回读 78 个组件与正式更新公告。微信小程序上传明确排除在本次发布之外。共享生产环境 `poemcoder-1gkbkid139b08f45` 的 `pui_updatelog` 已写入稳定 `_id=pui-v0-1-4-20260730`，写前同版本为 0 条，写后 `version=v0.1.4 + status=published` 唯一命中 1 条，完整可版本化回读见 `docs/evidence/cloud/pui-updatelog-v0.1.4-readback.json`。
 
-H5 源码新增独立 `#/updates` 页面和 Topbar 版本 PUI Button。`npm run site:build` 会执行 `scripts/generate-release-notes.js`，从小程序公告同形真相源生成 `preview/release-notes-data.js`；这是本地构建能力，不等于生产 H5 已部署，也不等于浏览器实时读取共享云。
+同环境 `pui-codepage` 已切换到 npm 0.1.4：已发布 Page 与 Skill 各 1 条，0.1.3 Skill 已归档。首次事务调用因误传 `{ data: ... }` 触发合同外嵌套字段，发布断言失败且页面继续保持 0.1.3；随后使用事务 DocumentReference 的直接文档参数全量修复并读后确认 `nested data=0`。可版本化回读见 `docs/evidence/cloud/pui-codepage-v0.1.4-readback.json`。当前微信 IDE 与 iOS/Android 真机客户端回读仍单独标记未验证。
+
+H5 源码新增独立 `#/updates` 页面和 Topbar 版本 PUI Button。`npm run site:build` 会执行 `scripts/generate-release-notes.js`，从小程序公告同形真相源生成 `preview/release-notes-data.js`；生产 H5 已部署并完成 390×844 浏览器回读，但这仍不等于浏览器实时读取共享云。
 
 ## 发布后验收
 

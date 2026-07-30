@@ -37,7 +37,7 @@
 - DonutChart/RadarChart 使用 SVG 是浏览器平台镜像；小程序仍以 Canvas 2D 为真相源，不能把 SVG DOM 反向写入 WXML。
 - SortableList 用 Pointer Events 和键盘 Arrow 增强可访问性；微信使用 touch 手势，不虚构浏览器键盘为小程序原生能力。
 - Tour 用 `getBoundingClientRect()` 测量；微信使用 SelectorQuery。两端都必须在目标缺失时失败关闭。
-- H5 站点的品牌、固定安装代码、Skill 链接和更新页统一显示 `0.1.4`；Registry 与 GitHub 链接仍须发布后真实回读。
+- H5 站点的品牌、固定安装代码、Skill 链接和更新页统一显示 `0.1.4`；npm Registry 已回读 `latest=0.1.4`，GitHub `v0.1.4` Tag 与公开 Release 也已独立回读。
 - H5 更新页不是云管理后台：它只展示构建时从小程序公告真相源生成的数据。云端 `pui_updatelog` 的唯一 0.1.4 文档已经写入并全文回读，但 H5 不把本地生成内容标成“实时云同步”。
 - H5 通过不等于微信开发者工具或 iOS/Android 真机通过。
 
@@ -50,4 +50,4 @@
 - OpenResty 容器内 `openresty -t` 通过。公网 `/poem-ui/docs/`、公告数据资源和 `/poem-ui` 均返回 HTTP 200；文档站回读 `0.1.4-20260730-002` 资源指纹与“PoemUI v0.1.4 更新”，落地页回读 78 个组件、npm `0.1.4` 和 `v0.1.4` Skill 链接。
 - Chrome 显式 390×844 验收两页 `innerWidth=390`，document/body 均为 `clientWidth=scrollWidth=375`，无横向溢出、console error/warning 为 0。生产 DonutChart 的“切换圆环图演示数据”真实点击后按钮由“切换高波动数据”变为“恢复初始数据”。
 
-这些证据只证明 H5 与产品落地页已生产发布；npm Registry、Git Tag/GitHub Release 和微信小程序仍按各自发布链单独判断。
+这些证据只证明 H5 与产品落地页已生产发布；npm Registry 与 Git Tag/GitHub Release 已沿独立链路回读，微信小程序上传不在本轮范围。

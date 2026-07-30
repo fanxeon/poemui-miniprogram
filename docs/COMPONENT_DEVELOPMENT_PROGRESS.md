@@ -1,5 +1,13 @@
 # PoemUI 组件交付进度
 
+## 2026-07-30 · 0.1.4 npm、GitHub 与共享云发布
+
+- **公开包**：`poemui-miniprogram@0.1.4` 已由 npm 接受发布；Registry 回读 `latest=0.1.4`、shasum `f182c4c42ab3882859526f159e56a347e320521d` 与完整 integrity。
+- **干净安装**：全新临时目录从 Registry 安装后回读版本 0.1.4、78 个组件目录、15 个 Skill 文件；退役 Tooltip、ButtonGroup 均不存在。该证据与本地 dry-run、生产 H5、GitHub 和微信上传各自独立。
+- **GitHub**：公共分支 `codex/public-beta-0.1.4` 已推送；`v0.1.4` 指向提交 `0d6f443b91fa5df6d84f236c46269eb19987d13d`，公开 GitHub Release 已回读为非 Draft、非 Prerelease。
+- **共享云安装页**：`pui-codepage` 最终读回一条已发布 Page、一条已发布 0.1.4 Skill，0.1.3 Skill 已归档且三个目标文档均无合同外嵌套 `data`。首次事务误用 `{ data: ... }` 被发布断言拦截，随后按 SDK 事务直接文档语义全量修复；证据为 `docs/evidence/cloud/pui-codepage-v0.1.4-readback.json`。
+- **发布边界**：微信小程序上传明确不在本轮范围；当前微信 IDE 对共享云安装页的运行态回读与 iOS/Android 真机仍未验证，不能由管理端或 npm 成功代替。
+
 ## 2026-07-30 · 0.1.4 H5 与产品落地页生产发布
 
 - **生产镜像**：文档站已切换为 `poemui-h5:20260730-0.1.4-001`，落地页已切换为 `poemcoder-web-v2:20260730-poemui-0.1.4-r1`；两者均先通过远端独立 Canary，再切换固定生产端口。

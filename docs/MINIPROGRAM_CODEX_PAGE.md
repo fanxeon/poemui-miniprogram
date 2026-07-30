@@ -61,6 +61,13 @@ Navbar 中只出现一次“安装”标题。左侧唯一 `left` Slot 以两个
 
 `kind=skill` 字段为：`skillId`（稳定业务 ID）、`name`、`version`、`summary`、`icon`（已发布 PUI Icon 名称）、`capabilities[]`（最多六项）、`installation.title`、`installation.code` 与 `sortOrder`。当前 `poemui-miniprogram@0.1.4` 在 npm 包内交付同版本 Skill，云端安装代码先固定安装该 npm 版本，再从 `node_modules/poemui-miniprogram/skills/poemui-miniprogram` 复制到 Codex Skill 目录；GitHub `v0.1.4` 目录只作为固定源码真相源。草稿和归档 Skill 不得下发到客户端；没有真实安装代码时省略 `installation.code`，页面不得虚构下载或复制入口。
 
+2026-07-30 的 0.1.4 发布后回读固定为：一条 `published` Page，安装命令
+`npm i poemui-miniprogram@0.1.4 -S --production`；一条 `published` Skill
+`pui-skill-poemui-miniprogram-v0-1-4`；上一版 0.1.3 Skill 为 `archived`。
+三个目标文档均不存在合同外的顶层 `data` 字段。事务与全文回读证据见
+`docs/evidence/cloud/pui-codepage-v0.1.4-readback.json`。这证明管理端发布状态，
+不替代当前微信 IDE 或 iOS/Android 真机上的客户端页面回读。
+
 ## PUI 组合
 
 - 页面根：`pui-config-provider use-global-config`
