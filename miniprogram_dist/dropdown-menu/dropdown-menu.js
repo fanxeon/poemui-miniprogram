@@ -133,7 +133,7 @@ Component({
     syncPresentation: function syncPresentation() {
       var zIndex = Math.round(clamp(this.data.zIndex, 1, 12000, 11600));
       this.setData({
-        rootClass: ['pui-dropdown-menu', 'pui-theme--' + (this.data.colorScheme || 'light'), this.data.reduceMotion ? 'pui-dropdown-menu--reduced' : ''].filter(Boolean).join(' '),
+        rootClass: ['pui-dropdown-menu', this.getColorSchemeClass(), this.data.reduceMotion ? 'pui-dropdown-menu--reduced' : ''].filter(Boolean).join(' '),
         layerStyle: 'z-index:' + zIndex + ';--pui-dropdown-duration:' + this.motionDuration() + 'ms;',
       });
     },

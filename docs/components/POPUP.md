@@ -36,7 +36,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 
 ## 4. Token、间距与排版
 
-- 内容 Surface 读取现有 PUI Surface、Border、Radius、Shadow、Frost 和排版 Token；不自定义第二套蓝灰浮层主题。`card=true` 固定消费半透明 `--pui-glass-tint`，即使全局毛玻璃关闭也不能退回 `--pui-glass-surface-strong` 实底；毛玻璃只决定是否增加 backdrop blur。`card=false` 的贴边 Surface 继续使用稳固背景，以维持屏幕边缘内容的连续性和可读性。
+- 内容 Surface 读取现有 PUI Surface、Border、Radius、Shadow、Frost 和排版 Token；不自定义第二套蓝灰浮层主题。`card=true` 固定消费半透明 `--pui-glass-tint`，即使全局毛玻璃关闭也不能退回 `--pui-glass-surface-strong` 实底；毛玻璃只决定是否增加 backdrop blur。card Surface 同时把后代 ScrollArea 的默认 `--pui-scroll-area-gradient-overlay-color-context` 重绑定为 `--pui-scroll-area-gradient-overlay-material-color`，防止唯一滚动区在半透明面板上绘制纯白/纯深色横带；调用方显式 `gradientOverlayColor` 仍优先。`card=false` 的贴边 Surface 继续使用稳固背景，以维持屏幕边缘内容的连续性和可读性。
 - Popup WXSS 不得导入 `common/style/theme.wxss`：该全局文件含 `page` 默认 Token，会触发微信组件 WXSS 的标签选择器编译错误。Token 由消费者 `app.wxss` 的 npm 主题入口和外层 `pui-config-provider` 继承；H5 保持同名 Token 镜像，不建立第二条主题链。
 - `card=true` 时五向 Surface 均保留至少 `--pui-space-step-12` 的视口安全距离，并使用主题对应的半透明 tint；`card=false` 时 Surface 贴合其弹出边缘，贴边的角为 0，远离边缘的角继续读取 `--pui-radius-xlarge`。`scroll-view` 只在内容自然超过最大高度时滚动。
 - Popup 不设置业务固定高度；默认随 Header、Content、Footer 自然增长并受视口 `max-height` 约束。调用方需要长内容时，应关闭 Popup Content 自身滚动并组合一个 `height="auto" + maxHeight` 的 PUI ScrollArea，不能同时固定 Popup 近全屏高度与内部 `vh` 高度。
@@ -74,7 +74,7 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 ## 9. H5 预览与跨端一致性
 
 - 标准预览必须采用 `edge-to-edge`，遮罩完整覆盖 `PreviewDevice` viewport；顶部、左侧、居中、右侧、底部五个真实 PUI Button 始终作为底层内容保留。点击后真实写入对应 `placement` 并在其上叠加同一 Popup 的遮罩与 Surface，不能通过替换 Stage 清空入口；关闭后可以重新选择位置打开。
-- H5 与小程序均使用同一 Surface Top / Header / Content / Footer 结构；H5 `popupSample` 必须通过共享 `topLoadingPreviewMarkup` 镜像 `surface-top` 的节点与几何，不得在 Content 顶部画一条页面私有进度线。两端均不渲染 Popup 拖拽手柄；需要拖拽关闭、拖拽阈值和连续拖拽事件时使用 Sheet。
+- H5 与小程序均使用同一 Surface Top / Header / Content / Footer 结构；H5 `popupSample` 必须通过共享 `topLoadingPreviewMarkup` 镜像 `surface-top` 的节点与几何，不得在 Content 顶部画一条页面私有进度线。H5 card 还必须向嵌套 ScrollArea 镜像传递同名半透明材质上下文，不能让浏览器端仍用 `--surface-solid` 形成色带。两端均不渲染 Popup 拖拽手柄；需要拖拽关闭、拖拽阈值和连续拖拽事件时使用 Sheet。
 - 五向入口区域还必须提供一个由两项 PUI Cell 组成的配置 `CellGroup`：卡片 Switch 真实回写 `card`，毛玻璃遮罩 Switch 真实回写 `blurOverlay`。Popup 默认内容中的执行成员与关联文件也组成独立内容 `CellGroup`；两组不能合并，因为一组属于弹窗内容，另一组属于弹窗外的演示配置，不新增 Popup 公共 API；打开后仍可通过 Surface 的边缘 inset 与遮罩 `backdrop-filter` 观察实际结果。
 - H5 使用同一个已挂载 Overlay 与 Surface 节点模拟进入、离开和滚动保护；进入阶段只切换 `is-active`，离开阶段先切回初始 opacity/transform，等待完整 `duration` 后才允许重建关闭入口。`top/bottom/left/right` 分别沿对应边缘位移，`center` 固定在几何中心并仅缩放/淡入，不能伪装成从底部上升。`left/right` 的 Content 必须在固定侧栏高度内 flex 滚动，Footer 始终贴住侧栏底部。禁止在阶段切换时调用整段 Stage 重建，否则 CSS transition 会因节点身份丢失而瞬移。`card` 必须真实改变五向 Surface 的视口 inset，`blurOverlay` 必须真实改变遮罩的 `backdrop-filter` 计算样式；不能只更新事件提示。H5 的低动效同样只缩短 Popup Mask 与 Surface，Slot 内 PUI 子组件沿用自身合同。
 - 元素选择模式中，选择 Popup 的任一五向打开入口时，右侧上下文 Inspector 必须显示 `card / placement / showOverlay / blurOverlay` 等由父组件公开、会影响该操作结果的呈现 Props；选择遮罩时必须显示 `blurOverlay`。它们与完整属性页复用同一回写路径，不能因当前选中的是触发器或遮罩而被过滤。

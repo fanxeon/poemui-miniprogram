@@ -75,6 +75,10 @@
 - [AreaChart](./AREA-CHART.md)：共享零基线面积趋势、Canvas/SVG 双端、渐变填充、默认入场与透明展示叶子边界。
 - [BarChart](./BAR-CHART.md)：共享零基线条形、分段增量、透明渐变、图例和透明展示叶子边界。
 - [Waffle](./WAFFLE.md)：圆润点阵、显式有效单位、分段透明度、轮廓和透明展示叶子边界。
+- [DonutChart](./DONUT-CHART.md)：圆润渐变圆环、中心摘要、图例、可重播入场和透明展示叶子边界。
+- [RadarChart](./RADAR-CHART.md)：多维多系列轮廓、渐隐面积、节点、图例和透明展示叶子边界。
+- [SortableList](./SORTABLE-LIST.md)：连续集合、单滚动所有权、拖拽排序、父级回写与焦点恢复边界。
+- [Tour](./TOUR.md)：目标测量、四向遮罩、步骤受控、定位失败关闭和焦点闭环。
 - [List](./LIST.md)：数据驱动连续信息行、正文与 Footer 双状态优先级、真实 load/retry 边界。
 - [VirtualList](./VIRTUAL-LIST.md)：固定行高窗口、真实局部滚动、选择回写与状态边界。
 - [Toast](./TOAST.md)：单条命令式反馈、Overlay、具名 Slot、自动收起与 close 边界。

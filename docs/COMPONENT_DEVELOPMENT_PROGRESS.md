@@ -1,5 +1,21 @@
 # PoemUI 组件交付进度
 
+## 2026-07-30 · ScrollArea 半透明 Surface 遮罩连续性
+
+- **根因与组件级修复**：ScrollArea 空 `gradientOverlayColor` 原本总回退不透明 `--pui-bg-container`；Popup card 已改为 `.72` alpha 的 `--pui-glass-tint` 后，公告滚动边缘仍被纯白/纯深色渐变覆盖，形成与毛玻璃合成结果不一致的横带。新增 light/dark 同名 `--pui-scroll-area-gradient-overlay-material-color`（`.32` alpha），全局 frosted 组件树与 Popup card 自动重绑定默认上下文；普通实底仍使用原容器色，显式公开色 API 保持最高优先级。
+- **跨端边界与运行态**：小程序与 H5 同步 Token、Popup 继承规则、组件合同和专项测试；不采用暂无微信官方兼容证据的 `mask-image`，不增加 ScrollArea Surface、第二滚动区或页面固定白色补丁。H5 390px 已验证 light 实底 `#fff`、light frost `.32`、dark frost `.32`、Popup card `.72 → .32` 继承、显式 `#fef3c7` 覆盖和零 console error/warning。完整 `check`、`pack:check`、示例安装和真实小程序 `build-npm=1249ms / warnings=[]` 通过；相关源码、dist、node_modules 与 miniprogram_npm 四路 SHA-256 一致。Ledger：`PUI-FB-0532`，保持 `resolved / pending-user`；微信模拟器与 iOS/Android 真机的 enhanced scroll-view 视觉合成仍需运行态确认。
+
+## 2026-07-30 · 0.1.4 组件级修复与四个高级组件
+
+- **主题修复**：ActionSheet、PullRefresh、DropdownMenu 在空 `colorScheme` 时改为继承最近 ConfigProvider；Rate 默认激活色改用 warning Token。PullRefresh 的 H5 根与内容轨恢复透明，H5 浮层阴影晚绑定修复后能真实响应开关。
+- **新增组件**：DonutChart、RadarChart、SortableList、Tour 进入 npm 入口、metadata、独立页、首页高级分区、搜索、Starter Usage、H5 页面、组件合同、外观资格矩阵和专项测试，组件总数从 74 增至 78。
+- **运行态证据**：H5 390px 已完成两个图表渲染/切换、SortableList Pointer 与键盘排序、Tour 步骤/焦点/外观组合；微信 Canvas、SelectorQuery、touch 自动滚动与 iOS/Android 真机继续保持 `pending-device`。
+- **SortableList 动效边界**：源码审计确认现有 `animated` 只影响活动行状态，跨索引后按当前实现切换顺序。用户随后明确取消兄弟行让位、悬浮跟手与落位回弹增强；PUI-FB-0530 关闭为 `wont-fix / not-required`，不再作为 0.1.4 发布阻断，也不得把当前顺序回写描述为这些动效已实现。
+- **页内更新公告**：共享生产云 `pui_updatelog` 已写入并唯一全文回读 `pui-v0-1-4-20260730`；H5 新增独立 `#/updates` 页面，Topbar 版本号由共享 PUI Button 进入，构建数据从小程序公告 Service 生成，不伪造浏览器实时云查询。
+- **H5 公告运行态**：390×844 实点版本入口、直接路由刷新、light/dark、毛玻璃、阴影、等距/普通间距均通过；equal 为四向 inset/gap `14px`，normal 为 inset `14px`/gap `8px`，document/body 无横向溢出，console error/warning 为 0。1440×900 下内容收敛到 `860px`。
+- **发布边界**：用户已授权发布 npm、GitHub 与生产 H5，明确排除微信小程序上传；发布后证据必须分别回写 Registry、Tag/Release 和生产站点，云公告 `published` 不能替代这些回读。
+- **追溯入口**：`docs/RELEASE_0.1.4_COMPONENT_CHANGELOG.md`、`docs/RELEASE_0.1.4_H5_CHANGELOG.md`、PUI-FB-0524 至 PUI-FB-0531。
+
 ## 2026-07-29 · Popup card 半透明 Surface
 
 - **根因与组件级修复**：Popup 的 `card` 过去只改变五向 inset，根背景仍消费 `--pui-glass-surface-strong`；毛玻璃关闭时该 Token 在浅/深色分别解析为 `#fff / #18181b`，因此外观设置 Popup 呈现实底。`card=true` 现在统一消费 `--pui-glass-tint`，顶部特殊承载结构的内层 Surface 同步；`card=false` 贴边模式仍保持稳固 Surface。H5 镜像使用同名 Token，未修改 Popup API、页面组合或外观设置业务状态。

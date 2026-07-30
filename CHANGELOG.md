@@ -4,6 +4,16 @@
 
 - 暂无。
 
+## 0.1.4
+
+- 修复 ActionSheet、PullRefresh、DropdownMenu 的 ConfigProvider 主题继承，Rate 默认激活色改用 warning 语义 Token。
+- PullRefresh 的 H5 根与内容轨恢复为透明布局层；修复浮层阴影 Token 的晚绑定，使 H5 `data-shadow` 开关落到真实计算样式。
+- 新增 DonutChart 与 RadarChart：小程序 Canvas 2D、H5 SVG、结构化数据、渐变配色、无障碍摘要和默认开启的可重播入场动画。
+- 新增 SortableList：连续集合 Surface、拖拽手柄、禁用项、边缘自动滚动、父级受控回写，以及 H5 Pointer/键盘镜像。
+- 新增 Tour：目标测量、四向遮罩、自动位置、步骤控制、错误关闭与焦点恢复，并同步全局阴影、毛玻璃、边框、大圆角和等距语义。
+- 组件总数从 74 增至 78；包内开发版公告、Me 分类增量图表、目录、搜索、独立页、Starter Usage、组件合同和 H5 页面同步。
+- npm 包、PoemUI Skill、官网快速开始、H5 更新公告和 GitHub 发布口径统一为 `0.1.4`。
+
 ## 0.1.3
 
 - 将完整 `poemui-miniprogram` Skill 纳入 npm 包，组件安装版本、AI 使用合同和 GitHub 固定版本目录保持一致。

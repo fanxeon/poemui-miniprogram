@@ -1,0 +1,70 @@
+{
+  "environment": "poemcoder-1gkbkid139b08f45",
+  "collection": "pui_updatelog",
+  "verifiedAt": "2026-07-30T03:23:08.635Z",
+  "preflightVersionCount": 0,
+  "write": {
+    "requestId": "19fb10c1be1_2",
+    "updated": 1,
+    "upsertedId": null
+  },
+  "queryCount": 1,
+  "categoryTotal": 78,
+  "document": {
+    "_id": "pui-v0-1-4-20260730",
+    "product": "poemui",
+    "version": "v0.1.4",
+    "date": "2026-07-30",
+    "title": "PoemUI v0.1.4 开发版更新",
+    "summary": "修复双端主题，并新增四个高级组件。",
+    "componentCount": 78,
+    "categoryCounts": [
+      { "key": "getting-started", "label": "规范", "count": 1 },
+      { "key": "foundation", "label": "基础", "count": 3 },
+      { "key": "layout", "label": "布局", "count": 5 },
+      { "key": "navigation", "label": "导航", "count": 9 },
+      { "key": "form", "label": "表单", "count": 19 },
+      { "key": "data", "label": "数据展示", "count": 14 },
+      { "key": "feedback", "label": "反馈", "count": 9 },
+      { "key": "overlay", "label": "浮层", "count": 6 },
+      { "key": "advanced", "label": "高级", "count": 12 }
+    ],
+    "highlights": [
+      {
+        "component": "ActionSheet 等",
+        "icon": "palette",
+        "title": "主题继承修复",
+        "description": "ActionSheet、PullRefresh、DropdownMenu 与 Rate 恢复全局深浅色语义。"
+      },
+      {
+        "component": "DonutChart / RadarChart",
+        "icon": "activity",
+        "title": "新增两类图表",
+        "description": "补齐环形占比与雷达对比图，默认使用渐变配色和可重播入场。"
+      },
+      {
+        "component": "SortableList",
+        "icon": "list",
+        "title": "可排序集合",
+        "description": "支持拖拽手柄、自动滚动、禁用项及父级受控顺序回写。"
+      },
+      {
+        "component": "Tour",
+        "icon": "sparkles",
+        "title": "步骤式引导",
+        "description": "提供目标高亮、四向遮罩、焦点闭环与可控前进后退。"
+      },
+      {
+        "component": "H5 镜像",
+        "icon": "code",
+        "title": "同语义同步",
+        "description": "新增组件均提供真实交互镜像，并完成 390px 与外观组合验证。"
+      }
+    ],
+    "status": "published",
+    "schemaVersion": 2,
+    "publishedAt": "2026-07-30T03:22:48.643Z",
+    "updatedAt": "2026-07-30T03:23:08.635Z"
+  },
+  "note": "写前 version=v0.1.4 为 0 条。首次 Node SDK set({data}) 暴露嵌套语义，随即在同一稳定 ID 上用完整文档本体覆盖；最终按 _id 全文回读与 version/status 查询均通过，客户端可见查询唯一命中 1 条。该文件是不含凭据的版本化审计副本。"
+}

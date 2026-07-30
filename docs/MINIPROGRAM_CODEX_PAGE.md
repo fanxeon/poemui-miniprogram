@@ -46,7 +46,7 @@ Navbar 中只出现一次“安装”标题。左侧唯一 `left` Slot 以两个
       "subtitle": "安装与引用",
       "description": "从云端读取真实接入示例。",
       "snippets": [
-        { "id": "install", "title": "安装依赖", "code": "npm i poemui-miniprogram@0.1.3 -S --production", "ariaLabel": "复制 npm 安装命令" }
+        { "id": "install", "title": "安装依赖", "code": "npm i poemui-miniprogram@0.1.4 -S --production", "ariaLabel": "复制 npm 安装命令" }
       ]
     },
     "skillSection": {
@@ -59,7 +59,7 @@ Navbar 中只出现一次“安装”标题。左侧唯一 `left` Slot 以两个
 }
 ```
 
-`kind=skill` 字段为：`skillId`（稳定业务 ID）、`name`、`version`、`summary`、`icon`（已发布 PUI Icon 名称）、`capabilities[]`（最多六项）、`installation.title`、`installation.code` 与 `sortOrder`。当前 `poemui-miniprogram@0.1.3` 已在 npm 包内交付同版本 Skill，云端安装代码先固定安装该 npm 版本，再从 `node_modules/poemui-miniprogram/skills/poemui-miniprogram` 复制到 Codex Skill 目录；GitHub `v0.1.3` 目录只作为固定源码真相源。草稿和归档 Skill 不得下发到客户端；没有真实安装代码时省略 `installation.code`，页面不得虚构下载或复制入口。
+`kind=skill` 字段为：`skillId`（稳定业务 ID）、`name`、`version`、`summary`、`icon`（已发布 PUI Icon 名称）、`capabilities[]`（最多六项）、`installation.title`、`installation.code` 与 `sortOrder`。当前 `poemui-miniprogram@0.1.4` 在 npm 包内交付同版本 Skill，云端安装代码先固定安装该 npm 版本，再从 `node_modules/poemui-miniprogram/skills/poemui-miniprogram` 复制到 Codex Skill 目录；GitHub `v0.1.4` 目录只作为固定源码真相源。草稿和归档 Skill 不得下发到客户端；没有真实安装代码时省略 `installation.code`，页面不得虚构下载或复制入口。
 
 ## PUI 组合
 

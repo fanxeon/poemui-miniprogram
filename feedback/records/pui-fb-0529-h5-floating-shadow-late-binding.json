@@ -1,0 +1,120 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0529",
+  "title": "H5 浮层阴影别名必须随外观状态重新绑定",
+  "scope": "global",
+  "components": [
+    "preview",
+    "tour",
+    "popup",
+    "dialog",
+    "sheet",
+    "drawer",
+    "popover"
+  ],
+  "type": "preview-parity",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "regression",
+  "reportedAt": "2026-07-30",
+  "updatedAt": "2026-07-30",
+  "userGoal": "H5 外观阴影开关必须真正改变适格浮层 Surface，而不是只切换 data 属性。",
+  "environment": {
+    "surfaces": [
+      "H5 App Shell",
+      "Tour panel",
+      "floating surfaces"
+    ],
+    "platforms": [
+      "h5",
+      "browser",
+      "node"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "打开 Tour，开启全局 shadow。",
+    "读取 Tour Panel 的 box-shadow；旧结果仍为 none。",
+    "检查 CSS，--shadow-floating 在根级引用当时为 none 的 --shadow，后续 data-shadow 切换没有重新绑定。"
+  ],
+  "expected": "data-shadow=on 时适格浮层计算出真实 rgba 阴影，off 时计算为 none，且不影响非适格根。",
+  "actual": "根级自定义属性别名过早解析为 none，开关数据变化但 Tour Panel 仍没有实际阴影。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "preview/styles.css",
+      "note": "新增 app-shell[data-shadow=on] 下的 --shadow-floating:var(--shadow) 晚绑定。"
+    },
+    {
+      "kind": "browser",
+      "ref": "#/components/tour appearance matrix",
+      "note": "开启 shadow 后 Panel 为实际 rgba 阴影，关闭后为 none；frost 与 equalSpacing 同时保持独立。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-preview-css-token-contract.js",
+      "note": "全样式表 Token 引用扫描通过，新增别名存在真实定义。"
+    }
+  ],
+  "rootCause": "CSS 自定义属性别名在不具备当前状态作用域的根上绑定，保存了关闭态的语义，而不是在 data-shadow=on 作用域重新读取 --shadow。",
+  "decision": {
+    "outcome": "在 App Shell 的 shadow on 状态内重新绑定 --shadow-floating，并继续由统一 shadow off 规则收敛为 none。",
+    "rationale": "阴影资格和开关必须落到真实计算样式；局部组件不能各自硬编码一套阴影值。",
+    "alternativesRejected": [
+      "给 Tour 写固定 rgba：会与 Popup/Dialog 等浮层漂移。",
+      "只检查 data-shadow 属性：不能证明视觉生效。",
+      "删除 --shadow-floating 别名：会失去浮层语义层级。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "preview/styles.css",
+      "docs/RELEASE_0.1.4_H5_CHANGELOG.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md"
+    ],
+    "dependencies": [
+      "H5 appearance preferences",
+      "floating surface tokens"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-preview-css-token-contract.js",
+      "scripts/test-appearance-contract-matrix.js",
+      "scripts/test-tour.js"
+    ],
+    "commands": [
+      "node scripts/test-preview-css-token-contract.js：通过。",
+      "node scripts/test-appearance-contract-matrix.js：通过。"
+    ],
+    "browser": [
+      "Tour Panel 在 shadow=on 时读取实际 rgba 阴影，shadow=off 时为 none；390px 无横向溢出。"
+    ],
+    "deviceRisks": [
+      "Safari 与微信 WebView 的 backdrop-filter 加阴影合成性能仍未在真实设备验证。"
+    ]
+  },
+  "ai": {
+    "summary": "外观开关必须读取代表组件计算样式，Token 别名要在状态作用域晚绑定。",
+    "rules": [
+      "不得以 data 属性切换替代计算样式验证。",
+      "共享浮层阴影使用同名语义 Token，不在组件内硬编码 rgba。",
+      "阴影关闭必须只影响适格 Surface。",
+      "自定义属性别名依赖状态变量时必须在状态作用域重新绑定。"
+    ],
+    "tags": [
+      "h5",
+      "shadow",
+      "token",
+      "computed-style",
+      "surface"
+    ]
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0524",
+  "title": "空主题值不得覆盖最近的 ConfigProvider",
+  "scope": "global",
+  "components": [
+    "action-sheet",
+    "pull-refresh",
+    "dropdown-menu",
+    "rate",
+    "slider"
+  ],
+  "type": "compatibility",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-30",
+  "updatedAt": "2026-07-30",
+  "userGoal": "组件独立页和真实业务页必须统一跟随全局深浅色，而不是由组件默认值强制浅色。",
+  "environment": {
+    "surfaces": [
+      "component pages",
+      "ConfigProvider subtree",
+      "H5 PreviewDevice"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "h5",
+      "node"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "inherited"
+    ]
+  },
+  "reproduction": [
+    "在深色 ConfigProvider 子树中挂载 ActionSheet、PullRefresh 或 DropdownMenu，不传 colorScheme。",
+    "检查组件根 class；旧实现会主动写入 pui-theme--light。",
+    "检查 PullRefresh H5 根；旧样式还会把透明滚动容器画成带背景、边框、阴影和 blur 的 Surface。"
+  ],
+  "expected": "空 colorScheme 只表示继承最近 Provider；显式 light/dark 才局部覆盖，透明基础设施不获得 Surface 效果。",
+  "actual": "三个组件用 light 作为空值 fallback，覆盖 Provider；PullRefresh H5 根的 Surface 样式又扩大了视觉差异。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "scripts/test-component-theme-inheritance.js",
+      "note": "根类统一调用 Theme Behavior 的 getColorSchemeClass，不再提供 light fallback。"
+    },
+    {
+      "kind": "file",
+      "ref": "rate/rate.js",
+      "note": "Rate 默认色改用 warning Token；Slider 保留原生 slider 所需的已解析安全实色主题路径。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-component-theme-inheritance.js",
+      "note": "扫描公开组件根的空主题继承边界，锁定禁止强制浅色。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-action-sheet.js",
+      "note": "分别覆盖空值继承、显式主题和默认颜色合同。"
+    }
+  ],
+  "rootCause": "组件把未指定主题误解成 light 默认值，并在根级添加局部主题类；H5 又把 PullRefresh 的布局根误判为独立 Surface。",
+  "decision": {
+    "outcome": "共享组件层移除空值的 light fallback；显式主题仍由 Theme Behavior 局部覆盖。PullRefresh H5 根与内容轨恢复透明，Rate 默认激活色读取 warning Token。",
+    "rationale": "主题归属必须由最近 Provider 单一拥有，不能靠每个独立页重复传参；平台原生 slider 的实色限制单独保留。",
+    "alternativesRejected": [
+      "在每个页面传 color-scheme：复制状态并掩盖共享组件缺陷。",
+      "让所有组件直接读取页面 Store：绕过 ConfigProvider 的所有权。",
+      "给原生 slider 传 CSS var：未确认微信平台接受，不可冒险改变已验证路径。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "action-sheet/action-sheet.js",
+      "pull-refresh/pull-refresh.js",
+      "dropdown-menu/dropdown-menu.js",
+      "rate/rate.js",
+      "preview/styles.css",
+      "scripts/test-component-theme-inheritance.js",
+      "docs/RELEASE_0.1.4_COMPONENT_CHANGELOG.md"
+    ],
+    "dependencies": [
+      "Theme Behavior",
+      "ConfigProvider",
+      "visualConfig"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-component-theme-inheritance.js",
+      "scripts/test-action-sheet.js",
+      "scripts/test-pull-refresh.js",
+      "scripts/test-dropdown-menu.js",
+      "scripts/test-rate.js",
+      "scripts/test-slider.js"
+    ],
+    "commands": [
+      "node scripts/test-action-sheet.js：通过。",
+      "node scripts/test-pull-refresh.js：通过。",
+      "node scripts/test-dropdown-menu.js：通过。",
+      "node scripts/test-rate.js：通过。",
+      "微信开发者工具 build-npm：2226ms，warnings=[]。"
+    ],
+    "browser": [
+      "PullRefresh H5 透明根已由专项计算样式合同覆盖；完整组件页主题矩阵继续由最终门禁汇总。"
+    ],
+    "deviceRisks": [
+      "微信 iOS/Android 的浮层合成、原生 slider 自动主题首帧、Rate 半星着色仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "空主题值只表示继承 Provider，组件不得主动回退成浅色。",
+    "rules": [
+      "可选 colorScheme 为空时必须使用 Theme Behavior 的空类结果。",
+      "页面不得逐组件传主题来掩盖共享继承问题。",
+      "原生平台控件需要实色时只能读取 Theme Behavior 已解析主题，不另建页面状态。",
+      "主题验收必须检查展开层和真实计算样式。"
+    ],
+    "tags": [
+      "theme",
+      "config-provider",
+      "dark-mode",
+      "inheritance",
+      "surface"
+    ]
+  }
+}

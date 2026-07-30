@@ -18,8 +18,8 @@
 透明定位根（固定高度，或自然增高到 maxHeight；无 Surface）
 ├── 原生 scroll-view（纵向、enhanced、隐藏滚动条、role=region）
 │   └── 内容轨（default Slot + 尾部安全区 + 边缘探针）
-├── 顶部渐变层（仅 gradientOverlay=true 且内容已滚离顶部；容器色 → transparent）
-└── 底部渐变层（仅 gradientOverlay=true 且仍可继续向下滚动；transparent → 容器色）
+├── 顶部渐变层（仅 gradientOverlay=true 且内容已滚离顶部；当前上下文色 → transparent）
+└── 底部渐变层（仅 gradientOverlay=true 且仍可继续向下滚动；transparent → 当前上下文色）
 ```
 
 - 透明定位根只提供固定/有界自适应高度和绝对定位上下文；不得拥有背景、内距、边框、圆角、阴影、毛玻璃或裁切。
@@ -39,7 +39,7 @@
 - `height` 使用正数、rpx、px、vh 或 `auto` 表达；`0`、负数、空值与非数字统一回退默认 `320rpx`，H5 按 `1px≈2rpx` 镜像裸数/rpx、原样保留 px/vh，并对应回退 `160px`。`height="auto"` 时根和唯一原生视口随 Slot 自然增高，达到 `maxHeight` 后才产生局部滚动；`maxHeight` 默认 `320rpx`，只接受同一组正数尺寸，`auto` 与非法值回退默认上限。固定 `height` 时忽略 `maxHeight`，避免两套边界竞争。
 - `gradientOverlaySize` 只允许 `sm`、`md`、`lg`：`sm` 使用 `--pui-scroll-area-gradient-overlay-size-sm`（`40rpx / 20px`），`md` 使用 `--pui-scroll-area-gradient-overlay-size-md`（`64rpx / 32px`，既有默认），`lg` 使用 `--pui-scroll-area-gradient-overlay-size-lg`（`88rpx / 44px`）。非法值统一回退 `md`；顶/底不额外消耗 Slot 空间、padding 或 margin。
 - `contentPaddingBottom` 默认 `10vh`，统一保证最后一项能够继续滚到遮罩与屏幕底部之上；接受非负裸数（按 rpx）、`rpx`、`px` 或 `vh`，`0` 可显式关闭，负数、CSS 表达式和非法值回退 `10vh`。该 padding 只落在透明内容轨，不能让根或视口产生第二层 Surface。
-- `gradientOverlayColor` 只接受 `#hex`、`rgb()`、`rgba()` 或 `var(--token)`。空值与非法值回退 `--pui-scroll-area-gradient-overlay-color-context`；默认值为 `--pui-bg-container`，页面壳可显式继承自己的画布 Token，避免与无边 Navbar 形成色层割裂。该上下文别名必须在 `.pui-theme--dark` 内、深色 `--pui-bg-container` 声明之后重新绑定，不能只从浅色 `page` 根继承已经计算为白色的值。合法自定义颜色同时作用于两个渐变方向。
+- `gradientOverlayColor` 只接受 `#hex`、`rgb()`、`rgba()` 或 `var(--token)`。空值与非法值回退 `--pui-scroll-area-gradient-overlay-color-context`：普通实底上下文解析为 `--pui-bg-container`；`pui-frosted-glass--on` 与 `Popup card` 等半透明 Surface 必须将其重绑定为 `--pui-scroll-area-gradient-overlay-material-color`（浅色 `rgba(255,255,255,.32)`、深色 `rgba(24,24,27,.32)`），以柔和遮蔽边缘内容而不在合成后的玻璃面板上覆盖纯白/纯深色横带。该材质 Token 只是遮罩色，不给 ScrollArea 根增加背景、滤镜或 Surface。深色主题必须在深色 `--pui-bg-container` 后同时重绑定实底与材质色；合法自定义颜色仍优先并同时作用于两个方向。
 - 内容间距、分隔和 Surface 由 Slot 内真实 PUI 组件或调用方页面 Token 管理。
 
 ## 5. 内容、Slot 与组合边界
@@ -77,7 +77,7 @@
 
 - H5 必须使用真实 `overflow-y:auto` 容器，固定隐藏浏览器滚动条；不能用静态列表、位置提示或动画伪造滚动。
 - H5 父级 Props 改写与当前位置不同的 `scrollTop` 后通过真实 `scrollTo({ behavior:'smooth' })` 更新同一 `overflow-y:auto` 容器的位置；与原生当前值相同（允许 1px 浮点误差）的回写是用户手势回声，必须跳过，不能重启浏览器惯性。`scrollIntoView` 非空时在同一滚动容器内找到同名 `data-scroll-area-anchor` 并按原生优先级平滑定位。系统 `prefers-reduced-motion` 时改为 `auto`，不伪造中间位置或完成事件。
-- H5 使用同样的透明定位根、唯一 `overflow-y:auto` 视口、透明内容轨和两层 fixed sibling overlay；固定高度直接映射，`height="auto"` 时视口继承根的 `maxHeight` 并在超过上限后真实滚动。内容轨按同一规则消费默认 `10vh` 的 `contentPaddingBottom`。以真实 `scrollTop/clientHeight/scrollHeight` 同步“顶部仅底层、底部仅顶层、中段两层、无溢出零层”。`gradientOverlay=false` 必须移除 DOM 遮罩，颜色校验、`sm/md/lg` 尺寸映射、上下文色回退、`pointer-events:none` 与 `aria-hidden` 必须与小程序一致；H5 必须在 ScrollArea 根按当前 `--surface-solid` 解析同名上下文 Token，并以深色计算样式确认不是浅色白条。
+- H5 使用同样的透明定位根、唯一 `overflow-y:auto` 视口、透明内容轨和两层 fixed sibling overlay；固定高度直接映射，`height="auto"` 时视口继承根的 `maxHeight` 并在超过上限后真实滚动。内容轨按同一规则消费默认 `10vh` 的 `contentPaddingBottom`。以真实 `scrollTop/clientHeight/scrollHeight` 同步“顶部仅底层、底部仅顶层、中段两层、无溢出零层”。`gradientOverlay=false` 必须移除 DOM 遮罩，颜色校验、`sm/md/lg` 尺寸映射、上下文色回退、`pointer-events:none` 与 `aria-hidden` 必须与小程序一致；普通上下文从当前 `--surface-solid` 解析，毛玻璃 App Shell、局部 ConfigProvider 与 Popup card 则和小程序一样切换到同名半透明材质色。验收必须滚动到遮罩可见后读取实际渐变起始色，不能只检查主题或 frost 属性。
 - H5 与小程序端必须共同拒绝零或负高度，不能将 `0` 算成可见但不可用的 `1px/1rpx` 滚动区。
 - 官网概览为避免 622px PreviewDevice 中只出现一个 160px 小窗，明确以 `height="1128rpx"`（H5 `564px`）和 18 项真实 PUI Cell Slot 内容填满 `shadow-safe` 的可用预览高度并演示滚动。该值会出现在当前效果 WXML 中，且不改变组件公开默认值 `320rpx`。重置恢复该演示值，属性/API 仍显示真实默认值。
 - 小程序独立页继续由被测 ScrollArea 承担唯一滚动上下文；Slot 顶部组合 PUI Cell + Switch 控制 `gradientOverlay`，并用两个等分 PUI Button 在 `sm / md / lg` 三档间调整 `gradientOverlaySize`。这些控件只改公开视觉 Props，不创建第二滚动区、不改变当前位置，也不扩张组件事件或方法。
@@ -87,7 +87,7 @@
 ## 10. 响应式、主题与视觉配置
 
 - 390px 下滚动容器宽度始终不超过可用视口，Slot 内容必须 `min-width:0` 且页面不产生横向溢出。
-- light/dark、边框、阴影、毛玻璃、大圆角和全局渐变只作用于 Slot 内真实 PUI 组件或 PreviewDevice，不得令透明 ScrollArea 根产生第二层 Surface。默认遮罩色仅跟随当前上下文容器色；页面壳可以将 `--pui-scroll-area-gradient-overlay-color-context` 指向画布 Token，使无边 Navbar 与滚动视口连续。主题切换时上下文色必须重新解析：浅色容器为 `#fff`，深色容器为 `#18181b`，不得继承切换前的已计算色。遮罩高度仅由 `gradientOverlaySize` 的三档 Token 决定，不使用全局页面渐变，也不继承阴影、毛玻璃或圆角。
+- light/dark、边框、阴影、毛玻璃、大圆角和全局渐变只作用于 Slot 内真实 PUI 组件或 PreviewDevice，不得令透明 ScrollArea 根产生第二层 Surface。默认遮罩色跟随当前 Surface 材质：普通实底使用浅色 `#fff` / 深色 `#18181b`，半透明或毛玻璃 Surface 使用同色相、`.32` alpha 的材质遮罩；页面壳仍可将上下文 Token 指向自己的画布 Token，使无边 Navbar 与滚动视口连续。主题切换时实底和材质色都必须在当前作用域重新解析，不得继承切换前的浅色计算值。遮罩高度仅由 `gradientOverlaySize` 的三档 Token 决定，不使用全局页面渐变，也不继承阴影、滤镜或圆角；显式 `gradientOverlayColor` 始终高于上下文默认值。
 - ScrollArea 不声明 CSS 进退场动画；受控位置变化使用平台原生平滑滚动。H5 在系统低动效下立即定位；小程序端使用微信 `scroll-with-animation` 的平台行为，不公开第二套时长或 easing。
 
 ## 11. 明确禁止

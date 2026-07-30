@@ -29,6 +29,11 @@ function create(overrides) {
   const events = [];
   const instance = {
     data: Object.assign({}, clone(definition.data), clone(defaults), clone(overrides || {})),
+    getColorSchemeClass() {
+      return this.data.colorScheme === 'light' || this.data.colorScheme === 'dark'
+        ? `pui-theme--${this.data.colorScheme}`
+        : '';
+    },
     setData(patch, callback) { Object.assign(this.data, patch); if (callback) callback(); },
     triggerEvent(name, detail) { events.push({ name, detail }); },
   };
@@ -48,6 +53,8 @@ const defaults = create();
 assert.strictEqual(defaults.instance.data.mounted, false);
 assert.strictEqual(defaults.instance.data.activeIndex, -1);
 assert.strictEqual(defaults.instance.data.layerStyle.includes('z-index:11600'), true);
+assert(!create({ colorScheme: '' }).instance.data.rootClass.includes('pui-theme--light'), 'empty colorScheme must inherit the nearest ConfigProvider');
+assert(create({ colorScheme: 'dark' }).instance.data.rootClass.includes('pui-theme--dark'), 'explicit dark colorScheme remains a local override');
 
 const regular = create({ items, defaultValue: { status: 0, kind: ['component'] } });
 assert.strictEqual(regular.instance.data.itemViews[0].summary, '全部');

@@ -47,7 +47,7 @@ assert.strictEqual(defaults.instance.data.innerValue, 0);
 assert.strictEqual(defaults.instance.data.starSize, 40);
 assert.strictEqual(defaults.instance.data.starGap, 8);
 assert.strictEqual(defaults.instance.data.stars.length, 5);
-assert.strictEqual(defaults.instance.data.activeColor, '#d97706');
+assert.strictEqual(defaults.instance.data.activeColor, 'var(--pui-color-warning)');
 assert.strictEqual(defaults.instance.data.semanticLabel, '评分');
 assert.strictEqual(defaults.instance.data.semanticValueText, '0 星');
 assert(defaults.instance.data.rootStyle.includes('--pui-rate-duration:500ms'));
@@ -73,14 +73,14 @@ assert.strictEqual(half.instance.data.text, '好');
 assert.strictEqual(half.instance.data.semanticValueText, '3.5 星，好');
 
 const colors = create({ color: 'rgb(300, 0, 0)' });
-assert.strictEqual(colors.instance.data.activeColor, '#d97706');
+assert.strictEqual(colors.instance.data.activeColor, 'var(--pui-color-warning)');
 colors.instance.data.color = 'rgb(255, 8, 0)';
 colors.instance.syncState();
 assert.strictEqual(colors.instance.data.activeColor, 'rgb(255, 8, 0)');
 colors.instance.data.color = '';
 colors.instance.data.colorScheme = 'dark';
 colors.instance.syncState();
-assert.strictEqual(colors.instance.data.activeColor, '#facc15');
+assert.strictEqual(colors.instance.data.activeColor, 'var(--pui-color-warning)');
 
 const reduced = create({ reduceMotion: true, readonly: true });
 assert(reduced.instance.data.rootClass.includes('pui-rate--readonly'));

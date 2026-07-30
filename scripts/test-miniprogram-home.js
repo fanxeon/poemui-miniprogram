@@ -320,9 +320,11 @@ assert.ok(pageJs.indexOf('onShareAppMessage: function') !== -1, '首页必须保
 assert.ok(pageJs.indexOf('onShareTimeline: function') !== -1, '首页必须保留朋友圈分享的 Page 生命周期');
 assert.strictEqual(
   pagePackage.dependencies['poemui-miniprogram'],
-  packageVersion,
-  '真实产品小程序必须固定消费当前发布版本，不能退回本地 file:..'
+  '0.1.4',
+  '真实产品小程序清单必须固定消费 Registry 发布版 0.1.4'
 );
+assert.ok(pagePackage.dependencies['poemui-miniprogram'].indexOf('file:') !== 0, '真实产品小程序清单不得为了本地开发改成不可复现的 file: 依赖');
+assert.strictEqual(packageVersion, '0.1.4', '组件包与真实产品小程序清单必须统一为 0.1.4');
 assert.ok(appJs.indexOf("require('poemui-miniprogram/common/utils/visual-config')") !== -1, 'App 必须通过 npm 包路径恢复 visualConfig');
 assert.ok(appJs.indexOf("require('poemui-miniprogram/common/utils/theme')") !== -1, 'App 必须复用发布包 theme helper 读取当前系统主题');
 assert.strictEqual(appJson.darkmode, true, '真实小程序必须启用微信 DarkMode，系统主题事件才会触发');
@@ -578,8 +580,8 @@ assert.strictEqual(capturedPage.data.searchOptions.length, 0, 'Overlay 进入期
 timers[timers.length - 1].callback();
 assert.strictEqual(capturedPage.data.searchComboboxVisible, true, 'Overlay 进入结束后才展开 Combobox');
 assert.strictEqual(capturedPage.data.searchInputFocus, true, 'Overlay 进入后聚焦独立 Search');
-assert.strictEqual(capturedPage.data.searchOptions.length, 79, '首页搜索打开后必须展示全部 74 个组件和 5 个规范页');
-['Button', 'Divider', 'Icon', 'ConfigProvider', 'AspectRatio', 'Direction', 'Grid', 'ScrollArea', 'Sticky', 'Navbar', 'NavigationMenu', 'Tabs', 'Breadcrumb', 'Tabbar', 'Steps', 'BackTop', 'Indexes', 'SideBar', 'Alert', 'Empty', 'Loading', 'NoticeBar', 'Progress', 'Result', 'Skeleton', 'Toast', 'Dialog', 'Popup', 'Popover', 'Sheet', 'ActionSheet', 'DropdownMenu', 'Overlay', 'AreaChart', 'BarChart', 'Waffle', 'PullRefresh', 'VirtualList', 'Watermark', 'Avatar', 'Badge', 'Card', 'Image', 'Tag', 'Cell', 'List', 'Collapse', 'Collapsible', 'Bubble', 'SwipeCell', 'CountDown', 'Swiper', 'Table', 'Form', 'Field', 'Label', 'Input', 'InputOTP', 'Textarea', 'Search', 'Checkbox', 'Radio', 'Switch', 'Select', 'Picker', 'Combobox', 'Slider', 'Stepper', 'Rate', 'Calendar', 'DateTimePicker', 'Upload', '开始使用', '主题 Token', '颜色', '间距', '字体排版'].forEach(function (name) {
+assert.strictEqual(capturedPage.data.searchOptions.length, 83, '首页搜索打开后必须展示全部 78 个组件和 5 个规范页');
+['Button', 'Divider', 'Icon', 'ConfigProvider', 'AspectRatio', 'Direction', 'Grid', 'ScrollArea', 'Sticky', 'Navbar', 'NavigationMenu', 'Tabs', 'Breadcrumb', 'Tabbar', 'Steps', 'BackTop', 'Indexes', 'SideBar', 'Alert', 'Empty', 'Loading', 'NoticeBar', 'Progress', 'Result', 'Skeleton', 'Toast', 'Dialog', 'Popup', 'Popover', 'Sheet', 'ActionSheet', 'DropdownMenu', 'Overlay', 'AreaChart', 'BarChart', 'Waffle', 'DonutChart', 'RadarChart', 'SortableList', 'Tour', 'PullRefresh', 'VirtualList', 'Watermark', 'Avatar', 'Badge', 'Card', 'Image', 'Tag', 'Cell', 'List', 'Collapse', 'Collapsible', 'Bubble', 'SwipeCell', 'CountDown', 'Swiper', 'Table', 'Form', 'Field', 'Label', 'Input', 'InputOTP', 'Textarea', 'Search', 'Checkbox', 'Radio', 'Switch', 'Select', 'Picker', 'Combobox', 'Slider', 'Stepper', 'Rate', 'Calendar', 'DateTimePicker', 'Upload', '开始使用', '主题 Token', '颜色', '间距', '字体排版'].forEach(function (name) {
   assert.ok(capturedPage.data.searchOptions.some(function (option) { return option.label === name; }), '搜索候选缺少真实组件 ' + name);
 });
 assert.ok(capturedPage.data.searchOptions.some(function (option) { return option.label === '开始使用' && option.description.indexOf('规范 ·') === 0; }), '搜索结果必须将规范页与组件区分');

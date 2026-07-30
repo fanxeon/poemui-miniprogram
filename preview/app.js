@@ -1,11 +1,15 @@
 const componentData = window.POEMUI_COMPONENT_DATA;
 const styleUtilitiesData = window.POEMUI_STYLE_UTILITIES;
+const releaseNotesData = window.POEMUI_RELEASE_NOTES;
 
 if (!componentData) {
   throw new Error('PoemUI component catalog is missing. Run npm run site:build.');
 }
 if (!styleUtilitiesData || !Array.isArray(styleUtilitiesData.items) || styleUtilitiesData.items.length !== 562) {
   throw new Error('PoemUI Style Utilities preview schema is missing. Run npm run styles:catalog:generate.');
+}
+if (!releaseNotesData || !Array.isArray(releaseNotesData.announcements) || !releaseNotesData.announcements.length) {
+  throw new Error('PoemUI release notes data is missing. Run npm run release-notes:generate.');
 }
 
 const groups = componentData.groups;
@@ -32,7 +36,22 @@ const avatarRealProfileSource = 'https://lg-1sobdtqg-1254094290.cos.ap-shanghai.
 
 const iconData = window.POEMUI_ICON_DATA || { categories: [], icons: [] };
 const styleUtilityPreviewByName = new Map(styleUtilitiesData.items.map((item) => [item.name, item]));
-const allItems = groups.flatMap((group) => group.items.map((item) => ({ ...item, group })));
+const releaseNotesGroup = groups.find((group) => group.key === 'getting-started') || {
+  key: 'getting-started',
+  title: '开始与规范',
+};
+const releaseNotesItem = {
+  id: 'release-notes',
+  name: 'Updates 更新公告',
+  nameEn: 'Updates',
+  nameZh: '更新公告',
+  kind: 'document',
+  status: 'published',
+  group: releaseNotesGroup,
+};
+const allItems = groups
+  .flatMap((group) => group.items.map((item) => ({ ...item, group })))
+  .concat(releaseNotesItem);
 const feedbackOrdinalById = new Map(allItems.map((item, index) => [item.id, String(index + 1).padStart(2, '0')]));
 
 function catalogItemFor(id) {
@@ -64,6 +83,7 @@ const edgeToEdgePreviewIds = new Set([
   'tabbar',
   'toast',
   'dynamic-message',
+  'tour',
 ]);
 
 function shadcnEntryFor(id) {
@@ -98,6 +118,14 @@ const legacyDefaultDetails = {
     path: 'poemui-miniprogram/theme/theme',
     states: 'light、dark、frost/shadow/radius',
     props: [{ key: 'tokenGroup', label: 'token 组', type: 'select', value: 'surface', options: ['surface', 'color', 'radius', 'shadow'] }],
+  },
+  'release-notes': {
+    title: '更新公告',
+    summary: '逐版本查看组件级修复、新增能力与双端同步。',
+    desc: '按版本集中查看 PoemUI 的组件级修复、新增能力与双端同步状态。',
+    path: 'preview/release-notes-data.js',
+    states: '版本、日期、组件改动、H5 与小程序同步',
+    props: [],
   },
   color: {
     desc: '随 npm 发布的黑白品牌色、语义色、中性色与八组精选强调色 Token；深浅色值直接由 common/style/theme.wxss 构建到文档页。',
@@ -249,7 +277,7 @@ const legacyComponentCopy = {
   table: ['可组合数据表格，支持真实横纵滚动、固定列、受控选择、排序、状态反馈、slot 与低动效。', '固定列、选择、排序、状态、slot、滚动、低动效'],
   calendar: ['选择单日、日期范围或多个日期。', '单选、范围、多选、日期限制、行内与弹层、状态、低动效'],
   popup: ['从屏幕边缘或中心展开任意内容；关闭请求由父级回写。', '受控/非受控显隐、五向位置、卡片/贴边、遮罩模糊、滚动保护、内容/关闭 slot、低动效'],
-  'action-sheet': ['可组合移动端动作面板，支持受控/非受控显隐、真实分组、内部 Button/Loading/Empty、三段 slot、状态优先级、滚动和完整进退场事件。', '受控/非受控、列表/宫格、分组、危险/加载/禁用项、slot、loading/error/empty、滚动、低动效'],
+  'action-sheet': ['从屏幕底部呈现当前情境的一组动作；选择、取消或遮罩只请求父级回写显隐。', '受控/非受控、列表/宫格、禁用项、默认 Slot、遮罩与低动效'],
   'dropdown-menu': ['从页面顶部展开单选或多选筛选项；选值由父级回写。', '筛选项、受控选值、禁用项、遮罩、默认/footer Slot、低动效'],
   overlay: ['可组合全屏遮罩，支持受控显隐、遮罩/内容点击边界、滚动穿透保护、四种内容位置和完整进退场事件。', '受控显隐、默认 slot、点击边界、滚动保护、低动效'],
   'pull-refresh': ['在组件内部滚动区下拉请求刷新；由父级通过 value 回写结束，超时不会伪造业务成功。', '内部滚动、value/defaultValue、拖拽、timeout、header/default slot、低动效'],
@@ -313,7 +341,10 @@ const legacyApiPropsByComponent = {
   watermark: ['alpha', 'content', 'height', 'isRepeat', 'layout', 'lineSpace', 'movable', 'moveInterval', 'offset', 'rotate', 'watermarkContent', 'width', 'x', 'y', 'zIndex', 'ariaLabel', 'reduceMotion'],
 };
 
-const defaultDetails = componentData.details;
+const defaultDetails = {
+  ...componentData.details,
+  'release-notes': legacyDefaultDetails['release-notes'],
+};
 const componentCopy = componentData.componentCopy;
 // The generated catalog is the public API source of truth. Do not merge legacy
 // preview-only props here: the package check verifies these against `properties`.
@@ -433,6 +464,48 @@ const componentPropDefaults = {
     items: [{ key: 'components', label: '组件总量', segments: [{ key: 'existing', label: '已有', value: 24, theme: 'neutral' }, { key: 'added', label: '本次新增', value: 8, theme: 'violet' }] }],
     columns: 10, groupColumns: 0, shape: 'rounded', size: 'medium', unit: 1, maxCells: 100, showValue: true, showLegend: true,
     animated: true, duration: 500, ariaLabel: '组件数量点阵', reduceMotion: false,
+  },
+  'donut-chart': {
+    items: [
+      { key: 'basic', label: '基础', value: 24, theme: 'blue' },
+      { key: 'form', label: '表单', value: 18, theme: 'teal' },
+      { key: 'advanced', label: '高级', value: 13, theme: 'violet' },
+    ],
+    thickness: 40, startAngle: -90, gapAngle: 3, size: 'medium', showCenter: true, centerText: '',
+    showLegend: true, animated: true, duration: 500, ariaLabel: '组件分类占比', reduceMotion: false,
+  },
+  'radar-chart': {
+    indicators: [
+      { key: 'api', label: 'API', max: 100 },
+      { key: 'theme', label: '主题', max: 100 },
+      { key: 'motion', label: '动效', max: 100 },
+      { key: 'a11y', label: '无障碍', max: 100 },
+      { key: 'docs', label: '文档', max: 100 },
+    ],
+    series: [
+      { key: 'current', label: '当前版本', values: [88, 92, 78, 84, 90], theme: 'violet' },
+      { key: 'baseline', label: '基线', values: [72, 75, 66, 70, 74], theme: 'blue' },
+    ],
+    levels: 4, size: 'medium', showGrid: true, showLegend: true, showDots: true,
+    animated: true, duration: 500, ariaLabel: '组件能力比较', reduceMotion: false,
+  },
+  'sortable-list': {
+    items: [
+      { key: 'install', title: '安装组件', description: '构建 npm 并注册组件', icon: 'download' },
+      { key: 'theme', title: '配置主题', description: '挂载 ConfigProvider', icon: 'palette' },
+      { key: 'ship', title: '完成验收', description: '同步 H5 与契约测试', icon: 'check-circle' },
+    ],
+    itemKey: 'key', disabledKeys: [], dragFrom: 'handle', height: '560rpx', bordered: true,
+    animated: true, duration: 300, ariaLabel: '组件交付顺序', reduceMotion: false,
+  },
+  tour: {
+    steps: [
+      { key: 'search', selector: '#tour-search-target', title: '快速搜索', content: '在这里输入组件名称。', placement: 'bottom' },
+      { key: 'appearance', selector: '#tour-appearance-target', title: '外观设置', content: '随时切换主题与视觉效果。', placement: 'left' },
+    ],
+    visible: null, defaultVisible: false, current: null, defaultCurrent: 0, closeOnOverlay: true,
+    overlayBlur: false, showSkip: true, showIndicators: true, zIndex: 11500,
+    duration: 400, ariaLabel: '功能引导', reduceMotion: false,
   },
   input: {
     value: null, defaultValue: '', name: '', label: '', placeholder: '请输入内容', type: 'text', maxlength: -1, maxcharacter: -1,
@@ -1264,6 +1337,46 @@ const releasePropDefinitions = {
     animated: { type: 'boolean', value: true }, duration: { type: 'range', value: 500, min: 0, max: 1000, step: 20 },
     ariaLabel: { type: 'text', value: '组件数量点阵' }, reduceMotion: { type: 'boolean', value: false },
   },
+  'donut-chart': {
+    items: { type: 'json', apiType: 'DonutChartItem[]', value: componentPropDefaults['donut-chart'].items },
+    thickness: { type: 'range', value: 40, min: 16, max: 80, step: 2 },
+    startAngle: { type: 'range', value: -90, min: -180, max: 180, step: 5 },
+    gapAngle: { type: 'range', value: 3, min: 0, max: 12, step: 1 },
+    size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+    showCenter: { type: 'boolean', value: true }, centerText: { type: 'text', value: '' },
+    showLegend: { type: 'boolean', value: true }, animated: { type: 'boolean', value: true },
+    duration: { type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+    ariaLabel: { type: 'text', value: '组件分类占比' }, reduceMotion: { type: 'boolean', value: false },
+  },
+  'radar-chart': {
+    indicators: { type: 'json', apiType: 'RadarIndicator[]', value: componentPropDefaults['radar-chart'].indicators },
+    series: { type: 'json', apiType: 'RadarSeries[]', value: componentPropDefaults['radar-chart'].series },
+    levels: { type: 'range', value: 4, min: 2, max: 8, step: 1 },
+    size: { type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+    showGrid: { type: 'boolean', value: true }, showLegend: { type: 'boolean', value: true },
+    showDots: { type: 'boolean', value: true }, animated: { type: 'boolean', value: true },
+    duration: { type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+    ariaLabel: { type: 'text', value: '组件能力比较' }, reduceMotion: { type: 'boolean', value: false },
+  },
+  'sortable-list': {
+    items: { type: 'json', apiType: 'SortableListItem[]', value: componentPropDefaults['sortable-list'].items },
+    itemKey: { type: 'text', value: 'key' }, disabledKeys: { type: 'json', apiType: '(string | number)[]', value: [] },
+    dragFrom: { type: 'select', value: 'handle', options: ['handle', 'item'] }, height: { type: 'text', value: '560rpx' },
+    bordered: { type: 'boolean', value: true }, animated: { type: 'boolean', value: true },
+    duration: { type: 'range', value: 300, min: 0, max: 1000, step: 20 },
+    ariaLabel: { type: 'text', value: '组件交付顺序' }, reduceMotion: { type: 'boolean', value: false },
+  },
+  tour: {
+    steps: { type: 'json', apiType: 'TourStep[]', value: componentPropDefaults.tour.steps },
+    visible: { type: 'nullable-boolean', value: null, apiType: 'boolean | null' },
+    defaultVisible: { type: 'boolean', value: false }, current: { type: 'nullable-number', value: null, apiType: 'number | null' },
+    defaultCurrent: { type: 'range', value: 0, min: 0, max: 8, step: 1 },
+    closeOnOverlay: { type: 'boolean', value: true }, overlayBlur: { type: 'boolean', value: false },
+    showSkip: { type: 'boolean', value: true }, showIndicators: { type: 'boolean', value: true },
+    zIndex: { type: 'range', value: 11500, min: 1, max: 12000, step: 100 },
+    duration: { type: 'range', value: 400, min: 0, max: 1000, step: 20 },
+    ariaLabel: { type: 'text', value: '功能引导' }, reduceMotion: { type: 'boolean', value: false },
+  },
   sticky: {
     container: { type: 'text', apiType: '() => NodesRef | null', value: '' }, disabled: { type: 'boolean', value: false }, offsetTop: { type: 'range', value: 0, min: 0, max: 200, step: 1 }, zIndex: { type: 'range', value: 99, min: 0, max: 12000, step: 1 },
   },
@@ -1358,7 +1471,7 @@ function createDetail(id) {
   return {
     id,
     title: base.title || name,
-    summary: componentSummaries[previewId] || '查看组件的真实效果与用法。',
+    summary: base.summary || componentSummaries[previewId] || '查看组件的真实效果与用法。',
     desc: base.desc || copy[0],
     status: item ? item.status : 'planned',
     kind: item ? item.kind : 'component',
@@ -1563,6 +1676,11 @@ const state = {
   previewNavigationMenuAbort: null,
   previewChartResetFrame: null,
   previewChartEnterFrame: null,
+  previewSortableAbort: null,
+  previewSortableAutoScrollTimer: null,
+  previewSortableAutoScrollDirection: 0,
+  previewTourAbort: null,
+  previewTourReturnFocus: null,
 };
 
 function escapeHtml(value) {
@@ -3293,7 +3411,7 @@ function makeUsageCode(detail, props) {
     return `// shadcn/ui ${detail.title}\n// 当前条目仅用于组件分类与微信平台边界说明。\n// 该能力尚未生成可安装的 PoemUI 原生目录。\n\n// 兼容矩阵：docs/SHADCN_COMPATIBILITY.md`;
   }
   if (detail.id === 'getting-started') {
-    return `/* npm i poemui-miniprogram@0.1.3 -S --production */
+    return `/* npm i poemui-miniprogram@0.1.4 -S --production */
 {
   "usingComponents": {
     "pui-config-provider": "poemui-miniprogram/config-provider/config-provider",
@@ -5075,6 +5193,7 @@ function makeCompatNotes(detail) {
 
 const documentationIds = new Set([
   'getting-started',
+  'release-notes',
   'theme-tokens',
   'color',
   'typography',
@@ -5310,7 +5429,7 @@ function renderDocumentationStage(detail, props) {
   return `
     <section class="document-content" aria-label="${detail.title} 文档内容">
       ${preview}
-      ${detail.id === 'getting-started' ? '' : propWorkspaceMarkup(detail)}
+      ${['getting-started', 'release-notes'].includes(detail.id) ? '' : propWorkspaceMarkup(detail)}
     </section>
   `;
 }
@@ -5466,6 +5585,18 @@ function bindPreviewRuntime(id, props) {
   if (!['picker', 'date-time-picker'].includes(id) && state.previewPickerAbort) {
     state.previewPickerAbort.abort();
     state.previewPickerAbort = null;
+  }
+  if (id !== 'sortable-list') {
+    state.previewSortableAbort?.abort();
+    state.previewSortableAbort = null;
+    clearInterval(state.previewSortableAutoScrollTimer);
+    state.previewSortableAutoScrollTimer = null;
+    state.previewSortableAutoScrollDirection = 0;
+  }
+  if (id !== 'tour') {
+    state.previewTourAbort?.abort();
+    state.previewTourAbort = null;
+    state.previewTourReturnFocus = null;
   }
   if (id === 'button') {
     bindButtonPreviewRuntime(props);
@@ -5637,7 +5768,15 @@ function bindPreviewRuntime(id, props) {
     bindVirtualListPreviewRuntime(props);
     return;
   }
-  if (['area-chart', 'bar-chart', 'waffle'].includes(id)) {
+  if (id === 'sortable-list') {
+    bindSortableListPreviewRuntime(props);
+    return;
+  }
+  if (id === 'tour') {
+    bindTourPreviewRuntime(props);
+    return;
+  }
+  if (['area-chart', 'bar-chart', 'waffle', 'donut-chart', 'radar-chart'].includes(id)) {
     bindChartEntrancePreviewRuntime(props);
     return;
   }
@@ -5688,6 +5827,240 @@ function replayChartEntrancePreviewRuntime(props) {
       });
     });
   });
+}
+
+function reorderPreviewItems(items, from, to) {
+  const next = items.map((item) => (item && typeof item === 'object' ? { ...item } : item));
+  if (from < 0 || to < 0 || from >= next.length || to >= next.length || from === to) return next;
+  const moved = next.splice(from, 1)[0];
+  next.splice(to, 0, moved);
+  return next;
+}
+
+function commitSortablePreviewMove(props, from, to, source) {
+  const items = Array.isArray(props.items) ? props.items : [];
+  if (from === to || from < 0 || to < 0 || from >= items.length || to >= items.length) return false;
+  const previewId = previewIdFor(state.current);
+  const demo = getDemoState(previewId);
+  state.props[state.current] = { ...props, items: reorderPreviewItems(items, from, to) };
+  demo.sortableEvent = `change：${from + 1} → ${to + 1} · ${source} · 父级已回写 items`;
+  renderInspector();
+  renderStage();
+  requestAnimationFrame(() => {
+    const handle = document.querySelector(`#previewStage [data-sortable-handle][data-index="${to}"]`);
+    if (source === 'keyboard' && handle) handle.focus({ preventScroll: true });
+  });
+  return true;
+}
+
+function bindSortableListPreviewRuntime(props) {
+  state.previewSortableAbort?.abort();
+  clearInterval(state.previewSortableAutoScrollTimer);
+  state.previewSortableAutoScrollTimer = null;
+  state.previewSortableAutoScrollDirection = 0;
+  const controller = new AbortController();
+  state.previewSortableAbort = controller;
+  const signal = controller.signal;
+  const root = document.querySelector('#previewStage [data-sortable-root]');
+  const viewport = root?.querySelector('[data-sortable-viewport]');
+  if (!root || !viewport) return;
+  const normalized = sortableListNormalizedItems(props);
+  const handles = Array.from(root.querySelectorAll('[data-sortable-handle]'));
+  handles.forEach((handle) => {
+    handle.addEventListener('keydown', (event) => {
+      if (!['ArrowUp', 'ArrowDown'].includes(event.key) || handle.disabled) return;
+      const from = Number(handle.dataset.index);
+      const to = event.key === 'ArrowUp' ? Math.max(0, from - 1) : Math.min(normalized.length - 1, from + 1);
+      if (to === from) return;
+      event.preventDefault();
+      commitSortablePreviewMove(props, from, to, 'keyboard');
+    }, { signal });
+  });
+  root.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    const row = event.target.closest('[data-sortable-item]');
+    const handle = event.target.closest('[data-sortable-handle]');
+    if (!row || (props.dragFrom !== 'item' && !handle)) return;
+    const from = Number(row.dataset.index);
+    if (normalized[from]?.disabled) return;
+    event.preventDefault();
+    const rows = Array.from(root.querySelectorAll('[data-sortable-item]'));
+    const pointerId = event.pointerId;
+    let target = from;
+    let active = true;
+    row.classList.add('is-dragging');
+    root.classList.add('is-dragging');
+    root.setPointerCapture?.(pointerId);
+    const stopAutoScroll = () => {
+      clearInterval(state.previewSortableAutoScrollTimer);
+      state.previewSortableAutoScrollTimer = null;
+      state.previewSortableAutoScrollDirection = 0;
+    };
+    const updateTarget = (clientY) => {
+      const rects = rows.map((item) => item.getBoundingClientRect());
+      let next = rects.length - 1;
+      rects.some((rect, index) => {
+        if (clientY < rect.top + rect.height / 2) {
+          next = index;
+          return true;
+        }
+        return false;
+      });
+      if (next !== target) {
+        rows[target]?.classList.remove('is-target');
+        target = next;
+        rows[target]?.classList.add('is-target');
+      }
+      const viewportRect = viewport.getBoundingClientRect();
+      const edge = Math.min(52, viewportRect.height * .2);
+      const direction = clientY < viewportRect.top + edge ? -1 : clientY > viewportRect.bottom - edge ? 1 : 0;
+      if (!direction) return stopAutoScroll();
+      if (state.previewSortableAutoScrollDirection === direction) return;
+      stopAutoScroll();
+      state.previewSortableAutoScrollDirection = direction;
+      state.previewSortableAutoScrollTimer = window.setInterval(() => { viewport.scrollTop += direction * 8; }, 24);
+    };
+    const finish = (cancelled) => {
+      if (!active) return;
+      active = false;
+      stopAutoScroll();
+      row.classList.remove('is-dragging');
+      rows.forEach((item) => item.classList.remove('is-target'));
+      root.classList.remove('is-dragging');
+      try { root.releasePointerCapture?.(pointerId); } catch (error) { /* Pointer capture may already be gone. */ }
+      if (!cancelled && target !== from) commitSortablePreviewMove(props, from, target, 'pointer');
+    };
+    root.addEventListener('pointermove', (moveEvent) => {
+      if (moveEvent.pointerId === pointerId && active) updateTarget(moveEvent.clientY);
+    }, { signal });
+    root.addEventListener('pointerup', (upEvent) => {
+      if (upEvent.pointerId === pointerId) finish(false);
+    }, { once: true, signal });
+    root.addEventListener('pointercancel', (cancelEvent) => {
+      if (cancelEvent.pointerId === pointerId) finish(true);
+    }, { once: true, signal });
+  }, { signal });
+}
+
+function setTourPreviewVisible(props, demo, visible, reason) {
+  const controlled = props.visible !== null && props.visible !== undefined;
+  if (controlled) state.props[state.current] = { ...props, visible: !!visible };
+  demo.tourVisible = !!visible;
+  demo.tourEvent = `visible-change：${!!visible} · ${reason}${controlled ? ' · 父级已回写' : ''}`;
+  if (!visible) state.previewTourReturnFocus = true;
+  renderInspector();
+  renderStage();
+  if (!visible) requestAnimationFrame(() => {
+    const trigger = document.querySelector('#previewStage [data-demo-action="tour-open"]');
+    if (trigger) trigger.focus({ preventScroll: true });
+    state.previewTourReturnFocus = null;
+  });
+}
+
+function setTourPreviewCurrent(props, demo, current, reason) {
+  const steps = Array.isArray(props.steps) ? props.steps : [];
+  const next = Math.max(0, Math.min(Math.max(0, steps.length - 1), Math.floor(Number(current) || 0)));
+  const controlled = props.current !== null && props.current !== undefined;
+  if (controlled) state.props[state.current] = { ...props, current: next };
+  demo.tourCurrent = next;
+  demo.tourEvent = `current-change：${next} · ${reason}${controlled ? ' · 父级已回写' : ''}`;
+  renderInspector();
+  renderStage();
+}
+
+function applyTourPreviewGeometry(root, target, step) {
+  const viewport = root.closest('[data-preview-scroll]');
+  const panel = root.querySelector('[data-tour-panel]');
+  const targetOutline = root.querySelector('[data-tour-target]');
+  if (!viewport || !panel || !targetOutline) return false;
+  const viewportRect = viewport.getBoundingClientRect();
+  const rect = target.getBoundingClientRect();
+  const padding = Math.max(0, Math.min(24, Number(step.padding) || 8));
+  const left = Math.max(0, rect.left - viewportRect.left - padding + viewport.scrollLeft);
+  const top = Math.max(0, rect.top - viewportRect.top - padding + viewport.scrollTop);
+  const right = Math.min(viewport.clientWidth, rect.right - viewportRect.left + padding + viewport.scrollLeft);
+  const bottom = Math.min(viewport.clientHeight + viewport.scrollTop, rect.bottom - viewportRect.top + padding + viewport.scrollTop);
+  const width = Math.max(0, right - left);
+  const height = Math.max(0, bottom - top);
+  if (!width || !height) return false;
+  targetOutline.style.cssText = `left:${left}px;top:${top}px;width:${width}px;height:${height}px`;
+  const masks = Object.fromEntries(Array.from(root.querySelectorAll('[data-tour-mask]')).map((mask) => [mask.dataset.tourMask, mask]));
+  if (masks.top) masks.top.style.cssText = `left:0;top:0;width:100%;height:${top}px`;
+  if (masks.bottom) masks.bottom.style.cssText = `left:0;top:${bottom}px;width:100%;bottom:0`;
+  if (masks.left) masks.left.style.cssText = `left:0;top:${top}px;width:${left}px;height:${height}px`;
+  if (masks.right) masks.right.style.cssText = `left:${right}px;right:0;top:${top}px;height:${height}px`;
+  const gap = 12;
+  const edge = 16;
+  const viewportWidth = viewport.clientWidth;
+  const viewportHeight = viewport.clientHeight;
+  let placement = ['top', 'right', 'bottom', 'left'].includes(step.placement) ? step.placement : 'bottom';
+  const spaces = { top, right: viewportWidth - right, bottom: viewportHeight - bottom, left };
+  if (spaces[placement] < 150) placement = Object.keys(spaces).sort((a, b) => spaces[b] - spaces[a])[0];
+  const panelWidth = Math.min(300, viewportWidth - edge * 2);
+  panel.dataset.placement = placement;
+  panel.style.width = `${panelWidth}px`;
+  panel.style.left = `${Math.max(edge, Math.min(viewportWidth - panelWidth - edge, left + width / 2 - panelWidth / 2))}px`;
+  panel.style.top = '';
+  panel.style.bottom = '';
+  if (placement === 'top') panel.style.bottom = `${Math.max(edge, viewportHeight - top + gap)}px`;
+  else if (placement === 'bottom') panel.style.top = `${Math.min(viewportHeight - edge, bottom + gap)}px`;
+  else {
+    const sideWidth = Math.max(180, Math.min(260, spaces[placement] - gap - edge));
+    panel.style.width = `${sideWidth}px`;
+    panel.style.left = placement === 'right' ? `${right + gap}px` : `${Math.max(edge, left - gap - sideWidth)}px`;
+    panel.style.top = `${Math.max(edge, Math.min(viewportHeight - 220 - edge, top + height / 2 - 110))}px`;
+  }
+  root.classList.add('is-entered');
+  return true;
+}
+
+function bindTourPreviewRuntime(props) {
+  state.previewTourAbort?.abort();
+  const controller = new AbortController();
+  state.previewTourAbort = controller;
+  const signal = controller.signal;
+  const root = document.querySelector('#previewStage [data-tour-root]');
+  if (!root) return;
+  const demo = getDemoState('tour');
+  const steps = Array.isArray(props.steps) ? props.steps : [];
+  const current = Math.max(0, Math.min(Math.max(0, steps.length - 1), Number(root.dataset.current) || 0));
+  const step = steps[current] || {};
+  const selector = String(step.selector || '');
+  if (!/^(#[A-Za-z][\w-]*|\.[A-Za-z][\w-]*)$/.test(selector)) {
+    demo.tourError = '当前步骤缺少可用的 #id 或 .class 目标选择器';
+    setTourPreviewVisible(props, demo, false, 'error');
+    return;
+  }
+  const target = document.querySelector(`#previewStage ${selector}`);
+  if (!target || !applyTourPreviewGeometry(root, target, step)) {
+    demo.tourError = `未找到引导目标 ${selector}`;
+    setTourPreviewVisible(props, demo, false, 'error');
+    return;
+  }
+  delete demo.tourError;
+  requestAnimationFrame(() => {
+    const first = root.querySelector('[data-demo-action="tour-close"]');
+    if (first) first.focus({ preventScroll: true });
+  });
+  root.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setTourPreviewVisible(props, demo, false, 'escape');
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(root.querySelectorAll('button:not([disabled]),[tabindex="0"]')).filter((item) => item.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }, { signal });
 }
 
 function apiPropDescription(id, key) {
@@ -6999,7 +7372,7 @@ function configProviderShowcase(props) {
 }
 
 const guideCopySources = {
-  install: `npm i poemui-miniprogram@0.1.3 -S --production`,
+  install: `npm i poemui-miniprogram@0.1.4 -S --production`,
   registry: `https://www.npmjs.com/package/poemui-miniprogram`,
   reference: `{
   "usingComponents": {
@@ -7021,7 +7394,7 @@ App({
     visualConfig.restore();
   }
 });`,
-  skill: `npm i poemui-miniprogram@0.1.3 -S --production
+  skill: `npm i poemui-miniprogram@0.1.4 -S --production
 mkdir -p ~/.codex/skills
 cp -R node_modules/poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/`,
 };
@@ -7050,13 +7423,63 @@ function guideCodeBlockSample(key, title, description) {
   `;
 }
 
+function releaseNotesPage() {
+  const announcements = releaseNotesData.announcements;
+  return `
+    <article class="release-notes-page" aria-label="PoemUI 更新公告">
+      <header class="release-notes-page__hero">
+        <span class="release-notes-page__hero-icon">${iconComponent('sparkles', { size: 'large' })}</span>
+        <div>
+          <span class="release-notes-page__eyebrow">PoemUI Updates</span>
+          <h2>${escapeHtml(announcements[0].version)} 更新</h2>
+          <p>这里记录已经进入 0.1.4 npm 包、H5 镜像与小程序云公告的真实组件级改动。</p>
+        </div>
+      </header>
+      <section class="release-notes-list" aria-label="逐版本更新记录">
+        ${announcements.map((announcement, releaseIndex) => `
+          <article class="release-note${releaseIndex === 0 ? ' is-current' : ''}" aria-labelledby="release-note-${releaseIndex}">
+            <header class="release-note__header">
+              <div class="release-note__title">
+                <span class="release-note__meta">
+                  ${tagSample({ content: announcement.version, theme: releaseIndex === 0 ? 'primary' : 'default', variant: 'light', size: 'small', shape: 'round' })}
+                  ${releaseIndex === 0 ? tagSample({ content: '当前版本', theme: 'success', variant: 'light', size: 'small', shape: 'round' }) : ''}
+                  <time datetime="${escapeHtml(announcement.date)}">${escapeHtml(announcement.date)}</time>
+                </span>
+                <h3 id="release-note-${releaseIndex}">${escapeHtml(announcement.title)}</h3>
+                <p>${escapeHtml(announcement.summary)}</p>
+              </div>
+              <span class="release-note__count" aria-label="${announcement.highlights.length} 项组件级变动">
+                ${tagSample({ content: `${announcement.highlights.length} 项`, theme: releaseIndex === 0 ? 'primary' : 'default', variant: 'outline', size: 'small', shape: 'round' })}
+              </span>
+            </header>
+            <div class="release-note__highlights">
+              ${announcement.highlights.map((highlight) => `
+                <section class="release-note__highlight">
+                  <span class="release-note__icon">${iconComponent(highlight.icon, { size: 'small' })}</span>
+                  <div>
+                    <span class="release-note__highlight-heading">
+                      ${tagSample({ content: highlight.component, theme: 'primary', variant: 'light', size: 'small', shape: 'round' })}
+                      <strong>${escapeHtml(highlight.title)}</strong>
+                    </span>
+                    <p>${escapeHtml(highlight.description)}</p>
+                  </div>
+                </section>
+              `).join('')}
+            </div>
+          </article>
+        `).join('')}
+      </section>
+    </article>
+  `;
+}
+
 function gettingStartedGuide() {
   return `
     <article class="demo-section pui-guide" aria-label="PoemUI 快速开始">
       <header class="pui-guide__hero">
         <div class="pui-guide__eyebrow">
           ${tagSample({ content: '受限 Beta', variant: 'warning', size: 'small' })}
-          <span>poemui-miniprogram@0.1.3</span>
+          <span>poemui-miniprogram@0.1.4</span>
         </div>
         <h2>用真实组件完成第一个小程序页面</h2>
         <p>PoemUI 正在快速迭代。API、样式、文档和在线服务仍可能调整，当前暂不提供正式 SLA。</p>
@@ -7075,12 +7498,12 @@ function gettingStartedGuide() {
           <span>01</span>
           <div>
             <h2 id="guideInstallTitle">安装与微信构建</h2>
-            <p>固定安装 0.1.3，不使用 latest 漂移当前组件合同。</p>
+            <p>固定安装 0.1.4，不使用 latest 漂移当前组件合同。</p>
           </div>
         </header>
         <div class="pui-guide__status-grid">
           <div><span>包名</span><strong>poemui-miniprogram</strong></div>
-          <div><span>当前版本</span><strong>0.1.3</strong></div>
+          <div><span>当前版本</span><strong>0.1.4</strong></div>
           <div><span>npm Registry</span><strong>已发布</strong></div>
           <div><span>微信 build-npm</span><strong>公共包已验证</strong></div>
         </div>
@@ -7137,8 +7560,8 @@ function gettingStartedGuide() {
           <div class="pui-guide__skill-icon">${iconComponent('ai', { size: 'large' })}</div>
           <div>
             <strong>poemui-miniprogram Skill</strong>
-            <span>适配 0.1.3 · npm 同包交付</span>
-            <p>安装包内置完整 Skill，固定版本源码仍可在 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/v0.1.3/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>核对；安装后仍需让 AI 运行合同测试和微信构建。</p>
+            <span>适配 0.1.4 · npm 同包交付</span>
+            <p>安装包内置完整 Skill，固定版本源码仍可在 <a href="https://github.com/fanxeon/poemui-miniprogram/tree/v0.1.4/skills/poemui-miniprogram" target="_blank" rel="noreferrer">GitHub Skill 目录</a>核对；安装后仍需让 AI 运行合同测试和微信构建。</p>
           </div>
         </div>
         ${guideCodeBlockSample('skill', '安装 PoemUI Skill', 'Terminal')}
@@ -7169,6 +7592,8 @@ function renderComponentPreview(id, props) {
   switch (previewId) {
     case 'getting-started':
       return gettingStartedGuide();
+    case 'release-notes':
+      return releaseNotesPage();
     case 'config-provider':
       return configProviderShowcase(props);
     case 'theme-tokens':
@@ -7254,6 +7679,14 @@ function renderComponentPreview(id, props) {
       return barChartShowcase(props, demo);
     case 'waffle':
       return waffleShowcase(props, demo);
+    case 'donut-chart':
+      return donutChartShowcase(props, demo);
+    case 'radar-chart':
+      return radarChartShowcase(props, demo);
+    case 'sortable-list':
+      return sortableListShowcase(props, demo);
+    case 'tour':
+      return tourShowcase(props, demo);
     case 'loading':
       return loadingShowcase(props, demo);
     case 'top-loading':
@@ -16879,14 +17312,30 @@ const chartHighVarianceItems = {
   waffle: [
     { key: 'components', label: '组件总量', segments: [{ key: 'existing', label: '已有', value: 62, theme: 'neutral' }, { key: 'added', label: '本次新增', value: 24, theme: 'violet' }] },
   ],
+  'donut-chart': [
+    { key: 'basic', label: '基础', value: 8, theme: 'blue' },
+    { key: 'form', label: '表单', value: 34, theme: 'teal' },
+    { key: 'advanced', label: '高级', value: 17, theme: 'violet' },
+    { key: 'feedback', label: '反馈', value: 5, theme: 'pink' },
+  ],
 };
 
 function chartPreviewProps(id, props, demo) {
+  if (id === 'radar-chart' && demo.chartHighVariance) {
+    return {
+      ...props,
+      series: [
+        { key: 'current', label: '当前版本', values: [96, 48, 88, 56, 92], theme: 'violet' },
+        { key: 'baseline', label: '基线', values: [58, 82, 44, 86, 62], theme: 'blue' },
+      ],
+    };
+  }
   return demo.chartHighVariance ? { ...props, items: chartHighVarianceItems[id] } : props;
 }
 
 function chartDataToggleButton(id, demo) {
   const icon = id === 'area-chart' ? 'chart-line' : id === 'bar-chart' ? 'chart-bar' : 'chart-pie';
+  const names = { 'area-chart': '面积图', 'bar-chart': '条形图', waffle: '点阵图', 'donut-chart': '圆环图', 'radar-chart': '雷达图' };
   return buttonSample({
     block: true,
     theme: 'primary',
@@ -16894,7 +17343,7 @@ function chartDataToggleButton(id, demo) {
     icon,
     content: demo.chartHighVariance ? '恢复初始数据' : '切换高波动数据',
     demoAction: 'chart-data-toggle',
-    ariaLabel: `${demo.chartHighVariance ? '恢复' : '切换'}${id === 'area-chart' ? '面积图' : id === 'bar-chart' ? '条形图' : '点阵图'}演示数据`,
+    ariaLabel: `${demo.chartHighVariance ? '恢复' : '切换'}${names[id] || '图表'}演示数据`,
   });
 }
 
@@ -17142,6 +17591,224 @@ function waffleShowcase(props, demo) {
     <div class="pui-chart-showcase__data-toggle">${chartDataToggleButton('waffle', demo)}</div>
     <div class="pui-chart-showcase__heading"><strong>大数据缩放</strong><span>单位显式可见</span></div>
     ${waffleMarkup({ ...props, items: scaledItems, maxCells: 80, showLegend: false })}
+  </section>`;
+}
+
+function normalizedDonutItems(items) {
+  const source = Array.isArray(items) ? items : [];
+  const used = new Set();
+  return source.map((raw, index) => {
+    const item = raw && typeof raw === 'object' ? raw : {};
+    let key = String(item.key ?? `item-${index}`);
+    while (used.has(key)) key = `${key}-${index + 1}`;
+    used.add(key);
+    return {
+      key,
+      label: String(item.label ?? key),
+      value: chartNumber(item.value),
+      theme: chartThemes.has(item.theme) ? item.theme : ['blue', 'teal', 'violet', 'pink', 'amber'][index % 5],
+    };
+  }).filter((item) => item.value > 0);
+}
+
+function donutPoint(cx, cy, radius, angle) {
+  const radians = (angle * Math.PI) / 180;
+  return { x: cx + radius * Math.cos(radians), y: cy + radius * Math.sin(radians) };
+}
+
+function donutArcPath(cx, cy, radius, start, sweep) {
+  const normalizedSweep = Math.max(0, Math.min(359.999, sweep));
+  const end = start + normalizedSweep;
+  const from = donutPoint(cx, cy, radius, start);
+  const to = donutPoint(cx, cy, radius, end);
+  return `M${from.x.toFixed(2)} ${from.y.toFixed(2)} A${radius} ${radius} 0 ${normalizedSweep > 180 ? 1 : 0} 1 ${to.x.toFixed(2)} ${to.y.toFixed(2)}`;
+}
+
+let donutChartGradientSequence = 0;
+
+function donutChartMarkup(props) {
+  const items = normalizedDonutItems(props.items);
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  const size = ['small', 'medium', 'large'].includes(props.size) ? props.size : 'medium';
+  const thickness = Math.max(8, Math.min(40, chartNumber(props.thickness) / 2 || 20));
+  const startAngle = Number.isFinite(Number(props.startAngle)) ? Number(props.startAngle) : -90;
+  const requestedGap = Math.max(0, Math.min(12, chartNumber(props.gapAngle)));
+  const gap = items.length > 1 ? Math.min(requestedGap, 360 / items.length / 2) : 0;
+  const radius = 72;
+  const scope = `pui-donut-${donutChartGradientSequence += 1}`;
+  let cursor = startAngle;
+  const gradients = [];
+  const paths = items.map((item, index) => {
+    const sweep = total ? (item.value / total) * 360 : 0;
+    const visibleSweep = Math.max(0, sweep - gap);
+    const begin = cursor + gap / 2;
+    const endPoint = donutPoint(100, 100, radius, begin + visibleSweep);
+    gradients.push(`<linearGradient id="${scope}-${index}" class="pui-chart-theme--${item.theme}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--pui-chart-accent)" stop-opacity=".18"/><stop offset=".68" stop-color="var(--pui-chart-accent)" stop-opacity=".7"/><stop offset="1" stop-color="var(--pui-chart-accent)" stop-opacity="1"/></linearGradient>`);
+    const path = `<g class="pui-chart-theme--${item.theme}" style="--pui-chart-delay:${Math.min(index * 70, 210)}ms"><path class="pui-donut-chart-preview__arc" d="${donutArcPath(100, 100, radius, begin, visibleSweep)}" stroke="url(#${scope}-${index})" stroke-width="${thickness}" pathLength="1"/><circle class="pui-donut-chart-preview__endpoint" cx="${endPoint.x.toFixed(2)}" cy="${endPoint.y.toFixed(2)}" r="${Math.max(2, thickness / 2).toFixed(2)}"/></g>`;
+    cursor += sweep;
+    return path;
+  }).join('');
+  const centerText = String(props.centerText || chartValueText(total));
+  const center = props.showCenter === false ? '' : `<div class="pui-donut-chart-preview__center" aria-hidden="true"><strong>${escapeHtml(centerText)}</strong><span>总量</span></div>`;
+  const semantic = `${props.ariaLabel || '圆环图'}${items.length ? `：${items.map((item) => `${item.label} ${chartValueText(item.value)}`).join('，')}` : '：暂无数据'}`;
+  const entrance = chartEntranceAttrs(props);
+  const legend = items.map((item) => ({ key: item.key, label: item.label, theme: item.theme }));
+  return `<div class="pui-donut-chart-preview pui-donut-chart-preview--${size} ${entrance.classes}" ${entrance.attrs} role="img" aria-label="${escapeHtml(semantic)}">${items.length ? `<div class="pui-donut-chart-preview__plot"><svg viewBox="0 0 200 200" aria-hidden="true"><defs>${gradients.join('')}</defs>${paths}</svg>${center}</div>` : '<p class="pui-chart-preview__empty">暂无数据</p>'}${props.showLegend !== false && legend.length ? chartLegendMarkup(legend) : ''}</div>`;
+}
+
+function donutChartShowcase(props, demo) {
+  const previewProps = chartPreviewProps('donut-chart', props, demo);
+  return `<section class="demo-section pui-chart-showcase">
+    <div class="pui-chart-showcase__heading"><span><strong>组件分类占比</strong><small>${demo.chartHighVariance ? '高差异数据' : '初始数据'} · 渐变到透明</small></span>${iconButtonSample({ icon: 'refresh', size: 'small', variant: 'text', shape: 'circle', ariaLabel: '重播圆环图动画', demoAction: 'chart-replay' })}</div>
+    ${donutChartMarkup(previewProps)}
+    <div class="pui-chart-showcase__data-toggle">${chartDataToggleButton('donut-chart', demo)}</div>
+  </section>`;
+}
+
+function normalizedRadarData(indicators, series) {
+  const normalizedIndicators = (Array.isArray(indicators) ? indicators : []).slice(0, 8).map((raw, index) => {
+    const item = raw && typeof raw === 'object' ? raw : {};
+    return { key: String(item.key ?? `axis-${index}`), label: String(item.label ?? `维度 ${index + 1}`), max: Math.max(1, chartNumber(item.max) || 100) };
+  });
+  if (normalizedIndicators.length < 3) return { indicators: [], series: [] };
+  const normalizedSeries = (Array.isArray(series) ? series : []).slice(0, 4).map((raw, index) => {
+    const item = raw && typeof raw === 'object' ? raw : {};
+    const values = Array.isArray(item.values) ? item.values : [];
+    return {
+      key: String(item.key ?? `series-${index}`),
+      label: String(item.label ?? `系列 ${index + 1}`),
+      theme: chartThemes.has(item.theme) ? item.theme : ['violet', 'blue', 'teal', 'pink'][index % 4],
+      values: normalizedIndicators.map((indicator, axis) => Math.min(indicator.max, chartNumber(values[axis]))),
+    };
+  });
+  return { indicators: normalizedIndicators, series: normalizedSeries };
+}
+
+function radarPoint(index, count, ratio, radius = 96) {
+  const angle = -Math.PI / 2 + (index * Math.PI * 2) / count;
+  return { x: 150 + Math.cos(angle) * radius * ratio, y: 150 + Math.sin(angle) * radius * ratio };
+}
+
+function radarPointsString(points) {
+  return points.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
+}
+
+let radarChartGradientSequence = 0;
+
+function radarChartMarkup(props) {
+  const data = normalizedRadarData(props.indicators, props.series);
+  const levels = Math.max(2, Math.min(8, Math.floor(Number(props.levels) || 4)));
+  const size = ['small', 'medium', 'large'].includes(props.size) ? props.size : 'medium';
+  const count = data.indicators.length;
+  const scope = `pui-radar-${radarChartGradientSequence += 1}`;
+  const grid = !count || props.showGrid === false ? '' : Array.from({ length: levels }, (_, level) => {
+    const ratio = (level + 1) / levels;
+    return `<polygon points="${radarPointsString(data.indicators.map((_, index) => radarPoint(index, count, ratio)))}"/>`;
+  }).join('');
+  const axes = !count || props.showGrid === false ? '' : data.indicators.map((_, index) => {
+    const point = radarPoint(index, count, 1);
+    return `<line x1="150" y1="150" x2="${point.x.toFixed(2)}" y2="${point.y.toFixed(2)}"/>`;
+  }).join('');
+  const labels = count ? data.indicators.map((indicator, index) => {
+    const point = radarPoint(index, count, 1.2);
+    const anchor = point.x < 140 ? 'end' : point.x > 160 ? 'start' : 'middle';
+    return `<text x="${point.x.toFixed(2)}" y="${point.y.toFixed(2)}" text-anchor="${anchor}" dominant-baseline="middle">${escapeHtml(indicator.label)}</text>`;
+  }).join('') : '';
+  const gradients = data.series.map((entry, index) => `<radialGradient id="${scope}-${index}" class="pui-chart-theme--${entry.theme}"><stop offset="0" stop-color="var(--pui-chart-accent)" stop-opacity=".5"/><stop offset="1" stop-color="var(--pui-chart-accent)" stop-opacity=".08"/></radialGradient>`).join('');
+  const shapes = data.series.map((entry, seriesIndex) => {
+    const points = entry.values.map((value, index) => radarPoint(index, count, value / data.indicators[index].max));
+    return `<g class="pui-radar-chart-preview__series pui-chart-theme--${entry.theme}" style="--pui-chart-delay:${Math.min(seriesIndex * 90, 270)}ms"><polygon class="pui-radar-chart-preview__area" points="${radarPointsString(points)}" fill="url(#${scope}-${seriesIndex})"/><polygon class="pui-radar-chart-preview__line" points="${radarPointsString(points)}"/>${props.showDots === false ? '' : points.map((point) => `<circle class="pui-radar-chart-preview__dot" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="3"/>`).join('')}</g>`;
+  }).join('');
+  const semantic = `${props.ariaLabel || '雷达图'}${data.series.length ? `：${data.series.map((entry) => `${entry.label} ${entry.values.map((value, index) => `${data.indicators[index].label} ${chartValueText(value)}`).join('、')}`).join('；')}` : '：暂无数据'}`;
+  const entrance = chartEntranceAttrs(props);
+  const legend = data.series.map((item) => ({ key: item.key, label: item.label, theme: item.theme }));
+  return `<div class="pui-radar-chart-preview pui-radar-chart-preview--${size} ${entrance.classes}" ${entrance.attrs} role="img" aria-label="${escapeHtml(semantic)}">${count && data.series.length ? `<svg viewBox="0 0 300 300" aria-hidden="true"><defs>${gradients}</defs><g class="pui-radar-chart-preview__grid">${grid}${axes}</g><g class="pui-radar-chart-preview__labels">${labels}</g>${shapes}</svg>` : '<p class="pui-chart-preview__empty">暂无数据</p>'}${props.showLegend !== false && legend.length ? chartLegendMarkup(legend) : ''}</div>`;
+}
+
+function radarChartShowcase(props, demo) {
+  const previewProps = chartPreviewProps('radar-chart', props, demo);
+  return `<section class="demo-section pui-chart-showcase">
+    <div class="pui-chart-showcase__heading"><span><strong>组件能力轮廓</strong><small>${demo.chartHighVariance ? '高差异数据' : '初始数据'} · 中心渐隐</small></span>${iconButtonSample({ icon: 'refresh', size: 'small', variant: 'text', shape: 'circle', ariaLabel: '重播雷达图动画', demoAction: 'chart-replay' })}</div>
+    ${radarChartMarkup(previewProps)}
+    <div class="pui-chart-showcase__data-toggle">${chartDataToggleButton('radar-chart', demo)}</div>
+  </section>`;
+}
+
+function sortableListNormalizedItems(props) {
+  const items = Array.isArray(props.items) ? props.items : [];
+  const keyField = String(props.itemKey || 'key');
+  const disabled = new Set((Array.isArray(props.disabledKeys) ? props.disabledKeys : []).map(String));
+  return items.map((raw, index) => {
+    const item = raw && typeof raw === 'object' ? raw : {};
+    const key = item[keyField] ?? item.key ?? index;
+    return {
+      ...item,
+      _key: String(key),
+      title: String(item.title ?? item.label ?? `项目 ${index + 1}`),
+      description: String(item.description ?? ''),
+      icon: String(item.icon || ''),
+      disabled: !!item.disabled || disabled.has(String(key)),
+    };
+  });
+}
+
+function sortableListShowcase(props, demo) {
+  const items = sortableListNormalizedItems(props);
+  const height = Math.max(180, Math.min(420, parseFloat(props.height) ? parseFloat(props.height) / (String(props.height).includes('rpx') ? 2 : 1) : 280));
+  const rows = items.map((item, index) => {
+    const handle = iconButtonSample({
+      icon: 'menu', shape: 'circle', size: 'small', ariaLabel: `拖动排序 ${item.title}`,
+      disabled: item.disabled, demoAction: 'sortable-handle', demoIndex: index,
+      dataAttributes: { 'sortable-handle': '', 'sortable-key': item._key },
+    });
+    return `<div class="pui-sortable-list-preview__item${item.disabled ? ' is-disabled' : ''}" data-sortable-item data-index="${index}" data-key="${escapeHtml(item._key)}" aria-disabled="${item.disabled}">${cellSample({
+      title: item.title,
+      description: item.description,
+      value: item.value === undefined ? '' : String(item.value),
+      leftIcon: item.icon,
+      bordered: props.bordered !== false && index < items.length - 1,
+      disabled: item.disabled,
+      rightSlot: { __html: handle },
+      customClass: 'pui-sortable-list-preview__cell',
+    })}</div>`;
+  }).join('');
+  const eventText = demo.sortableEvent || '长按句柄拖动，或聚焦句柄后使用方向键';
+  return `<section class="demo-section pui-sortable-list-showcase"><div class="pui-sortable-list-preview${props.bordered === false ? '' : ' is-bordered'}${props.reduceMotion ? ' is-reduced-motion' : ''}" data-sortable-root style="--pui-sortable-height:${height}px;--pui-sortable-duration:${previewMotionDuration(props.duration, props.reduceMotion)}ms" role="list" aria-label="${escapeHtml(props.ariaLabel || '可排序列表')}"><div class="pui-sortable-list-preview__viewport" data-sortable-viewport>${rows || '<p class="pui-chart-preview__empty">暂无可排序项目</p>'}</div></div><p class="pui-sortable-list-preview__status" role="status">${escapeHtml(eventText)}</p></section>`;
+}
+
+function tourPreviewSnapshot(props, demo) {
+  if (!demo.tourInitialized) {
+    demo.tourInitialized = true;
+    demo.tourVisible = props.visible === null || props.visible === undefined ? !!props.defaultVisible : !!props.visible;
+    demo.tourCurrent = props.current === null || props.current === undefined ? Number(props.defaultCurrent) || 0 : Number(props.current) || 0;
+  }
+  if (props.visible !== null && props.visible !== undefined) demo.tourVisible = !!props.visible;
+  if (props.current !== null && props.current !== undefined) demo.tourCurrent = Number(props.current) || 0;
+  return { visible: !!demo.tourVisible, current: Math.max(0, Math.floor(Number(demo.tourCurrent) || 0)) };
+}
+
+function tourShowcase(props, demo) {
+  const steps = (Array.isArray(props.steps) ? props.steps : []).filter((step) => step && typeof step === 'object');
+  const snapshot = tourPreviewSnapshot(props, demo);
+  const current = Math.min(Math.max(0, steps.length - 1), snapshot.current);
+  const step = steps[current] || {};
+  const panel = snapshot.visible && step.selector ? `<div class="pui-tour-preview${props.overlayBlur ? ' pui-tour-preview--overlay-blur' : ''}${props.reduceMotion ? ' is-reduced-motion' : ''}" data-tour-root data-current="${current}" style="--pui-tour-duration:${previewMotionDuration(props.duration, props.reduceMotion)}ms;z-index:${Math.max(1, Math.min(12000, Number(props.zIndex) || 11500))}" role="dialog" aria-modal="true" aria-label="${escapeHtml(`${props.ariaLabel || '功能引导'}，第 ${current + 1} 步，共 ${steps.length} 步`)}">
+    ${['top', 'right', 'bottom', 'left'].map((side) => `<div class="pui-tour-preview__mask is-${side}" data-tour-mask="${side}" data-demo-action="tour-overlay" role="button" tabindex="-1" aria-label="关闭引导"></div>`).join('')}
+    <div class="pui-tour-preview__target" data-tour-target aria-hidden="true"></div>
+    <div class="pui-tour-preview__panel" data-tour-panel>
+      <header><div><strong>${escapeHtml(step.title || `第 ${current + 1} 步`)}</strong>${props.showIndicators === false ? '' : `<span>${current + 1} / ${steps.length}</span>`}</div>${iconButtonSample({ icon: 'close', shape: 'circle', size: 'small', ariaLabel: '关闭引导', demoAction: 'tour-close' })}</header>
+      <div class="pui-tour-preview__content">${escapeHtml(step.content || '')}</div>
+      <footer>${current > 0 ? buttonSample({ variant: 'text', size: 'small', content: '上一步', demoAction: 'tour-prev' }) : ''}${props.showSkip !== false && current < steps.length - 1 ? buttonSample({ variant: 'text', size: 'small', content: '跳过', demoAction: 'tour-skip' }) : ''}${buttonSample({ theme: 'primary', size: 'small', content: current === steps.length - 1 ? '完成' : '下一步', demoAction: 'tour-next' })}</footer>
+    </div>
+  </div>` : '';
+  return `<section class="pui-tour-showcase">
+    <div class="pui-tour-showcase__targets">
+      <div id="tour-search-target">${cellSample({ title: '快速搜索', description: '输入组件中文名或英文名', leftIcon: 'search', bordered: true })}</div>
+      <div id="tour-appearance-target">${cellSample({ title: '外观设置', description: '切换主题与组件效果', leftIcon: 'palette', bordered: false })}</div>
+    </div>
+    <div class="pui-tour-showcase__action">${buttonSample({ theme: 'primary', size: 'small', icon: 'spark', content: snapshot.visible ? '引导进行中' : '开始功能引导', demoAction: 'tour-open', disabled: snapshot.visible })}</div>
+    ${demo.tourError ? `<p class="pui-tour-showcase__error" role="alert">${escapeHtml(demo.tourError)}</p>` : ''}
+    ${panel}
   </section>`;
 }
 
@@ -20500,6 +21167,25 @@ function renderIconLibrary(target, props = getProps('icon')) {
   `;
 }
 
+function renderReleaseNotesTrigger() {
+  const mount = document.querySelector('#releaseNotesTriggerMount');
+  if (!mount) return;
+  const current = state.current === 'release-notes';
+  mount.innerHTML = buttonSample({
+    id: 'releaseNotesTrigger',
+    customClass: `brand__version${current ? ' is-active' : ''}`,
+    variant: 'text',
+    surface: 'transparent',
+    size: 'extra-small',
+    shape: 'round',
+    content: releaseNotesData.version,
+    ariaLabel: `查看 PoemUI ${releaseNotesData.version} 更新公告`,
+    ariaCurrent: current ? 'page' : 'false',
+    title: `查看 ${releaseNotesData.version} 更新公告`,
+    demoAction: 'release-notes-open',
+  });
+}
+
 function syncShell() {
   const shell = document.querySelector('.app-shell');
   shell.dataset.theme = state.theme;
@@ -20519,7 +21205,7 @@ function syncShell() {
   shell.dataset.device = state.device;
   shell.dataset.pageMode = isDocumentationPage(state.current) ? 'document' : 'interactive';
   shell.dataset.componentView = state.view;
-  document.querySelector('.brand__version').textContent = componentData.version;
+  renderReleaseNotesTrigger();
   const documentation = isDocumentationPage(state.current);
   const overview = !documentation && state.view === 'overview';
   const standardOverview = overview && state.current !== 'icon';
@@ -20612,6 +21298,8 @@ function syncShell() {
   syncAppearanceMenu();
   const navKey = state.current === 'icon'
     ? 'icons'
+    : state.current === 'release-notes'
+      ? 'updates'
     : state.current === 'getting-started'
       ? 'guide'
       : state.current === 'theme-tokens'
@@ -20778,6 +21466,7 @@ document.addEventListener('keydown', (event) => {
 
 function routeForComponent(id) {
   if (id === 'getting-started') return '#/guide';
+  if (id === 'release-notes') return '#/updates';
   if (id === 'icon') return '#/icons';
   const item = allItems.find((entry) => entry.id === id);
   if (item && item.group.key === 'foundation') return `#/foundation/${id}`;
@@ -20804,11 +21493,22 @@ function selectComponent(id, updateHash) {
 function syncRoute() {
   const hash = window.location.hash.replace(/^#\/?/, '');
   const parts = hash.split('/').filter(Boolean);
-  const routeId = parts[0] === 'guide' ? 'getting-started' : parts[0] === 'icons' ? 'icon' : parts[1];
+  const routeId = parts[0] === 'guide'
+    ? 'getting-started'
+    : parts[0] === 'updates'
+      ? 'release-notes'
+      : parts[0] === 'icons'
+        ? 'icon'
+        : parts[1];
   if (!selectComponent(routeId || 'button', false) && window.location.hash !== '#/foundation/button') {
     window.location.hash = '#/foundation/button';
   }
 }
+
+document.querySelector('#releaseNotesTriggerMount').addEventListener('click', (event) => {
+  if (!event.target.closest('[data-demo-action="release-notes-open"]')) return;
+  selectComponent('release-notes', true);
+});
 
 document.querySelector('#componentGroups').addEventListener('click', (event) => {
   const button = event.target.closest('.component-item');
@@ -21806,16 +22506,48 @@ document.querySelector('#previewStage').addEventListener('click', async (event) 
   const index = Number(action.dataset.index || 0);
   const value = action.dataset.value;
   if (type === 'copy-guide-code') return;
-  if (type === 'chart-replay' && ['area-chart', 'bar-chart', 'waffle'].includes(previewIdFor(state.current))) {
+  if (type === 'chart-replay' && ['area-chart', 'bar-chart', 'waffle', 'donut-chart', 'radar-chart'].includes(previewIdFor(state.current))) {
     event.preventDefault();
     replayChartEntrancePreviewRuntime(props);
     return;
   }
-  if (type === 'chart-data-toggle' && ['area-chart', 'bar-chart', 'waffle'].includes(previewIdFor(state.current))) {
+  if (type === 'chart-data-toggle' && ['area-chart', 'bar-chart', 'waffle', 'donut-chart', 'radar-chart'].includes(previewIdFor(state.current))) {
     event.preventDefault();
     demo.chartHighVariance = !demo.chartHighVariance;
     renderStage();
     return;
+  }
+  if (previewIdFor(state.current) === 'tour') {
+    const steps = Array.isArray(props.steps) ? props.steps : [];
+    const current = Math.max(0, Math.min(Math.max(0, steps.length - 1), Number(demo.tourCurrent) || 0));
+    if (type === 'tour-open') {
+      delete demo.tourError;
+      state.previewTourReturnFocus = action;
+      setTourPreviewVisible(props, demo, true, 'trigger');
+      return;
+    }
+    if (type === 'tour-close' || (type === 'tour-overlay' && props.closeOnOverlay !== false)) {
+      setTourPreviewVisible(props, demo, false, type === 'tour-overlay' ? 'overlay' : 'close-button');
+      return;
+    }
+    if (type === 'tour-skip') {
+      demo.tourEvent = `skip：${current}`;
+      setTourPreviewVisible(props, demo, false, 'skip');
+      return;
+    }
+    if (type === 'tour-prev') {
+      setTourPreviewCurrent(props, demo, current - 1, 'prev');
+      return;
+    }
+    if (type === 'tour-next') {
+      if (current >= steps.length - 1) {
+        demo.tourEvent = `finish：${current}`;
+        setTourPreviewVisible(props, demo, false, 'finish');
+      } else {
+        setTourPreviewCurrent(props, demo, current + 1, 'next');
+      }
+      return;
+    }
   }
   if (previewIdFor(state.current) === 'picker' && type === 'picker-open') {
     if (!pickerH5SetVisible(props, demo, true, 'trigger')) return;

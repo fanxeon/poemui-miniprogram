@@ -1,0 +1,125 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0532",
+  "title": "ScrollArea 实色遮罩与半透明 Popup Surface 形成横带",
+  "scope": "component",
+  "components": ["scroll-area", "popup", "config-provider", "preview-site", "design-tokens", "miniprogram-me"],
+  "type": "visual-layout",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-30",
+  "updatedAt": "2026-07-30",
+  "userGoal": "ScrollArea 位于毛玻璃或半透明 Popup 面板内时，顶底阅读渐变必须与当前 Surface 连续，不出现纯白或纯深色横带，同时保留公开自定义颜色能力。",
+  "environment": {
+    "surfaces": ["wechat-miniprogram", "scroll-area", "popup-card", "miniprogram-me-update-announcement", "h5-preview"],
+    "platforms": ["wechat-miniprogram", "wechat-devtools", "browser", "node"],
+    "viewports": ["390x844", "390px"],
+    "themes": ["light", "dark", "frosted"]
+  },
+  "reproduction": [
+    "在小程序 Me 页打开更新公告 Popup，并开启毛玻璃外观。",
+    "滚动公告内容使 ScrollArea 顶部或底部渐变进入可见状态。",
+    "Popup card 背景为 rgba 半透明 tint，但旧 ScrollArea 空色回退为不透明 --pui-bg-container，边缘出现与面板合成颜色不一致的亮色横带。"
+  ],
+  "expected": "普通实底 ScrollArea 继续使用当前主题容器色；毛玻璃组件树或 Popup card 内的 ScrollArea 自动使用同色相低 alpha 材质遮罩，显式 gradientOverlayColor 仍优先，滚动、边缘状态和公开 API 不变。",
+  "actual": "默认遮罩总使用 #fff 或 #18181b 的不透明容器色，在 rgba(.72) Popup Surface 上重新覆盖实色，无法匹配背后内容与 blur 共同产生的实时合成结果。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-30 当前任务截图",
+      "note": "更新公告浅色毛玻璃 Popup 的 ScrollArea 顶底出现明显白色横带。"
+    },
+    {
+      "kind": "file",
+      "ref": "scroll-area/scroll-area.wxss",
+      "note": "固定 sibling layer 使用 --pui-scroll-area-gradient-overlay-color 到 transparent 的背景渐变。"
+    },
+    {
+      "kind": "file",
+      "ref": "common/style/theme.wxss",
+      "note": "旧上下文色回退为不透明 --pui-bg-container；Popup card Surface 为 rgba tint。"
+    },
+    {
+      "kind": "file",
+      "ref": "popup/popup.wxss",
+      "note": "card Surface 向后代 ScrollArea 重绑定同名材质遮罩上下文。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-scroll-area.js",
+      "note": "专项锁定 light/dark 材质 Token、frosted/Popup card 继承、H5 镜像和显式颜色优先级。"
+    }
+  ],
+  "rootCause": "ScrollArea 的上下文色合同只区分 light/dark 实底，没有区分不透明容器与已经经过 alpha/backdrop-filter 合成的半透明 Surface；Popup card 透明化后，嵌套滚动遮罩仍沿用旧的实色回退。",
+  "decision": {
+    "outcome": "新增跨端 --pui-scroll-area-gradient-overlay-material-color，light/dark 均使用对应 Surface 基色的 .32 alpha。pui-frosted-glass--on 与 Popup card 自动把默认上下文重绑定到该 Token；普通上下文保留 --pui-bg-container/--surface-solid，合法 gradientOverlayColor 继续通过 inline 变量覆盖。",
+    "rationale": "低 alpha 同色相遮罩仍能弱化边缘内容，但不会用第二层不透明颜色抹掉玻璃 Surface 的背景关系；仅使用现有 sibling layer 和 Token 继承，兼容当前小程序实现，也不需要页面知道 Popup 的合成颜色。",
+    "alternativesRejected": [
+      "在 Me 页面传固定 rgba 白色：只修一个消费页，并使深色、自定义主题和其他半透明 Surface 漂移。",
+      "直接把默认色改成 --pui-glass-tint：在已有 .72 alpha Surface 上再次叠加 .72 alpha，会形成接近实底的新色带。",
+      "使用 mask-image 淡出 ScrollArea 内容：视觉语义更接近真实 Surface，但当前未找到微信官方对 enhanced scroll-view 组合支持的证据，不能作为默认发布实现。",
+      "关闭 Popup 内渐变：会丢失长公告仍可继续滚动的阅读提示。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "common/style/theme.wxss",
+      "popup/popup.wxss",
+      "preview/styles.css",
+      "scripts/test-scroll-area.js",
+      "scripts/test-popup.js",
+      "docs/COMPONENT_API.md",
+      "docs/UI_DESIGN_CONTRACT.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/COMPONENT_RULES_INDEX.md",
+      "docs/COMPONENT_DEVELOPMENT_PROGRESS.md",
+      "docs/components/SCROLL-AREA.md",
+      "docs/components/POPUP.md",
+      "miniprogram_dist",
+      "miniprogram/miniprogram_npm"
+    ],
+    "dependencies": ["PUI theme tokens", "ConfigProvider", "Popup card", "ScrollArea gradient overlay"]
+  },
+  "verification": {
+    "tests": ["scripts/test-scroll-area.js", "scripts/test-popup.js", "scripts/test-config-provider.js", "scripts/test-miniprogram-me-page.js"],
+    "commands": [
+      "node scripts/test-scroll-area.js",
+      "PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js",
+      "node scripts/test-popup.js",
+      "node scripts/test-config-provider.js",
+      "node scripts/test-miniprogram-me-page.js",
+      "node --check preview/app.js",
+      "npm run feedback:generate",
+      "npm run feedback:check",
+      "npm run site:build",
+      "npm run check",
+      "npm run pack:check",
+      "npm run example:install",
+      "/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project miniprogram（1249ms，warnings=[]）",
+      "源码、miniprogram_dist、miniprogram/node_modules 与 miniprogram/miniprogram_npm 的 theme、Popup、ScrollArea 相关文件 SHA-256 四路一致",
+      "git diff --check",
+      "git -C miniprogram diff --check"
+    ],
+    "browser": [
+      "390px light + frosted 下 ScrollArea context/material 均为 rgba(255,255,255,.32)，document scrollWidth=clientWidth=375；关闭 frosted 后 context 恢复 #ffffff，底部渐变起点为 rgb(255,255,255)。",
+      "390px dark + frosted 下 context/material 均为 rgba(24,24,27,.32)，底部渐变计算值使用同色相 .32 alpha。",
+      "dark + frosted Popup card 计算背景为 rgba(24,24,27,.72)，后代 ScrollArea context 为 rgba(24,24,27,.32)，证明半透明 Surface 继承边界生效。",
+      "属性页显式设置 gradientOverlayColor=#fef3c7 后，预览根 inline Token 与计算渐变起点均变为该色，证明公开自定义 API 高于全局材质上下文；浏览器 error/warning 日志为 0。"
+    ],
+    "deviceRisks": [
+      "微信开发者工具与 iOS/Android 真机仍需验证 enhanced scroll-view 上方 fixed sibling 渐变、CSS 变量跨组件继承、真实 blur 合成、惯性与触摸透传；H5 不能替代真机结论。"
+    ]
+  },
+  "ai": {
+    "summary": "ScrollArea 默认遮罩必须匹配宿主 Surface 材质；实底用容器色，玻璃/半透明 Surface 用同色相低 alpha 遮罩。",
+    "rules": [
+      "不得在消费页面为毛玻璃 ScrollArea 硬编码白色或深色遮罩；由 Surface/Provider Token 上下文治理。",
+      "Popup card 与全局 frosted 组件树必须向嵌套 ScrollArea 传递半透明材质色，普通实底行为保持不变。",
+      "显式 gradientOverlayColor 始终高于上下文默认值，不能因全局毛玻璃被覆盖。",
+      "H5 必须使用同名 Token 和继承边界，并滚动到遮罩可见后读取计算渐变验证。"
+    ],
+    "tags": ["scroll-area", "popup", "frosted-glass", "gradient-overlay", "surface", "theme-token", "h5-parity"]
+  }
+}

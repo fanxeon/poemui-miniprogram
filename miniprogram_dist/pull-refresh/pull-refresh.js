@@ -102,7 +102,7 @@ Component({
         loadingTextList: statusTexts(this.data.loadingTexts),
         rootClass: [
           'pui-pull-refresh',
-          'pui-theme--' + (this.data.colorScheme || 'light'),
+          this.getColorSchemeClass(),
           'pui-pull-refresh--' + ({ '-1': 'idle', 0: 'pulling', 1: 'ready', 2: 'loading', 3: 'complete' }[status] || 'idle'),
           this.data.loosing ? 'pui-pull-refresh--loosing' : '',
           this.data.disabled ? 'pui-pull-refresh--disabled' : '',

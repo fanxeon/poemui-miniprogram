@@ -805,7 +805,7 @@ H5 与原生都保留 content/loading/error/empty 四层，以 500ms opacity/tra
 | `scrollTop` | `Number` | `0` | `≥ 0` | 受控纵向位置。用户滚动时通过 `scroll` 回写真值；父级写入 `0` 可让 BackTop 组合以平台原生动画真实回到局部滚动区顶部。 |
 | `scrollIntoView` | `String` | `''` | slot 内节点的 `id` | 父级传入目标节点 id 后，由原生 `scroll-view` 定位；空字符串不请求定位。 |
 | `gradientOverlay` | `Boolean` | `true` | `true`、`false` | 是否在真实滚动边缘显示渐变遮罩。顶部仅底层、底部仅顶层、中段两层、无溢出零层；不改变滚动、事件或定位。 |
-| `gradientOverlayColor` | `String` | `''` | `#hex`、`rgb()`、`rgba()`、`var(--token)` | 顶底渐变使用的颜色。空值或非法值跟随 `--pui-scroll-area-gradient-overlay-color-context`（默认主题容器色，页面可指定画布色）；合法自定义色会同时用于顶部与底部。 |
+| `gradientOverlayColor` | `String` | `''` | `#hex`、`rgb()`、`rgba()`、`var(--token)` | 顶底渐变使用的颜色。空值或非法值跟随 `--pui-scroll-area-gradient-overlay-color-context`：普通实底使用主题容器色，毛玻璃或 Popup card 自动使用同色相半透明材质色；页面仍可指定画布色。合法自定义色会同时用于顶部与底部并优先于上下文。 |
 | `gradientOverlaySize` | `String` | `'md'` | `'sm'`、`'md'`、`'lg'` | 顶底渐变的固定高度。`sm` 为 `40rpx / 20px`，`md`（既有默认）为 `64rpx / 32px`，`lg` 为 `88rpx / 44px`；非法值回退 `'md'`，不占用 Slot 空间。 |
 | `contentPaddingBottom` | `String` | `'10vh'` | 非负裸数、`rpx`、`px`、`vh` | 内容尾部安全区。裸数按 rpx，`0` 可关闭；负数、表达式或非法值回退 `'10vh'`。绝对定位浮层展开时，父级可临时提高该值以让滚动高度包含面板空间。 |
 | `ariaLabel` | `String` | `'滚动内容'` | 任意非空字符串 | 滚动区域的辅助名称；空值回退默认值。 |

@@ -2,7 +2,7 @@
 
 > 本文件由 `metadata/components.js` 自动生成。修改组件状态、公开 Props 或官网目录时，请运行 `npm run site:build`。
 
-当前 npm 包包含 74 个组件目录：`done` 74 个，`beta` 0 个，`experimental` 0 个。
+当前 npm 包包含 78 个组件目录：`done` 78 个，`beta` 0 个，`experimental` 0 个。
 
 - `done`：稳定发布组件，核心 API 与主交互已完成验证。
 - `beta`：具有独立 WXML、WXSS、JS 实现的受控发布组件，主路径可用，复杂 API 按版本继续扩展。
@@ -127,9 +127,13 @@
 | --- | --- | --- | --- |
 | AreaChart 面积图 | done | `poemui-miniprogram/area-chart/area-chart` | `items`、`max`、`curve`、`stacked`、`size`、`showGrid`、`showXAxis`、`showLegend`、`showDots`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
 | BarChart 条形图 | done | `poemui-miniprogram/bar-chart/bar-chart` | `items`、`orientation`、`mode`、`max`、`size`、`showValue`、`showLegend`、`showGrid`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
+| DonutChart 圆环图 | done | `poemui-miniprogram/donut-chart/donut-chart` | `items`、`thickness`、`startAngle`、`gapAngle`、`size`、`showCenter`、`centerText`、`showLegend`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
 | DynamicMessage 灵动通知 | done | `poemui-miniprogram/dynamic-message/dynamic-message` | `theme`、`title`、`message`、`icon`、`actionText`、`closable`、`duration`、`safeArea`、`shadow`、`frostedGlass`、`ariaLabel`、`reduceMotion` |
 | PullRefresh 下拉刷新 | done | `poemui-miniprogram/pull-refresh/pull-refresh` | `disabled`、`enableBackToTop`、`enablePassive`、`loadingBarHeight`、`loadingProps`、`loadingTexts`、`lowerThreshold`、`maxBarHeight`、`refreshTimeout`、`scrollIntoView`、`showScrollbar`、`successDuration`、`upperThreshold`、`usingCustomNavbar`、`value`、`defaultValue`、`ariaLabel`、`reduceMotion` |
+| RadarChart 雷达图 | done | `poemui-miniprogram/radar-chart/radar-chart` | `indicators`、`series`、`levels`、`size`、`showGrid`、`showLegend`、`showDots`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
+| SortableList 排序列表 | done | `poemui-miniprogram/sortable-list/sortable-list` | `items`、`itemKey`、`disabledKeys`、`dragFrom`、`height`、`bordered`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
 | TopLoading 顶部加载 | done | `poemui-miniprogram/top-loading/top-loading` | `state`、`progress`、`delay`、`minimumVisible`、`successDuration`、`duration`、`ariaLabel`、`reduceMotion` |
+| Tour 功能引导 | done | `poemui-miniprogram/tour/tour` | `steps`、`visible`、`defaultVisible`、`current`、`defaultCurrent`、`closeOnOverlay`、`overlayBlur`、`showSkip`、`showIndicators`、`zIndex`、`duration`、`ariaLabel`、`reduceMotion` |
 | VirtualList 虚拟列表 | done | `poemui-miniprogram/virtual-list/virtual-list` | `items`、`value`、`defaultValue`、`multiple`、`selectable`、`allowUnselect`、`itemKey`、`height`、`itemHeight`、`overscan`、`scrollTop`、`scrollWithAnimation`、`upperThreshold`、`lowerThreshold`、`showScrollbar`、`bordered`、`showIndex`、`showDescription`、`showValue`、`showItemIcon`、`showItemBadge`、`activeIcon`、`customHeader`、`customFooter`、`customEmpty`、`customItem`、`clickable`、`readonly`、`disabled`、`loading`、`loadingText`、`error`、`errorText`、`retryText`、`emptyText`、`ariaLabel`、`duration`、`easing`、`reduceMotion` |
 | Waffle 组件点阵图 | done | `poemui-miniprogram/waffle/waffle` | `items`、`columns`、`groupColumns`、`shape`、`size`、`unit`、`maxCells`、`showValue`、`showLegend`、`animated`、`duration`、`ariaLabel`、`reduceMotion` |
 | Watermark 水印 | done | `poemui-miniprogram/watermark/watermark` | `alpha`、`content`、`height`、`isRepeat`、`layout`、`lineSpace`、`movable`、`moveInterval`、`offset`、`rotate`、`watermarkContent`、`width`、`x`、`y`、`zIndex`、`ariaLabel`、`reduceMotion` |

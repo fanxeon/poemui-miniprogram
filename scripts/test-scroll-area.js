@@ -120,6 +120,7 @@ assert(source.includes('targetScrollTop === this._lastEmittedScrollTop'), 'Scrol
 
 const wxml = fs.readFileSync(path.join(root, 'scroll-area/scroll-area.wxml'), 'utf8');
 const wxss = fs.readFileSync(path.join(root, 'scroll-area/scroll-area.wxss'), 'utf8');
+const popupWxss = fs.readFileSync(path.join(root, 'popup/popup.wxss'), 'utf8');
 const json = JSON.parse(fs.readFileSync(path.join(root, 'scroll-area/scroll-area.json'), 'utf8'));
 const metadata = require(path.join(root, 'metadata/components.js'));
 const preview = fs.readFileSync(path.join(root, 'preview/app.js'), 'utf8');
@@ -151,10 +152,19 @@ assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-size-sm: var(--pui
 assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-size-md: var(--pui-space-step-32);'));
 assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-size-lg: var(--pui-space-step-44);'));
 assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-size: var(--pui-scroll-area-gradient-overlay-size-md);'));
+assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-material-color: rgba(255, 255, 255, 0.32);'));
 assert(themeWxss.includes('--pui-scroll-area-gradient-overlay-color-context: var(--pui-bg-container);'));
 assert(
-  /\.pui-theme--dark\s*\{[^}]*--pui-bg-container:\s*#18181b;[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-bg-container\);/s.test(themeWxss),
-  'dark theme scope must rebind the ScrollArea context color after the dark container token, otherwise the inherited light value renders a white strip',
+  /\.pui-theme--dark\s*\{[^}]*--pui-bg-container:\s*#18181b;[^}]*--pui-scroll-area-gradient-overlay-material-color:\s*rgba\(24,\s*24,\s*27,\s*0\.32\);[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-bg-container\);/s.test(themeWxss),
+  'dark theme scope must rebind the ScrollArea solid and material context colors after the dark container token',
+);
+assert(
+  /\.pui-frosted-glass--on\s*\{[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-scroll-area-gradient-overlay-material-color\);/s.test(themeWxss),
+  'frosted component trees must use the translucent material fade instead of painting an opaque container strip',
+);
+assert(
+  /\.pui-popup--card\s*\{[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-scroll-area-gradient-overlay-material-color\);[^}]*background:\s*var\(--pui-glass-tint\);/s.test(popupWxss),
+  'card Popup must provide the same translucent material context to nested ScrollArea instances',
 );
 
 assert.deepStrictEqual(metadata.apiProps['scroll-area'], PUBLIC_PROPS);
@@ -210,8 +220,20 @@ assert(styles.includes('--pui-scroll-area-gradient-overlay-size-sm: var(--pui-pr
 assert(styles.includes('--pui-scroll-area-gradient-overlay-size-md: var(--pui-preview-space-step-32);'));
 assert(styles.includes('--pui-scroll-area-gradient-overlay-size-lg: var(--pui-preview-space-step-44);'));
 assert(
-  /\.pui-scroll-area-preview\s*\{[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--surface-solid\);/s.test(styles),
-  'H5 ScrollArea root must resolve its context overlay color against the current light/dark surface',
+  /:root\s*\{[^}]*--pui-scroll-area-gradient-overlay-material-color:\s*rgba\(255,\s*255,\s*255,\s*0\.32\);[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--surface-solid\);/s.test(styles),
+  'H5 light theme must expose the same solid context and translucent material fade tokens',
+);
+assert(
+  /\.app-shell\[data-theme="dark"\]\s*\{[^}]*--pui-scroll-area-gradient-overlay-material-color:\s*rgba\(24,\s*24,\s*27,\s*0\.32\);[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--surface-solid\);/s.test(styles),
+  'H5 dark theme must rebind both ScrollArea context tokens in the active theme scope',
+);
+assert(
+  /\.app-shell\[data-frost="on"\]\s*\{[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-scroll-area-gradient-overlay-material-color\);/s.test(styles),
+  'H5 frosted trees must switch ScrollArea defaults to the material fade token',
+);
+assert(
+  /\.pui-popup-preview--card\s*\{[^}]*background:\s*var\(--pui-glass-tint\);[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-scroll-area-gradient-overlay-material-color\);/s.test(styles),
+  'H5 card Popup must pass the material fade context to nested ScrollArea mirrors',
 );
 assert(styles.includes('.pui-scroll-area-preview__viewport'));
 assert(styles.includes('.pui-scroll-area-preview__content'));

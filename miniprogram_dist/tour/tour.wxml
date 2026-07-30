@@ -1,0 +1,69 @@
+<view
+  wx:if="{{rendered}}"
+  class="{{rootClass}} {{entered ? 'pui-tour--entered' : ''}} {{customClass}}"
+  style="{{rootStyle}}{{customStyle}}"
+  role="dialog"
+  aria-label="{{semanticLabel}}"
+  aria-hidden="{{!opened}}"
+>
+  <view class="pui-tour__mask" style="{{maskTopStyle}}" catchtouchmove="noop" bindtap="onOverlayTap"></view>
+  <view class="pui-tour__mask" style="{{maskRightStyle}}" catchtouchmove="noop" bindtap="onOverlayTap"></view>
+  <view class="pui-tour__mask" style="{{maskBottomStyle}}" catchtouchmove="noop" bindtap="onOverlayTap"></view>
+  <view class="pui-tour__mask" style="{{maskLeftStyle}}" catchtouchmove="noop" bindtap="onOverlayTap"></view>
+  <view class="pui-tour__target" style="{{targetStyle}}" aria-hidden="true"></view>
+
+  <view class="pui-tour__panel pui-tour__panel--{{placement}}" style="{{panelStyle}}" catchtap="noop">
+    <view class="pui-tour__header">
+      <view class="pui-tour__heading">
+        <text class="pui-tour__title">{{activeStep.title}}</text>
+        <text wx:if="{{showIndicators}}" class="pui-tour__indicator">{{activeIndex + 1}} / {{normalizedSteps.length}}</text>
+      </view>
+      <pui-button
+        theme="default"
+        variant="text"
+        shape="circle"
+        size="extra-small"
+        icon="close"
+        icon-only
+        aria-label="关闭引导"
+        reduce-motion="{{reduceMotion}}"
+        color-scheme="{{colorScheme}}"
+        bind:click="onClose"
+      />
+    </view>
+    <view class="pui-tour__content">
+      <text>{{activeStep.content}}</text>
+      <slot></slot>
+    </view>
+    <view class="pui-tour__footer">
+      <pui-button
+        wx:if="{{activeIndex > 0}}"
+        theme="default"
+        variant="text"
+        size="small"
+        content="上一步"
+        reduce-motion="{{reduceMotion}}"
+        color-scheme="{{colorScheme}}"
+        bind:click="onPrev"
+      />
+      <pui-button
+        wx:if="{{showSkip && activeIndex < normalizedSteps.length - 1}}"
+        theme="default"
+        variant="text"
+        size="small"
+        content="跳过"
+        reduce-motion="{{reduceMotion}}"
+        color-scheme="{{colorScheme}}"
+        bind:click="onSkip"
+      />
+      <pui-button
+        theme="primary"
+        size="small"
+        content="{{activeIndex === normalizedSteps.length - 1 ? '完成' : '下一步'}}"
+        reduce-motion="{{reduceMotion}}"
+        color-scheme="{{colorScheme}}"
+        bind:click="onNext"
+      />
+    </view>
+  </view>
+</view>

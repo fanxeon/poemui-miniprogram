@@ -1,0 +1,128 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0530",
+  "title": "SortableList 重排时缺少真实位移动画",
+  "scope": "component",
+  "components": [
+    "sortable-list"
+  ],
+  "type": "bug",
+  "severity": "medium",
+  "status": "wont-fix",
+  "acceptance": "not-required",
+  "source": "user-report",
+  "reportedAt": "2026-07-30",
+  "updatedAt": "2026-07-30",
+  "userGoal": "SortableList 在拖动、兄弟行让位、松手落位和取消回退时都具备连贯动画，而不是瞬时换位。",
+  "environment": {
+    "surfaces": [
+      "sortable-list component",
+      "pages/components/sortable-list/index",
+      "#/components/sortable-list"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "h5"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "小程序长按 SortableList 句柄并跨过另一行中心。",
+    "组件立即以 setData 重排 normalizedItems，兄弟行没有可插值的位移量。",
+    "H5 Pointer 或键盘排序提交后调用 renderStage 重建列表，只有排序结果和焦点恢复，没有真实重排位移动画。"
+  ],
+  "expected": "animated=true 时活动行实时跟随，兄弟行平滑让位，松手后落位；取消、越界或父级拒绝时可逆回退，并保持稳定 key、单滚动所有者和父级 items 真相。",
+  "actual": "两端只对活动行的缩放、透明度和背景设置 transition；小程序直接重排数组，H5 重建 Stage，列表位置瞬时改变。",
+  "evidence": [
+    {
+      "kind": "user-report",
+      "ref": "2026-07-30 SortableList 动效反馈",
+      "note": "用户要求移动过程增加动画。"
+    },
+    {
+      "kind": "file",
+      "ref": "sortable-list/sortable-list.js",
+      "note": "第 155–158 行在跨过目标索引时直接重排 normalizedItems。"
+    },
+    {
+      "kind": "file",
+      "ref": "sortable-list/sortable-list.wxss",
+      "note": "第 3–4 行的现有 transform 只提供活动行 scale，没有兄弟行位移值。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "第 5809–5818 行在 H5 提交后直接 renderStage，无法保留前后几何执行重排动画。"
+    }
+  ],
+  "rootCause": "当前实现没有稳定的拖动布局快照、逐行位移模型和落位阶段；CSS transition 没有接收到兄弟行 transform 差量，H5 又在提交时重建节点。",
+  "decision": {
+    "outcome": "用户于 2026-07-30 明确取消本次动效增强。0.1.4 保留现有活动行状态过渡与顺序回写，不实现兄弟行 transform 让位、悬浮跟手、落位或拒绝回弹，也不把它们列为发布阻断。",
+    "rationale": "这是用户对当前版本范围的明确取舍。关闭记录可以避免待实现规格继续污染组件合同和发布口径；若未来重新提出，需要作为新的独立需求重新审计，不能把本记录当作已实现证据。",
+    "alternativesRejected": [
+      "只给当前 CSS 增加 transition：DOM 重排没有可插值的布局属性，仍会瞬移。",
+      "在页面层补动画：会造成每个消费者的手势、滚动和回写规则漂移。",
+      "拖动时把每行提升为带阴影 Card：破坏连续集合与单一 Surface 合同。",
+      "每次目标变化重建 Stage：只能展示最终顺序，无法形成真实前后几何动画。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "sortable-list/sortable-list.js",
+      "sortable-list/sortable-list.wxml",
+      "sortable-list/sortable-list.wxss",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/SORTABLE-LIST.md",
+      "docs/RELEASE_0.1.4_COMPONENT_CHANGELOG.md",
+      "docs/RELEASE_0.1.4_H5_CHANGELOG.md",
+      "scripts/test-sortable-list.js"
+    ],
+    "dependencies": [
+      "stable item keys",
+      "PUI motion tokens",
+      "single scroll ownership",
+      "parent controlled items",
+      "focus restoration"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-sortable-list.js"
+    ],
+    "commands": [
+      "2026-07-30 用户明确决定不实施该增强；合同、H5 兼容说明和 0.1.4 发布记录已恢复为当前真实行为。"
+    ],
+    "browser": [
+      "既有 390px H5 证据只证明 Pointer/键盘排序和焦点恢复，不证明重排位移动画；补丁后必须重新实测。"
+    ],
+    "deviceRisks": [
+      "微信 iOS/Android 的 touchmove 更新成本、变高行几何、边缘自动滚动补偿、取消回退和连续跨多行性能仍未验证。"
+    ]
+  },
+  "ai": {
+    "summary": "0.1.4 的 SortableList 不承诺兄弟行让位和落位动画；不要把现有顺序回写描述成这些动效已实现。",
+    "rules": [
+      "当前 animated 只表达活动行的状态过渡，不代表完整重排位移动画。",
+      "当前顺序回写不能被描述为兄弟行让位、悬浮跟手或落位回弹。",
+      "未来若重新提出完整重排动效，必须建立新的范围和验收证据。",
+      "不得新增第二滚动区、逐行 Surface 或页面私有动画。",
+      "animated=false 立即完成，reduceMotion 使用 1ms，事件和父级真相保持不变。",
+      "H5 排序不得通过 renderStage 重建冒充位移动画。"
+    ],
+    "tags": [
+      "sortable-list",
+      "reorder",
+      "motion",
+      "drag",
+      "controlled",
+      "h5-parity"
+    ]
+  }
+}

@@ -141,7 +141,7 @@ Component({
       var align = allowed(this.data.align, ALIGNS, 'center');
       var classes = [
         'pui-action-sheet',
-        'pui-theme--' + (this.data.colorScheme || 'light'),
+        this.getColorSchemeClass(),
         'pui-action-sheet--' + theme,
         'pui-action-sheet--align-' + align,
         this.data.usingCustomNavbar ? 'pui-action-sheet--custom-navbar' : '',

@@ -44,7 +44,11 @@ function create(overrides) {
   const events = [];
   const instance = {
     data: Object.assign({}, definition.data, defaults, { colorScheme: 'light' }, overrides || {}),
-    getColorSchemeClass() { return `pui-theme--${this.data.colorScheme}`; },
+    getColorSchemeClass() {
+      return this.data.colorScheme === 'light' || this.data.colorScheme === 'dark'
+        ? `pui-theme--${this.data.colorScheme}`
+        : '';
+    },
     setData(patch, callback) { Object.assign(this.data, patch); if (callback) callback(); },
     triggerEvent(name, detail) { events.push({ name, detail }); },
   };
@@ -61,6 +65,8 @@ assert.strictEqual(definition.methods.refresh, undefined);
 
 const base = create({ loadingBarHeight: 50, maxBarHeight: 80, refreshTimeout: 3000 });
 assert(base.instance.data.rootClass.includes('pui-pull-refresh--idle'));
+assert(!create({ colorScheme: '' }).instance.data.rootClass.includes('pui-theme--light'), 'empty colorScheme must inherit the nearest ConfigProvider');
+assert(create({ colorScheme: 'dark' }).instance.data.rootClass.includes('pui-theme--dark'), 'explicit dark colorScheme remains a local override');
 assert(base.instance.data.rootStyle.includes('--pui-pull-refresh-duration:500ms'));
 base.instance.onTouchStart({ touches: [{ pageX: 10, pageY: 10 }] });
 base.instance.onTouchMove({ touches: [{ pageX: 12, pageY: 110 }] });
@@ -143,6 +149,12 @@ const pullRefreshRootCss = previewStyles.match(/\.pull-refresh-preview \{[^}]+\}
 assert(pullRefreshRootCss.includes('overscroll-behavior-y: contain'));
 assert(pullRefreshRootCss.includes('touch-action: pan-y'));
 assert(!pullRefreshRootCss.includes('touch-action: pan-x'));
+assert(pullRefreshRootCss.includes('background: transparent'));
+assert(pullRefreshRootCss.includes('border: 0'));
+assert(pullRefreshRootCss.includes('box-shadow: none'));
+assert(pullRefreshRootCss.includes('backdrop-filter: none'));
+const pullRefreshContentCss = previewStyles.match(/\.pull-refresh-preview__content \{[^}]+\}/)[0];
+assert(pullRefreshContentCss.includes('background: transparent'), 'PullRefresh content track must not become a second Surface');
 assert(!preview.includes('pull-refresh-method'));
 assert(!preview.includes('defaultLoading'));
 assert(!preview.includes('maxPullDistance'));

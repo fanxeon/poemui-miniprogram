@@ -1865,6 +1865,53 @@ Page({
 })
 ```
 
+### 圆环图 `donut-chart`
+
+#### page.json
+
+```json
+{
+  "usingComponents": {
+    "pui-donut-chart": "poemui-miniprogram/donut-chart/donut-chart"
+  }
+}
+```
+
+#### page.wxml
+
+```xml
+<pui-donut-chart items="{{donutItems}}" />
+```
+
+#### page.js
+
+```js
+Page({
+  data: {
+  "donutItems": [
+    {
+      "key": "basic",
+      "label": "基础",
+      "value": 24,
+      "theme": "blue"
+    },
+    {
+      "key": "form",
+      "label": "表单",
+      "value": 18,
+      "theme": "teal"
+    },
+    {
+      "key": "advanced",
+      "label": "高级",
+      "value": 13,
+      "theme": "violet"
+    }
+  ]
+}
+})
+```
+
 ### 灵动通知 `dynamic-message`
 
 #### page.json
@@ -1915,8 +1962,123 @@ Page({
 ```xml
 <pui-pull-refresh>
   <pui-cell title="下拉刷新" description="刷新结果由父级真实回写" />
-  <pui-cell title="组件目录" value="74 个组件" />
+  <pui-cell title="组件目录" value="78 个组件" />
 </pui-pull-refresh>
+```
+
+### 雷达图 `radar-chart`
+
+#### page.json
+
+```json
+{
+  "usingComponents": {
+    "pui-radar-chart": "poemui-miniprogram/radar-chart/radar-chart"
+  }
+}
+```
+
+#### page.wxml
+
+```xml
+<pui-radar-chart indicators="{{radarIndicators}}" series="{{radarSeries}}" />
+```
+
+#### page.js
+
+```js
+Page({
+  data: {
+  "radarIndicators": [
+    {
+      "key": "api",
+      "label": "API",
+      "max": 100
+    },
+    {
+      "key": "theme",
+      "label": "主题",
+      "max": 100
+    },
+    {
+      "key": "motion",
+      "label": "动效",
+      "max": 100
+    },
+    {
+      "key": "a11y",
+      "label": "无障碍",
+      "max": 100
+    },
+    {
+      "key": "docs",
+      "label": "文档",
+      "max": 100
+    }
+  ],
+  "radarSeries": [
+    {
+      "key": "current",
+      "label": "当前版本",
+      "values": [
+        88,
+        92,
+        78,
+        84,
+        90
+      ],
+      "theme": "violet"
+    }
+  ]
+}
+})
+```
+
+### 排序列表 `sortable-list`
+
+#### page.json
+
+```json
+{
+  "usingComponents": {
+    "pui-sortable-list": "poemui-miniprogram/sortable-list/sortable-list"
+  }
+}
+```
+
+#### page.wxml
+
+```xml
+<pui-sortable-list items="{{sortableItems}}" />
+```
+
+#### page.js
+
+```js
+Page({
+  data: {
+  "sortableItems": [
+    {
+      "key": "install",
+      "title": "安装组件",
+      "description": "构建 npm 并注册组件",
+      "icon": "download"
+    },
+    {
+      "key": "theme",
+      "title": "配置主题",
+      "description": "挂载 ConfigProvider",
+      "icon": "palette"
+    },
+    {
+      "key": "verify",
+      "title": "完成验收",
+      "description": "同步 H5 与契约测试",
+      "icon": "check-circle"
+    }
+  ]
+}
+})
 ```
 
 ### 顶部加载 `top-loading`
@@ -1935,6 +2097,42 @@ Page({
 
 ```xml
 <pui-top-loading state="loading" progress="{{64}}" />
+```
+
+### 功能引导 `tour`
+
+#### page.json
+
+```json
+{
+  "usingComponents": {
+    "pui-tour": "poemui-miniprogram/tour/tour"
+  }
+}
+```
+
+#### page.wxml
+
+```xml
+<pui-tour steps="{{tourSteps}}" default-visible="{{true}}" />
+```
+
+#### page.js
+
+```js
+Page({
+  data: {
+  "tourSteps": [
+    {
+      "key": "start",
+      "selector": "#tour-start-target",
+      "title": "开始使用",
+      "content": "从这个入口开始。",
+      "placement": "bottom"
+    }
+  ]
+}
+})
 ```
 
 ### 虚拟列表 `virtual-list`

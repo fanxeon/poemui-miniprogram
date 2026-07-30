@@ -69,3 +69,9 @@
 - 修改前后同步 JS/JSON/WXML/WXSS、metadata、H5、基础 WXML、API、示例、安装产物、专项测试与 Feedback Ledger。
 - 必须实测手势、受控/非受控、timeout、390px、主题、视觉开关、正常/低动效；微信真机滚动惯性、下拉命中、rpx 与读屏保留合法 AppID 风险。
 - 联网对照固定为 [TDesign Miniprogram PullDownRefresh 文档](https://tdesign.tencent.com/miniprogram/components/pull-down-refresh)、[TDesign 源码](https://github.com/Tencent/tdesign-miniprogram/tree/develop/packages/components/pull-down-refresh) 与 `tdesign-miniprogram@1.15.3` 包内 `miniprogram_dist/pull-down-refresh`；参考其公开合同，不复制其实现细节。
+
+## 13. 0.1.4 主题与 Surface 修复
+
+- 空 `colorScheme` 必须继承最近的 ConfigProvider，不得生成 `pui-theme--light`；显式 `light/dark` 仍可局部覆盖。
+- PullRefresh 根、内部滚动区和内容轨都是滚动/布局基础设施，必须透明、无边框、无阴影、无毛玻璃；业务 Surface 由默认 Slot 消费者提供。
+- H5 也必须保持同一资格，不能因全局 border/shadow/frost 开关把刷新容器画成第二张面板。

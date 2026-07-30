@@ -1,0 +1,20 @@
+<view class="{{rootClass}} {{entered ? 'pui-donut-chart--entered' : ''}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="img" aria-label="{{semanticLabel}}">
+  <view wx:if="{{empty}}" class="pui-donut-chart__empty">暂无数据</view>
+  <view wx:else class="pui-donut-chart__plot">
+    <canvas type="2d" class="pui-donut-chart__canvas" aria-hidden="true"></canvas>
+    <view class="pui-donut-chart__probes" aria-hidden="true">
+      <view wx:for="{{chartItems}}" wx:key="key" class="pui-donut-chart__probe pui-chart-theme--{{item.theme}}" data-role="series" data-key="{{item.key}}"></view>
+      <view class="pui-donut-chart__probe pui-donut-chart__probe--track" data-role="track"></view>
+    </view>
+    <view wx:if="{{showCenter}}" class="pui-donut-chart__center" aria-hidden="true">
+      <text class="pui-donut-chart__center-value">{{resolvedCenterText}}</text>
+      <text class="pui-donut-chart__center-label">总计</text>
+    </view>
+  </view>
+  <view wx:if="{{showLegend && legend.length}}" class="pui-chart-legend" aria-hidden="true">
+    <view wx:for="{{legend}}" wx:key="key" class="pui-chart-legend__item">
+      <view class="pui-chart-legend__swatch pui-chart-theme--{{item.theme}}"></view>
+      <text>{{item.label}} {{item.valueText}}</text>
+    </view>
+  </view>
+</view>

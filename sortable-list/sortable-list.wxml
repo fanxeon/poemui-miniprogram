@@ -1,0 +1,52 @@
+<view
+  class="{{rootClass}} {{dragging ? 'pui-sortable-list--dragging' : ''}} {{customClass}}"
+  style="{{rootStyle}}{{customStyle}}"
+  role="list"
+  aria-label="{{semanticLabel}}"
+  bind:touchmove="onTouchMove"
+  bind:touchend="onTouchEnd"
+  bind:touchcancel="onTouchCancel"
+>
+  <scroll-view
+    class="pui-sortable-list__viewport"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    scroll-top="{{scrollTop}}"
+    bindscroll="onScroll"
+  >
+    <view
+      wx:for="{{normalizedItems}}"
+      wx:key="_key"
+      class="pui-sortable-list__item {{activeIndex === item._index ? 'pui-sortable-list__item--active' : ''}} {{item.disabled ? 'pui-sortable-list__item--disabled' : ''}}"
+      data-index="{{item._index}}"
+      bind:longpress="onItemLongPress"
+      role="listitem"
+      aria-label="{{item.title}}"
+      aria-disabled="{{item.disabled}}"
+    >
+      <pui-cell
+        title="{{item.title}}"
+        description="{{item.description}}"
+        left-icon="{{item.icon}}"
+        value="{{item.value}}"
+        bordered="{{index < normalizedItems.length - 1}}"
+        disabled="{{item.disabled}}"
+        color-scheme="{{colorScheme}}"
+        reduce-motion="{{reduceMotion}}"
+      >
+        <view
+          slot="right"
+          class="pui-sortable-list__handle"
+          data-index="{{item._index}}"
+          catch:longpress="onHandleLongPress"
+          role="button"
+          aria-label="拖动排序 {{item.title}}"
+          aria-disabled="{{item.disabled}}"
+        >
+          <pui-icon name="menu" size="32" color-scheme="{{colorScheme}}" />
+        </view>
+      </pui-cell>
+    </view>
+  </scroll-view>
+</view>

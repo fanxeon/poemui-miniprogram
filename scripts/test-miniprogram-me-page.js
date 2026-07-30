@@ -32,9 +32,14 @@ var expectedCurrentCategoryCounts = [
   { key: 'data', label: '数据展示', count: 14 },
   { key: 'feedback', label: '反馈', count: 9 },
   { key: 'overlay', label: '浮层', count: 6 },
-  { key: 'advanced', label: '高级', count: 8 }
+  { key: 'advanced', label: '高级', count: 12 }
 ];
-var expectedPreviousCategoryCounts = expectedCurrentCategoryCounts.map(function (item) {
+var expectedV013CategoryCounts = expectedCurrentCategoryCounts.map(function (item) {
+  return item.key === 'advanced'
+    ? { key: item.key, label: item.label, count: 8 }
+    : { key: item.key, label: item.label, count: item.count };
+});
+var expectedV010CategoryCounts = expectedCurrentCategoryCounts.map(function (item) {
   return item.key === 'advanced'
     ? { key: item.key, label: item.label, count: 5 }
     : { key: item.key, label: item.label, count: item.count };
@@ -120,23 +125,26 @@ assert.ok(pageWxml.indexOf('wx:if="{{!announcementPopupVisible && !licenseDialog
 assert.strictEqual((pageWxml.match(/id="me-component-status-chart-toggle"/g) || []).length, 1, '图表只允许一个真实 PUI 展开操作');
 assert.strictEqual(componentStatus.baseline, 0, '组件状态基线必须从 0 开始');
 assert.strictEqual(componentStatus.currentVersion, packageVersion, '组件状态当前版本必须来自包版本');
-assert.strictEqual(componentStatus.previousVersion, '0.1.2', '0.1.3 增量必须以公开 0.1.2 为前序版本');
+assert.strictEqual(componentStatus.previousVersion, '0.1.3', '0.1.4 增量必须以公开 0.1.3 为前序版本');
 assert.strictEqual(componentStatus.total, metadata.packageComponents.length, '组件状态总数必须来自当前发布组件集');
-assert.strictEqual(componentStatus.previousTotal, 74, '0.1.2 目录基线必须保持 74 个组件');
-assert.strictEqual(componentStatus.incrementTotal, 0, '0.1.3 是治理与交付版本，不得伪造新增组件');
+assert.strictEqual(componentStatus.previousTotal, 74, '0.1.3 目录基线必须保持 74 个组件');
+assert.strictEqual(componentStatus.incrementTotal, 4, '0.1.4 必须记录四个真实新增组件');
 assert.deepStrictEqual(componentStatus.versions(), [
   { version: '0.1.0', total: 71 },
   { version: '0.1.1', total: 74 },
   { version: '0.1.2', total: 74 },
-  { version: '0.1.3', total: 74 }
-], '生成型组件状态必须保留 0.1.0 至 0.1.3 的完整版本里程碑');
+  { version: '0.1.3', total: 74 },
+  { version: '0.1.4', total: 78 }
+], '生成型组件状态必须保留 0.1.0 至 0.1.4 的完整版本里程碑');
 var versionStatusClone = componentStatus.versions();
 versionStatusClone[0].total = 999;
 assert.notStrictEqual(componentStatus.versions()[0].total, 999, '版本里程碑读取必须返回副本');
 assert.strictEqual(componentStatus.items().reduce(function (sum, item) { return sum + item.value; }, 0), componentStatus.total, '分类数量之和必须等于发布组件总数');
 assert.deepStrictEqual(componentStatus.items().filter(function (item) { return item.increment > 0; }).map(function (item) {
   return { key: item.key, previousValue: item.previousValue, increment: item.increment, themes: item.segments.map(function (segment) { return segment.theme; }) };
-}), [], '0.1.3 不得生成任何虚构组件增量分段');
+}), [
+  { key: 'advanced', previousValue: 8, increment: 4, themes: ['blue', 'teal'] }
+], '0.1.4 只能为高级分类生成四个真实组件增量');
 assert.strictEqual(componentStatus.maximum, Math.max.apply(Math, componentStatus.items().map(function (item) { return item.value; })), '生成状态仍须保留真实分类最大值');
 var componentStatusClone = componentStatus.items();
 componentStatusClone[0].value = 999;
@@ -252,26 +260,29 @@ assert.ok(pageJs.indexOf('wx.requestPayment') === -1, '尚未交付的授权入�
 var localAnnouncements = announcements.list();
 assert.ok(localAnnouncements.length > 0, '本地公告数据源必须至少提供一条可见公告');
 assert.strictEqual(announcements.latest().id, localAnnouncements[0].id, 'latest 必须返回列表首条公告');
-assert.strictEqual(localAnnouncements[0].id, 'pui-v0-1-3-20260729', '包内 fallback 首条必须与云端 0.1.3 公告使用同一稳定 ID');
+assert.strictEqual(localAnnouncements[0].id, 'pui-v0-1-4-20260730', '包内 fallback 首条必须使用稳定的 0.1.4 公告 ID');
 assert.ok(localAnnouncements[0].highlights.some(function (highlight) {
-  return highlight.component === 'npm 安装'
-    && highlight.title === '组件与 Skill 同包'
-    && highlight.description.indexOf('npm 包内置完整 Skill') !== -1;
-}), '0.1.3 包内公告必须明确组件与 Skill 同包交付');
+  return highlight.component === 'DonutChart / RadarChart'
+    && highlight.title === '新增两类图表'
+    && highlight.description.indexOf('渐变配色') !== -1;
+}), '0.1.4 包内公告必须明确新增两类渐变图表');
 assert.ok(localAnnouncements[0].highlights.every(function (highlight) {
   return highlight.description.indexOf('全宽 Waffle') === -1;
-}), '0.1.3 当前公告不得继续描述未采用的 Waffle 方案');
-assert.strictEqual(localAnnouncements[0].version, 'v0.1.3', '最新公告必须对应当前发布版本 0.1.3');
-assert.strictEqual(localAnnouncements[0].date, '2026-07-29', '0.1.3 公告必须提供确定日期');
-assert.strictEqual(localAnnouncements[0].componentCount, componentStatus.total, '0.1.3 公告组件总数必须来自生成型当前总数');
-assert.deepStrictEqual(localAnnouncements[0].categoryCounts, expectedCurrentCategoryCounts, '0.1.3 公告必须保留九类当前数量供图表使用');
-assert.strictEqual(localAnnouncements[1].version, 'v0.1.2', '0.1.2 历史公告必须保留');
-assert.strictEqual(localAnnouncements[1].componentCount, 74, '0.1.2 历史公告必须记录当时 74 个组件');
-assert.deepStrictEqual(localAnnouncements[1].categoryCounts, expectedCurrentCategoryCounts, '0.1.2 公告九类数量必须与当时 74 个组件口径一致');
-assert.strictEqual(localAnnouncements[2].componentCount, 74, '0.1.1 历史工作树公告必须记录当时 74 个组件');
-assert.deepStrictEqual(localAnnouncements[2].categoryCounts, expectedCurrentCategoryCounts, '0.1.1 公告九类数量必须与当时 74 个组件口径一致');
-assert.strictEqual(localAnnouncements[3].componentCount, 71, '0.1.0 公告组件总数必须保留 71 个组件历史事实');
-assert.deepStrictEqual(localAnnouncements[3].categoryCounts, expectedPreviousCategoryCounts, '0.1.0 公告必须记录高级 5、总计 71 的九类数量');
+}), '0.1.4 当前公告不得继续描述未采用的 Waffle 方案');
+assert.strictEqual(localAnnouncements[0].version, 'v0.1.4', '最新公告必须对应当前发布版本 0.1.4');
+assert.strictEqual(localAnnouncements[0].date, '2026-07-30', '0.1.4 公告必须提供确定日期');
+assert.strictEqual(localAnnouncements[0].componentCount, componentStatus.total, '0.1.4 公告组件总数必须来自生成型当前总数');
+assert.deepStrictEqual(localAnnouncements[0].categoryCounts, expectedCurrentCategoryCounts, '0.1.4 公告必须保留九类当前数量供图表使用');
+assert.strictEqual(localAnnouncements[1].version, 'v0.1.3', '0.1.3 历史公告必须保留');
+assert.strictEqual(localAnnouncements[1].componentCount, 74, '0.1.3 历史公告必须记录当时 74 个组件');
+assert.deepStrictEqual(localAnnouncements[1].categoryCounts, expectedV013CategoryCounts, '0.1.3 公告九类数量必须与当时 74 个组件口径一致');
+assert.strictEqual(localAnnouncements[2].version, 'v0.1.2', '0.1.2 历史公告必须保留');
+assert.strictEqual(localAnnouncements[2].componentCount, 74, '0.1.2 历史公告必须记录当时 74 个组件');
+assert.deepStrictEqual(localAnnouncements[2].categoryCounts, expectedV013CategoryCounts, '0.1.2 公告九类数量必须与当时 74 个组件口径一致');
+assert.strictEqual(localAnnouncements[3].componentCount, 74, '0.1.1 历史工作树公告必须记录当时 74 个组件');
+assert.deepStrictEqual(localAnnouncements[3].categoryCounts, expectedV013CategoryCounts, '0.1.1 公告九类数量必须与当时 74 个组件口径一致');
+assert.strictEqual(localAnnouncements[4].componentCount, 71, '0.1.0 公告组件总数必须保留 71 个组件历史事实');
+assert.deepStrictEqual(localAnnouncements[4].categoryCounts, expectedV010CategoryCounts, '0.1.0 公告必须记录高级 5、总计 71 的九类数量');
 localAnnouncements.forEach(function (announcement) {
   assert.strictEqual(announcement.schemaVersion, 2, announcement.version + ' 公告必须使用含统计字段的 Schema v2');
   assert.strictEqual(announcement.categoryCounts.length, 9, announcement.version + ' 公告必须包含全部九类');
@@ -282,11 +293,11 @@ localAnnouncements.forEach(function (announcement) {
     return category.key;
   })).size, 9, announcement.version + ' 类别 key 不得重复');
 });
-assert.deepStrictEqual(localAnnouncements[0].highlights.map(function (item) { return item.component; }), ['PoemUI Skill', 'npm 安装', '组件治理', '多端发布'], '0.1.3 公告必须按治理与交付任务分组并保持精简');
-assert.ok(localAnnouncements[0].highlights[3].description.indexOf('官网、落地页、小程序安装页与更新公告') !== -1, '0.1.3 公告必须说明多端固定版本口径');
-assert.ok(localAnnouncements[0].summary.length <= 30, '0.1.3 公告摘要必须保持精简');
+assert.deepStrictEqual(localAnnouncements[0].highlights.map(function (item) { return item.component; }), ['ActionSheet 等', 'DonutChart / RadarChart', 'SortableList', 'Tour', 'H5 镜像'], '0.1.4 公告必须按组件粒度列出变动');
+assert.ok(localAnnouncements[0].highlights[4].description.indexOf('390px') !== -1, '0.1.4 公告必须说明 H5 窄屏与外观验证');
+assert.ok(localAnnouncements[0].summary.length <= 30, '0.1.4 公告摘要必须保持精简');
 localAnnouncements[0].highlights.forEach(function (item) {
-  assert.ok(item.description.length <= 60, '0.1.3 公告说明必须避免冗长：' + item.component);
+  assert.ok(item.description.length <= 60, '0.1.4 公告说明必须避免冗长：' + item.component);
 });
 assert.ok(/^v\d+\.\d+\.\d+$/.test(localAnnouncements[0].version), '公告版本必须使用可识别的语义版本');
 assert.ok(localAnnouncements[0].highlights.length >= 3, '公告必须陈列实际组件改动');
@@ -451,13 +462,13 @@ assert.deepStrictEqual(runtime.data.componentStatusMetrics.map(function (item) {
 }), [
   { key: 'components', label: '组件', value: componentStatus.total },
   { key: 'styles', label: '样式', value: styleUtilitiesCatalog.items.length },
-  { key: 'advanced', label: '高级', value: 8 },
+  { key: 'advanced', label: '高级', value: 12 },
   { key: 'increment', label: '新增', value: componentStatus.incrementTotal }
 ], '四列摘要必须依次展示真实组件、样式、高级和新增数量');
 assert.strictEqual(runtime.data.componentStatusMetrics[3].icon, 'sparkles', '新增数量右侧必须使用 sparkles PUI Icon');
 assert.strictEqual(runtime.data.componentStatusMetrics[3].iconColor, 'var(--pui-chart-accent-violet)', '新增 Icon 必须使用最新版本 Violet accent');
-assert.ok(runtime.data.componentStatusMetricsAriaLabel.indexOf(componentStatus.total + ' 个组件') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf(styleUtilitiesCatalog.items.length + ' 个样式') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf('8 个高级组件') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf('本版新增 ' + componentStatus.incrementTotal + ' 个组件') !== -1, '四列摘要必须提供完整读屏名称');
-assert.ok(runtime.data.componentStatusAriaLabel.indexOf('依次展示 v0.1.0、v0.1.1、v0.1.2、v0.1.3') !== -1 && runtime.data.componentStatusAriaLabel.indexOf('已折叠，当前显示前 4 类') !== -1, '图表读屏名称必须解释逐版本与折叠状态');
+assert.ok(runtime.data.componentStatusMetricsAriaLabel.indexOf(componentStatus.total + ' 个组件') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf(styleUtilitiesCatalog.items.length + ' 个样式') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf('12 个高级组件') !== -1 && runtime.data.componentStatusMetricsAriaLabel.indexOf('本版新增 ' + componentStatus.incrementTotal + ' 个组件') !== -1, '四列摘要必须提供完整读屏名称');
+assert.ok(runtime.data.componentStatusAriaLabel.indexOf('依次展示 v0.1.0、v0.1.1、v0.1.2、v0.1.3、v0.1.4') !== -1 && runtime.data.componentStatusAriaLabel.indexOf('已折叠，当前显示前 4 类') !== -1, '图表读屏名称必须解释逐版本与折叠状态');
 assert.deepStrictEqual(runtime.data.componentStatusCategoryItems.map(function (item) {
   return {
     key: item.key,
@@ -467,14 +478,14 @@ assert.deepStrictEqual(runtime.data.componentStatusCategoryItems.map(function (i
     themes: item.segments.map(function (segment) { return segment.theme; })
   };
 }), [
-  { key: 'advanced', label: '高级', values: [5, 3, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
-  { key: 'foundation', label: '基础', values: [3, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
-  { key: 'layout', label: '布局', values: [5, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
-  { key: 'navigation', label: '导航', values: [9, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
-  { key: 'form', label: '表单', values: [19, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
-  { key: 'data', label: '数据展示', values: [14, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
-  { key: 'feedback', label: '反馈', values: [9, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] },
-  { key: 'overlay', label: '浮层', values: [6, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3'], themes: ['blue', 'teal', 'violet', 'amber'] }
+  { key: 'advanced', label: '高级', values: [5, 3, 0, 0, 4], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3', 'v0.1.4'], themes: ['blue', 'teal', 'violet', 'amber', 'pink'] },
+  { key: 'foundation', label: '基础', values: [3, 0, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3', 'v0.1.4'], themes: ['blue', 'teal', 'violet', 'amber', 'pink'] },
+  { key: 'layout', label: '布局', values: [5, 0, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3', 'v0.1.4'], themes: ['blue', 'teal', 'violet', 'amber', 'pink'] },
+  { key: 'navigation', label: '导航', values: [9, 0, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3', 'v0.1.4'], themes: ['blue', 'teal', 'violet', 'amber', 'pink'] },
+  { key: 'form', label: '表单', values: [19, 0, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3', 'v0.1.4'], themes: ['blue', 'teal', 'violet', 'amber', 'pink'] },
+  { key: 'data', label: '数据展示', values: [14, 0, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3', 'v0.1.4'], themes: ['blue', 'teal', 'violet', 'amber', 'pink'] },
+  { key: 'feedback', label: '反馈', values: [9, 0, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3', 'v0.1.4'], themes: ['blue', 'teal', 'violet', 'amber', 'pink'] },
+  { key: 'overlay', label: '浮层', values: [6, 0, 0, 0, 0], labels: ['v0.1.0', 'v0.1.1', 'v0.1.2', 'v0.1.3', 'v0.1.4'], themes: ['blue', 'teal', 'violet', 'amber', 'pink'] }
 ], 'BarChart 必须隐藏“规范”、把有新增的分类置顶，并以纯版本号展示真实逐版本增量');
 assert.deepStrictEqual(runtime.data.componentStatusVisibleCategoryItems.map(function (item) { return item.key; }), ['advanced', 'foundation', 'layout', 'navigation'], '图表初始必须优先显示有新增的分类，再按原顺序补足四类');
 assert.ok(runtime.data.componentStatusCategoryItems.every(function (item) {
@@ -495,9 +506,10 @@ assert.deepStrictEqual(runtime.data.componentStatusVersionLegendItems.map(functi
   { label: 'v0.1.0', theme: 'blue', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true },
   { label: 'v0.1.1', theme: 'teal', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true },
   { label: 'v0.1.2', theme: 'violet', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true },
-  { label: 'v0.1.3', theme: 'amber', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true }
+  { label: 'v0.1.3', theme: 'amber', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true },
+  { label: 'v0.1.4', theme: 'pink', usesAccent: true, usesSoftSurface: true, usesGradient: false, hasNoFrame: true }
 ], '版本图例必须以无框最小 PUI Tag 复用同色系纯色 soft Surface 与 Chart accent，且不能使用渐变');
-assert.strictEqual(runtime.data.componentStatusVersionLegendAriaLabel, '版本颜色：v0.1.0、v0.1.1、v0.1.2、v0.1.3', '版本 Tag 组必须提供完整读屏名称');
+assert.strictEqual(runtime.data.componentStatusVersionLegendAriaLabel, '版本颜色：v0.1.0、v0.1.1、v0.1.2、v0.1.3、v0.1.4', '版本 Tag 组必须提供完整读屏名称');
 assert.strictEqual(runtime.data.componentStatusChartExpanded, false, '图表初始必须折叠');
 assert.strictEqual(runtime.data.componentStatusChartToggleLabel, '查看更多', '折叠态操作必须表达查看更多');
 assert.strictEqual(runtime.data.componentStatusChartToggleIcon, 'chevron-down', '折叠态操作必须使用向下图标');

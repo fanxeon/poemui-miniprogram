@@ -223,6 +223,7 @@ page,
   --pui-scroll-area-gradient-overlay-size-md: var(--pui-space-step-32);
   --pui-scroll-area-gradient-overlay-size-lg: var(--pui-space-step-44);
   --pui-scroll-area-gradient-overlay-size: var(--pui-scroll-area-gradient-overlay-size-md);
+  --pui-scroll-area-gradient-overlay-material-color: rgba(255, 255, 255, 0.32);
   --pui-scroll-area-gradient-overlay-color-context: var(--pui-bg-container);
   /* App shells may reserve a generous first-screen breathing area without
      bypassing the shared spacing contract. */
@@ -373,6 +374,7 @@ page,
   --pui-bg-container: #18181b;
   /* Rebind context-derived aliases inside the dark scope. If this alias only
      inherits from page, WeChat can keep the light root's computed #fff value. */
+  --pui-scroll-area-gradient-overlay-material-color: rgba(24, 24, 27, 0.32);
   --pui-scroll-area-gradient-overlay-color-context: var(--pui-bg-container);
   --pui-bg-surface: var(--pui-bg-container);
   --pui-bg-muted: #27272a;
@@ -415,6 +417,7 @@ page,
   --pui-glass-surface: rgba(255, 255, 255, 0.72);
   --pui-glass-surface-strong: rgba(255, 255, 255, 0.86);
   --pui-glass-border: rgba(255, 255, 255, 0.7);
+  --pui-scroll-area-gradient-overlay-color-context: var(--pui-scroll-area-gradient-overlay-material-color);
   --pui-frosted-filter: blur(26rpx) saturate(150%);
   --pui-frosted-filter-soft: blur(18rpx) saturate(140%);
 }
@@ -423,6 +426,7 @@ page,
   --pui-glass-surface: rgba(24, 24, 27, 0.72);
   --pui-glass-surface-strong: rgba(24, 24, 27, 0.88);
   --pui-glass-border: rgba(255, 255, 255, 0.13);
+  --pui-scroll-area-gradient-overlay-color-context: var(--pui-scroll-area-gradient-overlay-material-color);
 }
 
 .pui-shadow--on {

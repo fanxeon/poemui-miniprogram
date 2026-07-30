@@ -1,0 +1,123 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0525",
+  "title": "DonutChart 需要可安装的双端真实组件",
+  "scope": "component",
+  "components": [
+    "donut-chart"
+  ],
+  "type": "capability-gap",
+  "severity": "medium",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "design-review",
+  "reportedAt": "2026-07-30",
+  "updatedAt": "2026-07-30",
+  "userGoal": "新增一个圆润、由渐变过渡到透明、能直接安装并同时在小程序和 H5 使用的环形图组件。",
+  "environment": {
+    "surfaces": [
+      "donut-chart component",
+      "pages/components/donut-chart/index",
+      "#/components/donut-chart"
+    ],
+    "platforms": [
+      "wechat-miniprogram",
+      "h5",
+      "node"
+    ],
+    "viewports": [
+      "390x844"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "检查 0.1.3 公开入口，只有 AreaChart、BarChart 与 Waffle，没有圆环占比组件。",
+    "尝试用现有图表表达整体构成，会混淆连续趋势、条形比较或离散点阵职责。"
+  ],
+  "expected": "提供结构化 items、圆角渐变弧段、中心摘要、Legend、ARIA 和默认动画，并完整进入 npm、独立页与 H5。",
+  "actual": "0.1.3 没有对应公开组件，只能由业务重复绘制或误用现有图表。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "donut-chart/donut-chart.js",
+      "note": "实现 Canvas 2D 组件四件套、数据归一化、主题探针与 replay。"
+    },
+    {
+      "kind": "file",
+      "ref": "metadata/components.js",
+      "note": "组件进入公开入口、目录、搜索与独立展示页。"
+    },
+    {
+      "kind": "browser",
+      "ref": "#/components/donut-chart at 390x844",
+      "note": "真实 SVG 由 3 个弧段切换为 4 个，动画完成后渐变圆环和 ARIA 同步，无横向溢出。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-donut-chart.js",
+      "note": "覆盖数据、Canvas、API、H5、合同、分发与外观资格。"
+    }
+  ],
+  "rootCause": "组件库缺少专门表达整体组成关系的圆环图，既有图表职责不能替代。",
+  "decision": {
+    "outcome": "新增透明展示叶子 DonutChart；小程序使用 Canvas 2D，H5 使用结构化 SVG，双端共享数据和动画语义。",
+    "rationale": "分离绘图平台实现，同时保持同一 API、视觉主题、ARIA 与职责边界。",
+    "alternativesRejected": [
+      "让业务页自行绘制：无法形成可安装组件合同。",
+      "用 Waffle 模拟圆环：形态与用户任务不同。",
+      "用静态图片或截图：数据不可更新、不可访问。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "donut-chart",
+      "common/utils/donut-chart-data.js",
+      "preview/app.js",
+      "preview/styles.css",
+      "docs/components/DONUT-CHART.md",
+      "scripts/test-donut-chart.js"
+    ],
+    "dependencies": [
+      "chart theme tokens",
+      "Canvas 2D",
+      "H5 SVG"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-donut-chart.js",
+      "scripts/test-miniprogram-advanced-pages.js",
+      "scripts/test-preview-css-token-contract.js"
+    ],
+    "commands": [
+      "node scripts/test-donut-chart.js：通过。",
+      "node scripts/test-miniprogram-advanced-pages.js：通过。",
+      "微信开发者工具 build-npm：2226ms，源码、dist、真实 node_modules 与 miniprogram_npm 四件套逐文件 SHA-256 一致。"
+    ],
+    "browser": [
+      "390px H5 页面完成默认图、数据切换、完整动画帧、ARIA 和无横向溢出检查。"
+    ],
+    "deviceRisks": [
+      "微信 iOS/Android Canvas 2D 的 DPR、字形、弧段抗锯齿和低端机动画仍为 pending-device。"
+    ]
+  },
+  "ai": {
+    "summary": "DonutChart 是透明组成图叶子，不是 Card、请求容器或静态图片。",
+    "rules": [
+      "只接受结构化非负数据并生成可访问摘要。",
+      "小程序 Canvas 与 H5 SVG 共享语义，不共享 DOM 实现。",
+      "图表根不得获得阴影、毛玻璃、边框或等距 Surface。",
+      "replay 只重播动画，不修改数据。"
+    ],
+    "tags": [
+      "donut-chart",
+      "chart",
+      "canvas",
+      "svg",
+      "animation"
+    ]
+  }
+}

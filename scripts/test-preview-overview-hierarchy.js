@@ -52,7 +52,7 @@ const nonDeviceRouteIds = new Set([
   'icon',
 ]);
 const standardPreviewRoutes = catalogRoutes.filter((item) => !nonDeviceRouteIds.has(item.id));
-assert.strictEqual(routeIds.length, 80, 'the public catalog must remain the single route source for preview coverage after AreaChart, BarChart and Waffle are added');
+assert.strictEqual(routeIds.length, 84, 'the public catalog must remain the single route source for preview coverage after DonutChart, RadarChart, SortableList and Tour are added');
 assert.strictEqual(standardPreviewRoutes.length, routeIds.length - nonDeviceRouteIds.size, 'every standard component route must be covered by the shared PreviewDevice viewport');
 assert.deepStrictEqual(
   routeIds.filter((id) => nonDeviceRouteIds.has(id)).sort(),

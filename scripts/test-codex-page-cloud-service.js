@@ -23,7 +23,7 @@ function publishedPageDocument() {
         subtitle: '安装与引用',
         description: '从云端读取真实接入示例。',
         snippets: [
-          { id: 'install', title: '安装依赖', code: 'npm i poemui-miniprogram@0.1.3 -S --production' },
+          { id: 'install', title: '安装依赖', code: 'npm i poemui-miniprogram@0.1.4 -S --production' },
           { id: 'usage', title: '页面引用', code: '<pui-button>开始</pui-button>' }
         ]
       },
@@ -39,20 +39,20 @@ function publishedPageDocument() {
 
 function publishedSkillDocument() {
   return {
-    _id: 'pui-skill-poemui-miniprogram-v0-1-3',
+    _id: 'pui-skill-poemui-miniprogram-v0-1-4',
     product: 'poemui',
     pageKey: 'codex',
     kind: 'skill',
     status: 'published',
     skillId: 'poemui-miniprogram',
     name: 'PoemUI 小程序组件开发',
-    version: '0.1.3',
+    version: '0.1.4',
     summary: '与组件包同版本交付的真实 Skill。',
     icon: 'codex',
     capabilities: ['组件组合', 'Token 约束'],
     installation: {
       title: '安装 Skill',
-      code: 'npm i poemui-miniprogram@0.1.3 -S --production\nmkdir -p ~/.codex/skills\ncp -R node_modules/poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/'
+      code: 'npm i poemui-miniprogram@0.1.4 -S --production\nmkdir -p ~/.codex/skills\ncp -R node_modules/poemui-miniprogram/skills/poemui-miniprogram ~/.codex/skills/'
     },
     sortOrder: 10
   };
@@ -69,7 +69,7 @@ assert.strictEqual(normalized.page.id, 'pui-codepage-codex-v1', '必须识别已
 assert.strictEqual(normalized.page.quickStart.snippets.length, 2, '快速开始代码必须由 page 文档提供');
 assert.strictEqual(normalized.skills.length, 1, '不完整或非 published Skill 不能进入页面');
 assert.deepStrictEqual(normalized.skills[0].capabilities, ['组件组合', 'Token 约束'], 'Skill 能力字段必须保留');
-assert.ok(normalized.skills[0].installCode.indexOf('poemui-miniprogram@0.1.3') !== -1, 'Skill 安装代码必须由云端固定版本字段提供');
+assert.ok(normalized.skills[0].installCode.indexOf('poemui-miniprogram@0.1.4') !== -1, 'Skill 安装代码必须由云端固定版本字段提供');
 
 async function run() {
   var cloudOptions;
@@ -110,7 +110,7 @@ async function run() {
     status: 'published'
   }, '客户端只能读取本页已发布数据');
   assert.strictEqual(result.source, 'cloud', '云端结果必须明确标记 source=cloud');
-  assert.strictEqual(result.page.quickStart.snippets[0].code, 'npm i poemui-miniprogram@0.1.3 -S --production', '页面代码必须来自云端固定版本文档');
+  assert.strictEqual(result.page.quickStart.snippets[0].code, 'npm i poemui-miniprogram@0.1.4 -S --production', '页面代码必须来自云端固定版本文档');
   assert.strictEqual(result.skills[0].id, 'poemui-miniprogram', 'Skill 必须使用稳定 skillId');
 
   function FailedCloud() {

@@ -385,6 +385,49 @@ const starterUsage = {
     },
     wxml: '<pui-bar-chart items="{{barItems}}" />',
   },
+  'donut-chart': {
+    data: {
+      donutItems: [
+        { key: 'basic', label: '基础', value: 24, theme: 'blue' },
+        { key: 'form', label: '表单', value: 18, theme: 'teal' },
+        { key: 'advanced', label: '高级', value: 13, theme: 'violet' },
+      ],
+    },
+    wxml: '<pui-donut-chart items="{{donutItems}}" />',
+  },
+  'radar-chart': {
+    data: {
+      radarIndicators: [
+        { key: 'api', label: 'API', max: 100 },
+        { key: 'theme', label: '主题', max: 100 },
+        { key: 'motion', label: '动效', max: 100 },
+        { key: 'a11y', label: '无障碍', max: 100 },
+        { key: 'docs', label: '文档', max: 100 },
+      ],
+      radarSeries: [
+        { key: 'current', label: '当前版本', values: [88, 92, 78, 84, 90], theme: 'violet' },
+      ],
+    },
+    wxml: '<pui-radar-chart indicators="{{radarIndicators}}" series="{{radarSeries}}" />',
+  },
+  'sortable-list': {
+    data: {
+      sortableItems: [
+        { key: 'install', title: '安装组件', description: '构建 npm 并注册组件', icon: 'download' },
+        { key: 'theme', title: '配置主题', description: '挂载 ConfigProvider', icon: 'palette' },
+        { key: 'verify', title: '完成验收', description: '同步 H5 与契约测试', icon: 'check-circle' },
+      ],
+    },
+    wxml: '<pui-sortable-list items="{{sortableItems}}" />',
+  },
+  tour: {
+    data: {
+      tourSteps: [
+        { key: 'start', selector: '#tour-start-target', title: '开始使用', content: '从这个入口开始。', placement: 'bottom' },
+      ],
+    },
+    wxml: '<pui-tour steps="{{tourSteps}}" default-visible="{{true}}" />',
+  },
   waffle: {
     data: {
       waffleItems: [
@@ -405,7 +448,7 @@ const starterUsage = {
     components: {
       'pui-cell': 'poemui-miniprogram/cell/cell',
     },
-    wxml: '<pui-pull-refresh>\n  <pui-cell title="下拉刷新" description="刷新结果由父级真实回写" />\n  <pui-cell title="组件目录" value="74 个组件" />\n</pui-pull-refresh>',
+    wxml: '<pui-pull-refresh>\n  <pui-cell title="下拉刷新" description="刷新结果由父级真实回写" />\n  <pui-cell title="组件目录" value="78 个组件" />\n</pui-pull-refresh>',
   },
   'virtual-list': {
     data: {

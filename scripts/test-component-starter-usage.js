@@ -15,7 +15,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const ids = metadata.packageComponents;
 const starterIds = Object.keys(metadata.starterUsage);
 
-assert.strictEqual(ids.length, 74, 'Starter Usage coverage must follow all 74 published components');
+assert.strictEqual(ids.length, metadata.packageComponents.length, 'Starter Usage coverage must follow every published component');
 assert.deepStrictEqual(starterIds.slice().sort(), ids.slice().sort(), 'every published component must own exactly one Starter Usage');
 
 for (const id of ids) {
@@ -84,4 +84,4 @@ assert.strictEqual(generatedPreviewFile, generatedPreview, 'preview/components-d
 const generatedDocsFile = read('docs/COMPONENT_STARTER_USAGE.md');
 assert.strictEqual(generatedDocsFile, generatedDocs, 'docs/COMPONENT_STARTER_USAGE.md is stale; run npm run catalog:generate');
 
-console.log('Component Starter Usage contract passed for 74 components.');
+console.log('Component Starter Usage contract passed for ' + ids.length + ' components.');

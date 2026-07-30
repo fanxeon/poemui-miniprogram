@@ -1,0 +1,150 @@
+{
+  "$schema": "../schema.json",
+  "id": "PUI-FB-0531",
+  "title": "0.1.4 更新公告需要云端唯一记录与 H5 独立页面",
+  "scope": "global",
+  "components": [
+    "update-announcement",
+    "miniprogram-me",
+    "preview"
+  ],
+  "type": "capability-gap",
+  "severity": "high",
+  "status": "resolved",
+  "acceptance": "pending-user",
+  "source": "user-report",
+  "reportedAt": "2026-07-30",
+  "updatedAt": "2026-07-30",
+  "userGoal": "把 0.1.4 更新公告真实写入共享云，并为原本没有更新公告页面的 H5 构建独立页面。",
+  "environment": {
+    "surfaces": [
+      "Me update Popup",
+      "H5 Topbar",
+      "H5 updates page",
+      "shared CloudBase collection"
+    ],
+    "platforms": [
+      "miniprogram",
+      "h5",
+      "cloudbase",
+      "node"
+    ],
+    "viewports": [
+      "390x844",
+      "desktop"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "reproduction": [
+    "查询共享云 pui_updatelog，0.1.4 写入前没有同版本记录。",
+    "打开 H5，Topbar 版本号只有展示语义，没有可进入的更新公告页面。",
+    "旧 H5 边界文档明确排除了公告业务内容，无法向浏览器用户提供逐版本变更记录。"
+  ],
+  "expected": "共享云存在唯一可读的 0.1.4 完整公告；H5 以真实 PUI 入口进入独立页面，并与小程序公告内容保持同源且不伪造实时云查询。",
+  "actual": "小程序只有包内 0.1.4 fallback，云端缺少对应记录；H5 没有更新公告路由或可交互版本入口。",
+  "evidence": [
+    {
+      "kind": "file",
+      "ref": "miniprogram/common/services/update-announcements.js",
+      "note": "0.1.4 包内公告是真实小程序 fallback 与 H5 生成内容源。"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/evidence/cloud/pui-updatelog-v0.1.4-readback.json",
+      "note": "记录写前查重、稳定 ID、最终完整云文档与唯一客户端查询。"
+    },
+    {
+      "kind": "file",
+      "ref": "preview/app.js",
+      "note": "新增 Topbar PUI Button 入口、稳定 updates 路由与独立更新公告页面。"
+    },
+    {
+      "kind": "test",
+      "ref": "scripts/test-release-notes.js",
+      "note": "逐字段对齐 H5 生成数据、小程序公告和最终云回读。"
+    },
+    {
+      "kind": "browser",
+      "ref": "#/updates at 390x844 and 1440x900",
+      "note": "版本入口点击、直接路由、五个版本、外观计算样式和零横向溢出均通过。"
+    }
+  ],
+  "rootCause": "0.1.4 公告此前只存在于包内 fallback，云端发布链没有执行；H5 同步边界又把公告内容整体排除，导致没有独立用户入口与可复用的跨端内容生成链。",
+  "decision": {
+    "outcome": "用稳定 ID 写入一条完整 0.1.4 云公告；以小程序公告 Service 为构建真相源生成 H5 数据，并由 Topbar 版本 PUI Button 进入独立 updates 页面。",
+    "rationale": "小程序仍以共享云、缓存和 fallback 完成读取闭环；H5 获得同一用户语义的文档镜像，同时不引入浏览器管理员凭据或伪造 wx.cloud 实时能力。",
+    "alternativesRejected": [
+      "只改本地 fallback：不能满足云端公告真实读取。",
+      "在 H5 复制第二份公告常量：后续版本会产生文案漂移。",
+      "把公告放回 H5 Popup：缺少稳定地址，不适合浏览与分享完整历史。",
+      "让 H5 直接读共享云数据库：扩大凭据和权限边界，并把应用运行时反向施加给文档站。"
+    ]
+  },
+  "impact": {
+    "files": [
+      "miniprogram/common/services/update-announcements.js",
+      "docs/evidence/cloud/pui-updatelog-v0.1.4-readback.json",
+      "preview/index.html",
+      "preview/app.js",
+      "preview/styles.css",
+      "preview/release-notes-data.js",
+      "scripts/generate-release-notes.js",
+      "scripts/test-release-notes.js",
+      "docs/MINIPROGRAM_ME_PAGE.md",
+      "docs/H5_PREVIEW_COMPATIBILITY.md",
+      "docs/RELEASE_0.1.4_H5_CHANGELOG.md"
+    ],
+    "dependencies": [
+      "shared CloudBase pui_updatelog",
+      "H5 site build",
+      "PUI Button",
+      "PUI Tag",
+      "PUI Icon"
+    ]
+  },
+  "verification": {
+    "tests": [
+      "scripts/test-release-notes.js",
+      "scripts/test-miniprogram-me-page.js",
+      "scripts/test-design-contracts.js"
+    ],
+    "commands": [
+      "node scripts/test-release-notes.js：通过。",
+      "node scripts/test-miniprogram-me-page.js：通过。",
+      "node scripts/test-design-contracts.js：通过。",
+      "CloudBase 写后 version=v0.1.4 + status=published 查询：唯一命中 1 条。"
+    ],
+    "browser": [
+      "390x844 从 Button 页面点击 Topbar 0.1.4 PUI Button 后进入 #/updates，aria-current=page，当前公告为 PoemUI v0.1.4 开发版更新。",
+      "直接刷新 #/updates 后路由、当前公告和 light/frost/shadow/spacing 偏好保持，console error/warning 为 0。",
+      "390px light/dark 均为 document/body clientWidth=scrollWidth=375；当前版本含 5 个组件级改动，共渲染 5 个版本。",
+      "equal 模式的当前 Surface 四向 inset 与直接结构 gap 均为 14px；normal 模式 inset 保持 14px、gap 恢复 8px。",
+      "light + frost 的 Surface 计算为 rgba(255,255,255,0.78) 与 blur(14px) saturate(1.2)；shadow off 后 box-shadow 为 none。",
+      "1440x900 下更新页和连续公告 Surface 均为 860px 宽，document clientWidth=scrollWidth=1425。"
+    ],
+    "deviceRisks": [
+      "小程序当前开发者工具运行态尚未回读 0.1.4 云公告。",
+      "iOS/Android 真机共享云鉴权、弱网回退与 Popup 滚动仍未验证。"
+    ]
+  },
+  "ai": {
+    "summary": "页内公告必须区分云端可读、H5 构建镜像和 npm 已发布三种状态，并由同一内容真相源生成。",
+    "rules": [
+      "云公告写入前按版本查重，写后按稳定 ID 全文回读并按客户端条件确认唯一命中。",
+      "Node SDK doc.set 必须传完整文档本体，禁止误套 data 字段。",
+      "H5 更新公告使用稳定独立路由和共享 PUI Button 入口，不退回静态 Badge 或 Popup。",
+      "H5 构建数据必须来自小程序公告真相源，不复制第二份文案，也不宣称实时云查询。",
+      "公告 published 状态不能冒充 npm 版本已发布。"
+    ],
+    "tags": [
+      "update-announcement",
+      "cloudbase",
+      "h5",
+      "routing",
+      "single-source-of-truth"
+    ]
+  }
+}

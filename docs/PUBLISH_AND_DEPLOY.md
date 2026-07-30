@@ -103,6 +103,12 @@ docker buildx build \
 同日公告必须按日期再按语义版本倒序，
 不能只以数据库写成功或静态文档代替页面运行态。iOS/Android 真机仍需独立验收。
 
+### 0.1.4 页内更新公告与 H5 本地页面
+
+0.1.4 当前仍是未发布工作树，npm Registry、Git Tag、GitHub Release、体验版和生产 H5 都保持 0.1.3 口径；本轮没有执行这些发布动作。用户单独授权了页内公告写入：共享生产环境 `poemcoder-1gkbkid139b08f45` 的 `pui_updatelog` 已写入稳定 `_id=pui-v0-1-4-20260730`，写前同版本为 0 条，写后 `version=v0.1.4 + status=published` 唯一命中 1 条，完整可版本化回读见 `docs/evidence/cloud/pui-updatelog-v0.1.4-readback.json`。
+
+H5 源码新增独立 `#/updates` 页面和 Topbar 版本 PUI Button。`npm run site:build` 会执行 `scripts/generate-release-notes.js`，从小程序公告同形真相源生成 `preview/release-notes-data.js`；这是本地构建能力，不等于生产 H5 已部署，也不等于浏览器实时读取共享云。
+
 ## 发布后验收
 
 1. 在一个干净目录执行 `npm pack`，检查 tarball 中存在 `miniprogram_dist/`，其内包含组件目录、`common/`、`theme/` 和 `assets/`，且不包含 `preview/`、`docs/`、`_example/` 与源码目录。

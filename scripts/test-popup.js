@@ -162,7 +162,7 @@ assert(wxss.includes('transform: translate(-32rpx, -50%)'));
 assert(wxss.includes('transform: translate(32rpx, -50%)'));
 assert(wxss.includes('width: 68vw; max-width: 68vw; height: 70vh; max-height: 70vh'));
 assert(wxss.includes('.pui-popup--top.pui-popup--card { overflow: visible; background: transparent; border: 0; box-shadow: none;'));
-assert(wxss.includes('.pui-popup--card { background: var(--pui-glass-tint); }'), 'card Popup must use the shared translucent tint instead of the solid Surface token');
+assert(/\.pui-popup--card\s*\{[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-scroll-area-gradient-overlay-material-color\);[^}]*background:\s*var\(--pui-glass-tint\);/.test(wxss), 'card Popup must use the shared translucent tint and pass a material-safe fade context to nested ScrollArea');
 assert(wxss.includes('.pui-popup--top.pui-popup--card .pui-popup__surface { background: var(--pui-glass-tint);'), 'top card Popup inner Surface must mirror the same translucent tint');
 assert(wxss.includes('.pui-popup--custom-navbar.pui-popup--top .pui-popup__content'));
 assert(wxss.includes('--pui-popup-navbar-space'));
@@ -258,6 +258,7 @@ assert(previewStyles.includes('.pui-popup-preview__surface-top {') && previewSty
 assert(previewStyles.includes('.pui-popup-preview--custom-navbar'));
 assert(previewStyles.includes('.pui-popup-preview--edge'));
 assert(previewStyles.includes('.pui-popup-preview--card {\n  background: var(--pui-glass-tint);'), 'H5 card Popup must use the shared translucent tint');
+assert(/\.pui-popup-preview--card\s*\{[^}]*background:\s*var\(--pui-glass-tint\);[^}]*--pui-scroll-area-gradient-overlay-color-context:\s*var\(--pui-scroll-area-gradient-overlay-material-color\);/s.test(previewStyles), 'H5 card Popup must pass the same material-safe fade context to nested ScrollArea mirrors');
 assert(previewStyles.includes('.overlay-box--top .pui-popup-preview--card .pui-popup-preview__surface {\n  background: var(--pui-glass-tint);'), 'H5 top card Popup inner Surface must mirror the translucent tint');
 assert(previewStyles.includes('.pui-popup-preview__mask--blurred'));
 assert(previewStyles.includes('--pui-popup-overlay-blur'));

@@ -440,8 +440,10 @@ if (h5Compatibility.includes('中间：手机尺寸镜像预览、示例/代码�
   || !h5Compatibility.includes('不触发组件业务操作')) {
   fail('H5 compatibility documentation must describe the current Tabs information architecture, not the retired Inspector layout.');
 }
-if (!/<span class="brand__title">[\s\S]*?<span class="brand__name">PoemUI<\/span>[\s\S]*?<span class="brand__version">[^<]+<\/span>[\s\S]*?<\/span>/.test(previewIndex)) {
-  fail('the version must be grouped directly after the PoemUI brand name.');
+if (!/<div class="brand">[\s\S]*?<a class="brand__home"[\s\S]*?<span class="brand__name">PoemUI<\/span>[\s\S]*?<\/a>[\s\S]*?<span id="releaseNotesTriggerMount"/.test(previewIndex)
+  || !previewApp.includes("customClass: `brand__version${current ? ' is-active' : ''}`")
+  || !previewApp.includes("demoAction: 'release-notes-open'")) {
+  fail('the version must remain next to the PoemUI brand and use a real PUI Button to open the update page.');
 }
 if (!previewIndex.includes('aria-label="PoemUI 月下成行首页"')
   || !previewIndex.includes('class="brand__glyph"')
@@ -686,5 +688,6 @@ for (const page of [
   }
 }
 
+require('./test-release-notes');
 require('./test-api-reference-readability');
 console.log(`PoemUI design contracts passed for ${packageComponents.length} components.`);

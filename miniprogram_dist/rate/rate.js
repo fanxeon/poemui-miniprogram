@@ -100,12 +100,11 @@ Component({
       } else {
         value = normalize(this.data.innerValue, count, this.data.allowHalf);
       }
-      var dark = this.data.colorScheme === 'dark';
       var motion = this.data.reduceMotion ? 1 : 500;
       this.setData(Object.assign(this.stateForValue(value, count), {
         starSize: sizeValue(this.data.size),
         starGap: gapValue(this.data.gap),
-        activeColor: safeColor(this.data.color, dark ? '#facc15' : '#d97706'),
+        activeColor: safeColor(this.data.color, 'var(--pui-color-warning)'),
         rootClass: ['pui-rate', this.getColorSchemeClass(), this.data.disabled ? 'pui-rate--disabled' : '', this.data.readonly ? 'pui-rate--readonly' : ''].filter(Boolean).join(' '),
         rootStyle: '--pui-rate-duration:' + motion + 'ms;',
         semanticLabel: String(this.data.ariaLabel || '').trim() || '评分'

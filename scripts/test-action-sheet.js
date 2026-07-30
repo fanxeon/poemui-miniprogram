@@ -46,6 +46,11 @@ function create(overrides) {
   const events = [];
   const instance = {
     data: Object.assign({}, definition.data, defaults, { colorScheme: 'light' }, overrides || {}),
+    getColorSchemeClass() {
+      return this.data.colorScheme === 'light' || this.data.colorScheme === 'dark'
+        ? `pui-theme--${this.data.colorScheme}`
+        : '';
+    },
     setData(patch, callback) { Object.assign(this.data, patch); if (callback) callback(); },
     triggerEvent(name, detail) { events.push({ name, detail }); },
   };
@@ -61,6 +66,8 @@ assert.deepStrictEqual(Object.keys(definition.properties), expectedProps, 'Actio
 const defaults = create();
 assert.strictEqual(defaults.instance.data.mounted, false);
 assert(defaults.instance.data.rootClass.includes('pui-action-sheet--list'));
+assert(!create({ colorScheme: '' }).instance.data.rootClass.includes('pui-theme--light'), 'empty colorScheme must inherit the nearest ConfigProvider');
+assert(create({ colorScheme: 'dark' }).instance.data.rootClass.includes('pui-theme--dark'), 'explicit dark colorScheme remains a local override');
 assert(defaults.instance.data.layerStyle.includes('500ms'));
 assert.strictEqual(defaults.instance.data.maskClass, 'pui-action-sheet__mask', 'unset blurOverlay must inherit the ConfigProvider state');
 assert.strictEqual(create({ blurOverlay: true }).instance.data.maskClass, 'pui-action-sheet__mask pui-action-sheet__mask--blurred');
@@ -170,11 +177,15 @@ assert(actionSheetShowcase.includes("props.blurOverlay === true || (props.blurOv
 assert(!/loadingComponent|emptySample|cellSample|action-sheet-retry|action-sheet-open\(\)|action-sheet-close\(\)/.test(actionSheetShowcase));
 assert(preview.includes("if (type === 'action-sheet-select')"));
 assert(previewStyles.includes('ActionSheet TDesign final H5 contract'));
+assert(!previewStyles.includes('.pui-action-sheet-preview__handle'), 'deleted ActionSheet handle CSS must not survive as a stale contract');
+assert(!previewStyles.includes('.pui-action-sheet-preview__feedback'), 'deleted ActionSheet feedback CSS must not survive as a stale contract');
+assert(!previewStyles.includes('.pui-action-sheet-preview__cancel'), 'current H5 mirror uses the shared Button inside footer, not a stale private cancel root');
 assert(previewStyles.includes('.pui-action-sheet-preview__overlay:has(+ .pui-action-sheet-preview.is-active)'));
 assert(/\.pui-action-sheet-preview__overlay\s*\{[^}]*opacity:\s*0;[^}]*transition:\s*opacity/s.test(previewStyles), 'H5 ActionSheet Mask must own its opacity transition');
 assert(/\.pui-action-sheet-preview\s*\{[^}]*opacity:\s*0;[^}]*transform:\s*translateY/s.test(previewStyles), 'H5 ActionSheet Surface must enter independently from the Mask');
 assert(actionSheetCompatibilityMirror.includes('空 items 不伪造 Empty、Loading 或失败态'));
 assert(!/error > loading > content > empty|open\(\)\/close\(\)\/toggle\(\)|header\/default\/cancel slot/.test(actionSheetCompatibilityMirror));
+assert(preview.includes("'action-sheet': ['从屏幕底部呈现当前情境的一组动作；选择、取消或遮罩只请求父级回写显隐。'"), 'ActionSheet catalog copy must describe the current lean contract');
 
 const actionSheetApi = api.slice(api.indexOf('## ActionSheet'), api.indexOf('## DropdownMenu'));
 assert(actionSheetApi.includes('`selected → close({ trigger: \'select\' }) → visible-change({ visible: false })`'));

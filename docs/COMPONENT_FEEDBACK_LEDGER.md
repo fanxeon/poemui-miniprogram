@@ -2,7 +2,7 @@
 
 > 本文件由 `feedback/records/*.json` 自动生成，请勿手工编辑。工作流见 `docs/COMPONENT_FEEDBACK.md`。
 
-当前 505 条记录，数据更新至 2026-07-29：open 0、investigating 0、planned 0、needs-device 2、resolved 496；pending-user 309、accepted 184。
+当前 514 条记录，数据更新至 2026-07-30：open 0、investigating 0、planned 0、needs-device 2、resolved 504；pending-user 317、accepted 184。
 
 | ID | 范围 | 类型 | 严重度 | 状态 | 验收 | 问题 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -511,6 +511,15 @@
 | PUI-FB-0521 | popup, preview-site, appearance-settings | visual-layout | medium | resolved | pending-user | Popup card 在毛玻璃关闭时退回实底 |
 | PUI-FB-0522 | miniprogram-codepage, update-announcement, shared-cloud | api-contract | high | resolved | not-required | 共享云更新必须按整文档语义写入 |
 | PUI-FB-0523 | miniprogram-me, update-announcement | bug | medium | resolved | not-required | 同日更新公告必须按语义版本次排序 |
+| PUI-FB-0524 | action-sheet, pull-refresh, dropdown-menu, rate, slider | compatibility | high | resolved | pending-user | 空主题值不得覆盖最近的 ConfigProvider |
+| PUI-FB-0525 | donut-chart | capability-gap | medium | resolved | pending-user | DonutChart 需要可安装的双端真实组件 |
+| PUI-FB-0526 | radar-chart | capability-gap | medium | resolved | pending-user | RadarChart 需要多维比较的双端合同 |
+| PUI-FB-0527 | sortable-list | capability-gap | high | resolved | pending-user | SortableList 需要单滚动所有者和父级回写 |
+| PUI-FB-0528 | tour | capability-gap | high | resolved | pending-user | Tour 需要目标测量和焦点闭环 |
+| PUI-FB-0529 | preview, tour, popup, dialog, sheet, drawer, popover | preview-parity | medium | resolved | pending-user | H5 浮层阴影别名必须随外观状态重新绑定 |
+| PUI-FB-0530 | sortable-list | bug | medium | wont-fix | not-required | SortableList 重排时缺少真实位移动画 |
+| PUI-FB-0531 | update-announcement, miniprogram-me, preview | capability-gap | high | resolved | pending-user | 0.1.4 更新公告需要云端唯一记录与 H5 独立页面 |
+| PUI-FB-0532 | scroll-area, popup, config-provider, preview-site, design-tokens, miniprogram-me | visual-layout | medium | resolved | pending-user | ScrollArea 实色遮罩与半透明 Popup Surface 形成横带 |
 
 ## PUI-FB-0001 · Style Utilities 缺少显式深色条件变体
 
@@ -13918,4 +13927,237 @@ AI 必须遵守：
 - 验证：`npm run check：通过。`
 - 验证：`独立小程序仓 main=88a3422 已推送。`
 - 真机/兼容风险：iOS/Android 真机更新公告 Popup 的弱网加载和缓存切换仍为 pending-device。
+
+## PUI-FB-0524 · 空主题值不得覆盖最近的 ConfigProvider
+
+- 原始记录：`feedback/records/pui-fb-0524-component-theme-inheritance.json`
+- 范围：`global` / `action-sheet`、`pull-refresh`、`dropdown-menu`、`rate`、`slider`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-30
+- 用户目标：组件独立页和真实业务页必须统一跟随全局深浅色，而不是由组件默认值强制浅色。
+- 实际问题：三个组件用 light 作为空值 fallback，覆盖 Provider；PullRefresh H5 根的 Surface 样式又扩大了视觉差异。
+- 决策：共享组件层移除空值的 light fallback；显式主题仍由 Theme Behavior 局部覆盖。PullRefresh H5 根与内容轨恢复透明，Rate 默认激活色读取 warning Token。
+- 理由：主题归属必须由最近 Provider 单一拥有，不能靠每个独立页重复传参；平台原生 slider 的实色限制单独保留。
+
+AI 必须遵守：
+
+- 可选 colorScheme 为空时必须使用 Theme Behavior 的空类结果。
+- 页面不得逐组件传主题来掩盖共享继承问题。
+- 原生平台控件需要实色时只能读取 Theme Behavior 已解析主题，不另建页面状态。
+- 主题验收必须检查展开层和真实计算样式。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-action-sheet.js：通过。`
+- 验证：`node scripts/test-pull-refresh.js：通过。`
+- 验证：`node scripts/test-dropdown-menu.js：通过。`
+- 验证：`node scripts/test-rate.js：通过。`
+- 验证：`微信开发者工具 build-npm：2226ms，warnings=[]。`
+- 真机/兼容风险：微信 iOS/Android 的浮层合成、原生 slider 自动主题首帧、Rate 半星着色仍为 pending-device。
+
+## PUI-FB-0525 · DonutChart 需要可安装的双端真实组件
+
+- 原始记录：`feedback/records/pui-fb-0525-donut-chart-component.json`
+- 范围：`component` / `donut-chart`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-30
+- 用户目标：新增一个圆润、由渐变过渡到透明、能直接安装并同时在小程序和 H5 使用的环形图组件。
+- 实际问题：0.1.3 没有对应公开组件，只能由业务重复绘制或误用现有图表。
+- 决策：新增透明展示叶子 DonutChart；小程序使用 Canvas 2D，H5 使用结构化 SVG，双端共享数据和动画语义。
+- 理由：分离绘图平台实现，同时保持同一 API、视觉主题、ARIA 与职责边界。
+
+AI 必须遵守：
+
+- 只接受结构化非负数据并生成可访问摘要。
+- 小程序 Canvas 与 H5 SVG 共享语义，不共享 DOM 实现。
+- 图表根不得获得阴影、毛玻璃、边框或等距 Surface。
+- replay 只重播动画，不修改数据。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-donut-chart.js：通过。`
+- 验证：`node scripts/test-miniprogram-advanced-pages.js：通过。`
+- 验证：`微信开发者工具 build-npm：2226ms，源码、dist、真实 node_modules 与 miniprogram_npm 四件套逐文件 SHA-256 一致。`
+- 真机/兼容风险：微信 iOS/Android Canvas 2D 的 DPR、字形、弧段抗锯齿和低端机动画仍为 pending-device。
+
+## PUI-FB-0526 · RadarChart 需要多维比较的双端合同
+
+- 原始记录：`feedback/records/pui-fb-0526-radar-chart-component.json`
+- 范围：`component` / `radar-chart`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-30
+- 用户目标：新增与现有渐变图表风格一致、可比较多个对象多项能力的雷达图组件。
+- 实际问题：现有图表只能表达趋势、长度或点阵，不能形成多维轮廓比较。
+- 决策：新增 RadarChart；小程序 Canvas 2D 与 H5 SVG 共用 indicators/series 归一化、主题、ARIA 和动画合同。
+- 理由：维度和系列由调用方显式定义，失败关闭比组件猜测数据含义更安全。
+
+AI 必须遵守：
+
+- indicators 必须提供稳定 key、标签与上限。
+- 维度不足或数据无效时失败关闭，不伪造图形。
+- 根保持透明展示叶子资格。
+- 小程序与 H5 必须共享比例和无障碍摘要。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-radar-chart.js：通过。`
+- 验证：`node scripts/test-miniprogram-advanced-pages.js：通过。`
+- 验证：`微信开发者工具 build-npm：2226ms，源码、dist、真实 node_modules 与 miniprogram_npm 四件套逐文件 SHA-256 一致。`
+- 真机/兼容风险：微信 iOS/Android Canvas 长标签、DPR、字体基线与多系列性能仍为 pending-device。
+
+## PUI-FB-0527 · SortableList 需要单滚动所有者和父级回写
+
+- 原始记录：`feedback/records/pui-fb-0527-sortable-list-component.json`
+- 范围：`component` / `sortable-list`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-30
+- 用户目标：提供真正可拖动排序的高级列表组件，同时避免滚动竞争和伪造保存成功。
+- 实际问题：缺少共享组件，业务容易复制不一致手势并把排序意图误作已保存结果。
+- 决策：新增 SortableList；集合根拥有唯一 Surface 和滚动上下文，组件只发布 change/cancel 意图，父级决定是否回写 items。
+- 理由：把手势与几何收口到组件，同时把业务持久化和成功语义保留给父级。
+
+AI 必须遵守：
+
+- 每项必须有稳定 key，禁用项不得进入拖动。
+- 同轴只允许一个滚动所有者。
+- 连续集合只有根 Surface，行项目不得获得外阴影。
+- 受控场景必须等待父级回写，不能显示已保存。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-sortable-list.js：通过。`
+- 验证：`node scripts/test-preview-native-control-boundaries.js：通过。`
+- 验证：`微信开发者工具 build-npm：2226ms，源码、dist、真实 node_modules 与 miniprogram_npm 四件套逐文件 SHA-256 一致。`
+- 真机/兼容风险：微信 iOS/Android 长按阈值、触摸取消、边缘自动滚动、父级拒绝回弹和惯性仍为 pending-device。
+
+## PUI-FB-0528 · Tour 需要目标测量和焦点闭环
+
+- 原始记录：`feedback/records/pui-fb-0528-tour-component.json`
+- 范围：`component` / `tour`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-30
+- 用户目标：提供可以指向真实页面元素、步骤可控、越界安全并能恢复焦点的引导组件。
+- 实际问题：缺少共享合同，页面实现容易出现多遮罩、越界、错误目标和焦点丢失。
+- 决策：新增 Tour；目标不可测时发布 error 并关闭，Panel 自动选择安全位置，H5 和小程序保持同一用户语义。
+- 理由：目标、Overlay 和焦点必须由同一组件协调，业务只拥有步骤内容和受控回写。
+
+AI 必须遵守：
+
+- 每步 target 必须稳定且可测量。
+- 目标缺失不得回退到无关位置继续显示。
+- 关闭后必须恢复触发者焦点。
+- 外观开关只影响 Panel，不污染目标或页面。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-tour.js：通过。`
+- 验证：`node scripts/test-appearance-contract-matrix.js：通过。`
+- 验证：`微信开发者工具 build-npm：2226ms，源码、dist、真实 node_modules 与 miniprogram_npm 四件套逐文件 SHA-256 一致。`
+- 真机/兼容风险：微信 iOS/Android SelectorQuery、胶囊安全区、触摸阻断、读屏顺序和系统低动效仍为 pending-device。
+
+## PUI-FB-0529 · H5 浮层阴影别名必须随外观状态重新绑定
+
+- 原始记录：`feedback/records/pui-fb-0529-h5-floating-shadow-late-binding.json`
+- 范围：`global` / `preview`、`tour`、`popup`、`dialog`、`sheet`、`drawer`、`popover`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-30
+- 用户目标：H5 外观阴影开关必须真正改变适格浮层 Surface，而不是只切换 data 属性。
+- 实际问题：根级自定义属性别名过早解析为 none，开关数据变化但 Tour Panel 仍没有实际阴影。
+- 决策：在 App Shell 的 shadow on 状态内重新绑定 --shadow-floating，并继续由统一 shadow off 规则收敛为 none。
+- 理由：阴影资格和开关必须落到真实计算样式；局部组件不能各自硬编码一套阴影值。
+
+AI 必须遵守：
+
+- 不得以 data 属性切换替代计算样式验证。
+- 共享浮层阴影使用同名语义 Token，不在组件内硬编码 rgba。
+- 阴影关闭必须只影响适格 Surface。
+- 自定义属性别名依赖状态变量时必须在状态作用域重新绑定。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-preview-css-token-contract.js：通过。`
+- 验证：`node scripts/test-appearance-contract-matrix.js：通过。`
+- 真机/兼容风险：Safari 与微信 WebView 的 backdrop-filter 加阴影合成性能仍未在真实设备验证。
+
+## PUI-FB-0530 · SortableList 重排时缺少真实位移动画
+
+- 原始记录：`feedback/records/pui-fb-0530-sortable-list-reorder-motion.json`
+- 范围：`component` / `sortable-list`
+- 状态：`wont-fix`，用户验收：`not-required`，更新：2026-07-30
+- 用户目标：SortableList 在拖动、兄弟行让位、松手落位和取消回退时都具备连贯动画，而不是瞬时换位。
+- 实际问题：两端只对活动行的缩放、透明度和背景设置 transition；小程序直接重排数组，H5 重建 Stage，列表位置瞬时改变。
+- 决策：用户于 2026-07-30 明确取消本次动效增强。0.1.4 保留现有活动行状态过渡与顺序回写，不实现兄弟行 transform 让位、悬浮跟手、落位或拒绝回弹，也不把它们列为发布阻断。
+- 理由：这是用户对当前版本范围的明确取舍。关闭记录可以避免待实现规格继续污染组件合同和发布口径；若未来重新提出，需要作为新的独立需求重新审计，不能把本记录当作已实现证据。
+
+AI 必须遵守：
+
+- 当前 animated 只表达活动行的状态过渡，不代表完整重排位移动画。
+- 当前顺序回写不能被描述为兄弟行让位、悬浮跟手或落位回弹。
+- 未来若重新提出完整重排动效，必须建立新的范围和验收证据。
+- 不得新增第二滚动区、逐行 Surface 或页面私有动画。
+- animated=false 立即完成，reduceMotion 使用 1ms，事件和父级真相保持不变。
+- H5 排序不得通过 renderStage 重建冒充位移动画。
+
+验证与遗留风险：
+
+- 验证：`2026-07-30 用户明确决定不实施该增强；合同、H5 兼容说明和 0.1.4 发布记录已恢复为当前真实行为。`
+- 真机/兼容风险：微信 iOS/Android 的 touchmove 更新成本、变高行几何、边缘自动滚动补偿、取消回退和连续跨多行性能仍未验证。
+
+## PUI-FB-0531 · 0.1.4 更新公告需要云端唯一记录与 H5 独立页面
+
+- 原始记录：`feedback/records/pui-fb-0531-update-announcement-cloud-h5-page.json`
+- 范围：`global` / `update-announcement`、`miniprogram-me`、`preview`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-30
+- 用户目标：把 0.1.4 更新公告真实写入共享云，并为原本没有更新公告页面的 H5 构建独立页面。
+- 实际问题：小程序只有包内 0.1.4 fallback，云端缺少对应记录；H5 没有更新公告路由或可交互版本入口。
+- 决策：用稳定 ID 写入一条完整 0.1.4 云公告；以小程序公告 Service 为构建真相源生成 H5 数据，并由 Topbar 版本 PUI Button 进入独立 updates 页面。
+- 理由：小程序仍以共享云、缓存和 fallback 完成读取闭环；H5 获得同一用户语义的文档镜像，同时不引入浏览器管理员凭据或伪造 wx.cloud 实时能力。
+
+AI 必须遵守：
+
+- 云公告写入前按版本查重，写后按稳定 ID 全文回读并按客户端条件确认唯一命中。
+- Node SDK doc.set 必须传完整文档本体，禁止误套 data 字段。
+- H5 更新公告使用稳定独立路由和共享 PUI Button 入口，不退回静态 Badge 或 Popup。
+- H5 构建数据必须来自小程序公告真相源，不复制第二份文案，也不宣称实时云查询。
+- 公告 published 状态不能冒充 npm 版本已发布。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-release-notes.js：通过。`
+- 验证：`node scripts/test-miniprogram-me-page.js：通过。`
+- 验证：`node scripts/test-design-contracts.js：通过。`
+- 验证：`CloudBase 写后 version=v0.1.4 + status=published 查询：唯一命中 1 条。`
+- 真机/兼容风险：小程序当前开发者工具运行态尚未回读 0.1.4 云公告。
+- 真机/兼容风险：iOS/Android 真机共享云鉴权、弱网回退与 Popup 滚动仍未验证。
+
+## PUI-FB-0532 · ScrollArea 实色遮罩与半透明 Popup Surface 形成横带
+
+- 原始记录：`feedback/records/pui-fb-0532-scroll-area-frosted-surface-gradient-context.json`
+- 范围：`component` / `scroll-area`、`popup`、`config-provider`、`preview-site`、`design-tokens`、`miniprogram-me`
+- 状态：`resolved`，用户验收：`pending-user`，更新：2026-07-30
+- 用户目标：ScrollArea 位于毛玻璃或半透明 Popup 面板内时，顶底阅读渐变必须与当前 Surface 连续，不出现纯白或纯深色横带，同时保留公开自定义颜色能力。
+- 实际问题：默认遮罩总使用 #fff 或 #18181b 的不透明容器色，在 rgba(.72) Popup Surface 上重新覆盖实色，无法匹配背后内容与 blur 共同产生的实时合成结果。
+- 决策：新增跨端 --pui-scroll-area-gradient-overlay-material-color，light/dark 均使用对应 Surface 基色的 .32 alpha。pui-frosted-glass--on 与 Popup card 自动把默认上下文重绑定到该 Token；普通上下文保留 --pui-bg-container/--surface-solid，合法 gradientOverlayColor 继续通过 inline 变量覆盖。
+- 理由：低 alpha 同色相遮罩仍能弱化边缘内容，但不会用第二层不透明颜色抹掉玻璃 Surface 的背景关系；仅使用现有 sibling layer 和 Token 继承，兼容当前小程序实现，也不需要页面知道 Popup 的合成颜色。
+
+AI 必须遵守：
+
+- 不得在消费页面为毛玻璃 ScrollArea 硬编码白色或深色遮罩；由 Surface/Provider Token 上下文治理。
+- Popup card 与全局 frosted 组件树必须向嵌套 ScrollArea 传递半透明材质色，普通实底行为保持不变。
+- 显式 gradientOverlayColor 始终高于上下文默认值，不能因全局毛玻璃被覆盖。
+- H5 必须使用同名 Token 和继承边界，并滚动到遮罩可见后读取计算渐变验证。
+
+验证与遗留风险：
+
+- 验证：`node scripts/test-scroll-area.js`
+- 验证：`PUI_VERIFY_DIST=1 node scripts/test-scroll-area.js`
+- 验证：`node scripts/test-popup.js`
+- 验证：`node scripts/test-config-provider.js`
+- 验证：`node scripts/test-miniprogram-me-page.js`
+- 验证：`node --check preview/app.js`
+- 验证：`npm run feedback:generate`
+- 验证：`npm run feedback:check`
+- 验证：`npm run site:build`
+- 验证：`npm run check`
+- 验证：`npm run pack:check`
+- 验证：`npm run example:install`
+- 验证：`/Applications/wechatwebdevtools.app/Contents/MacOS/cli build-npm --project miniprogram（1249ms，warnings=[]）`
+- 验证：`源码、miniprogram_dist、miniprogram/node_modules 与 miniprogram/miniprogram_npm 的 theme、Popup、ScrollArea 相关文件 SHA-256 四路一致`
+- 验证：`git diff --check`
+- 验证：`git -C miniprogram diff --check`
+- 真机/兼容风险：微信开发者工具与 iOS/Android 真机仍需验证 enhanced scroll-view 上方 fixed sibling 渐变、CSS 变量跨组件继承、真实 blur 合成、惯性与触摸透传；H5 不能替代真机结论。
 

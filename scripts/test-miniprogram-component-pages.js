@@ -134,6 +134,22 @@ var routes = {
     title: 'BarChart',
     headings: ['组件分类增量', '纵向比较']
   },
+  'donut-chart': {
+    title: 'DonutChart',
+    headings: ['组件组成']
+  },
+  'radar-chart': {
+    title: 'RadarChart',
+    headings: ['能力比较']
+  },
+  'sortable-list': {
+    title: 'SortableList',
+    headings: ['交付顺序']
+  },
+  tour: {
+    title: 'Tour',
+    headings: ['页面引导']
+  },
   waffle: {
     title: 'Waffle',
     headings: ['组件数量点阵', '大数据缩放']
@@ -232,7 +248,7 @@ var taskFocusedPages = [
   'form', 'field', 'label', 'input', 'input-otp', 'textarea', 'search', 'checkbox', 'radio', 'switch', 'select', 'picker', 'combobox', 'slider', 'stepper', 'rate', 'calendar', 'date-time-picker', 'upload',
   'collapse', 'avatar', 'badge', 'bubble', 'card', 'cell', 'collapsible', 'count-down', 'image', 'list', 'swipe-cell', 'swiper', 'table', 'tag',
   'alert', 'dialog', 'empty', 'loading', 'notice-bar', 'progress', 'result', 'skeleton', 'toast',
-  'area-chart', 'bar-chart', 'waffle', 'top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'
+  'area-chart', 'bar-chart', 'donut-chart', 'radar-chart', 'sortable-list', 'tour', 'waffle', 'top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'
 ];
 
 assert.ok(appStyle.indexOf('height: 100vh') !== -1 && appStyle.indexOf('overflow: hidden') !== -1, '小程序 App 根必须提供全屏且不滚动的页面基础');

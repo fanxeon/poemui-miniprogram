@@ -4,6 +4,10 @@ require('./test-top-loading');
 require('./test-dynamic-message');
 require('./test-area-chart');
 require('./test-bar-chart');
+require('./test-donut-chart');
+require('./test-radar-chart');
+require('./test-sortable-list');
+require('./test-tour');
 require('./test-waffle');
 
 var assert = require('assert');
@@ -11,7 +15,7 @@ var fs = require('fs');
 var path = require('path');
 var vm = require('vm');
 var ROOT = path.resolve(__dirname, '..');
-var pages = ['area-chart', 'bar-chart', 'waffle', 'top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'];
+var pages = ['area-chart', 'bar-chart', 'donut-chart', 'radar-chart', 'sortable-list', 'tour', 'waffle', 'top-loading', 'dynamic-message', 'pull-refresh', 'virtual-list', 'watermark'];
 function read(relativePath) { return fs.readFileSync(path.join(ROOT, relativePath), 'utf8'); }
 function load(name) {
   var page;
@@ -94,6 +98,36 @@ areaChart.onToggleCurve();
 assert.strictEqual(areaChart.data.curve, 'linear', 'AreaChart 示例必须由父级切换曲线');
 areaChart.onToggleStacked();
 assert.strictEqual(areaChart.data.stacked, true, 'AreaChart 示例必须由父级切换堆叠模式');
+
+var donutChart = load('donut-chart');
+donutChart.selectComponent = function () { return { replay: function () {} }; };
+donutChart.onToggleData();
+assert.strictEqual(donutChart.data.alternate, true, 'DonutChart 示例必须由父级回写替代数据');
+assert.strictEqual(donutChart.data.donutItems[1].value, 36, 'DonutChart 替代数据必须形成明显占比变化');
+donutChart.onToggleGap();
+assert.strictEqual(donutChart.data.gapAngle, 8, 'DonutChart 示例必须真实切换弧段间隔');
+
+var radarChart = load('radar-chart');
+radarChart.selectComponent = function () { return { replay: function () {} }; };
+radarChart.onToggleData();
+assert.strictEqual(radarChart.data.alternate, true, 'RadarChart 示例必须由父级回写替代数据');
+assert.strictEqual(radarChart.data.radarSeries[0].values[0], 96, 'RadarChart 替代数据必须形成清晰能力轮廓');
+radarChart.onToggleDots();
+assert.strictEqual(radarChart.data.showDots, false, 'RadarChart 示例必须真实切换端点');
+
+var sortableList = load('sortable-list');
+sortableList.onOrderChange({ detail: { from: 0, to: 2, items: [sortableList.data.sortableItems[1], sortableList.data.sortableItems[2], sortableList.data.sortableItems[0]] } });
+assert.strictEqual(sortableList.data.sortableItems[0].key, 'theme', 'SortableList 页面必须按 change 事件回写 items');
+sortableList.onToggleDragFrom();
+assert.strictEqual(sortableList.data.dragFrom, 'item', 'SortableList 页面必须能切换真实拖动入口');
+
+var tour = load('tour');
+tour.onOpenTour();
+assert.strictEqual(tour.data.tourVisible, true, 'Tour 页面必须由父级真实打开');
+tour.onTourCurrentChange({ detail: { current: 1 } });
+assert.strictEqual(tour.data.tourCurrent, 1, 'Tour 页面必须回写受控 current');
+tour.onTourVisibleChange({ detail: { visible: false, reason: 'finish' } });
+assert.strictEqual(tour.data.tourVisible, false, 'Tour 页面必须按 visible-change 真实关闭');
 
 var topLoading = load('top-loading');
 topLoading.clearProgressTimer = function () { this._progressTimer = null; };

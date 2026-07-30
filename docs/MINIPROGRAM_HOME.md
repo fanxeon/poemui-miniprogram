@@ -1,12 +1,12 @@
 # PoemUI 真实微信小程序首页
 
-当前实际工程是 `/Users/fanx/Documents/poemUI 小程序组件库/miniprogram`，AppID 为 `wx23aa017375535746`。页面只通过 `miniprogram/package.json` 固定消费公共 `poemui-miniprogram@0.1.3`，不复制 PUI 源码；公共包地址为 <https://www.npmjs.com/package/poemui-miniprogram>。
+当前实际工程是 `/Users/fanx/Documents/poemUI 小程序组件库/miniprogram`，AppID 为 `wx23aa017375535746`。页面只通过 `miniprogram/package.json` 固定消费公共 `poemui-miniprogram@0.1.4`，不复制 PUI 源码；公共包地址为 <https://www.npmjs.com/package/poemui-miniprogram>。
 
 当前产品仅支持默认 WebView 渲染：`app.json` 不声明 `renderer: "skyline"`、`rendererOptions` 或 `componentFramework: "glass-easel"`。不要以 Skyline 的 CSS、GridView、宿主盒模型或真机行为作为本项目的实现与验收前提。
 
 ## 2026-07-26 当前搬迁状态
 
-本节优先于本文后续的早期迁移记录：`miniprogram/app.json` 已登记 74 个稳定组件独立页和 5 个 `pages/guides/*` 规范页。首页目录包含“开始与规范、基础组件、浮层、布局、导航、表单组件、数据展示、反馈、高级”九分区，Search 从同一目录数据生成 79 条可导航候选；5 个规范候选以“规范 ·”前缀区别于组件。
+本节优先于本文后续的早期迁移记录：0.1.4 工作树的 `miniprogram/app.json` 已登记 78 个组件独立页和 5 个 `pages/guides/*` 规范页。首页目录包含“开始与规范、基础组件、浮层、布局、导航、表单组件、数据展示、反馈、高级”九分区，Search 从同一目录数据生成 83 条可导航候选；5 个规范候选以“规范 ·”前缀区别于组件。
 
 - `ConfigProvider` 页根部使用唯一的 `visualConfig` Store，局部 Provider 只覆盖自身子树；不复制全局状态。
 - `Form` 只报告本地校验，`Upload` 只回传微信本地文件选择结果；两者均不伪造发布、保存或服务器上传成功。
@@ -28,7 +28,7 @@
 - 仅“高级”目录分区通过 Collapsible 的真实 `trigger` Slot 组合标题与 `<pui-icon name="premium" size="30" />`；`premium` 是 Icon Font 的公开语义名称，映射到同源 crown 字形，并在统一字体生成链中向上做 `1.5/24` 画布单位的光学校正。图标位于文字右侧、继承标题前景色且不单独朗读；首页不得用负 margin、相对定位或 transform 修补基线，其余目录继续走 Collapsible 默认标题，不复制一套分区 Header 或改变开合、滚动和搜索真相源。
 - 首页初显保持全部目录收起；页面可见满 2 秒后自动展开“浮层”。若用户先手动切换任一分区，页面取消该自动动作，不覆盖用户当前选择；页面隐藏或卸载时也会取消未触发的定时器。
 - 用户手动打开任一目录分区后，页面先按显式传给 Collapsible 的同一 `500ms` 动效完成互斥展开/收起，再测量 `.home-scroll-row` 与普通 `view#home-section-*` 的真实矩形，以当前滚动位置加两者纵向差计算唯一 `pui-scroll-area` 的受控 `scrollTop`，并按真实窗口宽度把 PUI `--pui-space-step-24` 对应的 `48rpx` 换算为 px，在分区标题上方保留稳定阅读留白；不硬编码 Navbar、版头、分区或机型高度。关闭分区会取消尚未执行的定位并清空目标；从组件页返回时仍以离开前的真实 `scrollTop` 为最高优先级，不再用目录锚点覆盖阅读位置。
-- 搜索过滤同一目录中的 74 个真实组件路由与 5 个规范路由；清空或关闭会恢复完整目录。
+- 搜索过滤同一目录中的 78 个真实组件路由与 5 个规范路由；清空或关闭会恢复完整目录。
 - 每条组件 Cell 显式显示 `chevron-right`，由 Cell 自身的 `url + jumpType=navigateTo` 执行真实导航，不在页面维护第二套点击跳转。
 - 每个目录分区继续复用共享 Collapsible，并显式开启其 `shadow` 公共能力：只有当前唯一展开分区消费 ConfigProvider 的卡片阴影；关闭分区保持扁平，毛玻璃与阴影分别跟随全局有效 Token，页面不增加私有 Surface 或阴影样式。
 - 底部是 fixed 的纯图标 `pui-tabbar`：显式使用 `fixed=true / placeholder=false / safeAreaInsetBottom=true`，由组件自身固定到视口底部，不随 ScrollArea 高度更新上下移动。组件继续使用原生 `normal + normal + split` 形态，全宽短横选中态和条目间微分隔均由组件负责；normal 的条目与流内根保持透明，fixed 根只消费 `--pui-bg-page` 延续页面画布，不带面板阴影或毛玻璃，仅 round 是独立悬浮 Surface。四个真实目的地依次为首页、快速样式（`palette`）、安装（`code`）和我的；页面消费者继续通过 `change → wx.redirectTo` 路由，不让 Tabbar 组件承担自动导航。
@@ -38,9 +38,9 @@
 
 `pages/styles/index` 是真实小程序的 Style Utilities 入口，不复制官网 DOM 或 WXSS。Navbar 已承担“快速样式”唯一页面标题，因此内容区从 Tabs 直接开始；Tabs 内不再保留分类标题、说明、已选 class 或目录标题，只保留一个真实预览和无标题的当前分类目录。页面工作区固定在 Navbar 与 Tabbar 之间：`pui-tabs` Header 和预览都是该工作区内的 absolute 层，明确 `sticky=false`；唯一 `pui-scroll-area` 只承载目录。Tabs 显式 `swipeable=false`，避免横滑识别与目录纵向手势竞争。
 
-`pages/codex/index` 是第三个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Button、Icon、Dialog、Popup、Tabbar 与共享 Section 组合“快速开始 / 让你的 AI 懂得用它”两个分区。Navbar 左 Slot 以两个紧凑圆形 PUI IconButton 提供 Info 和菜单：Info 打开受控说明 Dialog，菜单打开与首页同源的共享外观 Popup。正文通过 `wx.cloud.Cloud({ resourceAppid, resourceEnv })` 从共享资源 AppID `wxa1b9a4d6549c6cd1`、环境 `poemcoder-1gkbkid139b08f45` 的 `pui-codepage` 集合读取公开 Page 与 Skill；不能误接 PoemUI 自建云环境，也不能以本地 fallback 把云端失败包装成成功。快速开始展示 `npm i poemui-miniprogram@0.1.3 -S --production`、完整公共 npm 地址和最小页面引用；Skill 展示 npm 包内置 Skill 的固定安装代码，并提供 `v0.1.3` GitHub 真相源。两类代码均由共享 `code-snippet` 组合 PUI Card、Icon 与圆形文字 Button 完成真实复制，只有代码横向阅读使用原生 `scroll-view`；加载失败必须进入可重试错误态。
+`pages/codex/index` 是第三个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、Button、Icon、Dialog、Popup、Tabbar 与共享 Section 组合“快速开始 / 让你的 AI 懂得用它”两个分区。Navbar 左 Slot 以两个紧凑圆形 PUI IconButton 提供 Info 和菜单：Info 打开受控说明 Dialog，菜单打开与首页同源的共享外观 Popup。正文通过 `wx.cloud.Cloud({ resourceAppid, resourceEnv })` 从共享资源 AppID `wxa1b9a4d6549c6cd1`、环境 `poemcoder-1gkbkid139b08f45` 的 `pui-codepage` 集合读取公开 Page 与 Skill；不能误接 PoemUI 自建云环境，也不能以本地 fallback 把云端失败包装成成功。快速开始展示 `npm i poemui-miniprogram@0.1.4 -S --production`、完整公共 npm 地址和最小页面引用；Skill 展示 npm 包内置 Skill 的固定安装代码，并提供 `v0.1.4` GitHub 真相源。两类代码均由共享 `code-snippet` 组合 PUI Card、Icon 与圆形文字 Button 完成真实复制，只有代码横向阅读使用原生 `scroll-view`；加载失败必须进入可重试错误态。
 
-`pages/me/index` 是第四个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、BarChart、Button、Cell/CellGroup、Dialog、Popup、Toast 与 Tabbar；它不是用户中心，因此不注册 Avatar、Input 或 `user-profile` Store，也不读取、缓存或复制任何本地身份资料。Navbar 左 Slot 以客服与菜单两个紧凑圆形 PUI IconButton 组成双操作，客服保留真实 `open-type=contact`，菜单打开共享外观 Popup。上方唯一 Card 不显示版头文案，Content 顶部以透明摘要从生成源展示组件、样式、高级与本版新增数量；其下 BarChart 使用公告的分类快照展示 `0.1.0=71 → 0.1.1=74 → 0.1.2=74 → 0.1.3=74`，0.1.3 明确为治理与交付版本的 0 组件增量。任一 Popup/Dialog 打开时页面卸载原生 Canvas，关闭后恢复。服务 CellGroup 在标准 `--pui-section-gap` 后紧跟仪表盘，页面剩余空白落在内容末尾而不是两个 Surface 之间。隐私协议调用 `wx.openPrivacyContract`，关于诗上调用 `wx.navigateToMiniProgram` 打开正式版 `wxa1b9a4d6549c6cd1`。高级版商业授权先由受控 Dialog 提示桌面端浏览体验更佳，提供真实“复制链接 / 直接访问”双路径；直接访问才通过 `wx.navigateTo` 进入 `pages/license/index`，使用微信 WebView 打开固定 `https://poemcoder.com/poem-ui`。该链路只查阅信息，不伪造支付、订单或外部页面加载成功。完整合同见 `docs/MINIPROGRAM_ME_PAGE.md`。
+`pages/me/index` 是第四个一级目的地。页面使用 PUI ConfigProvider、Navbar、唯一 ScrollArea、Card、BarChart、Button、Cell/CellGroup、Dialog、Popup、Toast 与 Tabbar；它不是用户中心，因此不注册 Avatar、Input 或 `user-profile` Store，也不读取、缓存或复制任何本地身份资料。Navbar 左 Slot 以客服与菜单两个紧凑圆形 PUI IconButton 组成双操作，客服保留真实 `open-type=contact`，菜单打开共享外观 Popup。上方唯一 Card 不显示版头文案，Content 顶部以透明摘要从生成源展示组件、样式、高级与本版新增数量；其下 BarChart 使用公告的固定分类快照展示 `0.1.0=71 → 0.1.1=74 → 0.1.2=74 → 0.1.3=74 → 0.1.4=78`，只有高级分类在 0.1.4 新增 DonutChart、RadarChart、SortableList、Tour 四项。任一 Popup/Dialog 打开时页面卸载原生 Canvas，关闭后恢复。服务 CellGroup 在标准 `--pui-section-gap` 后紧跟仪表盘，页面剩余空白落在内容末尾而不是两个 Surface 之间。隐私协议调用 `wx.openPrivacyContract`，关于诗上调用 `wx.navigateToMiniProgram` 打开正式版 `wxa1b9a4d6549c6cd1`。高级版商业授权先由受控 Dialog 提示桌面端浏览体验更佳，提供真实“复制链接 / 直接访问”双路径；直接访问才通过 `wx.navigateTo` 进入 `pages/license/index`，使用微信 WebView 打开固定 `https://poemcoder.com/poem-ui`。该链路只查阅信息，不伪造支付、订单或外部页面加载成功。0.1.4 公告仅写入包内 fallback，标题明确为开发版，本轮不写生产共享云。完整合同见 `docs/MINIPROGRAM_ME_PAGE.md`。
 
 预览固定为 `120rpx` 高的透明单一当前效果条，目录以 `8rpx` 关联间距紧随其后并至少保留 `520rpx` 可视高度；预览和目录不建立第二层面板。预览右侧使用 `default / text / small / circle / icon-only` 的 PUI Refresh IconButton，只清空当前分类的选择，其余分类状态继续保留；恢复是低存在感的次要回退动作，不使用 primary 实底或常驻文案。页面只测量 Navbar、Tabbar 与 workspace，不查询或依赖会被 utility 改写的 preview DOM。`scripts/style-utilities-preview-schema.js` 为全部 562 个发布类生成 `previewKind / previewTarget / previewSafety / previewTheme / previewScaffold`，生成器同步输出小程序目录、`preview/style-utilities-data.js` 和 H5 scoped `preview/style-utilities.css`。运行时把选择结果分发到 `layout / item / target / media / measure / outer / surface / items / text` 九类适格目标；禁止把 width、height、position、display、overflow、theme 或 visibility 类挂到页面、Tabs、ScrollArea、当前效果容器或其他基础设施根。viewport、fixed、hidden、safe-area 等风险结果必须在当前效果条内裁切或留下可读 trace，不能逃出预览或制造空白。
 

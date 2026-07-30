@@ -6,7 +6,7 @@
 
 - 该一级目的地不是用户中心，不展示头像、昵称或其他本地身份资料，也不提供资料编辑与持久化。
 - 页面只保留真实组件状态、服务与信息入口。正文以实测 `contentHeight` 作为最小高度；服务 CellGroup 在正常文档流中紧跟仪表盘，并由父级唯一 `--pui-section-gap` 保留较大的分区间距，不再用 `margin-top:auto` 把空白塞在两个 Surface 之间。内容超过可用高度时仍由页面唯一 ScrollArea 正常滚动。
-- 服务列表上方使用一张 PUI Card 组合透明四列数据摘要与一个全宽 PUI BarChart。组件、高级和本版新增数量来自 `scripts/generate-catalog.js` 生成的 `miniprogram/common/data/component-status.js`；样式数量直接读取同一生成链产出的 `miniprogram/common/data/style-utilities-catalog.js`。页面依次显示“组件 / 样式 / 高级 / 新增”与当前真实数量；BarChart 从公告 Schema v2 的 `categoryCounts` 读取数据，先按日期、再按语义版本从旧到新为每个有效公告版本建立独立 segment 与稳定颜色。`getting-started / 规范` 只在 Me 图表展示层过滤，公告九类 Schema、合计校验和组件总数不变。当前显示 `v0.1.0 / v0.1.1 / v0.1.2 / v0.1.3` 四种颜色，真实增量只有高级类 `5 + 3 + 0 + 0 = 8`，顶部“新增”为当前 0.1.3 生成状态的 `0`；任何 0 增量都不得伪造可见长度。
+- 服务列表上方使用一张 PUI Card 组合透明四列数据摘要与一个全宽 PUI BarChart。组件、高级和本版新增数量来自 `scripts/generate-catalog.js` 生成的 `miniprogram/common/data/component-status.js`；样式数量直接读取同一生成链产出的 `miniprogram/common/data/style-utilities-catalog.js`。页面依次显示“组件 / 样式 / 高级 / 新增”与当前真实数量；BarChart 从公告 Schema v2 的固定 `categoryCounts` 快照读取数据，先按日期、再按语义版本从旧到新为每个有效公告版本建立独立 segment 与稳定颜色。`getting-started / 规范` 只在 Me 图表展示层过滤，公告九类 Schema、合计校验和组件总数不变。0.1.4 工作树显示 `v0.1.0 / v0.1.1 / v0.1.2 / v0.1.3 / v0.1.4` 五种颜色，高级类真实增量为 `5 + 3 + 0 + 0 + 4 = 12`，顶部“新增”为 `4`；历史公告不得动态读取当前分类值而篡改旧版本。
 - 页面不展示、读取、缓存或复制 OpenID，也不读取历史 `poemui-user-profile` 本地键。旧本地值不主动删除，但已没有代码消费者。
 - “更新公告”从诗上共享云环境的 `pui_updatelog` 读取并打开受控 PUI Popup；每条 Schema v2 公告必须包含 `componentCount` 与九项 `categoryCounts`，这些字段用于 BarChart 计算和一致性校验，不在公告 Popup 内重复展示。Popup 只呈现版本、日期、摘要与组件改动；云端失败时依次回退缓存和包内同形公告，来源不得伪装。
 
@@ -49,7 +49,7 @@
 
 “我的”是示例小程序应用页面，不作为官网组件目录或 PreviewDevice 路由。H5 同步的是它当前消费的 Card、BarChart、Button、Cell/CellGroup、Dialog、Popup、Tag、Icon、TopLoading、Toast、Navbar、ScrollArea、Tabbar 与 ConfigProvider 既有组件合同；不得为该页面再维护一套 H5 业务壳或伪造组件统计、头像昵称、微信隐私合同、WebView 或跨小程序跳转。Me 的八类过滤、逐版本分段和展开/收起都属于小程序业务页面，不复制到 H5；BarChart 公共镜像的 `0.04 → 0.42 + 实体终点线` 必须在最终汇总同步 `preview/styles.css` 的浅深六色横纵 Token 与 segment 样式，并做 390px 浅深色测试。商业授权信息的 H5 真相源就是生产落地页 `https://poemcoder.com/poem-ui`。
 
-更新公告和外观 Popup 继续消费 Popup、Tag、Icon、TopLoading、Button 与 AppearanceSettings 的既有双端合同，但官网不复制该业务页；Navbar 最左侧双操作 Slot 的 `extra-small/text/transparent/circle/iconOnly` 几何继续由 Navbar/Button 双端合同覆盖，微信 `open-type="contact"` 不在 H5 伪造成功。多小程序共享公告的后端边界见 `docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md`。
+更新公告内容是明确的跨端例外：官网新增独立文档路由 `#/updates`，而不是复制 Me 页面或把公告塞回 Popup。Topbar 中 PoemUI 名称后的版本号必须由共享 `buttonSample` 渲染为低存在感 PUI Button，点击进入该路由；页面以一个连续 Surface 按版本陈列组件级改动，不建立逐条 Card。`scripts/generate-release-notes.js` 从 `miniprogram/common/services/update-announcements.js` 的包内同形公告生成 `preview/release-notes-data.js`，站点构建必须刷新该文件，因此 H5 与小程序 fallback 共用一份内容真相。H5 不调用 `wx.cloud.Cloud`、不读取小程序缓存，也不得把生成型镜像描述成浏览器实时云查询；生产云的最终完整文档以 `docs/evidence/cloud/pui-updatelog-v0.1.4-readback.json` 为可版本化写后回读证据，本机原始副本继续保存在 `.audit/cloud/`。Navbar 最左侧双操作 Slot 的 `extra-small/text/transparent/circle/iconOnly` 几何继续由 Navbar/Button 双端合同覆盖，微信 `open-type="contact"` 不在 H5 伪造成功。多小程序共享公告的后端边界见 `docs/SHARED_MINIPROGRAM_CLOUD_SERVICE.md`。
 
 ## 6. 验收
 
@@ -83,6 +83,8 @@ npm run check
 同轮旧两点 AreaChart 的微信开发者工具截图 `/tmp/poemui-me-metrics-light-390.png`、`/tmp/poemui-me-metrics-dark-fruity-390.png` 只保留为历史证据。当前三点 AreaChart 已在 SDK 3.17.0 / iPhone 12/13 (Pro) / 390×844 实测：运行态为 `0.1.0=71 / 0.1.1=74 / 0.1.2=74`、`max=74`、`duration=1000`，图表根 `left=25/top=169/340×145` 与 Card Content 同宽；浅色截图 `/tmp/poemui-me-area-chart-three-versions-light-390.png`，深色果味截图 `/tmp/poemui-me-area-chart-three-versions-dark-fruity-390.png`。公告 Popup、商业授权 Dialog、外观 Popup 分别打开时 Canvas 节点均卸载，关闭后恢复；控制台过滤 `invalid page.json / enableShareTimeline / warning / error / exception / fail` 无命中。模拟器通过不替代 iOS/Android 真机，后者继续 `pending-device`。
 
 2026-07-29 的 0.1.2 发布同步已完成共享云与微信体验版回读。生产环境 `poemcoder-1gkbkid139b08f45` 的 `pui_updatelog` 按稳定 `_id=pui-v0-1-2-20260729` 写入并回读为唯一记录，字段为 `version=v0.1.2 / date=2026-07-29 / status=published`，五组内容与包内 fallback 一致；审计副本见 `.audit/cloud/pui-updatelog-v0.1.2-readback.json`。本段中此前上传的两点 AreaChart 与随后未上传的三点 AreaChart 都只作历史发布证据；最新 BarChart 方案的体验版上传结果见本文末尾。iOS/Android 真机仍为 `pending-device`。
+
+2026-07-30 已为 0.1.4 工作树写入生产共享云公告。写前 `version=v0.1.4` 查询为 0 条；写后稳定 `_id=pui-v0-1-4-20260730` 按 `version=v0.1.4 + status=published` 唯一命中 1 条，九类合计与 `componentCount=78` 一致，五项重点与包内 fallback/H5 生成页同形。Node SDK 首次误用 `set({data: document})` 产生了不符合客户端合同的嵌套字段，已立即在同一稳定 ID 上用 `set(document)` 完整覆盖，并按 `_id` 全文回读确认最终文档不存在残留嵌套；最终写入请求为 `19fb10c1be1_2`，可版本化证据见 `docs/evidence/cloud/pui-updatelog-v0.1.4-readback.json`，本机原始副本见 `.audit/cloud/`。公告的 `published` 只表示客户端可读取，不代表 `poemui-miniprogram@0.1.4` 已发布到 npm。
 
 同日更新公告 Schema 升级为 v2：生产云的 `pui-v0-1-0-20260727 / pui-v0-1-1-20260728 / pui-v0-1-2-20260729` 均按稳定 ID 原位增加 `componentCount/categoryCounts`，写后回读全部为 `updated=1`、九类齐全且分类合计等于总数；审计副本见 `.audit/cloud/pui-updatelog-schema-v2-counts-readback.json`。微信开发者工具 SDK 3.17.0 / 390×844 真实回读 `source=cloud`，浅色首屏完整显示 `74` 与九类 `1/3/5/9/19/14/9/6/8`，滚至 `y=760` 后 Footer 仍固定 `left=27/top=772`，深色果味同样可读；截图为 `/tmp/poemui-me-announcement-counts-light-390.png`、`/tmp/poemui-me-announcement-counts-light-scroll-390.png`、`/tmp/poemui-me-announcement-counts-dark-fruity-390.png`。iOS/Android 真机继续 `pending-device`。
 

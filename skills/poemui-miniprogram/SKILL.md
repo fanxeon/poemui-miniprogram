@@ -53,6 +53,6 @@ description: 开发、迁移、审计或验收 PoemUI 原生微信小程序界�
 - [平台边界](references/platform-boundaries.md)：微信能力、模拟器和真机风险。
 - [示例](references/examples.md)：最小可运行页面与受控值回写。
 
-当前验证包版本是 `poemui-miniprogram@0.1.3`；遇到其他版本，先比较实际 `package.json`、入口、组件目录和合同再修改。
+当前发布版本是 `poemui-miniprogram@0.1.4`；安装或发布状态仍须以 Registry 实时回读为准，不能只看本地 `package.json`。遇到其他版本，先比较实际安装包、入口、组件目录和合同再修改。
 
 维护本 Skill 后运行 `node <skill-dir>/scripts/check-skill.mjs`；它只验证 Skill 的结构、引用和不可遗漏的治理入口，不替代真实组件验收。

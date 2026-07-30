@@ -95,7 +95,7 @@
 Popup 是 PoemUI 的“操作面板”基础原语，不是业务表单、确认框或成功提示。所有 Popup 及其官网镜像必须遵守以下组合顺序：
 
 1. **Surface 只有一层**：Popup 根负责唯一可见 Surface、主题、边框、圆角、阴影和毛玻璃；Header、Content、Footer 是同一 Surface 内的结构分区，不再套 Card 或第二层面板。
-2. **卡片与贴边是同一 Surface 的定位选择**：`card=true` 默认保留 `--pui-space-step-12` 视口留白，并固定消费半透明 `--pui-glass-tint`，不能在毛玻璃关闭时退回纯色实底；`card=false` 只让稳固 Surface 贴合弹出边缘并把贴边圆角归零，不能删除 Header、Content、Footer 的既有内边距或另造一层容器。
+2. **卡片与贴边是同一 Surface 的定位选择**：`card=true` 默认保留 `--pui-space-step-12` 视口留白，并固定消费半透明 `--pui-glass-tint`，不能在毛玻璃关闭时退回纯色实底；其后代 ScrollArea 的默认渐变必须自动切换到同色相半透明材质 Token，不能用纯白/纯深色容器色覆盖合成后的玻璃背景。`card=false` 只让稳固 Surface 贴合弹出边缘并把贴边圆角归零，不能删除 Header、Content、Footer 的既有内边距或另造一层容器。
 3. **遮罩模糊只属于遮罩**：`blurOverlay=true` 仅在 `showOverlay=true` 的完整遮罩上应用 `--pui-popup-overlay-blur`，不得改写 Popup Surface、全局毛玻璃偏好或用半透明颜色假装模糊。
 4. **Header 三列稳定对齐**：左列放调用方提供的带底色圆形 `pui-button` 主要执行操作，右列放带 muted 弱填充的 `close-btn` 或默认圆形 `pui-button` 关闭操作，中间只放标题与副标题。左右列始终等宽，按钮顶部对齐且共享上间距，标题区域自身垂直水平居中；没有左操作时保留空轨道，不能用绝对定位补位。
 5. **Content 只有一个滚动上下文**：Content 是 Popup 内唯一可滚动区，表单、Cell、Loading、Empty 等业务内容必须通过 Slot 组合；Popup 不穿透修改 Slot 子组件的 padding、圆角、尺寸或状态。`content` 文本只作为没有 Slot 内容时的轻量回退。
@@ -158,7 +158,7 @@ Dialog Surface
 - 浮层演示根与透明布局 Stage 必须至少铺满 PreviewDevice viewport，让真实 scrim/overlay 覆盖完整设备内容区；不得把局部遮罩画成悬在设备中的另一张矩形卡片。
 - `PreviewDevice` 必须在唯一滚动 viewport 内提供两种共享父布局：普通组件使用 `shadow-safe`，固定消费 14px 基础内距与 14px 阴影外扩区，最终四向为 28px；Dialog、Popup、Sheet、Popover、ActionSheet、DropdownMenu、Overlay、Navbar、Tabbar、Toast 等屏幕附着组件使用 `edge-to-edge`，padding 为 0 并覆盖完整 viewport。外框自身 padding 为 0，避免安全区落在滚动裁切边界之外。两种布局都以确定轨道和直接根 `height:100%/min-height:0` 填满可用高度；直接 `.demo-section` 固定使用 `8px` content gap 和 `margin:0`。阴影开关不得增删安全区或改变布局。
 - 只有 `.preview-device__viewport` 可以纵向滚动；外框不随内容、浮层或交互增长。组件预览根必须填满对应内部 viewport，不能只让首个内容块占据顶部后留下无职责空白。该共享 Preview ScrollArea 默认复用 ScrollArea 的 `md / 32px` 顶底主题渐隐层：两层必须是 viewport 的透明同级、`pointer-events:none`、`aria-hidden=true`，只在真实 overflow 时出现；位于顶部仅显示底层、位于底部仅显示顶层，中段两层同时出现。不得创建第二个滚动上下文、遮罩 Surface 或用静态 class 假装滚动状态。滚动条默认透明隐藏，真实滚动时以 `.is-scrolling` 显示，停止后自动恢复隐藏；PreviewDevice 用 `scrollbar-gutter: stable both-edges` 保持所有组件预览的左右可用宽度和安全边距对称。常规模式下，PreviewDevice 及其内部每一个真实溢出滚动口都必须支持鼠标左键按住后纵向拖动，并兼容主触点和触控笔；最内层滚动口优先接管，超过 6px 才进入拖动并抑制 click，输入、Picker、Slider、Swiper、SwipeCell、PullRefresh、Sheet 与 Rate 的专属手势不得被劫持。
-- 原生滚动组件若提供固定顶/底渐变遮罩，只能以同一滚动视口的透明、无交互 sibling layer 实现：遮罩必须 `pointer-events:none`、`aria-hidden`，并由真实边缘状态决定——顶部仅底层、底部仅顶层、中段两层、无溢出零层；颜色走组件语义 Token 或已校验的公开色值。依赖容器色的上下文别名必须在 light/dark 两个主题作用域分别解析，不能让深色子树继承浅色根已经计算的白色值。无边 Navbar 与相邻 ScrollArea 连续排布时，Navbar 用 `border-bottom:0` 不保留透明边框，页面壳将 ScrollArea 的上下文色指向同一画布 Token；若公开尺寸，只能使用组件合同中定义的离散语义档位与跨端 Token，默认档不得改变既有布局。不得放进可滚动 Slot、增加第二个 viewport、阻断内容或把透明根变成 Surface。
+- 原生滚动组件若提供固定顶/底渐变遮罩，只能以同一滚动视口的透明、无交互 sibling layer 实现：遮罩必须 `pointer-events:none`、`aria-hidden`，并由真实边缘状态决定——顶部仅底层、底部仅顶层、中段两层、无溢出零层；颜色走组件语义 Token 或已校验的公开色值。普通实底上下文使用当前容器色；毛玻璃或半透明独立 Surface 必须重绑定为同色相、低 alpha 的材质遮罩，避免在已经合成的 Surface 上重新覆盖一条实色带。实底与材质别名都必须在 light/dark 作用域分别解析，不能让深色子树继承浅色值。无边 Navbar 与相邻 ScrollArea 连续排布时，Navbar 用 `border-bottom:0` 不保留透明边框，页面壳将 ScrollArea 的上下文色指向同一画布 Token；若公开尺寸，只能使用组件合同中定义的离散语义档位与跨端 Token，默认档不得改变既有布局。不得放进可滚动 Slot、增加第二个 viewport、阻断内容或把透明根变成 Surface。
 - 微信小程序使用 `navigationStyle: "custom"` 时，右上原生胶囊仍由系统绘制和响应；页面级 Navbar 必须读取 `wx.getMenuButtonBoundingClientRect()` 的 `left/right/top/bottom/width/height` 与 `wx.getWindowInfo()` 的 `windowWidth/statusBarHeight`。左右轨道以 `windowWidth - left` 对称保护标题；左操作以 `windowWidth - right` 为外边距，在真实胶囊宽度的镜像区域内居中；导航内容高度按胶囊相对状态栏的上下等距计算。右侧不得再放置业务操作。H5 仅可用不可交互、`aria-hidden` 的 Token 化视觉镜像对齐同一空间，不能复制为假菜单、假关闭或假成功。任何组件若允许退出该模式，必须以显式非默认 Prop 声明，并在组件合同、API、H5 与真机验收中同步说明。
 - 自定义导航栏需要两个标准图标操作时优先使用 Navbar `leftBtn/rightBtn`；若其中一项必须保留 PUI Button 的 `open-type` 等平台属性，则两个操作共同进入唯一 `left` Slot，并组合两个 `extra-small / text / transparent / circle / icon-only` PUI Button。Slot 分组只使用共享 Flex 与紧密间距 utility，不增加页面私有偏移、Surface 或字符图标；每个操作独立提供可访问名称和真实事件闭环。
 - 组件目录中的每个标准组件概览必须进入同一个 `PreviewDevice`，并在其唯一 `.preview-device__viewport[data-preview-scroll-contract="component-preview"]` 内运行；不得为某个组件恢复页面级滚动、第二个预览滚动根或私有设备壳。文档页与 Icon 资源库是明确例外，不能冒充手机组件概览。AreaChart、BarChart、Waffle 已是标准组件，必须遵守同一设备合同。
@@ -253,3 +253,12 @@ npm run pack:check
 ### 当前外观设置统一补充（2026-07-25）
 
 当前实现的外观菜单由七项真实 PUI Switch 组成：`border`、`shadow`、`frost`、`radius`、`gradient`、`equalSpacing`、`theme`；渐变开启后的 `gradientPreset` 使用共享 Select。`effectsEnabled` 继续存在于公共 Store、ConfigProvider、持久化 Schema、预设与 `setEffectsEnabled()` API，但不再作为用户可见开关；外观 UI 读取旧的 `false` 时恢复为 `true` 并保留 shadow/frost/radius 单项。开发者单独调用 `effectsEnabled=false` 时仍只暂停三项有效值，不改变主题、边框、等距、组件尺寸或布局。果味预设由 `effectsEnabled=true / shadow=on / frost=on / radius=large / border=off / gradient=off / gradientPreset=neutral` 逐项推导，`theme` 与 `equalSpacing` 不参与预设，不建立独立果味存储键。组件层资格以 [外观资格矩阵](./APPEARANCE_CONTRACT_MATRIX.md) 为准。
+
+## 0.1.4 主题继承与高级组件资格补充
+
+- 组件声明可选 `colorScheme` 时，空值只表示继承最近的 ConfigProvider；不得为了获得默认视觉而主动写入 `pui-theme--light`。显式 `light/dark` 才能产生局部主题类。原生平台控件若只接受实色 Props，可由 Theme Behavior 的实际解析结果计算安全颜色，但不能把页面私有主题状态作为第二真相源。
+- DonutChart 与 RadarChart 是透明图表展示叶子，不获得 Card、外阴影、毛玻璃、边框或等距 Surface；加载、空、错误和 Tooltip 均由消费者组合。
+- SortableList 是一个连续集合根，只有集合 Surface 可以跟随边框、圆角等适格外观；每一行不得拆成独立阴影卡片。同轴只有一个滚动和手势所有者。
+- Tour 是 detached Surface：一个 Overlay、一个目标框、一个活动 Panel 和一条焦点链。外观开关只作用于 Panel；目标缺失必须失败关闭，不能把面板移动到无关位置继续显示。
+- 图表进入动画默认开启并可重播，低动效压缩为 1ms；重播只影响可视入场，不改数据、不伪造业务完成。
+- 官网 Topbar 中 PoemUI 名称后的版本号是低存在感 PUI Button，固定进入 `#/updates`；不得退回静态 Badge、原生 Button 或 Popup。更新页只建立一个连续版本 Surface，版本之间和改动行之间使用 Divider 语义，禁止每条公告再套 Card。页面数据必须由小程序公告同形真相源在构建时生成，并明确区分“云端公告可读”“H5 构建镜像”和“npm 版本已发布”三种状态。

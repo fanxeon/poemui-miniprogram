@@ -1,0 +1,17 @@
+<view class="{{rootClass}} {{entered ? 'pui-radar-chart--entered' : ''}} {{customClass}}" style="{{rootStyle}}{{customStyle}}" role="img" aria-label="{{semanticLabel}}">
+  <view wx:if="{{empty}}" class="pui-radar-chart__empty">至少需要三个维度和一个数据系列</view>
+  <view wx:else class="pui-radar-chart__plot">
+    <canvas type="2d" class="pui-radar-chart__canvas" aria-hidden="true"></canvas>
+    <view class="pui-radar-chart__probes" aria-hidden="true">
+      <view wx:for="{{chartSeries}}" wx:key="key" class="pui-radar-chart__probe pui-chart-theme--{{item.theme}}" data-role="series" data-key="{{item.key}}"></view>
+      <view class="pui-radar-chart__probe pui-radar-chart__probe--grid" data-role="grid"></view>
+      <view class="pui-radar-chart__probe pui-radar-chart__probe--text" data-role="text"></view>
+    </view>
+  </view>
+  <view wx:if="{{showLegend && legend.length}}" class="pui-chart-legend" aria-hidden="true">
+    <view wx:for="{{legend}}" wx:key="key" class="pui-chart-legend__item">
+      <view class="pui-chart-legend__swatch pui-chart-theme--{{item.theme}}"></view>
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+</view>

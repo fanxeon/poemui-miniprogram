@@ -1,8 +1,8 @@
 # PoemUI 受限 Beta 与授权边界
 
 > 状态日期：2026-07-29
-> 当前包版本：`poemui-miniprogram@0.1.3`
-> 公共 npm：`poemui-miniprogram@0.1.3`
+> 当前包版本：`poemui-miniprogram@0.1.4`
+> 公共 npm：`poemui-miniprogram@0.1.4`
 > 公共 GitHub：<https://github.com/fanxeon/poemui-miniprogram>
 > H5 文档：已发布至 <https://poemcoder.com/poem-ui/docs/>
 > 产品落地页：已发布至 <https://poemcoder.com/poem-ui>

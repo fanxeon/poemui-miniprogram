@@ -1,0 +1,7 @@
+.pui-sortable-list{position:relative;box-sizing:border-box;width:100%;min-width:0;height:var(--pui-sortable-list-height);overflow:hidden;color:var(--pui-text-primary);background:var(--pui-bg-container);border:1rpx solid transparent;border-radius:var(--pui-radius-large);box-shadow:none}
+.pui-sortable-list--bordered{border-color:var(--pui-border-color)}.pui-sortable-list__viewport{width:100%;height:100%}
+.pui-sortable-list__item{position:relative;z-index:0;box-sizing:border-box;width:100%;min-width:0;background:var(--pui-bg-container);transition:opacity var(--pui-sortable-list-duration) var(--pui-ease-standard),transform var(--pui-sortable-list-duration) var(--pui-ease-standard),background-color var(--pui-sortable-list-duration) var(--pui-ease-standard)}
+.pui-sortable-list__item--active{z-index:1;background:var(--pui-bg-secondary);opacity:.92;transform:scale(.985)}
+.pui-sortable-list__item--disabled{opacity:.46}.pui-sortable-list__handle{display:inline-flex;align-items:center;justify-content:center;width:64rpx;height:64rpx;color:var(--pui-text-placeholder);cursor:grab;touch-action:none}
+.pui-sortable-list--drag-item .pui-sortable-list__item{cursor:grab}.pui-sortable-list--dragging .pui-sortable-list__handle,.pui-sortable-list--dragging.pui-sortable-list--drag-item .pui-sortable-list__item{cursor:grabbing}
+.pui-sortable-list--static .pui-sortable-list__item,.pui-sortable-list--reduced-motion .pui-sortable-list__item{transition-duration:1ms}

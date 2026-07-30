@@ -2,8 +2,8 @@
 
 PoemUI 是面向微信小程序原生开发的 UI 组件库，目标是通过 npm 安装、按需引入组件，并内置深浅色主题能力。工程结构和使用方式对标 `tdesign-miniprogram`：开发者安装包后，在页面 JSON 的 `usingComponents` 中指向包内组件路径。
 
-> **受限 Beta / 发布状态（2026-07-29）**
-> 当前公开版本为 `poemui-miniprogram@0.1.3`，源码位于
+> **受限 Beta / 发布状态（2026-07-30）**
+> 当前公开版本为 `poemui-miniprogram@0.1.4`，源码位于
 > [fanxeon/poemui-miniprogram](https://github.com/fanxeon/poemui-miniprogram)。
 > 本地 tarball、构建成功或代码中的包名仍不能替代 Registry 回读和微信
 > `build-npm`；完整稳定性与授权边界见 [受限 Beta 公告](docs/PUBLIC_BETA_NOTICE.md)。
@@ -15,7 +15,7 @@ PoemUI 是面向微信小程序原生开发的 UI 组件库，目标是通过 np
 固定版本安装：
 
 ```bash
-npm i poemui-miniprogram@0.1.3 -S --production
+npm i poemui-miniprogram@0.1.4 -S --production
 ```
 
 安装后在微信开发者工具中执行：
@@ -144,8 +144,7 @@ visualConfig.setEffectsEnabled(false); // 暂停装饰效果，不删除单项�
 
 ## 组件范围
 
-当前 npm 包内包含 `74` 个可按需引入的小程序组件目录；这里指当前工作树。
-公开 Registry `poemui-miniprogram@0.1.0` 是不可变的 71 组件历史版本；当前 `0.1.3` 包含 74 个组件。组件分为明确的发布层级：
+当前 npm 包内包含 `78` 个可按需引入的小程序组件目录；公开 Registry `poemui-miniprogram@0.1.4` 与同版本 GitHub Tag 固定该组件集合。`0.1.3` 是包含 74 个组件的历史版本。组件分为明确的发布层级：
 
 - `done`：API 与主要交互稳定，具有独立 WXML、WXSS、JS 实现、可传参数、事件与官网交互预览。
 - `beta`：具有真实原生实现与受控发布边界，升级时仍可能出现非破坏性调整。

@@ -116,6 +116,10 @@ const sourceGroups = [
     items: [
       { id: 'area-chart', name: 'AreaChart 面积图', status: 'done', kind: 'component' },
       { id: 'bar-chart', name: 'BarChart 条形图', status: 'done', kind: 'component' },
+      { id: 'donut-chart', name: 'DonutChart 圆环图', status: 'done', kind: 'component' },
+      { id: 'radar-chart', name: 'RadarChart 雷达图', status: 'done', kind: 'component' },
+      { id: 'sortable-list', name: 'SortableList 排序列表', status: 'done', kind: 'component' },
+      { id: 'tour', name: 'Tour 功能引导', status: 'done', kind: 'component' },
       { id: 'waffle', name: 'Waffle 组件点阵图', status: 'done', kind: 'component' },
       { id: 'top-loading', name: 'TopLoading 顶部加载', status: 'done', kind: 'component' },
       { id: 'dynamic-message', name: 'DynamicMessage 灵动通知', status: 'done', kind: 'component' },
@@ -503,6 +507,10 @@ const releaseComponentIds = new Set([
   'calendar',
   'area-chart',
   'bar-chart',
+  'donut-chart',
+  'radar-chart',
+  'sortable-list',
+  'tour',
   'waffle',
   'pull-refresh',
   'virtual-list',
@@ -594,6 +602,10 @@ const componentSummaries = {
   'dynamic-message': '在页面顶部展示可原位更新的非模态实时通知。',
   'area-chart': '用曲线与透明渐变展示连续趋势。',
   'bar-chart': '用共享零基线比较分类数值与分段增量。',
+  'donut-chart': '用圆润圆环展示组成、占比与总量。',
+  'radar-chart': '从多个维度比较一组或多组能力轮廓。',
+  'sortable-list': '通过长按拖动调整连续列表顺序。',
+  tour: '围绕页面目标逐步介绍关键操作。',
   waffle: '用圆润点阵表达总量、占比与新增单元。',
   result: '展示流程完成后的结果状态。',
 
@@ -945,6 +957,100 @@ const details = {
       { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
     ],
   },
+  'donut-chart': {
+    desc: '使用原生 Canvas 2D 绘制圆润占比圆环；弧段从低透明度渐进至实色端点，H5 使用同数据合同的 SVG 镜像。',
+    path: 'poemui-miniprogram/donut-chart/donut-chart',
+    states: '六种强调色、圆环厚度、起始角、弧段间隔、中心总量、图例、默认入场与低动效',
+    props: [
+      { key: 'items', label: 'items', type: 'json', value: [
+        { key: 'basic', label: '基础', value: 24, theme: 'blue' },
+        { key: 'form', label: '表单', value: 18, theme: 'teal' },
+        { key: 'advanced', label: '高级', value: 13, theme: 'violet' },
+      ], apiType: 'DonutChartItem[]' },
+      { key: 'thickness', label: 'thickness', type: 'range', value: 40, min: 16, max: 80, step: 2 },
+      { key: 'startAngle', label: 'start-angle', type: 'range', value: -90, min: -180, max: 180, step: 5 },
+      { key: 'gapAngle', label: 'gap-angle', type: 'range', value: 3, min: 0, max: 12, step: 1 },
+      { key: 'size', label: 'size', type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+      { key: 'showCenter', label: 'show-center', type: 'boolean', value: true },
+      { key: 'centerText', label: 'center-text', type: 'text', value: '' },
+      { key: 'showLegend', label: 'show-legend', type: 'boolean', value: true },
+      { key: 'animated', label: 'animated', type: 'boolean', value: true },
+      { key: 'duration', label: 'duration', type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '组件分类占比' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
+  'radar-chart': {
+    desc: '使用原生 Canvas 2D 比较三至八个维度；网格保持低对比，数据面从中心渐变到透明边缘，H5 使用同数据合同的 SVG 镜像。',
+    path: 'poemui-miniprogram/radar-chart/radar-chart',
+    states: '3–8 维度、1–4 系列、2–8 网格级别、六种强调色、实色轮廓与端点、默认入场与低动效',
+    props: [
+      { key: 'indicators', label: 'indicators', type: 'json', value: [
+        { key: 'api', label: 'API', max: 100 },
+        { key: 'theme', label: '主题', max: 100 },
+        { key: 'motion', label: '动效', max: 100 },
+        { key: 'a11y', label: '无障碍', max: 100 },
+        { key: 'docs', label: '文档', max: 100 },
+      ], apiType: 'RadarIndicator[]' },
+      { key: 'series', label: 'series', type: 'json', value: [
+        { key: 'current', label: '当前版本', values: [88, 92, 78, 84, 90], theme: 'violet' },
+        { key: 'baseline', label: '基线', values: [72, 75, 66, 70, 74], theme: 'blue' },
+      ], apiType: 'RadarSeries[]' },
+      { key: 'levels', label: 'levels', type: 'range', value: 4, min: 2, max: 8, step: 1 },
+      { key: 'size', label: 'size', type: 'select', value: 'medium', options: ['small', 'medium', 'large'] },
+      { key: 'showGrid', label: 'show-grid', type: 'boolean', value: true },
+      { key: 'showLegend', label: 'show-legend', type: 'boolean', value: true },
+      { key: 'showDots', label: 'show-dots', type: 'boolean', value: true },
+      { key: 'animated', label: 'animated', type: 'boolean', value: true },
+      { key: 'duration', label: 'duration', type: 'range', value: 500, min: 0, max: 1000, step: 20 },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '组件能力比较' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
+  'sortable-list': {
+    desc: '由连续 Cell 组成的局部滚动排序列表；长按句柄或整项后拖动，组件只发布新顺序，持久化与业务提交由父级负责。',
+    path: 'poemui-miniprogram/sortable-list/sortable-list',
+    states: '句柄/整项拖动、禁用项、边缘自动滚动、受控数据回写、取消、低动效',
+    props: [
+      { key: 'items', label: 'items', type: 'json', value: [
+        { key: 'install', title: '安装组件', description: '构建 npm 并注册组件', icon: 'download' },
+        { key: 'theme', title: '配置主题', description: '挂载 ConfigProvider', icon: 'palette' },
+        { key: 'ship', title: '完成验收', description: '同步 H5 与契约测试', icon: 'check-circle' },
+      ], apiType: 'SortableListItem[]' },
+      { key: 'itemKey', label: 'item-key', type: 'text', value: 'key' },
+      { key: 'disabledKeys', label: 'disabled-keys', type: 'json', value: [], apiType: '(string | number)[]' },
+      { key: 'dragFrom', label: 'drag-from', type: 'select', value: 'handle', options: ['handle', 'item'] },
+      { key: 'height', label: 'height', type: 'text', value: '560rpx' },
+      { key: 'bordered', label: 'bordered', type: 'boolean', value: true },
+      { key: 'animated', label: 'animated', type: 'boolean', value: true },
+      { key: 'duration', label: 'duration', type: 'range', value: 300, min: 0, max: 1000, step: 20 },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '组件交付顺序' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
+  tour: {
+    desc: '围绕页面中的真实 #id 或 .class 目标逐步展示引导；组件管理唯一遮罩、步骤和操作链，目标测量失败时明确报错并关闭。',
+    path: 'poemui-miniprogram/tour/tour',
+    states: '受控/非受控显隐与步骤、自动/四向定位、目标聚焦、跳过/完成、遮罩关闭、毛玻璃、错误闭环、低动效',
+    props: [
+      { key: 'steps', label: 'steps', type: 'json', value: [
+        { key: 'search', selector: '#tour-search-target', title: '快速搜索', content: '在这里输入组件名称。', placement: 'bottom' },
+        { key: 'appearance', selector: '#tour-appearance-target', title: '外观设置', content: '随时切换主题与视觉效果。', placement: 'left' },
+      ], apiType: 'TourStep[]' },
+      { key: 'visible', label: 'visible', type: 'nullable-boolean', value: null, apiType: 'boolean | null' },
+      { key: 'defaultVisible', label: 'default-visible', type: 'boolean', value: false },
+      { key: 'current', label: 'current', type: 'nullable-number', value: null, apiType: 'number | null' },
+      { key: 'defaultCurrent', label: 'default-current', type: 'range', value: 0, min: 0, max: 8, step: 1 },
+      { key: 'closeOnOverlay', label: 'close-on-overlay', type: 'boolean', value: true },
+      { key: 'overlayBlur', label: 'overlay-blur', type: 'boolean', value: false },
+      { key: 'showSkip', label: 'show-skip', type: 'boolean', value: true },
+      { key: 'showIndicators', label: 'show-indicators', type: 'boolean', value: true },
+      { key: 'zIndex', label: 'z-index', type: 'range', value: 11500, min: 1, max: 12000, step: 100 },
+      { key: 'duration', label: 'duration', type: 'range', value: 400, min: 0, max: 1000, step: 20 },
+      { key: 'ariaLabel', label: 'aria-label', type: 'text', value: '功能引导' },
+      { key: 'reduceMotion', label: 'reduce-motion', type: 'boolean', value: false },
+    ],
+  },
   'bar-chart': {
     desc: '使用共享零基线比较分类数值和分段增量；由 WXML View、Flex/Grid 与语义渐变 Token 渲染，不依赖 Canvas。',
     path: 'poemui-miniprogram/bar-chart/bar-chart',
@@ -1025,6 +1131,10 @@ const componentCopy = {
   alert: ['语义提示块，支持内部 Icon、soft/tinted 外观、行内纵向对齐、受控/非受控显隐、关闭回写和默认 slot。', '主题、soft/tinted、纵向居中、受控关闭、低动效'],
   'area-chart': ['以共享零基线展示连续趋势，原生 Canvas 2D 与 H5 SVG 消费同一数据合同，并提供渐变填充、默认入场与 replay()。', '自然/线性/阶梯、叠加/堆叠、渐变填充、默认入场、replay、低动效'],
   'bar-chart': ['以共享零基线比较分类数量与分段增量，条形渐变保持方向感，并提供默认级联入场与 replay()。', '横向/纵向、堆叠/并列、共享零基线、默认入场、replay、低动效'],
+  'donut-chart': ['以圆润占比圆环展示组成和总量，Canvas 2D 与 H5 SVG 消费同一数据合同，并提供渐变弧段、默认入场与 replay()。', '占比、中心总量、弧段间隔、渐变端点、默认入场、replay、低动效'],
+  'radar-chart': ['以低对比网格和渐变数据面比较多维能力，Canvas 2D 与 H5 SVG 消费同一数据合同，并提供默认入场与 replay()。', '3–8 维度、1–4 系列、渐变数据面、默认入场、replay、低动效'],
+  'sortable-list': ['以连续 Cell、长按拖动和边缘自动滚动请求新的列表顺序；业务持久化始终由父级回写。', '句柄/整项拖动、禁用项、自动滚动、change/cancel、方法'],
+  tour: ['围绕真实页面目标提供逐步引导；唯一遮罩、目标测量、定位、跳过与完成均在组件内闭环。', '受控显隐/步骤、自动定位、目标缺失错误、跳过/完成、毛玻璃、低动效'],
   waffle: ['以圆润渐变点阵表达总量、占比与新增单元，缩放时显式公开有效单位，并提供默认级联入场与 replay()。', '列数、形状、有效单位、渐变点阵、默认入场、replay、低动效'],
   'aspect-ratio': ['以 WXSS 百分比占位维持媒体、封面和嵌入内容的稳定比例；默认 slot 可组合 Icon、Tag 等内部组件。', '比例、边框、圆角、背景、溢出、平滑比例切换、低动效'],
   breadcrumb: ['可组合路径导航，支持受控/非受控值、current 兼容入口、内部 Button/Icon/Loading、前后缀 slot、状态优先级和低动效。', '受控/非受控、current 兼容、尺寸、换行、slot、loading/error/empty、事件'],
@@ -1149,6 +1259,10 @@ const apiProps = {
   progress: ['percentage', 'theme', 'label', 'size', 'status', 'strokeWidth', 'color', 'trackColor', 'ariaLabel', 'reduceMotion'],
   'area-chart': ['items', 'max', 'curve', 'stacked', 'size', 'showGrid', 'showXAxis', 'showLegend', 'showDots', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
   'bar-chart': ['items', 'orientation', 'mode', 'max', 'size', 'showValue', 'showLegend', 'showGrid', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
+  'donut-chart': ['items', 'thickness', 'startAngle', 'gapAngle', 'size', 'showCenter', 'centerText', 'showLegend', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
+  'radar-chart': ['indicators', 'series', 'levels', 'size', 'showGrid', 'showLegend', 'showDots', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
+  'sortable-list': ['items', 'itemKey', 'disabledKeys', 'dragFrom', 'height', 'bordered', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
+  tour: ['steps', 'visible', 'defaultVisible', 'current', 'defaultCurrent', 'closeOnOverlay', 'overlayBlur', 'showSkip', 'showIndicators', 'zIndex', 'duration', 'ariaLabel', 'reduceMotion'],
   waffle: ['items', 'columns', 'groupColumns', 'shape', 'size', 'unit', 'maxCells', 'showValue', 'showLegend', 'animated', 'duration', 'ariaLabel', 'reduceMotion'],
   skeleton: ['animation', 'delay', 'loading', 'rowCol', 'theme', 'ariaLabel', 'reduceMotion'],
   empty: ['description', 'icon', 'image', 'ariaLabel', 'reduceMotion'],
@@ -2036,6 +2150,22 @@ const apiPropGroups = {
 };
 
 const apiEvents = {
+  'sortable-list': [
+    { name: 'dragstart', detail: '{ index, item }', description: '可用项长按进入拖动时触发；不改变外部 items。' },
+    { name: 'dragging', detail: '{ from, to }', description: '拖动跨过新的目标索引时触发；用于轻量预览反馈，不表示排序已经持久化。' },
+    { name: 'change', detail: '{ from, to, items, source? }', description: '拖动结束或 move() 请求新顺序时触发；父级必须把 items 持久化并回写，组件不伪造保存成功。' },
+    { name: 'cancel', detail: '{ from, to }', description: '触摸取消或 cancel() 结束当前拖动时触发，恢复开始前顺序。' },
+    { name: 'scroll', detail: '{ scrollTop, dragging }', description: '唯一内部 scroll-view 真实滚动时转发当前位置。' },
+  ],
+  tour: [
+    { name: 'visible-change', detail: '{ visible, reason, current }', description: '打开或关闭请求发生时触发；受控模式等待父级回写 visible。' },
+    { name: 'current-change', detail: '{ current, previous, reason, step }', description: '步骤请求切换时触发；受控模式等待父级回写 current。' },
+    { name: 'change', detail: '{ current, previous, reason, step }', description: '与 current-change 同步发布，便于消费者记录真实引导进度。' },
+    { name: 'skip', detail: '{ current, step }', description: '点击跳过时触发，随后请求关闭；不替消费者写入已完成状态。' },
+    { name: 'finish', detail: '{ current, step }', description: '最后一步点击完成时触发，随后请求关闭。' },
+    { name: 'close', detail: '{ current, reason }', description: '关闭按钮、遮罩、跳过、完成或 close() 请求关闭时触发。' },
+    { name: 'error', detail: '{ code, message, index }', description: '步骤为空、选择器非法、目标缺失或测量能力不可用时触发；组件随后 fail-closed 请求关闭。' },
+  ],
   'scroll-area': [
     { name: 'scroll', detail: '{ scrollTop, scrollHeight }', description: '唯一原生 scroll-view 真实滚动时触发；可用于回写受控 scrollTop 与驱动 BackTop 显隐。' },
   ],
@@ -2285,6 +2415,9 @@ const apiEvents = {
 };
 
 const apiSlots = {
+  tour: [
+    { name: 'default', description: '追加到当前步骤正文后的轻量 PUI 内容；不接管目标测量、步骤切换或关闭。' },
+  ],
   card: [
     { name: 'default', description: 'Card 的主体内容；可组合 Cell、Tag、Button 等 PUI 组件。' },
     { name: 'header', description: '追加到标题和说明后的 Header 内容；无标题说明时需同时设置 showHeader。' },
@@ -2472,6 +2605,23 @@ const apiMethods = {
   ],
   waffle: [
     { name: 'replay()', returns: 'void', description: '按当前点阵顺序重播缩放淡入；不改变数量、有效单位或主题。' },
+  ],
+  'donut-chart': [
+    { name: 'replay()', returns: 'void', description: '重播当前圆环图的旋转缩放入场；不改变 items、比例、主题或业务数据。' },
+  ],
+  'radar-chart': [
+    { name: 'replay()', returns: 'void', description: '从中心重播当前雷达数据面的缩放淡入；不改变维度、系列或业务数据。' },
+  ],
+  'sortable-list': [
+    { name: 'move(from, to)', returns: 'Boolean', description: '请求把可用项从 from 移到 to 并发布 change；父级负责回写和持久化。' },
+    { name: 'cancel()', returns: 'Boolean', description: '取消当前拖动并恢复开始前顺序；没有活动拖动时返回 false。' },
+    { name: 'getItems()', returns: 'Array', description: '读取当前可见顺序的无内部字段快照，不触发事件。' },
+  ],
+  tour: [
+    { name: 'open(index?)', returns: 'Boolean', description: '请求从可选步骤打开引导；受控模式等待父级回写 visible/current。' },
+    { name: 'close(reason?)', returns: 'Boolean', description: '请求关闭当前引导并发布 close 与 visible-change。' },
+    { name: 'next()', returns: 'Boolean', description: '请求下一步；最后一步固定发布 finish 后请求关闭。' },
+    { name: 'prev()', returns: 'Boolean', description: '请求上一步；已经在第一步时返回 false。' },
   ],
   toast: [
     { name: 'show(options?)', returns: 'void', description: '合并提供的 Toast Props，挂载并在下一帧进入；duration>0 时进入完成后安排自动 hide()。' },

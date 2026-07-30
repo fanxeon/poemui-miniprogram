@@ -106,3 +106,9 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 ## 13. 等距与阴影资格
 
 ActionSheet 的描述、列表 Body 和 Footer 是直接 Surface 分区；`equalSpacing` 只消费 Surface inset/section Token，列表行、图标、取消按钮内部间距保持原合同。外投影只作用于底部 Surface 根并固定使用 `--pui-shadow-edge-bottom`，不作用于 Mask 或行项目。
+
+## 14. 0.1.4 主题继承修复
+
+- `colorScheme` 为空时根类必须使用 Theme Behavior 返回的空主题类，继承最近的 ConfigProvider；禁止写入 `pui-theme--light`。
+- 显式 `light/dark` 仍是局部覆盖。该修复不改变 Props、事件、Slot、动效或遮罩策略。
+- H5 只保留当前 ActionSheet 结构和样式，不得恢复已删除的旧选择器或用固定浅色 Surface 近似。

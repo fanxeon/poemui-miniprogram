@@ -79,3 +79,9 @@ Props、事件和方法的完整清单以 `docs/COMPONENT_API.md` 为准；本�
 ## 13. 等距与阴影资格
 
 DropdownMenu 展开面板是独立 Surface；`equalSpacing` 只调整 Panel、Options Body 与 Footer 的分区，Trigger、选项行和原生桥接不被全局 gap 覆盖。阴影只属于展开 Panel。
+
+## 14. 0.1.4 主题继承修复
+
+- 空 `colorScheme` 不得主动生成浅色主题类；Trigger 与展开 Panel 必须共同继承最近的 ConfigProvider。
+- 显式 `light/dark` 保持局部覆盖，不改变受控选值、事件顺序或浮层几何。
+- 专项测试必须同时锁定空值继承和显式 dark，避免页面通过逐个传主题掩盖共享组件回归。

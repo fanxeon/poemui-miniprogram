@@ -93,3 +93,9 @@ Rate(slider)
 4. 产物变化后运行 `npm run example:install` 并校验源码、dist、示例安装与 tarball；微信 CLI 失败时保留 `pending-cli`，不得手工冒充成功。
 
 真机仍需复核微信 touchmove 采样、rpx/px gap 换算、Canvas Icon 着色、样式隔离、slider 与内部 button 的读屏朗读和系统低动效。任何不能满足本文的实现必须写入 Ledger，不得静默绕过。
+
+## 13. 0.1.4 默认颜色
+
+- 未传 `color` 时激活星色统一读取 `var(--pui-color-warning)`，以评分的暖色语义替代固定主色。
+- 显式合法 `#RGB/#RRGGBB/rgb()` 仍优先，非法值回退 warning Token。
+- 该变化属于 L1 视觉修复，不改变 13 Props、`change` 事件、半星命中或受控边界。
