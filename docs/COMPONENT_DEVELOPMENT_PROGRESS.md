@@ -1,5 +1,12 @@
 # PoemUI 组件交付进度
 
+## 2026-07-30 · 0.1.4 H5 与产品落地页生产发布
+
+- **生产镜像**：文档站已切换为 `poemui-h5:20260730-0.1.4-001`，落地页已切换为 `poemcoder-web-v2:20260730-poemui-0.1.4-r1`；两者均先通过远端独立 Canary，再切换固定生产端口。
+- **回滚点**：停止状态的 `poemui-h5-rollback-20260729-0.1.3-001` 与 `poemcoder-web-v2-rollback-20260729-poemui-0.1.3-r8` 保留为直接回滚容器；OpenResty 配置语法检查通过。
+- **公网回读**：`/poem-ui/docs/` 与 `/poem-ui` 均返回 200；文档站回读 0.1.4 资源指纹和正式公告标题，落地页回读 78 个组件、固定 npm 0.1.4 与 v0.1.4 Skill 链接。
+- **390px 运行态**：两页 document/body 均为 `clientWidth=scrollWidth=375`，无横向溢出和 console error/warning；生产 DonutChart 数据切换真实回写按钮状态。该证据不等于 npm、GitHub 或微信小程序已发布。
+
 ## 2026-07-30 · ScrollArea 半透明 Surface 遮罩连续性
 
 - **根因与组件级修复**：ScrollArea 空 `gradientOverlayColor` 原本总回退不透明 `--pui-bg-container`；Popup card 已改为 `.72` alpha 的 `--pui-glass-tint` 后，公告滚动边缘仍被纯白/纯深色渐变覆盖，形成与毛玻璃合成结果不一致的横带。新增 light/dark 同名 `--pui-scroll-area-gradient-overlay-material-color`（`.32` alpha），全局 frosted 组件树与 Popup card 自动重绑定默认上下文；普通实底仍使用原容器色，显式公开色 API 保持最高优先级。

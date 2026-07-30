@@ -1,6 +1,6 @@
 # PoemUI 0.1.4 H5 组件镜像记录
 
-> 状态：`release candidate`
+> 状态：`production published`
 >
 > H5 是原生小程序组件的同用户语义镜像，不是实现真相源，也不证明微信平台能力已通过真机验收。
 
@@ -43,4 +43,11 @@
 
 ## 发布边界
 
-用户已授权 0.1.4 生产 H5 发布，明确排除微信小程序上传。生产容器、缓存指纹、健康检查、公开资源、更新路由和 390px 交互证据必须在部署完成后回写；本地构建不能代替生产结论。
+用户已授权 0.1.4 生产 H5 发布，明确排除微信小程序上传。2026-07-30 已在本机完成 `linux/amd64` 镜像构建，并在生产主机先以独立 Canary 端口回读后切换：
+
+- 文档站活动容器：`poemui-h5:20260730-0.1.4-001`，绑定 `127.0.0.1:3102 → 8080`，容器健康状态为 `healthy`；直接回滚点为停止状态的 `poemui-h5-rollback-20260729-0.1.3-001`。
+- 产品落地页活动容器：`poemcoder-web-v2:20260730-poemui-0.1.4-r1`，绑定 `127.0.0.1:3101 → 3000`；直接回滚点为停止状态的 `poemcoder-web-v2-rollback-20260729-poemui-0.1.3-r8`。
+- OpenResty 容器内 `openresty -t` 通过。公网 `/poem-ui/docs/`、公告数据资源和 `/poem-ui` 均返回 HTTP 200；文档站回读 `0.1.4-20260730-002` 资源指纹与“PoemUI v0.1.4 更新”，落地页回读 78 个组件、npm `0.1.4` 和 `v0.1.4` Skill 链接。
+- Chrome 显式 390×844 验收两页 `innerWidth=390`，document/body 均为 `clientWidth=scrollWidth=375`，无横向溢出、console error/warning 为 0。生产 DonutChart 的“切换圆环图演示数据”真实点击后按钮由“切换高波动数据”变为“恢复初始数据”。
+
+这些证据只证明 H5 与产品落地页已生产发布；npm Registry、Git Tag/GitHub Release 和微信小程序仍按各自发布链单独判断。

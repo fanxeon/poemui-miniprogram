@@ -118,12 +118,13 @@
       "CloudBase 写后 version=v0.1.4 + status=published 查询：唯一命中 1 条。"
     ],
     "browser": [
-      "390x844 从 Button 页面点击 Topbar 0.1.4 PUI Button 后进入 #/updates，aria-current=page，当前公告为 PoemUI v0.1.4 开发版更新。",
+      "390x844 从 Button 页面点击 Topbar 0.1.4 PUI Button 后进入 #/updates，aria-current=page；正式发布前云端、生成数据与页面标题已统一为 PoemUI v0.1.4 更新。",
       "直接刷新 #/updates 后路由、当前公告和 light/frost/shadow/spacing 偏好保持，console error/warning 为 0。",
       "390px light/dark 均为 document/body clientWidth=scrollWidth=375；当前版本含 5 个组件级改动，共渲染 5 个版本。",
       "equal 模式的当前 Surface 四向 inset 与直接结构 gap 均为 14px；normal 模式 inset 保持 14px、gap 恢复 8px。",
       "light + frost 的 Surface 计算为 rgba(255,255,255,0.78) 与 blur(14px) saturate(1.2)；shadow off 后 box-shadow 为 none。",
-      "1440x900 下更新页和连续公告 Surface 均为 860px 宽，document clientWidth=scrollWidth=1425。"
+      "1440x900 下更新页和连续公告 Surface 均为 860px 宽，document clientWidth=scrollWidth=1425。",
+      "生产 H5 poemui-h5:20260730-0.1.4-001 先经 Canary 再切换；公网 390x844 的 document/body clientWidth=scrollWidth=375，公告标题正确且 console error/warning 为 0。"
     ],
     "deviceRisks": [
       "小程序当前开发者工具运行态尚未回读 0.1.4 云公告。",
