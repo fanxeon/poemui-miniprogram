@@ -6,7 +6,7 @@ window.POEMUI_RELEASE_NOTES = {
       "id": "pui-v0-1-4-20260730",
       "version": "v0.1.4",
       "date": "2026-07-30",
-      "title": "PoemUI v0.1.4 开发版更新",
+      "title": "PoemUI v0.1.4 更新",
       "summary": "修复双端主题，并新增四个高级组件。",
       "componentCount": 78,
       "categoryCounts": [

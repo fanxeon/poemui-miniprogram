@@ -3,7 +3,7 @@
 module.exports = {
   '0.1.4': {
     previousVersion: '0.1.3',
-    sourceCommit: 'unreleased',
+    sourceCommit: 'ca39799',
     addedComponents: ['donut-chart', 'radar-chart', 'sortable-list', 'tour'],
     versions: [
       { version: '0.1.0', total: 71 },

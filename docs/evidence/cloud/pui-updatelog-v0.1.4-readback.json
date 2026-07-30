@@ -1,13 +1,15 @@
 {
   "environment": "poemcoder-1gkbkid139b08f45",
   "collection": "pui_updatelog",
-  "verifiedAt": "2026-07-30T03:23:08.635Z",
+  "verifiedAt": "2026-07-30T04:26:32.413Z",
   "preflightVersionCount": 0,
   "write": {
-    "requestId": "19fb10c1be1_2",
+    "requestId": "19fb1462663_2",
     "updated": 1,
     "upsertedId": null
   },
+  "readbackRequestId": "19fb14626b4_3",
+  "queryRequestId": "19fb1462708_4",
   "queryCount": 1,
   "categoryTotal": 78,
   "document": {
@@ -15,7 +17,7 @@
     "product": "poemui",
     "version": "v0.1.4",
     "date": "2026-07-30",
-    "title": "PoemUI v0.1.4 开发版更新",
+    "title": "PoemUI v0.1.4 更新",
     "summary": "修复双端主题，并新增四个高级组件。",
     "componentCount": 78,
     "categoryCounts": [
@@ -64,7 +66,7 @@
     "status": "published",
     "schemaVersion": 2,
     "publishedAt": "2026-07-30T03:22:48.643Z",
-    "updatedAt": "2026-07-30T03:23:08.635Z"
+    "updatedAt": "2026-07-30T04:26:32.413Z"
   },
-  "note": "写前 version=v0.1.4 为 0 条。首次 Node SDK set({data}) 暴露嵌套语义，随即在同一稳定 ID 上用完整文档本体覆盖；最终按 _id 全文回读与 version/status 查询均通过，客户端可见查询唯一命中 1 条。该文件是不含凭据的版本化审计副本。"
+  "note": "写前 version=v0.1.4 为 0 条。首次 Node SDK set({data}) 暴露嵌套语义，随即在同一稳定 ID 上用完整文档本体覆盖。正式发布前又在同一稳定 ID 上把标题从开发版更新切换为正式更新；最终按 _id 全文回读与 version/status 查询均通过，客户端可见查询唯一命中 1 条。该文件是不含凭据的版本化审计副本。"
 }
