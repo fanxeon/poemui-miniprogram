@@ -78,6 +78,10 @@ var OVERLAY_COMPONENTS = [
 var ADVANCED_COMPONENTS = [
   { key: 'area-chart', name: 'AreaChart', description: '用描边与透明渐变展示连续趋势。', icon: 'activity', url: '/pages/components/area-chart/index', keywords: 'area-chart 面积图 趋势 曲线 渐变' },
   { key: 'bar-chart', name: 'BarChart', description: '用共享零基线比较分类数量和增量。', icon: 'activity', url: '/pages/components/bar-chart/index', keywords: 'bar-chart 条形图 柱状图 增量' },
+  { key: 'donut-chart', name: 'DonutChart', description: '用圆润圆环展示组成、占比和总量。', icon: 'chart-pie', url: '/pages/components/donut-chart/index', keywords: 'donut-chart 圆环图 饼图 占比' },
+  { key: 'radar-chart', name: 'RadarChart', description: '从多个维度比较能力轮廓。', icon: 'activity', url: '/pages/components/radar-chart/index', keywords: 'radar-chart 雷达图 多维 比较' },
+  { key: 'sortable-list', name: 'SortableList', description: '通过长按拖动调整连续列表顺序。', icon: 'list-bullet', url: '/pages/components/sortable-list/index', keywords: 'sortable-list 排序列表 拖动' },
+  { key: 'tour', name: 'Tour', description: '围绕页面目标逐步介绍关键操作。', icon: 'route', url: '/pages/components/tour/index', keywords: 'tour 功能引导 新手引导' },
   { key: 'waffle', name: 'Waffle', description: '用圆润点阵展示总量和新增单元。', icon: 'grid', url: '/pages/components/waffle/index', keywords: 'waffle 点阵图 组件数量' },
   { key: 'top-loading', name: 'TopLoading', description: '在当前卡片顶边反馈任务进度。', icon: 'progress', url: '/pages/components/top-loading/index', keywords: 'top-loading 顶部 加载 卡片 进度' },
   { key: 'dynamic-message', name: 'DynamicMessage', description: '在页面顶部展示可原位更新的实时通知。', icon: 'bell', url: '/pages/components/dynamic-message/index', keywords: 'dynamic-message 灵动岛 灵动通知 队列' },

@@ -1,0 +1,27 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="Tour 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="页面引导" subtitle="围绕真实目标逐步说明" description="点击开始后，目标区保持可见；目标不存在时组件会明确报错并关闭。">
+            <pui-cell id="tour-search-target" title="快速搜索" description="目标一：用于查找组件" left-icon="search" />
+            <pui-cell id="tour-appearance-target" title="外观设置" description="目标二：切换深浅色和视觉效果" left-icon="palette" />
+            <pui-button block theme="primary" content="开始引导" bind:click="onOpenTour" />
+            <text class="component-page__status" aria-live="polite">{{tourStatus}}</text>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+    <pui-tour
+      steps="{{tourSteps}}"
+      visible="{{tourVisible}}"
+      current="{{tourCurrent}}"
+      aria-label="Tour 示例引导"
+      bind:visible-change="onTourVisibleChange"
+      bind:current-change="onTourCurrentChange"
+      bind:finish="onTourFinish"
+      bind:error="onTourError"
+    />
+  </view>
+</pui-config-provider>

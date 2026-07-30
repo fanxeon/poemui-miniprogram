@@ -1,0 +1,19 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="DonutChart 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="组件组成" subtitle="圆润弧段，渐变到透明" description="每段保留实色端点和清晰图例；中心值显示当前总量。">
+            <pui-donut-chart id="donut-chart-demo" items="{{donutItems}}" gap-angle="{{gapAngle}}" aria-label="组件分类占比" />
+            <view class="component-page__row component-page__row--actions">
+              <pui-button block size="small" content="{{alternate ? '恢复初始数据' : '切换占比数据'}}" theme="primary" bind:click="onToggleData" />
+              <pui-button block size="small" content="间隔：{{gapAngle}}°" variant="outline" bind:click="onToggleGap" />
+              <pui-button block size="small" content="重播动画" variant="outline" bind:click="onReplay" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

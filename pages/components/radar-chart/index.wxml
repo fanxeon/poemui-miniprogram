@@ -1,0 +1,19 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="RadarChart 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="能力比较" subtitle="共享维度，不共用假比例" description="每个维度使用自己的 max；低对比网格承载渐变数据面和实色轮廓。">
+            <pui-radar-chart id="radar-chart-demo" indicators="{{radarIndicators}}" series="{{radarSeries}}" show-dots="{{showDots}}" aria-label="组件能力比较" />
+            <view class="component-page__row component-page__row--actions">
+              <pui-button block size="small" content="{{alternate ? '恢复初始数据' : '切换能力数据'}}" theme="primary" bind:click="onToggleData" />
+              <pui-button block size="small" content="{{showDots ? '隐藏端点' : '显示端点'}}" variant="outline" bind:click="onToggleDots" />
+              <pui-button block size="small" content="重播动画" variant="outline" bind:click="onReplay" />
+            </view>
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

@@ -1,0 +1,16 @@
+<pui-config-provider class="component-config-provider" use-global-config>
+  <view class="component-page {{backgroundGradientEnabled ? 'component-page--gradient' : ''}}">
+    <view id="component-navbar" class="component-page__navbar"><component-page-navbar title="{{pageTitle}}" bind:back="onBack" /></view>
+    <view class="component-page__scroll-row" style="height: {{scrollAreaHeight}};">
+      <pui-scroll-area wx:if="{{layoutReady}}" class="component-page__scroll-area" height="{{scrollAreaHeight}}" gradient-overlay aria-label="SortableList 组件用法">
+        <view class="component-page__content">
+          <component-page-section title="交付顺序" subtitle="{{dragFrom === 'handle' ? '长按句柄拖动' : '长按整行拖动'}}" description="组件发布 change 请求，父级回写 items；禁用项不可作为拖动源。">
+            <pui-sortable-list items="{{sortableItems}}" drag-from="{{dragFrom}}" height="520rpx" aria-label="组件交付顺序" bind:change="onOrderChange" bind:cancel="onOrderCancel" />
+            <text class="component-page__status" aria-live="polite">{{orderStatus}}</text>
+            <pui-button block size="small" content="{{dragFrom === 'handle' ? '改为整行拖动' : '改为句柄拖动'}}" variant="outline" bind:click="onToggleDragFrom" />
+          </component-page-section>
+        </view>
+      </pui-scroll-area>
+    </view>
+  </view>
+</pui-config-provider>

@@ -15,7 +15,8 @@ function categoryCounts(usePreviousValue) {
 }
 
 var CURRENT_CATEGORY_COUNTS = categoryCounts(false);
-var V0_1_0_CATEGORY_COUNTS = CURRENT_CATEGORY_COUNTS.map(function mapBaseline(item) {
+var V0_1_3_CATEGORY_COUNTS = categoryCounts(true);
+var V0_1_0_CATEGORY_COUNTS = V0_1_3_CATEGORY_COUNTS.map(function mapBaseline(item) {
   return {
     key: item.key,
     label: item.label,
@@ -31,13 +32,56 @@ function versionTotal(version) {
 
 var FALLBACK_ANNOUNCEMENTS = [
   {
+    id: 'pui-v0-1-4-20260730',
+    version: 'v0.1.4',
+    date: '2026-07-30',
+    title: 'PoemUI v0.1.4 更新',
+    summary: '修复双端主题，并新增四个高级组件。',
+    componentCount: componentStatus.total,
+    categoryCounts: CURRENT_CATEGORY_COUNTS,
+    highlights: [
+      {
+        component: 'ActionSheet 等',
+        icon: 'palette',
+        title: '主题继承修复',
+        description: 'ActionSheet、PullRefresh、DropdownMenu 与 Rate 恢复全局深浅色语义。'
+      },
+      {
+        component: 'DonutChart / RadarChart',
+        icon: 'activity',
+        title: '新增两类图表',
+        description: '补齐环形占比与雷达对比图，默认使用渐变配色和可重播入场。'
+      },
+      {
+        component: 'SortableList',
+        icon: 'list',
+        title: '可排序集合',
+        description: '支持拖拽手柄、自动滚动、禁用项及父级受控顺序回写。'
+      },
+      {
+        component: 'Tour',
+        icon: 'sparkles',
+        title: '步骤式引导',
+        description: '提供目标高亮、四向遮罩、焦点闭环与可控前进后退。'
+      },
+      {
+        component: 'H5 镜像',
+        icon: 'code',
+        title: '同语义同步',
+        description: '新增组件均提供真实交互镜像，并完成 390px 与外观组合验证。'
+      }
+    ],
+    status: 'published',
+    schemaVersion: 2
+  },
+  {
     id: 'pui-v0-1-3-20260729',
     version: 'v0.1.3',
     date: '2026-07-29',
     title: 'PoemUI v0.1.3 更新',
     summary: '组件与 AI Skill 同包交付，多端版本口径完成统一。',
-    componentCount: componentStatus.total,
-    categoryCounts: CURRENT_CATEGORY_COUNTS,
+    componentCount: versionTotal('0.1.3'),
+    categoryCounts: V0_1_3_CATEGORY_COUNTS,
     highlights: [
       {
         component: 'PoemUI Skill',
@@ -73,8 +117,8 @@ var FALLBACK_ANNOUNCEMENTS = [
     date: '2026-07-29',
     title: 'PoemUI v0.1.2 更新',
     summary: '新增高级图表，完成组件交互与跨端体验修缮。',
-    componentCount: componentStatus.total,
-    categoryCounts: CURRENT_CATEGORY_COUNTS,
+    componentCount: versionTotal('0.1.2'),
+    categoryCounts: V0_1_3_CATEGORY_COUNTS,
     highlights: [
       {
         component: '高级图表',
@@ -117,7 +161,7 @@ var FALLBACK_ANNOUNCEMENTS = [
     title: 'PoemUI v0.1.1 更新',
     summary: '新增高级图表，集中优化组件交互与小程序体验。',
     componentCount: versionTotal('0.1.1'),
-    categoryCounts: CURRENT_CATEGORY_COUNTS,
+    categoryCounts: V0_1_3_CATEGORY_COUNTS,
     highlights: [
       {
         component: '高级图表',
